@@ -1,0 +1,220 @@
+﻿
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\academics\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\accounts\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\audit\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\backend\views.py
+========================================
+from django.shortcuts import render
+
+from schools.models import School
+from students.models import Student
+from academics.models import AcademicRecord
+from eligibility.models import EligibilityRecord
+from inventory.models import Laptop, LaptopAssignment
+
+
+def dashboard(request):
+    context = {
+        "school_count": School.objects.filter(
+            status=School.Status.ACTIVE
+        ).count(),
+
+        "student_count": Student.objects.count(),
+
+        "active_student_count": Student.objects.filter(
+            status=Student.Status.ACTIVE
+        ).count(),
+
+        "academic_record_count": AcademicRecord.objects.count(),
+
+        "eligible_student_count": EligibilityRecord.objects.filter(
+            eligible=True
+        ).values("student").distinct().count(),
+
+        "available_laptop_count": Laptop.objects.filter(
+            status=Laptop.Status.AVAILABLE
+        ).count(),
+
+        "issued_laptop_count": Laptop.objects.filter(
+            status=Laptop.Status.ISSUED
+        ).count(),
+
+        "recent_eligibility": EligibilityRecord.objects.select_related(
+            "student"
+        ).order_by("-checked_at")[:10],
+
+        "recent_assignments": LaptopAssignment.objects.select_related(
+            "student",
+            "laptop",
+        ).order_by("-created_at")[:10],
+    }
+
+    return render(request, "dashboard.html", context)
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\distributions\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\documents\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\donations\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\eligibility\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\events\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\expense_management\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\internships\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\inventory\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\notifications\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\reports\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\schools\views.py
+========================================
+from django.shortcuts import render, redirect
+from .models import School
+from .forms import SchoolForm
+
+
+def school_list(request):
+    schools = School.objects.all().order_by("name")
+
+    return render(
+        request,
+        "schools/list.html",
+        {
+            "schools": schools,
+        },
+    )
+
+
+def school_create(request):
+    if request.method == "POST":
+        form = SchoolForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("school_list")
+    else:
+        form = SchoolForm()
+
+    return render(
+        request,
+        "schools/form.html",
+        {
+            "form": form,
+        },
+    )
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\students\views.py
+========================================
+from django.shortcuts import render, redirect
+from .models import Student
+from .forms import StudentForm
+
+
+def student_list(request):
+    students = Student.objects.all().order_by("-id")
+
+    return render(
+        request,
+        "students/student_list.html",
+        {"students": students}
+    )
+
+
+def add_student(request):
+    if request.method == "POST":
+        form = StudentForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("students:list")
+    else:
+        form = StudentForm()
+
+    return render(
+        request,
+        "students/add_student.html",
+        {"form": form}
+    )
+
+========================================
+FILE: C:\Users\intern.2026\Documents\Aequs EduTrack\Aequs_EduTrack\volunteers\views.py
+========================================
+from django.shortcuts import render
+
+# Create your views here.

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Students - EduTrack</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #172554;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            background: #2563eb;
+            padding: 9px 15px;
+            border-radius: 7px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+        }
+
+        .count {
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .add-button {
+            background: #16a34a;
+            color: white;
+            text-decoration: none;
+            padding: 11px 18px;
+            border-radius: 7px;
+            font-weight: 600;
+        }
+
+        .add-button:hover {
+            background: #15803d;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .empty {
+            color: #94a3b8;
+            padding: 30px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <h1>EduTrack</h1>
+
+    <a href="{% url 'dashboard' %}" class="back">
+        ← Dashboard
+    </a>
+</header>
+
+<main class="content">
+
+    <div class="header">
+
+        <div>
+            <h2>Students</h2>
+
+            <div class="count">
+                {{ students|length }} student{{ students|length|pluralize }}
+            </div>
+        </div>
+
+        <a href="{% url 'student_create' %}" class="add-button">
+            + Add Student
+        </a>
+
+    </div>
+
+    <div class="table-card">
+
+        {% if students %}
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Admission No.</th>
+                    <th>Student Name</th>
+                    <th>School</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Gender</th>
+                    <th>Parent</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for student in students %}
+
+                <tr>
+                    <td>{{ student.admission_number }}</td>
+                    <td><a href="{% url 'student_detail' student.id %}">
+                    {{ student.student_name }}</a></td>
+                    <td>{{ student.school }}</td>
+                    <td>{{ student.current_class }}</td>
+                    <td>{{ student.section }}</td>
+                    <td>{{ student.get_gender_display }}</td>
+                    <td>{{ student.parent_name }}</td>
+                    <td>{{ student.get_status_display }}</td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+        <div class="empty">
+            No students found.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</main>
+
+</body>
+</html>

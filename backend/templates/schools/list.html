@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schools - EduTrack</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #172554;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .button {
+            color: white;
+            text-decoration: none;
+            background: #2563eb;
+            padding: 9px 15px;
+            border-radius: 7px;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0 0 5px;
+        }
+
+        .count {
+            color: #64748b;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .empty {
+            color: #94a3b8;
+            padding: 30px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 700px) {
+            .content {
+                padding: 18px;
+            }
+
+            .header {
+                align-items: flex-start;
+                gap: 15px;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <h1>EduTrack - Schools</h1>
+
+    <div class="buttons">
+        <a href="{% url 'dashboard' %}" class="button">Dashboard</a>
+        <a href="{% url 'school_create' %}" class="button">+ Add School</a>
+    </div>
+</header>
+
+<main class="content">
+
+    <div class="header">
+        <div>
+            <h2>Schools</h2>
+            <div class="count">{{ schools|length }} school{{ schools|length|pluralize }}</div>
+        </div>
+    </div>
+
+    <div class="table-card">
+
+        {% if schools %}
+        <table>
+            <thead>
+                <tr>
+                    <th>School Name</th>
+                    <th>UDISE Code</th>
+                    <th>District</th>
+                    <th>Taluk</th>
+                    <th>Headmaster</th>
+                    <th>Students</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for school in schools %}
+                <tr>
+                    <td>{{ school.name }}</td>
+                    <td>{{ school.udise_code }}</td>
+                    <td>{{ school.district }}</td>
+                    <td>{{ school.taluk|default:"-" }}</td>
+                    <td>{{ school.headmaster_name }}</td>
+                    <td>{{ school.student_strength }}</td>
+                    <td>
+                        <span class="status">{{ school.get_status_display }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% else %}
+
+        <div class="empty">
+            No schools found.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Add Student | EduTrack</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #eff6ff;
+        --text: #111827;
+        --text-secondary: #475569;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --background: #f1f5f9;
+        --white: #ffffff;
+        --danger: #dc2626;
+        --success: #059669;
+    }
+
+    body {
+        font-family:
+            Inter,
+            "Segoe UI",
+            Roboto,
+            Arial,
+            sans-serif;
+        background:
+            linear-gradient(
+                180deg,
+                #eef4ff 0,
+                #f8fafc 280px,
+                #f1f5f9 100%
+            );
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.5;
+    }
+
+    /* =========================
+       TOP HEADER
+    ========================== */
+
+    .topbar {
+        background: linear-gradient(
+            135deg,
+            #1e40af 0%,
+            #2563eb 55%,
+            #3b82f6 100%
+        );
+        color: white;
+        padding: 0 32px;
+        box-shadow: 0 4px 18px rgba(30, 64, 175, 0.18);
+    }
+
+    .topbar-content {
+        max-width: 1180px;
+        min-height: 82px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+    }
+
+    .brand-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .brand-icon svg {
+        width: 23px;
+        height: 23px;
+    }
+
+    .brand-text h1 {
+        font-size: 21px;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+    }
+
+    .brand-text p {
+        margin-top: 1px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.78);
+    }
+
+    .page-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .page-badge-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #bfdbfe;
+    }
+
+    /* =========================
+       PAGE CONTAINER
+    ========================== */
+
+    .container {
+        width: 100%;
+        max-width: 1180px;
+        margin: 34px auto 50px;
+        padding: 0 20px;
+    }
+
+    /* =========================
+       FORM CARD
+    ========================== */
+
+    .form-card {
+        background: var(--white);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 16px;
+        box-shadow:
+            0 10px 30px rgba(15, 23, 42, 0.06),
+            0 2px 6px rgba(15, 23, 42, 0.03);
+        overflow: hidden;
+    }
+
+    .form-header {
+        padding: 28px 32px;
+        border-bottom: 1px solid var(--border);
+        background: #ffffff;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 12px;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .breadcrumb svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .form-header h2 {
+        color: var(--text);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .form-header p {
+        max-width: 650px;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    /* =========================
+       SECTIONS
+    ========================== */
+
+    .section {
+        padding: 30px 32px;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+    .section:last-of-type {
+        border-bottom: none;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .section-icon {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .section-icon svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    .section-heading h3 {
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .section-heading p {
+        margin-top: 2px;
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    /* =========================
+       FORM GRID
+    ========================== */
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px 22px;
+    }
+
+    .form-group {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 7px;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    label .required {
+        margin-left: 2px;
+        color: var(--danger);
+    }
+
+    /* =========================
+       DJANGO FORM CONTROLS
+    ========================== */
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 14px;
+        outline: none;
+        transition:
+            border-color 0.18s ease,
+            box-shadow 0.18s ease,
+            background 0.18s ease;
+    }
+
+    input,
+    select {
+        height: 45px;
+        padding: 0 13px;
+    }
+
+    textarea {
+        min-height: 105px;
+        padding: 12px 13px;
+        resize: vertical;
+    }
+
+    input:hover,
+    select:hover,
+    textarea:hover {
+        border-color: #94a3b8;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--primary);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: #a1a1aa;
+    }
+
+    input[type="file"] {
+        height: auto;
+        padding: 9px;
+        cursor: pointer;
+    }
+
+    input[type="file"]::file-selector-button {
+        margin-right: 10px;
+        padding: 7px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        background: #ffffff;
+        color: #334155;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+        background: #f8fafc;
+    }
+
+    /* =========================
+       PHOTO UPLOAD
+    ========================== */
+
+    .photo-upload {
+        padding: 20px;
+        border: 1px dashed #bfdbfe;
+        border-radius: 11px;
+        background: #f8fbff;
+        transition: all 0.2s ease;
+    }
+
+    .photo-upload:hover {
+        border-color: var(--primary);
+        background: #f0f7ff;
+    }
+
+    .photo-upload-inner {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .photo-icon {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .photo-icon svg {
+        width: 21px;
+        height: 21px;
+    }
+
+    .photo-content {
+        flex: 1;
+    }
+
+    .photo-text {
+        color: #334155;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .photo-help {
+        color: #94a3b8;
+        font-size: 11px;
+    }
+
+    .photo-upload input {
+        margin-top: 12px;
+        border: none;
+        background: transparent;
+        padding: 0;
+    }
+
+    .help-text {
+        margin-top: 6px;
+        color: #94a3b8;
+        font-size: 11px;
+    }
+
+    /* =========================
+       ERRORS
+    ========================== */
+
+    .errorlist {
+        list-style: none;
+        margin-top: 6px;
+        padding: 0;
+        color: var(--danger);
+        font-size: 12px;
+    }
+
+    .errorlist li {
+        margin-bottom: 2px;
+    }
+
+    .form-error-box {
+        margin: 22px 32px 0;
+        padding: 13px 15px;
+        border: 1px solid #fecaca;
+        border-radius: 9px;
+        background: #fef2f2;
+        color: #991b1b;
+        font-size: 13px;
+    }
+
+    /* =========================
+       FOOTER / BUTTONS
+    ========================== */
+
+    .form-footer {
+        padding: 22px 32px;
+        background: #f8fafc;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .footer-note {
+        color: #94a3b8;
+        font-size: 11px;
+    }
+
+    .footer-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn {
+        min-height: 43px;
+        border-radius: 9px;
+        padding: 0 18px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+    }
+
+    .btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .btn-cancel {
+        background: #ffffff;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .btn-cancel:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+        color: #1e293b;
+    }
+
+    .btn-save {
+        color: #ffffff;
+        background: var(--primary);
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.20);
+    }
+
+    .btn-save:hover {
+        background: var(--primary-dark);
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .btn-save:active {
+        transform: translateY(0);
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================== */
+
+    @media (max-width: 768px) {
+
+        .topbar {
+            padding: 0 18px;
+        }
+
+        .topbar-content {
+            min-height: 72px;
+        }
+
+        .page-badge {
+            display: none;
+        }
+
+        .container {
+            margin: 20px auto 35px;
+            padding: 0 12px;
+        }
+
+        .form-card {
+            border-radius: 13px;
+        }
+
+        .form-header {
+            padding: 23px 20px;
+        }
+
+        .form-header h2 {
+            font-size: 21px;
+        }
+
+        .section {
+            padding: 24px 20px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 17px;
+        }
+
+        .form-group.full {
+            grid-column: auto;
+        }
+
+        .form-error-box {
+            margin: 18px 20px 0;
+        }
+
+        .form-footer {
+            padding: 18px 20px;
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .footer-actions {
+            width: 100%;
+            flex-direction: column-reverse;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .footer-note {
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .brand-text h1 {
+            font-size: 19px;
+        }
+
+        .brand-text p {
+            font-size: 11px;
+        }
+
+        .section-title {
+            align-items: flex-start;
+        }
+
+        .photo-upload-inner {
+            align-items: flex-start;
+        }
+
+        .photo-upload {
+            padding: 16px;
+        }
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<!-- =========================
+     HEADER
+========================== -->
+
+<header class="topbar">
+    <div class="topbar-content">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 19.5V6.8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12.7"/>
+                    <path d="M3 19.5c0-1.1.9-2 2-2h16"/>
+                    <path d="M7 8h10"/>
+                    <path d="M7 12h6"/>
+                </svg>
+            </div>
+
+            <div class="brand-text">
+                <h1>EduTrack</h1>
+                <p>Student Management System</p>
+            </div>
+
+        </div>
+
+        <div class="page-badge">
+            <span class="page-badge-dot"></span>
+            Student Registration
+        </div>
+
+    </div>
+</header>
+
+
+<!-- =========================
+     MAIN
+========================== -->
+
+<main class="container">
+
+    <div class="form-card">
+
+        <!-- Form Header -->
+
+        <div class="form-header">
+
+            <div class="breadcrumb">
+                <span>Students</span>
+
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6"/>
+                </svg>
+
+                <span>Add Student</span>
+            </div>
+
+            <h2>Add New Student</h2>
+
+            <p>
+                Create a new student record by entering the required
+                personal, academic, guardian and contact information.
+            </p>
+
+        </div>
+
+
+        <form method="POST" enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+
+            <!-- Non-field errors -->
+
+            {% if form.non_field_errors %}
+                <div class="form-error-box">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+
+            <!-- =========================
+                 STUDENT INFORMATION
+            ========================== -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M20 21a8 8 0 0 0-16 0"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+
+                    <div class="section-heading">
+                        <h3>Student Information</h3>
+                        <p>Basic personal information about the student</p>
+                    </div>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="{{ form.admission_number.id_for_label }}">
+                            Admission Number
+                            <span class="required">*</span>
+                        </label>
+
+                        {{ form.admission_number }}
+                        {{ form.admission_number.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.student_name.id_for_label }}">
+                            Student Name
+                            <span class="required">*</span>
+                        </label>
+
+                        {{ form.student_name }}
+                        {{ form.student_name.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.date_of_birth.id_for_label }}">
+                            Date of Birth
+                        </label>
+
+                        {{ form.date_of_birth }}
+                        {{ form.date_of_birth.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.gender.id_for_label }}">
+                            Gender
+                            <span class="required">*</span>
+                        </label>
+
+                        {{ form.gender }}
+                        {{ form.gender.errors }}
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label for="{{ form.photo.id_for_label }}">
+                            Student Photo
+                        </label>
+
+                        <div class="photo-upload">
+
+                            <div class="photo-upload-inner">
+
+                                <div class="photo-icon">
+                                    <svg viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor"
+                                         stroke-width="2"
+                                         stroke-linecap="round"
+                                         stroke-linejoin="round">
+                                        <rect x="3" y="3" width="18"
+                                              height="18" rx="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <path d="m21 15-5-5L5 21"/>
+                                    </svg>
+                                </div>
+
+                                <div class="photo-content">
+                                    <div class="photo-text">
+                                        Upload student photograph
+                                    </div>
+
+                                    <div class="photo-help">
+                                        Choose a clear recent photograph
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {{ form.photo }}
+
+                        </div>
+
+                        {{ form.photo.errors }}
+
+                        <span class="help-text">
+                            JPG, PNG or another supported image format.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 SCHOOL INFORMATION
+            ========================== -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M3 21h18"/>
+                            <path d="M5 21V7l7-4 7 4v14"/>
+                            <path d="M9 21v-5h6v5"/>
+                            <path d="M9 9h.01"/>
+                            <path d="M15 9h.01"/>
+                            <path d="M9 12h.01"/>
+                            <path d="M15 12h.01"/>
+                        </svg>
+                    </div>
+
+                    <div class="section-heading">
+                        <h3>School Information</h3>
+                        <p>Academic placement and enrollment details</p>
+                    </div>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="{{ form.school.id_for_label }}">
+                            School
+                            <span class="required">*</span>
+                        </label>
+
+                        {{ form.school }}
+                        {{ form.school.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.current_class.id_for_label }}">
+                            Current Class
+                            <span class="required">*</span>
+                        </label>
+
+                        {{ form.current_class }}
+                        {{ form.current_class.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.section.id_for_label }}">
+                            Section
+                        </label>
+
+                        {{ form.section }}
+                        {{ form.section.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.roll_number.id_for_label }}">
+                            Roll Number
+                        </label>
+
+                        {{ form.roll_number }}
+                        {{ form.roll_number.errors }}
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 PARENT / GUARDIAN
+            ========================== -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+
+                    <div class="section-heading">
+                        <h3>Parent / Guardian Information</h3>
+                        <p>Primary parent or guardian contact details</p>
+                    </div>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="{{ form.parent_name.id_for_label }}">
+                            Parent / Guardian Name
+                            <span class="required">*</span>
+                        </label>
+
+                        {{ form.parent_name }}
+                        {{ form.parent_name.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.relationship_to_student.id_for_label }}">
+                            Relationship
+                        </label>
+
+                        {{ form.relationship_to_student }}
+                        {{ form.relationship_to_student.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.parent_phone.id_for_label }}">
+                            Parent Phone
+                        </label>
+
+                        {{ form.parent_phone }}
+                        {{ form.parent_phone.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.parent_email.id_for_label }}">
+                            Parent Email
+                        </label>
+
+                        {{ form.parent_email }}
+                        {{ form.parent_email.errors }}
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 CONTACT INFORMATION
+            ========================== -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2
+                                     19.79 19.79 0 0 1-8.63-3.07
+                                     19.5 19.5 0 0 1-6-6
+                                     19.79 19.79 0 0 1-3.07-8.67
+                                     A2 2 0 0 1 4.11 2h3
+                                     a2 2 0 0 1 2 1.72
+                                     12.84 12.84 0 0 0 .7 2.81
+                                     2 2 0 0 1-.45 2.11L8.09 9.91
+                                     a16 16 0 0 0 6 6l1.27-1.27
+                                     a2 2 0 0 1 2.11-.45
+                                     12.84 12.84 0 0 0 2.81.7
+                                     A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                    </div>
+
+                    <div class="section-heading">
+                        <h3>Student Contact Information</h3>
+                        <p>Contact details and residential address</p>
+                    </div>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="{{ form.student_phone.id_for_label }}">
+                            Student Phone
+                        </label>
+
+                        {{ form.student_phone }}
+                        {{ form.student_phone.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}">
+                            Student Email
+                        </label>
+
+                        {{ form.email }}
+                        {{ form.email.errors }}
+                    </div>
+
+
+                    <div class="form-group full">
+                        <label for="{{ form.address.id_for_label }}">
+                            Address
+                        </label>
+
+                        {{ form.address }}
+                        {{ form.address.errors }}
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 ADMISSION & STATUS
+            ========================== -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <rect x="3" y="4" width="18"
+                                  height="18" rx="2"/>
+                            <path d="M16 2v4"/>
+                            <path d="M8 2v4"/>
+                            <path d="M3 10h18"/>
+                            <path d="m9 16 2 2 4-4"/>
+                        </svg>
+                    </div>
+
+                    <div class="section-heading">
+                        <h3>Admission &amp; Status</h3>
+                        <p>Enrollment date and current student status</p>
+                    </div>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}">
+                            Student Status
+                            <span class="required">*</span>
+                        </label>
+
+                        {{ form.status }}
+                        {{ form.status.errors }}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="{{ form.admission_date.id_for_label }}">
+                            Admission Date
+                        </label>
+
+                        {{ form.admission_date }}
+                        {{ form.admission_date.errors }}
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 FORM FOOTER
+            ========================== -->
+
+            <div class="form-footer">
+
+                <div class="footer-note">
+                    Fields marked with <span style="color:#dc2626;">*</span>
+                    are required.
+                </div>
+
+                <div class="footer-actions">
+
+                    <a href="{% url 'students:list' %}"
+                       class="btn btn-cancel">
+
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M19 12H5"/>
+                            <path d="m12 19-7-7 7-7"/>
+                        </svg>
+
+                        Cancel
+                    </a>
+
+
+                    <button type="submit" class="btn btn-save">
+
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5
+                                     a2 2 0 0 1 2-2h11l5 5v11
+                                     a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+
+                        Save Student
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+
+</body>
+</html>

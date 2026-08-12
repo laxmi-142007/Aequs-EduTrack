@@ -1,0 +1,531 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EduTrack Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #172554;
+            color: white;
+            padding: 24px 16px;
+            overflow-y: auto;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0 12px 28px;
+        }
+
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .nav-item {
+            display: block;
+            color: #dbeafe;
+            text-decoration: none;
+            padding: 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Main area */
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+            padding: 18px 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #172554;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        /* Welcome */
+        .welcome {
+            margin-bottom: 25px;
+        }
+
+        .welcome h2 {
+            margin: 0 0 6px;
+            color: #172554;
+        }
+
+        .welcome p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        /* Dashboard cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            min-height: 125px;
+        }
+
+        .card-icon {
+            font-size: 26px;
+            float: right;
+        }
+
+        .card-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 10px;
+            padding-top: 4px;
+        }
+
+        .card-value {
+            font-size: 30px;
+            font-weight: 700;
+            color: #172554;
+        }
+
+        /* Tables */
+        .tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            overflow-x: auto;
+        }
+
+        .section-title {
+            margin: 0 0 15px;
+            font-size: 20px;
+            color: #172554;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        th {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        td {
+            color: #334155;
+        }
+
+        .empty {
+            color: #94a3b8;
+            padding: 20px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tables {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 70px;
+                padding: 15px 8px;
+            }
+
+            .brand {
+                font-size: 0;
+                text-align: center;
+            }
+
+            .brand span {
+                font-size: 20px;
+            }
+
+            .nav-item {
+                font-size: 0;
+                text-align: center;
+            }
+
+            .main {
+                margin-left: 70px;
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            Edu<span>Track</span>
+        </div>
+
+        <a href="/" class="nav-item active">
+            🏠 Dashboard
+        </a>
+
+        <a href="#" class="nav-item">
+            🏫 Schools
+        </a>
+
+      
+        <a href="{% url 'students:list' %}" class="nav-item">
+            🎓 Students
+        </a>
+
+
+
+        <a href="#" class="nav-item">
+            📚 Academics
+        </a>
+
+        <a href="#" class="nav-item">
+            ✅ Eligibility
+        </a>
+
+        <a href="#" class="nav-item">
+            💻 Inventory
+        </a>
+
+        <a href="#" class="nav-item">
+            📦 Distributions
+        </a>
+
+        <a href="#" class="nav-item">
+            💼 Internships
+        </a>
+
+        <a href="#" class="nav-item">
+            📅 Events
+        </a>
+
+        <a href="#" class="nav-item">
+            👥 Volunteers
+        </a>
+
+        <a href="#" class="nav-item">
+            📊 Reports
+        </a>
+
+    </aside>
+
+
+    <!-- Main content -->
+    <main class="main">
+
+        <!-- Top bar -->
+        <header class="topbar">
+            <h1>EduTrack Dashboard</h1>
+        </header>
+
+
+        <!-- Dashboard content -->
+        <section class="content">
+
+            <!-- Welcome -->
+            <div class="welcome">
+                <h2>Welcome to EduTrack</h2>
+                <p>
+                    Education management and social impact tracking system.
+                </p>
+            </div>
+
+
+            <!-- Statistics -->
+            <div class="cards">
+
+                <!-- Schools -->
+                <div class="card">
+                    <div class="card-icon">🏫</div>
+
+                    <div class="card-label">
+                        Schools
+                    </div>
+
+                    <div class="card-value">
+                        {{ school_count }}
+                    </div>
+                </div>
+
+
+                <!-- Students -->
+                <div class="card">
+                    <div class="card-icon">🎓</div>
+
+                    <div class="card-label">
+                        Students
+                    </div>
+
+                    <div class="card-value">
+                        {{ student_count }}
+                    </div>
+                </div>
+
+
+                <!-- Academic Records -->
+                <div class="card">
+                    <div class="card-icon">📚</div>
+
+                    <div class="card-label">
+                        Academic Records
+                    </div>
+
+                    <div class="card-value">
+                        {{ academic_record_count }}
+                    </div>
+                </div>
+
+
+                <!-- Eligible Students -->
+                <div class="card">
+                    <div class="card-icon">✅</div>
+
+                    <div class="card-label">
+                        Eligible Students
+                    </div>
+
+                    <div class="card-value">
+                        {{ eligible_student_count }}
+                    </div>
+                </div>
+
+
+                <!-- Available Laptops -->
+                <div class="card">
+                    <div class="card-icon">💻</div>
+
+                    <div class="card-label">
+                        Available Laptops
+                    </div>
+
+                    <div class="card-value">
+                        {{ available_laptop_count }}
+                    </div>
+                </div>
+
+
+                <!-- Issued Laptops -->
+                <div class="card">
+                    <div class="card-icon">💻</div>
+
+                    <div class="card-label">
+                        Issued Laptops
+                    </div>
+
+                    <div class="card-value">
+                        {{ issued_laptop_count }}
+                    </div>
+                </div>
+
+
+                <!-- Active Students -->
+                <div class="card">
+                    <div class="card-icon">👥</div>
+
+                    <div class="card-label">
+                        Active Students
+                    </div>
+
+                    <div class="card-value">
+                        {{ active_student_count }}
+                    </div>
+                </div>
+
+
+                <!-- Recent Assignments -->
+                <div class="card">
+                    <div class="card-icon">📋</div>
+
+                    <div class="card-label">
+                        Recent Assignments
+                    </div>
+
+                    <div class="card-value">
+                        {{ recent_assignments|length }}
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Tables -->
+            <div class="tables">
+
+                <!-- Recent Laptop Assignments -->
+                <div class="table-card">
+
+                    <h3 class="section-title">
+                        Recent Laptop Assignments
+                    </h3>
+
+                    {% if recent_assignments %}
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Laptop</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for assignment in recent_assignments %}
+
+                                    <tr>
+                                        <td>
+                                            {{ assignment.student }}
+                                        </td>
+
+                                        <td>
+                                            {{ assignment.laptop }}
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    {% else %}
+
+                        <div class="empty">
+                            No laptop assignments found.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Recent Eligibility -->
+                <div class="table-card">
+
+                    <h3 class="section-title">
+                        Recent Eligibility
+                    </h3>
+
+                    {% if recent_eligibility %}
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Record</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for record in recent_eligibility %}
+
+                                    <tr>
+                                        <td>
+                                            {{ record.student }}
+                                        </td>
+
+                                        <td>
+                                            {{ record }}
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    {% else %}
+
+                        <div class="empty">
+                            No eligibility records found.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>
+```
