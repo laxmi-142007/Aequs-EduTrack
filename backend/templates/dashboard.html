@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +18,10 @@
             color: #1f2937;
         }
 
-        /* Sidebar */
+        /* =========================
+           SIDEBAR
+        ========================= */
+
         .sidebar {
             position: fixed;
             left: 0;
@@ -49,16 +51,23 @@
             padding: 12px;
             margin: 4px 0;
             border-radius: 8px;
-            transition: background 0.2s ease;
+            transition: all 0.2s ease;
         }
 
-        .nav-item:hover,
+        .nav-item:hover {
+            background: #1e40af;
+            color: white;
+        }
+
         .nav-item.active {
             background: #2563eb;
             color: white;
         }
 
-        /* Main area */
+        /* =========================
+           MAIN AREA
+        ========================= */
+
         .main {
             margin-left: 240px;
             min-height: 100vh;
@@ -80,7 +89,10 @@
             padding: 30px;
         }
 
-        /* Welcome */
+        /* =========================
+           WELCOME
+        ========================= */
+
         .welcome {
             margin-bottom: 25px;
         }
@@ -95,7 +107,10 @@
             color: #64748b;
         }
 
-        /* Dashboard cards */
+        /* =========================
+           DASHBOARD CARDS
+        ========================= */
+
         .cards {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -109,6 +124,12 @@
             padding: 22px;
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
             min-height: 125px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 23, 42, 0.1);
         }
 
         .card-icon {
@@ -129,7 +150,10 @@
             color: #172554;
         }
 
-        /* Tables */
+        /* =========================
+           TABLES
+        ========================= */
+
         .tables {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -177,8 +201,12 @@
             padding: 20px 0;
         }
 
-        /* Responsive */
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
         @media (max-width: 1100px) {
+
             .cards {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -189,6 +217,7 @@
         }
 
         @media (max-width: 700px) {
+
             .sidebar {
                 width: 70px;
                 padding: 15px 8px;
@@ -208,6 +237,10 @@
                 text-align: center;
             }
 
+            .nav-item::first-letter {
+                font-size: 20px;
+            }
+
             .main {
                 margin-left: 70px;
             }
@@ -225,56 +258,80 @@
 
 <body>
 
-    <!-- Sidebar -->
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
     <aside class="sidebar">
 
+        <!-- Logo -->
         <div class="brand">
             Edu<span>Track</span>
         </div>
 
-        <a href="/" class="nav-item active">
+
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard' %}" class="nav-item active">
             🏠 Dashboard
         </a>
 
+
+        <!-- Schools -->
         <a href="#" class="nav-item">
             🏫 Schools
         </a>
 
-      
+
+        <!-- Students -->
         <a href="{% url 'students:list' %}" class="nav-item">
             🎓 Students
         </a>
 
 
-
+        <!-- Academics -->
         <a href="#" class="nav-item">
             📚 Academics
         </a>
 
+
+        <!-- Eligibility -->
         <a href="#" class="nav-item">
             ✅ Eligibility
         </a>
 
+
+        <!-- Inventory -->
         <a href="#" class="nav-item">
             💻 Inventory
         </a>
 
-        <a href="#" class="nav-item">
+
+        <!-- Distributions -->
+        <!-- THIS IS CONNECTED TO YOUR DISTRIBUTIONS PAGE -->
+        <a href="{% url 'distributions:list' %}" class="nav-item">
             📦 Distributions
         </a>
 
+
+        <!-- Internships -->
         <a href="#" class="nav-item">
             💼 Internships
         </a>
 
+
+        <!-- Events -->
         <a href="#" class="nav-item">
             📅 Events
         </a>
 
+
+        <!-- Volunteers -->
         <a href="#" class="nav-item">
             👥 Volunteers
         </a>
 
+
+        <!-- Reports -->
         <a href="#" class="nav-item">
             📊 Reports
         </a>
@@ -282,33 +339,60 @@
     </aside>
 
 
-    <!-- Main content -->
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
     <main class="main">
 
-        <!-- Top bar -->
+
+        <!-- TOP BAR -->
+
         <header class="topbar">
-            <h1>EduTrack Dashboard</h1>
+
+            <h1>
+                EduTrack Dashboard
+            </h1>
+
         </header>
 
 
-        <!-- Dashboard content -->
+        <!-- =================================================
+             DASHBOARD CONTENT
+        ================================================== -->
+
         <section class="content">
 
-            <!-- Welcome -->
+
+            <!-- WELCOME SECTION -->
+
             <div class="welcome">
-                <h2>Welcome to EduTrack</h2>
+
+                <h2>
+                    Welcome to EduTrack
+                </h2>
+
                 <p>
                     Education management and social impact tracking system.
                 </p>
+
             </div>
 
 
-            <!-- Statistics -->
+            <!-- =================================================
+                 STATISTICS CARDS
+            ================================================== -->
+
             <div class="cards">
 
+
                 <!-- Schools -->
+
                 <div class="card">
-                    <div class="card-icon">🏫</div>
+
+                    <div class="card-icon">
+                        🏫
+                    </div>
 
                     <div class="card-label">
                         Schools
@@ -317,12 +401,17 @@
                     <div class="card-value">
                         {{ school_count }}
                     </div>
+
                 </div>
 
 
                 <!-- Students -->
+
                 <div class="card">
-                    <div class="card-icon">🎓</div>
+
+                    <div class="card-icon">
+                        🎓
+                    </div>
 
                     <div class="card-label">
                         Students
@@ -331,12 +420,17 @@
                     <div class="card-value">
                         {{ student_count }}
                     </div>
+
                 </div>
 
 
                 <!-- Academic Records -->
+
                 <div class="card">
-                    <div class="card-icon">📚</div>
+
+                    <div class="card-icon">
+                        📚
+                    </div>
 
                     <div class="card-label">
                         Academic Records
@@ -345,12 +439,17 @@
                     <div class="card-value">
                         {{ academic_record_count }}
                     </div>
+
                 </div>
 
 
                 <!-- Eligible Students -->
+
                 <div class="card">
-                    <div class="card-icon">✅</div>
+
+                    <div class="card-icon">
+                        ✅
+                    </div>
 
                     <div class="card-label">
                         Eligible Students
@@ -359,12 +458,17 @@
                     <div class="card-value">
                         {{ eligible_student_count }}
                     </div>
+
                 </div>
 
 
                 <!-- Available Laptops -->
+
                 <div class="card">
-                    <div class="card-icon">💻</div>
+
+                    <div class="card-icon">
+                        💻
+                    </div>
 
                     <div class="card-label">
                         Available Laptops
@@ -373,12 +477,17 @@
                     <div class="card-value">
                         {{ available_laptop_count }}
                     </div>
+
                 </div>
 
 
                 <!-- Issued Laptops -->
+
                 <div class="card">
-                    <div class="card-icon">💻</div>
+
+                    <div class="card-icon">
+                        💻
+                    </div>
 
                     <div class="card-label">
                         Issued Laptops
@@ -387,12 +496,17 @@
                     <div class="card-value">
                         {{ issued_laptop_count }}
                     </div>
+
                 </div>
 
 
                 <!-- Active Students -->
+
                 <div class="card">
-                    <div class="card-icon">👥</div>
+
+                    <div class="card-icon">
+                        👥
+                    </div>
 
                     <div class="card-label">
                         Active Students
@@ -401,12 +515,17 @@
                     <div class="card-value">
                         {{ active_student_count }}
                     </div>
+
                 </div>
 
 
                 <!-- Recent Assignments -->
+
                 <div class="card">
-                    <div class="card-icon">📋</div>
+
+                    <div class="card-icon">
+                        📋
+                    </div>
 
                     <div class="card-label">
                         Recent Assignments
@@ -415,37 +534,57 @@
                     <div class="card-value">
                         {{ recent_assignments|length }}
                     </div>
+
                 </div>
 
             </div>
 
 
-            <!-- Tables -->
+            <!-- =================================================
+                 TABLES
+            ================================================== -->
+
             <div class="tables">
 
-                <!-- Recent Laptop Assignments -->
+
+                <!-- =================================================
+                     RECENT LAPTOP ASSIGNMENTS
+                ================================================== -->
+
                 <div class="table-card">
 
                     <h3 class="section-title">
                         Recent Laptop Assignments
                     </h3>
 
+
                     {% if recent_assignments %}
 
                         <table>
 
                             <thead>
+
                                 <tr>
-                                    <th>Student</th>
-                                    <th>Laptop</th>
+
+                                    <th>
+                                        Student
+                                    </th>
+
+                                    <th>
+                                        Laptop
+                                    </th>
+
                                 </tr>
+
                             </thead>
+
 
                             <tbody>
 
                                 {% for assignment in recent_assignments %}
 
                                     <tr>
+
                                         <td>
                                             {{ assignment.student }}
                                         </td>
@@ -453,6 +592,7 @@
                                         <td>
                                             {{ assignment.laptop }}
                                         </td>
+
                                     </tr>
 
                                 {% endfor %}
@@ -472,29 +612,44 @@
                 </div>
 
 
-                <!-- Recent Eligibility -->
+                <!-- =================================================
+                     RECENT ELIGIBILITY
+                ================================================== -->
+
                 <div class="table-card">
 
                     <h3 class="section-title">
                         Recent Eligibility
                     </h3>
 
+
                     {% if recent_eligibility %}
 
                         <table>
 
                             <thead>
+
                                 <tr>
-                                    <th>Student</th>
-                                    <th>Record</th>
+
+                                    <th>
+                                        Student
+                                    </th>
+
+                                    <th>
+                                        Record
+                                    </th>
+
                                 </tr>
+
                             </thead>
+
 
                             <tbody>
 
                                 {% for record in recent_eligibility %}
 
                                     <tr>
+
                                         <td>
                                             {{ record.student }}
                                         </td>
@@ -502,6 +657,7 @@
                                         <td>
                                             {{ record }}
                                         </td>
+
                                     </tr>
 
                                 {% endfor %}
@@ -520,6 +676,7 @@
 
                 </div>
 
+
             </div>
 
         </section>
@@ -528,4 +685,3 @@
 
 </body>
 </html>
-```

@@ -10,4 +10,10 @@ urlpatterns = [
 
     # Students
     path("students/", include("students.urls")),
+
+    # Distributions
+    path(
+        "distributions/",
+        include("distributions.urls"),
+    ),
 ]
