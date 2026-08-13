@@ -4,31 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schools - EduTrack</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
+            font-family: "Segoe UI", 'Outfit', Arial, sans-serif;
             background: #f4f7fb;
             color: #1f2937;
+            min-height: 100vh;
+        }
+
+        /* =========================
+           1 ONLY SIDEBAR
+        ========================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #172554;
+            color: white;
+            padding: 24px 16px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0 12px 28px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #dbeafe;
+            text-decoration: none;
+            padding: 11px 14px;
+            margin: 4px 0;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: #1e40af;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        /* =========================
+           MAIN WORKSPACE AREA
+        ========================= */
+
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .topbar {
-            background: #172554;
-            color: white;
-            padding: 18px 30px;
+            background: #ffffff;
+            padding: 16px 30px;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
         }
 
         .topbar h1 {
             margin: 0;
-            font-size: 23px;
+            font-size: 20px;
+            color: #172554;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .buttons {
@@ -41,7 +121,9 @@
             text-decoration: none;
             background: #2563eb;
             padding: 9px 15px;
-            border-radius: 7px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13.5px;
         }
 
         .button:hover {
@@ -61,18 +143,21 @@
 
         .header h2 {
             margin: 0 0 5px;
+            font-size: 20px;
+            color: #172554;
         }
 
         .count {
             color: #64748b;
+            font-size: 14px;
         }
 
         .table-card {
             background: white;
-            border-radius: 12px;
-            padding: 22px;
+            border-radius: 10px;
+            overflow: hidden;
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-            overflow-x: auto;
+            border: 1px solid #e2e8f0;
         }
 
         table {
@@ -80,21 +165,26 @@
             border-collapse: collapse;
         }
 
-        th,
-        td {
-            padding: 14px 10px;
+        th, td {
+            padding: 13px 16px;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
         }
 
         th {
-            color: #64748b;
-            font-size: 14px;
+            background-color: #172554;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
         }
 
         .status {
             display: inline-block;
-            padding: 5px 9px;
+            padding: 4px 10px;
             border-radius: 20px;
             background: #dcfce7;
             color: #166534;
@@ -103,89 +193,144 @@
         }
 
         .empty {
-            color: #94a3b8;
-            padding: 30px 0;
+            padding: 40px;
             text-align: center;
+            color: #64748b;
         }
 
-        @media (max-width: 700px) {
-            .content {
-                padding: 18px;
-            }
-
-            .header {
-                align-items: flex-start;
-                gap: 15px;
-                flex-direction: column;
-            }
+        @media (max-width: 850px) {
+            .sidebar { width: 70px; padding: 15px 8px; }
+            .brand { font-size: 0; text-align: center; }
+            .brand span { font-size: 18px; }
+            .nav-item { font-size: 0; justify-content: center; padding: 10px; }
+            .main { margin-left: 70px; }
         }
     </style>
 </head>
-
 <body>
 
-<header class="topbar">
-    <h1>EduTrack - Schools</h1>
-
-    <div class="buttons">
-        <a href="{% url 'dashboard' %}" class="button">Dashboard</a>
-        <a href="{% url 'school_create' %}" class="button">+ Add School</a>
-    </div>
-</header>
-
-<main class="content">
-
-    <div class="header">
-        <div>
-            <h2>Schools</h2>
-            <div class="count">{{ schools|length }} school{{ schools|length|pluralize }}</div>
-        </div>
-    </div>
-
-    <div class="table-card">
-
-        {% if schools %}
-        <table>
-            <thead>
-                <tr>
-                    <th>School Name</th>
-                    <th>UDISE Code</th>
-                    <th>District</th>
-                    <th>Taluk</th>
-                    <th>Headmaster</th>
-                    <th>Students</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for school in schools %}
-                <tr>
-                    <td>{{ school.name }}</td>
-                    <td>{{ school.udise_code }}</td>
-                    <td>{{ school.district }}</td>
-                    <td>{{ school.taluk|default:"-" }}</td>
-                    <td>{{ school.headmaster_name }}</td>
-                    <td>{{ school.student_strength }}</td>
-                    <td>
-                        <span class="status">{{ school.get_status_display }}</span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        {% else %}
-
-        <div class="empty">
-            No schools found.
+    <!-- =========================================================
+         1 ONLY SIDEBAR (Unified EduTrack Navigation)
+    ========================================================== -->
+    <aside class="sidebar">
+        <!-- Logo -->
+        <div class="brand">
+            Edu<span>Track</span>
         </div>
 
-        {% endif %}
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard' %}" class="nav-item">
+            <span>🏠</span> <span>Dashboard</span>
+        </a>
 
-    </div>
+        <!-- Schools (Active) -->
+        <a href="{% url 'schools:portal' %}" class="nav-item active">
+            <span>🏫</span> <span>Schools</span>
+        </a>
 
-</main>
+        <!-- Students -->
+        <a href="{% url 'students:list' %}" class="nav-item">
+            <span>🎓</span> <span>Students</span>
+        </a>
+
+        <!-- Academics -->
+        <a href="{% url 'academics:portal' %}" class="nav-item">
+            <span>📚</span> <span>Academics</span>
+        </a>
+
+        <!-- Eligibility -->
+        <a href="#" class="nav-item">
+            <span>✅</span> <span>Eligibility</span>
+        </a>
+
+        <!-- Inventory -->
+        <a href="{% url 'inventory:portal' %}" class="nav-item">
+            <span>💻</span> <span>Inventory</span>
+        </a>
+
+        <!-- Distributions -->
+        <a href="{% url 'distributions:list' %}" class="nav-item">
+            <span>📦</span> <span>Distributions</span>
+        </a>
+
+        <!-- Internships -->
+        <a href="#" class="nav-item">
+            <span>💼</span> <span>Internships</span>
+        </a>
+
+        <!-- Events -->
+        <a href="#" class="nav-item">
+            <span>📅</span> <span>Events</span>
+        </a>
+
+        <!-- Volunteers -->
+        <a href="#" class="nav-item">
+            <span>👥</span> <span>Volunteers</span>
+        </a>
+
+        <!-- Reports -->
+        <a href="#" class="nav-item">
+            <span>📊</span> <span>Reports</span>
+        </a>
+    </aside>
+
+    <!-- =========================================================
+         MAIN WORKSPACE AREA
+    ========================================================== -->
+    <main class="main">
+        <header class="topbar">
+            <h1>🏫 Schools Directory</h1>
+            <div class="buttons">
+                <a href="{% url 'schools:portal' %}" class="button">🏛️ Management Portal</a>
+                <a href="{% url 'dashboard' %}" class="button" style="background: #64748b;">Dashboard</a>
+            </div>
+        </header>
+
+        <section class="content">
+            <div class="header">
+                <div>
+                    <h2>Partner Government Schools</h2>
+                    <div class="count">{{ schools|length }} schools registered</div>
+                </div>
+                <a href="{% url 'schools:portal' %}" class="button">+ Add / Manage Schools</a>
+            </div>
+
+            <div class="table-card">
+                {% if schools %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>School Name</th>
+                                <th>UDISE Code</th>
+                                <th>District</th>
+                                <th>Taluk</th>
+                                <th>Headmaster</th>
+                                <th>Students</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for school in schools %}
+                                <tr>
+                                    <td><strong>{{ school.name }}</strong></td>
+                                    <td>{{ school.udise_code }}</td>
+                                    <td>{{ school.district }}</td>
+                                    <td>{{ school.taluk|default:"-" }}</td>
+                                    <td>{{ school.headmaster_name|default:"-" }}</td>
+                                    <td>{{ school.student_strength }}</td>
+                                    <td><span class="status">{{ school.get_status_display }}</span></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty">
+                        <p>No schools found. Click "+ Add / Manage Schools" to create one.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
 
 </body>
 </html>

@@ -1,108 +1,327 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Students</title>
-
+    <title>Students | EduTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f5f5f5;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        h1 {
-            color: #333;
+        body {
+            font-family: "Segoe UI", 'Outfit', Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        /* =========================
+           1 ONLY SIDEBAR
+        ========================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #172554;
+            color: white;
+            padding: 24px 16px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0 12px 28px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #dbeafe;
+            text-decoration: none;
+            padding: 11px 14px;
+            margin: 4px 0;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: #1e40af;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        /* =========================
+           MAIN WORKSPACE AREA
+        ========================= */
+
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 20px;
+            color: #172554;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
         }
 
         .add-button {
-            display: inline-block;
-            padding: 10px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
             background-color: #2563eb;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .add-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            border: 1px solid #e2e8f0;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
         }
 
         th {
-            background-color: #2563eb;
+            background-color: #172554;
             color: white;
-            padding: 12px;
+            padding: 13px 16px;
             text-align: left;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
         }
 
         tr:hover {
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #dcfce7;
+            color: #166534;
         }
 
         .empty {
-            padding: 20px;
-            background-color: white;
-            border-radius: 5px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 850px) {
+            .sidebar { width: 70px; padding: 15px 8px; }
+            .brand { font-size: 0; text-align: center; }
+            .brand span { font-size: 18px; }
+            .nav-item { font-size: 0; justify-content: center; padding: 10px; }
+            .main { margin-left: 70px; }
         }
     </style>
 </head>
-
 <body>
 
-    <h1>Student List</h1>
-
-    <a href="{% url 'students:add' %}" class="add-button">
-        + Add Student
-    </a>
-
-    {% if students %}
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Admission Number</th>
-                    <th>Student Name</th>
-                    <th>Class</th>
-                    <th>Section</th>
-                    <th>Roll Number</th>
-                    <th>Gender</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for student in students %}
-                    <tr>
-                        <td>{{ student.admission_number }}</td>
-                        <td>{{ student.student_name }}</td>
-                        <td>{{ student.current_class }}</td>
-                        <td>{{ student.section }}</td>
-                        <td>{{ student.roll_number }}</td>
-                        <td>{{ student.get_gender_display }}</td>
-                        <td>{{ student.get_status_display }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-    {% else %}
-
-        <div class="empty">
-            <p>No students found.</p>
+    <!-- =========================================================
+         1 ONLY SIDEBAR (Unified EduTrack Navigation)
+    ========================================================== -->
+    <aside class="sidebar">
+        <!-- Logo -->
+        <div class="brand">
+            Edu<span>Track</span>
         </div>
 
-    {% endif %}
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard' %}" class="nav-item">
+            <span>🏠</span> <span>Dashboard</span>
+        </a>
+
+        <!-- Schools -->
+        <a href="{% url 'schools:portal' %}" class="nav-item">
+            <span>🏫</span> <span>Schools</span>
+        </a>
+
+        <!-- Students (Active) -->
+        <a href="{% url 'students:list' %}" class="nav-item active">
+            <span>🎓</span> <span>Students</span>
+        </a>
+
+        <!-- Academics -->
+        <a href="{% url 'academics:portal' %}" class="nav-item">
+            <span>📚</span> <span>Academics</span>
+        </a>
+
+        <!-- Eligibility -->
+        <a href="#" class="nav-item">
+            <span>✅</span> <span>Eligibility</span>
+        </a>
+
+        <!-- Inventory -->
+        <a href="{% url 'inventory:portal' %}" class="nav-item">
+            <span>💻</span> <span>Inventory</span>
+        </a>
+
+        <!-- Distributions -->
+        <a href="{% url 'distributions:list' %}" class="nav-item">
+            <span>📦</span> <span>Distributions</span>
+        </a>
+
+        <!-- Internships -->
+        <a href="#" class="nav-item">
+            <span>💼</span> <span>Internships</span>
+        </a>
+
+        <!-- Events -->
+        <a href="#" class="nav-item">
+            <span>📅</span> <span>Events</span>
+        </a>
+
+        <!-- Volunteers -->
+        <a href="#" class="nav-item">
+            <span>👥</span> <span>Volunteers</span>
+        </a>
+
+        <!-- Reports -->
+        <a href="#" class="nav-item">
+            <span>📊</span> <span>Reports</span>
+        </a>
+    </aside>
+
+    <!-- =========================================================
+         MAIN WORKSPACE AREA
+    ========================================================== -->
+    <main class="main">
+        <header class="topbar">
+            <h1>🎓 Student Directory</h1>
+            <a href="{% url 'dashboard' %}" class="add-button" style="background-color: #64748b; font-size: 13px; padding: 6px 14px;">← Back to Dashboard</a>
+        </header>
+
+        <section class="content">
+            <div class="header-actions">
+                <div>
+                    <h2 style="font-size: 20px; color: #172554;">Enrolled Students</h2>
+                    <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Overview of all students registered in the EduTrack network.</p>
+                </div>
+                <a href="{% url 'students:add' %}" class="add-button">
+                    ➕ Add Student
+                </a>
+            </div>
+
+            <div class="table-card">
+                {% if students %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Admission Number</th>
+                                <th>Student Name</th>
+                                <th>School</th>
+                                <th>Class</th>
+                                <th>Section</th>
+                                <th>Roll Number</th>
+                                <th>Gender</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                                <tr>
+                                    <td><strong>{{ student.admission_number }}</strong></td>
+                                    <td>{{ student.student_name }}</td>
+                                    <td>{{ student.school.name }}</td>
+                                    <td>{{ student.current_class }}</td>
+                                    <td>{{ student.section|default:"-" }}</td>
+                                    <td>{{ student.roll_number|default:"-" }}</td>
+                                    <td>{{ student.get_gender_display }}</td>
+                                    <td><span class="status-badge">{{ student.get_status_display }}</span></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty">
+                        <p>No students found. Click "+ Add Student" to register a new student.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
 
 </body>
 </html>
-

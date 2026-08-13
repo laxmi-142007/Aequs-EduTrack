@@ -3,48 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Add Distribution | EduTrack</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: "Segoe UI", 'Outfit', Arial, sans-serif;
             background: #f4f7fb;
             color: #1f2937;
+            min-height: 100vh;
         }
 
-        .container {
-            max-width: 700px;
-            margin: 50px auto;
-            padding: 20px;
+        /* =========================
+           1 ONLY SIDEBAR
+        ========================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #172554;
+            color: white;
+            padding: 24px 16px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0 12px 28px;
+            color: #ffffff;
+        }
+
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .nav-item {
+            display: block;
+            color: #dbeafe;
+            text-decoration: none;
+            padding: 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: #1e40af;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* =========================
+           MAIN WORKSPACE AREA
+        ========================= */
+
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 20px;
+            color: #172554;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content {
+            padding: 30px 40px;
+            max-width: 800px;
         }
 
         .back {
             color: #2563eb;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 15px;
         }
 
-        h1 {
-            margin: 20px 0 8px;
-            color: #111827;
+        .back:hover {
+            text-decoration: underline;
         }
 
         .subtitle {
-            color: #6b7280;
+            color: #64748b;
             margin-bottom: 25px;
+            font-size: 14.5px;
         }
 
         .form-card {
             background: white;
-            padding: 30px;
+            padding: 30px 35px;
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+            border: 1px solid #e2e8f0;
         }
 
         form p {
@@ -53,19 +143,23 @@
 
         label {
             display: block;
-            font-weight: bold;
+            font-weight: 600;
             margin-bottom: 8px;
-            color: #374151;
+            color: #334155;
+            font-size: 14px;
         }
 
         input,
         select,
         textarea {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            font-size: 15px;
+            padding: 11px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14.5px;
+            font-family: inherit;
+            background: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input:focus,
@@ -73,7 +167,7 @@
         textarea:focus {
             outline: none;
             border-color: #2563eb;
-            box-shadow: 0 0 0 2px #dbeafe;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
         .buttons {
@@ -84,11 +178,15 @@
 
         .btn {
             border: none;
-            padding: 12px 20px;
-            border-radius: 7px;
-            font-weight: bold;
+            padding: 11px 22px;
+            border-radius: 6px;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .save {
@@ -101,57 +199,131 @@
         }
 
         .cancel {
-            background: #e5e7eb;
-            color: #374151;
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .cancel:hover {
+            background: #cbd5e1;
         }
 
         .errorlist {
             color: #dc2626;
             padding-left: 20px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 850px) {
+            .sidebar { width: 70px; padding: 15px 8px; }
+            .brand { font-size: 0; text-align: center; }
+            .brand span { font-size: 18px; }
+            .nav-item { font-size: 0; justify-content: center; padding: 10px; }
+            .main { margin-left: 70px; }
         }
     </style>
 </head>
-
 <body>
 
-<div class="container">
+    <!-- =========================================================
+         1 ONLY SIDEBAR (Unified EduTrack Navigation)
+    ========================================================== -->
+    <aside class="sidebar">
+        <!-- Logo -->
+        <div class="brand">
+            Edu<span>Track</span>
+        </div>
 
-    <a href="{% url 'distributions:list' %}" class="back">
-        ← Back to Distributions
-    </a>
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard' %}" class="nav-item">
+            🏠 Dashboard
+        </a>
 
-    <h1>Add Distribution</h1>
+        <!-- Schools -->
+        <a href="{% url 'schools:portal' %}" class="nav-item">
+            🏫 Schools
+        </a>
 
-    <p class="subtitle">
-        Record a benefit distributed to a student.
-    </p>
+        <!-- Students -->
+        <a href="{% url 'students:list' %}" class="nav-item">
+            🎓 Students
+        </a>
 
-    <div class="form-card">
+        <!-- Academics -->
+        <a href="{% url 'academics:portal' %}" class="nav-item">
+            📚 Academics
+        </a>
 
-        <form method="POST">
+        <!-- Eligibility -->
+        <a href="#" class="nav-item">
+            ✅ Eligibility
+        </a>
 
-            {% csrf_token %}
+        <!-- Inventory -->
+        <a href="{% url 'inventory:portal' %}" class="nav-item">
+            💻 Inventory
+        </a>
 
-            {{ form.as_p }}
+        <!-- Distributions (Active) -->
+        <a href="{% url 'distributions:list' %}" class="nav-item active">
+            📦 Distributions
+        </a>
 
-            <div class="buttons">
+        <!-- Internships -->
+        <a href="#" class="nav-item">
+            💼 Internships
+        </a>
 
-                <button type="submit" class="btn save">
-                    Save Distribution
-                </button>
+        <!-- Events -->
+        <a href="#" class="nav-item">
+            📅 Events
+        </a>
 
-                <a href="{% url 'distributions:list' %}"
-                   class="btn cancel">
-                    Cancel
-                </a>
+        <!-- Volunteers -->
+        <a href="#" class="nav-item">
+            👥 Volunteers
+        </a>
 
+        <!-- Reports -->
+        <a href="#" class="nav-item">
+            📊 Reports
+        </a>
+    </aside>
+
+    <!-- =========================================================
+         MAIN WORKSPACE AREA
+    ========================================================== -->
+    <main class="main">
+        <header class="topbar">
+            <h1>📦 Add New Distribution</h1>
+            <a href="{% url 'distributions:list' %}" class="btn cancel btn-sm">← Back to List</a>
+        </header>
+
+        <section class="content">
+            <a href="{% url 'distributions:list' %}" class="back">
+                ← Back to Distributions
+            </a>
+
+            <p class="subtitle">
+                Record and allocate a benefit or equipment distributed to a student.
+            </p>
+
+            <div class="form-card">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="buttons">
+                        <button type="submit" class="btn save">
+                            💾 Save Distribution
+                        </button>
+                        <a href="{% url 'distributions:list' %}" class="btn cancel">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
             </div>
-
-        </form>
-
-    </div>
-
-</div>
+        </section>
+    </main>
 
 </body>
 </html>

@@ -277,7 +277,7 @@
 
 
         <!-- Schools -->
-        <a href="#" class="nav-item">
+        <a href="{% url 'schools:portal' %}" class="nav-item">
             🏫 Schools
         </a>
 
@@ -289,7 +289,7 @@
 
 
         <!-- Academics -->
-        <a href="#" class="nav-item">
+        <a href="{% url 'academics:portal' %}" class="nav-item">
             📚 Academics
         </a>
 
@@ -301,7 +301,7 @@
 
 
         <!-- Inventory -->
-        <a href="#" class="nav-item">
+        <a href="{% url 'inventory:portal' %}" class="nav-item">
             💻 Inventory
         </a>
 
@@ -387,22 +387,19 @@
 
 
                 <!-- Schools -->
-
-                <div class="card">
-
-                    <div class="card-icon">
-                        🏫
+                <a href="{% url 'schools:portal' %}" style="text-decoration: none; color: inherit;">
+                    <div class="card">
+                        <div class="card-icon">
+                            🏫
+                        </div>
+                        <div class="card-label">
+                            Schools
+                        </div>
+                        <div class="card-value">
+                            {{ school_count }}
+                        </div>
                     </div>
-
-                    <div class="card-label">
-                        Schools
-                    </div>
-
-                    <div class="card-value">
-                        {{ school_count }}
-                    </div>
-
-                </div>
+                </a>
 
 
                 <!-- Students -->

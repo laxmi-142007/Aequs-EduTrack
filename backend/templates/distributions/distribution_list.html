@@ -32,30 +32,49 @@
             height: 100vh;
             background: #172554;
             color: white;
-            padding: 25px 15px;
+            padding: 24px 16px;
+            overflow-y: auto;
+            z-index: 100;
         }
 
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 35px;
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0 12px 28px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .nav-link {
-            display: block;
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             color: #dbeafe;
             text-decoration: none;
-            padding: 13px 15px;
-            margin-bottom: 8px;
+            padding: 11px 14px;
+            margin: 4px 0;
             border-radius: 8px;
-            transition: 0.2s;
+            font-size: 14.5px;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        .nav-link:hover,
-        .nav-link.active {
+        .nav-item:hover {
+            background: #1e40af;
+            color: white;
+        }
+
+        .nav-item.active {
             background: #2563eb;
             color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
         }
 
         /* =========================
@@ -286,46 +305,69 @@
 
 <body>
 
-    <!-- =========================
-         SIDEBAR
-    ========================= -->
-
+    <!-- =========================================================
+         1 ONLY SIDEBAR (Unified EduTrack Navigation)
+    ========================================================== -->
     <aside class="sidebar">
-
-        <div class="logo">
-            🎓 EduTrack
+        <!-- Logo -->
+        <div class="brand">
+            Edu<span>Track</span>
         </div>
 
         <!-- Dashboard -->
-        <a href="{% url 'dashboard' %}" class="nav-link">
+        <a href="{% url 'dashboard' %}" class="nav-item">
             🏠 Dashboard
         </a>
 
-        <!-- Students -->
-        <a href="/students/" class="nav-link">
-            👨‍🎓 Students
-        </a>
-
         <!-- Schools -->
-        <a href="/schools/" class="nav-link">
+        <a href="{% url 'schools:portal' %}" class="nav-item">
             🏫 Schools
         </a>
 
-        <!-- Distributions -->
-        <a href="{% url 'distributions:list' %}" class="nav-link active">
-            🎁 Distributions
+        <!-- Students -->
+        <a href="{% url 'students:list' %}" class="nav-item">
+            🎓 Students
         </a>
 
-        <!-- Inventory -->
-        <a href="/inventory/" class="nav-link">
-            💻 Inventory
+        <!-- Academics -->
+        <a href="{% url 'academics:portal' %}" class="nav-item">
+            📚 Academics
         </a>
 
         <!-- Eligibility -->
-        <a href="/eligibility/" class="nav-link">
+        <a href="#" class="nav-item">
             ✅ Eligibility
         </a>
 
+        <!-- Inventory -->
+        <a href="{% url 'inventory:portal' %}" class="nav-item">
+            💻 Inventory
+        </a>
+
+        <!-- Distributions (Active) -->
+        <a href="{% url 'distributions:list' %}" class="nav-item active">
+            📦 Distributions
+        </a>
+
+        <!-- Internships -->
+        <a href="#" class="nav-item">
+            💼 Internships
+        </a>
+
+        <!-- Events -->
+        <a href="#" class="nav-item">
+            📅 Events
+        </a>
+
+        <!-- Volunteers -->
+        <a href="#" class="nav-item">
+            👥 Volunteers
+        </a>
+
+        <!-- Reports -->
+        <a href="#" class="nav-item">
+            📊 Reports
+        </a>
     </aside>
 
 
@@ -441,11 +483,11 @@
                         </th>
 
                         <th>
-                            Student
+                            Recipient
                         </th>
 
                         <th>
-                            Benefit Type
+                            Benefit Type & Details
                         </th>
 
                         <th>
@@ -453,7 +495,7 @@
                         </th>
 
                         <th>
-                            Created At
+                            Issued By
                         </th>
 
                         <th>
@@ -472,60 +514,56 @@
                     <tr>
 
                         <!-- Number -->
-
                         <td>
                             {{ forloop.counter }}
                         </td>
 
-
-                        <!-- Student -->
-
+                        <!-- Recipient -->
                         <td>
-
                             <span class="student-name">
-                                {{ distribution.student }}
+                                {% if distribution.student %}
+                                    🎓 {{ distribution.student.student_name }}
+                                    <br><small style="color: #64748b;">{{ distribution.student.current_class }} - {{ distribution.student.school.name|default:"General" }}</small>
+                                {% elif distribution.school %}
+                                    🏫 {{ distribution.school.name }}
+                                    <br><small style="color: #64748b;">UDISE: {{ distribution.school.udise_code }}</small>
+                                {% else %}
+                                    General Allocation
+                                {% endif %}
                             </span>
-
                         </td>
-
 
                         <!-- Benefit -->
-
                         <td>
-
                             <span class="benefit">
-                                {{ distribution.benefit_type }}
+                                <strong>{{ distribution.get_benefit_type_display }}</strong>
+                                {% if distribution.inventory_item %}
+                                    <br><small style="color: #475569;">{{ distribution.inventory_item.item_name }} ({{ distribution.quantity }} {{ distribution.inventory_item.unit }})</small>
+                                {% elif distribution.study_kit %}
+                                    <br><small style="color: #475569;">{{ distribution.study_kit.name }} ({{ distribution.quantity }} Kits)</small>
+                                {% elif distribution.essential_item_type %}
+                                    <br><small style="color: #475569;">{{ distribution.get_essential_item_type_display }} ({{ distribution.quantity }} Units)</small>
+                                {% endif %}
                             </span>
-
                         </td>
-
 
                         <!-- Distribution Date -->
-
                         <td>
-
                             {{ distribution.distribution_date|date:"d M Y" }}
-
+                            <br><small style="color: #64748b;">{{ distribution.academic_year }}</small>
                         </td>
 
-
-                        <!-- Created -->
-
+                        <!-- Issued By -->
                         <td>
-
-                            {{ distribution.created_at|date:"d M Y, H:i" }}
-
+                            {{ distribution.issued_by|default:"Admin" }}
+                            <br><small style="color: #64748b;">{{ distribution.created_at|date:"d M Y, H:i" }}</small>
                         </td>
-
 
                         <!-- Status -->
-
                         <td>
-
                             <span class="status">
                                 Distributed
                             </span>
-
                         </td>
 
                     </tr>
