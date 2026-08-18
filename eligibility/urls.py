@@ -19,5 +19,5 @@ urlpatterns = [
 
     # Export
     path("export/csv/", views.export_eligibility_csv, name="export_csv"),
-    path("", views.eligibility_list, name="list"),
+    path("list/", views.eligibility_list, name="list"),
 ]

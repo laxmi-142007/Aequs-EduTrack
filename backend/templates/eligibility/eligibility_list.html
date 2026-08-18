@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -20,10 +20,15 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .topbar {
-            background: #172554;
-            color: white;
-            padding: 18px 30px;
+            background: white;
+            padding: 20px 35px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -31,21 +36,29 @@
 
         .topbar h1 {
             margin: 0;
-            font-size: 23px;
+            font-size: 24px;
+            color: #111827;
         }
 
         .back {
-            color: white;
+            color: #4b5563;
             text-decoration: none;
-            background: #2563eb;
-            padding: 9px 15px;
-            border-radius: 7px;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.15s;
+        }
+
+        .back:hover {
+            background: #e2e8f0;
+            color: #1e293b;
         }
 
         .content {
             max-width: 1400px;
-            margin: auto;
-            padding: 30px;
+            padding: 30px 35px;
         }
 
         .header {
@@ -237,18 +250,17 @@
 
 <body>
 
-<header class="topbar">
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='eligibility' %}
 
-    <h1>EduTrack - Eligibility</h1>
+    <div class="main">
 
-    <a href="{% url 'dashboard' %}" class="back">
-        Dashboard
-    </a>
+        <header class="topbar">
+            <h1>✅ Student Benefit Eligibility</h1>
+            <a href="{% url 'dashboard' %}" class="back">← Dashboard</a>
+        </header>
 
-</header>
-
-
-<main class="content">
+        <main class="content">
 
     <div class="header">
 
@@ -436,6 +448,8 @@
     </div>
 
 </main>
+
+</div>
 
 </body>
 </html>

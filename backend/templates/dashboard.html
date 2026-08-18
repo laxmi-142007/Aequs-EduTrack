@@ -18,49 +18,11 @@
             color: #1f2937;
         }
         /* =========================
-           SIDEBAR
-        ========================= */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 240px;
-            height: 100vh;
-            background: #172554;
-            color: white;
-            padding: 25px 15px;
-        }
-
-        .logo {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 35px;
-        }
-
-        .nav-item {
-            display: block;
-            color: #dbeafe;
-            text-decoration: none;
-            padding: 13px 15px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            transition: 0.2s;
-            font-size: 15px;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: #2563eb;
-            color: white;
-        }
-
-        /* =========================
            MAIN
         ========================= */
 
         .main {
-            margin-left: 240px;
+            margin-left: 256px;
             min-height: 100vh;
         }
 
@@ -262,75 +224,8 @@
 
 <body>
 
-    <!-- =========================
-         SIDEBAR
-    ========================= -->
-
-    <aside class="sidebar">
-
-    <div class="logo">
-        🎓 EduTrack
-    </div>
-
-    <nav class="sidebar-nav">
-
-        <a href="{% url 'dashboard' %}" class="nav-item">
-            🏠 <span>Dashboard</span>
-        </a>
-
-        <!-- Schools -->
-        <a href="{% url 'schools:portal' %}" class="nav-item">
-            🏫 <span>Schools</span>
-        </a>
-
-        <!-- Students -->
-        <a href="{% url 'students:list' %}" class="nav-item">
-            👨‍🎓 <span>Students</span>
-        </a>
-
-        <!-- Academics -->
-        <a href="{% url 'academics:portal' %}" class="nav-item">
-            📚 <span>Academics</span>
-        </a>
-
-        <!-- Eligibility -->
-        <a href="{% url 'eligibility:portal' %}" class="nav-item">
-            ✅ <span>Eligibility</span>
-        </a>
-
-        <!-- Inventory -->
-        <a href="{% url 'inventory:portal' %}" class="nav-item">
-            💻 <span>Inventory</span>
-        </a>
-
-        <!-- Distributions -->
-        <a href="{% url 'distributions:list' %}" class="nav-item">
-            🎁 <span>Distributions</span>
-        </a>
-
-        <!-- Internships -->
-        <a href="{% url 'internships:portal' %}" class="nav-item">
-            💼 <span>Internships</span>
-        </a>
-
-        <!-- Events -->
-        <a href="{% url 'events:list' %}" class="nav-item">
-            📅 <span>Events</span>
-        </a>
-
-        <!-- Volunteers -->
-        <a href="{% url 'volunteers:list' %}" class="nav-item">
-            👥 <span>Volunteers</span>
-        </a>
-
-        <!-- Reports -->
-        <a href="{% url 'reports:list' %}" class="nav-item">
-            📊 <span>Reports</span>
-        </a>
-
-    </nav>
-
-</aside>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='dashboard' %}
 
 
     <!-- =========================
