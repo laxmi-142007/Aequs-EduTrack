@@ -278,66 +278,52 @@
             🏠 <span>Dashboard</span>
         </a>
 
-
         <!-- Schools -->
         <a href="{% url 'schools:portal' %}" class="nav-item">
-            🏫 Schools
+            🏫 <span>Schools</span>
+        </a>
+
+        <!-- Students -->
         <a href="/students/" class="nav-item">
             👨‍🎓 <span>Students</span>
         </a>
 
-        <a href="/schools/" class="nav-item">
-            🏫 <span>Schools</span>
-        </a>
-
-
         <!-- Academics -->
         <a href="{% url 'academics:portal' %}" class="nav-item">
-            📚 Academics
-        </a>
-
-
-        <!-- Eligibility -->
-        <a href="{% url 'eligibility:portal' %}" class="nav-item">
-            ✅ Eligibility
-        </a>
-
-
-        <!-- Inventory -->
-        <a href="{% url 'inventory:portal' %}" class="nav-item">
-            💻 Inventory
-        <a href="/academics/" class="nav-item">
             📚 <span>Academics</span>
         </a>
 
+        <!-- Eligibility -->
+        <a href="{% url 'eligibility:portal' %}" class="nav-item">
+            ✅ <span>Eligibility</span>
+        </a>
+
+        <!-- Inventory -->
+        <a href="{% url 'inventory:portal' %}" class="nav-item">
+            💻 <span>Inventory</span>
+        </a>
+
+        <!-- Distributions -->
         <a href="{% url 'distributions:list' %}" class="nav-item">
             🎁 <span>Distributions</span>
         </a>
 
-        <a href="/inventory/" class="nav-item">
-            💻 <span>Inventory</span>
-        </a>
-
-        <a href="/eligibility/" class="nav-item">
-            ✅ <span>Eligibility</span>
-        </a>
-
-
         <!-- Internships -->
         <a href="{% url 'internships:portal' %}" class="nav-item">
-            💼 Internships
-        <a href="{% url 'internships:list' %}" class="nav-item">
             💼 <span>Internships</span>
         </a>
 
+        <!-- Events -->
         <a href="/events/" class="nav-item">
             📅 <span>Events</span>
         </a>
 
+        <!-- Volunteers -->
         <a href="/volunteers/" class="nav-item">
             🤝 <span>Volunteers</span>
         </a>
 
+        <!-- Reports -->
         <a href="/reports/" class="nav-item">
             📊 <span>Reports</span>
         </a>
@@ -399,19 +385,6 @@
                         <div class="card-value">
                             {{ school_count }}
                         </div>
-
-                <div class="card">
-
-                    <div class="card-icon">
-                        &#127979;
-                    </div>
-
-                    <div class="card-label">
-                        Schools
-                    </div>
-
-                    <div class="card-value">
-                        {{ school_count }}
                     </div>
                 </a>
 
