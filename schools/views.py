@@ -9,6 +9,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from .models import School, SchoolMilestone, SchoolResource, GradeStrength
+from django.shortcuts import render, redirect
+
+from .models import School
 from .forms import SchoolForm
 
 User = get_user_model()
@@ -155,12 +158,26 @@ def school_list(request):
 
 def school_create(request):
     """Fallback view for standard form create"""
+    return render(
+        request,
+        "schools/school_list.html",
+        {
+            "schools": schools,
+        },
+    )
+
+
+def school_create(request):
+
     if request.method == "POST":
         form = SchoolForm(request.POST, request.FILES)
         if form.is_valid():
             school = form.save()
             _ensure_default_grades(school)
             return redirect("schools:portal")
+            form.save()
+            return redirect("schools:list")
+
     else:
         form = SchoolForm()
     return render(request, "schools/form.html", {"form": form})
@@ -642,3 +659,10 @@ def api_logout(request):
     """Logout API"""
     logout(request)
     return JsonResponse({"success": True, "message": "Logged out successfully."})
+    return render(
+        request,
+        "schools/school_form.html",
+        {
+            "form": form,
+        },
+    )

@@ -7,7 +7,6 @@ from . import views
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # Dashboard
     path("", views.dashboard, name="dashboard"),
 
     # Schools - Government School Management Portal & APIs
@@ -30,6 +29,15 @@ urlpatterns = [
 
     # Internships - Aequs Corporate & Industrial Internship Portal
     path("internships/", include("internships.urls")),
+
+    # Reports
+    path("reports/", include("reports.urls")),
+
+    # Events
+    path("events/", include("events.urls")),
+
+    # Volunteers
+    path("volunteers/", include("volunteers.urls")),
 ]
 
 if settings.DEBUG:

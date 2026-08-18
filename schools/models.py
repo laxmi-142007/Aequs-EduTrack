@@ -2,6 +2,7 @@ from django.db import models
 
 
 class School(models.Model):
+
     class Status(models.TextChoices):
         ACTIVE = "ACTIVE", "Active"
         INACTIVE = "INACTIVE", "Inactive"
@@ -25,7 +26,9 @@ class School(models.Model):
         default="",
     )
 
-    district = models.CharField(max_length=100)
+    district = models.CharField(
+        max_length=100,
+    )
 
     taluk = models.CharField(
         max_length=100,

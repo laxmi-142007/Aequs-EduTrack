@@ -28,4 +28,5 @@ urlpatterns = [
     # Analytics Summary & CSV Export
     path("api/summary/", views.api_summary, name="api_summary"),
     path("export/csv/", views.api_export_csv, name="export_csv"),
+    path("", views.internship_list, name="list"),
 ]

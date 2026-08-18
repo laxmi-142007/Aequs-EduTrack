@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "accounts",
     "schools",
     "students",
-    "academics",
+    "academics.apps.AcademicsConfig",
     "eligibility",
     "distributions",
     "inventory",

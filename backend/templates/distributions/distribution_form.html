@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -321,6 +321,37 @@
                         </a>
                     </div>
                 </form>
+<div class="container">
+
+    <a href="{% url 'distributions:list' %}" class="back">
+        ← Back to Distributions
+    </a>
+
+    <h1>Add Distribution</h1>
+
+    <p class="subtitle">
+        Record a benefit distributed to a student.
+    </p>
+
+    <div class="form-card">
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <div class="buttons">
+
+                <button type="submit" class="btn save">
+                    Save Distribution
+                </button>
+
+                <a href="{% url 'distributions:list' %}"
+                   class="btn cancel">
+                    Cancel
+                </a>
+
             </div>
         </section>
     </main>

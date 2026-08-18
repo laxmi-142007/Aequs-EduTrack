@@ -14,4 +14,8 @@ urlpatterns = [
     path("api/records/<int:record_id>/update/", views.api_update_academic_record, name="api_update"),
     path("api/records/<int:record_id>/delete/", views.api_delete_academic_record, name="api_delete"),
     path("api/students/", views.api_get_students, name="api_students"),
+    path("", views.academic_list, name="list"),
+    path("add/", views.academic_create, name="create"),
+    path("edit/<int:pk>/", views.academic_update, name="update"),
+    path("delete/<int:pk>/", views.academic_delete, name="delete"),
 ]

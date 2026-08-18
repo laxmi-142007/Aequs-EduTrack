@@ -20,10 +20,6 @@
             color: #1f2937;
         }
 
-        /* =========================
-           SIDEBAR
-        ========================= */
-
         .sidebar {
             position: fixed;
             left: 0;
@@ -77,10 +73,6 @@
             box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
         }
 
-        /* =========================
-           MAIN CONTENT
-        ========================= */
-
         .main {
             margin-left: 240px;
             padding: 35px;
@@ -104,10 +96,6 @@
             font-size: 15px;
         }
 
-        /* =========================
-           ADD BUTTON
-        ========================= */
-
         .add-btn {
             display: inline-block;
             background: #2563eb;
@@ -122,10 +110,6 @@
         .add-btn:hover {
             background: #1d4ed8;
         }
-
-        /* =========================
-           SUMMARY CARDS
-        ========================= */
 
         .cards {
             display: grid;
@@ -152,10 +136,6 @@
             font-weight: bold;
             color: #1d4ed8;
         }
-
-        /* =========================
-           TABLE
-        ========================= */
 
         .table-container {
             background: white;
@@ -207,10 +187,6 @@
             color: #111827;
         }
 
-        /* =========================
-           BENEFIT BADGE
-        ========================= */
-
         .benefit {
             display: inline-block;
             padding: 6px 10px;
@@ -220,10 +196,6 @@
             font-size: 12px;
             font-weight: bold;
         }
-
-        /* =========================
-           STATUS BADGE
-        ========================= */
 
         .status {
             display: inline-block;
@@ -235,19 +207,10 @@
             font-weight: bold;
         }
 
-        /* =========================
-           EMPTY STATE
-        ========================= */
-
         .empty {
             text-align: center;
             padding: 60px 20px;
             color: #6b7280;
-        }
-
-        .empty-icon {
-            font-size: 45px;
-            margin-bottom: 15px;
         }
 
         .empty h3 {
@@ -255,12 +218,7 @@
             margin-bottom: 8px;
         }
 
-        /* =========================
-           MOBILE
-        ========================= */
-
         @media (max-width: 900px) {
-
             .sidebar {
                 width: 190px;
             }
@@ -276,7 +234,6 @@
         }
 
         @media (max-width: 650px) {
-
             .sidebar {
                 display: none;
             }
@@ -297,7 +254,7 @@
             }
 
             table {
-                min-width: 750px;
+                min-width: 900px;
             }
         }
     </style>
@@ -369,106 +326,99 @@
             📊 Reports
         </a>
     </aside>
+<aside class="sidebar">
+
+    <div class="logo">
+        EduTrack
+    </div>
+
+    <a href="{% url 'dashboard' %}" class="nav-link">
+        Dashboard
+    </a>
+
+    <a href="/students/" class="nav-link">
+        Students
+    </a>
+
+    <a href="/schools/" class="nav-link">
+        Schools
+    </a>
+
+    <a href="{% url 'distributions:list' %}" class="nav-link active">
+        Distributions
+    </a>
+
+    <a href="/inventory/" class="nav-link">
+        Inventory
+    </a>
+
+    <a href="/eligibility/" class="nav-link">
+        Eligibility
+    </a>
+
+</aside>
 
 
-    <!-- =========================
-         MAIN CONTENT
-    ========================= -->
+<main class="main">
 
-    <main class="main">
+    <div class="topbar">
 
-        <!-- Page Header -->
+        <div class="title-section">
 
-        <div class="topbar">
+            <h1>
+                Distributions
+            </h1>
 
-            <div class="title-section">
-
-                <h1>
-                    Distributions
-                </h1>
-
-                <p>
-                    Manage and track benefits distributed to students.
-                </p>
-
-            </div>
-
-            <!-- Add Distribution -->
-
-            <a href="{% url 'distributions:create' %}" class="add-btn">
-                + Add Distribution
-            </a>
+            <p>
+                Manage and track benefits distributed to students.
+            </p>
 
         </div>
 
+        <a href="{% url 'distributions:create' %}" class="add-btn">
+            + Add Distribution
+        </a>
 
-        <!-- =========================
-             SUMMARY CARDS
-        ========================= -->
+    </div>
 
-        <div class="cards">
 
-            <!-- Total -->
+    <div class="cards">
 
-            <div class="card">
+        <div class="card">
 
-                <div class="card-title">
-                    Total Distributions
-                </div>
-
-                <div class="card-value">
-                    {{ distributions|length }}
-                </div>
-
+            <div class="card-title">
+                Total Distribution Records
             </div>
 
-
-            <!-- Students Benefited -->
-
-            <div class="card">
-
-                <div class="card-title">
-                    Students Benefited
-                </div>
-
-                <div class="card-value">
-                    {{ distributions|length }}
-                </div>
-
-            </div>
-
-
-            <!-- Current Records -->
-
-            <div class="card">
-
-                <div class="card-title">
-                    Current Records
-                </div>
-
-                <div class="card-value">
-                    {{ distributions|length }}
-                </div>
-
+            <div class="card-value">
+                {{ total_distributions }}
             </div>
 
         </div>
 
 
-        <!-- =========================
-             DISTRIBUTION TABLE
-        ========================= -->
+        <div class="card">
 
-        <div class="table-container">
-
-            <div class="table-header">
-
-                <h2>
-                    Distribution Records
-                </h2>
-
+            <div class="card-title">
+                Students Benefited
             </div>
 
+            <div class="card-value">
+                {{ students_benefited }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Items Distributed
+            </div>
+
+            <div class="card-value">
+                {{ total_quantity }}
+            </div>
 
             {% if distributions %}
 
@@ -565,47 +515,125 @@
                                 Distributed
                             </span>
                         </td>
+        </div>
 
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
+    </div>
 
 
-            {% else %}
+    <div class="table-container">
 
-            <!-- Empty State -->
+        <div class="table-header">
 
-            <div class="empty">
-
-                <div class="empty-icon">
-                    🎁
-                </div>
-
-                <h3>
-                    No distributions found
-                </h3>
-
-                <p>
-                    There are no distribution records yet.
-                </p>
-
-                <br>
-
-                <a href="{% url 'distributions:create' %}" class="add-btn">
-                    + Add First Distribution
-                </a>
-
-            </div>
-
-            {% endif %}
+            <h2>
+                Distribution Records
+            </h2>
 
         </div>
 
-    </main>
+
+        {% if distributions %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Admission Number</th>
+                    <th>Benefit Type</th>
+                    <th>Academic Year</th>
+                    <th>Quantity</th>
+                    <th>Distribution Date</th>
+                    <th>Issued By</th>
+                    <th>Status</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for distribution in distributions %}
+
+                <tr>
+
+                    <td>
+                        {{ forloop.counter }}
+                    </td>
+
+                    <td>
+                        <span class="student-name">
+                            {{ distribution.student.student_name }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {{ distribution.student.admission_number }}
+                    </td>
+
+                    <td>
+                        <span class="benefit">
+                            {{ distribution.get_benefit_type_display }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {{ distribution.academic_year }}
+                    </td>
+
+                    <td>
+                        {{ distribution.quantity }}
+                    </td>
+
+                    <td>
+                        {{ distribution.distribution_date|date:"d M Y" }}
+                    </td>
+
+                    <td>
+                        {{ distribution.issued_by|default:"-" }}
+                    </td>
+
+                    <td>
+                        <span class="status">
+                            Distributed
+                        </span>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+
+        {% else %}
+
+        <div class="empty">
+
+            <h3>
+                No distributions found
+            </h3>
+
+            <p>
+                There are no distribution records yet.
+            </p>
+
+            <br>
+
+            <a href="{% url 'distributions:create' %}" class="add-btn">
+                + Add First Distribution
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</main>
 
 </body>
 
