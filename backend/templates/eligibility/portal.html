@@ -49,63 +49,6 @@
         }
 
         /* =============================================================
-           SIDEBAR NAVIGATION
-        ============================================================= */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 240px;
-            height: 100vh;
-            background: #172554;
-            color: white;
-            padding: 24px 16px;
-            overflow-y: auto;
-            z-index: 100;
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-            padding: 0 12px 28px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-        }
-
-        .brand span {
-            color: #60a5fa;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #dbeafe;
-            text-decoration: none;
-            padding: 11px 14px;
-            margin: 4px 0;
-            border-radius: var(--radius-sm);
-            font-size: 14.5px;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .nav-item:hover {
-            background: #1e40af;
-            color: white;
-        }
-
-        .nav-item.active {
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
-        }
-
-        /* =============================================================
            MAIN LAYOUT & TOPBAR
         ============================================================= */
         .main {
@@ -1161,12 +1104,6 @@
 
         /* Responsive Media Queries */
         @media (max-width: 1024px) {
-            .sidebar { width: 70px; padding: 20px 10px; }
-            .brand span { display: none; }
-            .brand { justify-content: center; padding: 0 0 20px; }
-            .nav-item { justify-content: center; font-size: 0; padding: 12px; }
-            .nav-item::first-letter { font-size: 18px; }
-            .main { margin-left: 70px; }
             .content { padding: 20px; }
         }
 

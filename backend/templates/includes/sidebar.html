@@ -261,21 +261,26 @@
   /* =========================================================
      DARK SLEEK SIDEBAR STYLES (Cascade / Linear inspired)
      ========================================================= */
-  .sidebar {
-    width: 256px;
-    background-color: #141517;
-    color: #90949d;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    border-right: 1px solid #1f2125;
-    font-size: 13.5px;
-    box-sizing: border-box;
-    z-index: 1000;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  .sidebar, aside.sidebar {
+    width: 256px !important;
+    min-width: 256px !important;
+    max-width: 256px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #141517 !important;
+    color: #90949d !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    border-right: 1px solid #1f2125 !important;
+    font-size: 13.5px !important;
+    box-sizing: border-box !important;
+    z-index: 1000 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    overflow: hidden !important;
   }
 
   .sidebar-header {
@@ -487,8 +492,13 @@
   }
 
   @media (max-width: 850px) {
-    .sidebar {
-      width: 68px;
+    .sidebar, aside.sidebar {
+      width: 68px !important;
+      min-width: 68px !important;
+      max-width: 68px !important;
+    }
+    .main {
+      margin-left: 68px !important;
     }
     .brand-info, .nav-section-title, .nav-item span.label, .nav-badge, .footer-action span, .user-details {
       display: none;

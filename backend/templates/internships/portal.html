@@ -48,61 +48,6 @@
         }
 
         /* =========================
-           SIDEBAR
-        ========================= */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 240px;
-            height: 100vh;
-            background: #172554;
-            color: white;
-            padding: 24px 16px;
-            overflow-y: auto;
-            z-index: 100;
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-            padding: 0 12px 28px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .brand span {
-            color: #60a5fa;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #dbeafe;
-            text-decoration: none;
-            padding: 11px 14px;
-            margin: 4px 0;
-            border-radius: 8px;
-            font-size: 14.5px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .nav-item:hover {
-            background: #1e40af;
-            color: white;
-        }
-
-        .nav-item.active {
-            background: #2563eb;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
-        }
-
-        /* =========================
            MAIN WORKSPACE
         ========================= */
         .main {
@@ -1002,12 +947,6 @@
            RESPONSIVENESS
         ========================= */
         @media (max-width: 1024px) {
-            .sidebar { width: 70px; padding: 15px 8px; }
-            .brand { font-size: 0; text-align: center; }
-            .brand span { font-size: 20px; }
-            .nav-item { font-size: 0; text-align: center; justify-content: center; }
-            .nav-item span { font-size: 18px; }
-            .main { margin-left: 70px; }
             .content { padding: 20px; }
         }
 
