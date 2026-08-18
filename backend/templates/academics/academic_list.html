@@ -99,19 +99,29 @@
 
     <div class="main">
 
-        <div class="container">
+        <header class="topbar">
+            <h1>📚 Academic Records</h1>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="{% url 'academics:portal' %}" class="btn-primary">📊 Portal View</a>
+                <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
+            </div>
+        </header>
 
-    <div class="top-bar">
-        <h1>Academic Records</h1>
+        <section class="content">
 
-        <a href="{% url 'academics:create' %}" class="btn btn-add">
-            Add Academic Record
-        </a>
-    </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; color: #111827;">Student Academic Performance</h2>
+                    <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Track exam scores, percentage and promotions.</p>
+                </div>
+                <a href="{% url 'academics:create' %}" class="btn-primary">
+                    ➕ Add Academic Record
+                </a>
+            </div>
 
-    {% if records %}
-
-    <table>
+            <div class="table-card">
+                {% if records %}
+                <table>
         <thead>
             <tr>
                 <th>Student</th>
@@ -166,17 +176,13 @@
         </tbody>
     </table>
 
-    {% else %}
-
-        <div class="empty">
-            No academic records found.
-        </div>
-
     {% endif %}
 
-</div>
+            </div>
 
-</div>
+        </section>
+
+    </div>
 
 </body>
 </html>

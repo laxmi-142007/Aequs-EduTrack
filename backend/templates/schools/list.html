@@ -218,19 +218,19 @@
     <main class="main">
         <header class="topbar">
             <h1>🏫 Schools Directory</h1>
-            <div class="buttons">
-                <a href="{% url 'schools:portal' %}" class="button">🏛️ Management Portal</a>
-                <a href="{% url 'dashboard' %}" class="button" style="background: #64748b;">Dashboard</a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="{% url 'schools:portal' %}" class="btn-primary">🏛️ Management Portal</a>
+                <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
             </div>
         </header>
 
         <section class="content">
-            <div class="header">
+            <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
                 <div>
-                    <h2>Partner Government Schools</h2>
-                    <div class="count">{{ schools|length }} schools registered</div>
+                    <h2 style="margin: 0; font-size: 20px; color: #111827;">Partner Government Schools</h2>
+                    <div class="count" style="color: #64748b; font-size: 14px; margin-top: 4px;">{{ schools|length }} schools registered</div>
                 </div>
-                <a href="{% url 'schools:portal' %}" class="button">+ Add / Manage Schools</a>
+                <a href="{% url 'schools:portal' %}" class="btn-primary">+ Add / Manage Schools</a>
             </div>
 
             <div class="table-card">

@@ -267,25 +267,15 @@
 
 <main class="main">
 
-    <div class="topbar">
-
-        <div class="title-section">
-
-            <h1>
-                Distributions
-            </h1>
-
-            <p>
-                Manage and track benefits distributed to students.
-            </p>
-
+    <header class="topbar">
+        <h1>📦 Student Distributions</h1>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="{% url 'distributions:create' %}" class="btn-primary">+ Add Distribution</a>
+            <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
         </div>
+    </header>
 
-        <a href="{% url 'distributions:create' %}" class="add-btn">
-            + Add Distribution
-        </a>
-
-    </div>
+    <div class="content">
 
 
     <div class="cards">
@@ -441,6 +431,8 @@
         </div>
 
         {% endif %}
+
+    </div>
 
     </div>
 

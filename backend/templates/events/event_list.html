@@ -197,18 +197,20 @@
 
     <div class="main">
 
-        <div class="events-header">
-            <h1>&#128197; Events</h1>
-            <a href="{% url 'dashboard' %}" class="back-dashboard">&#8592; <span>Back to Dashboard</span></a>
-        </div>
-        <div class="container">
+        <header class="topbar">
+            <h1>📅 Foundation Events</h1>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="{% url 'events:create' %}" class="btn-primary">+ Add Event</a>
+                <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
+            </div>
+        </header>
+        <div class="content">
 
-        <div class="top">
-            <h2>Upcoming Events</h2>
-
-            <a href="{% url 'events:create' %}" class="add-button">
-                + Add Event
-            </a>
+        <div class="top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+            <div>
+                <h2 style="margin: 0; font-size: 20px; color: #111827;">Upcoming & Active Events</h2>
+                <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Manage workshops, annual days, and foundation community drives.</p>
+            </div>
         </div>
 
         {% if events %}

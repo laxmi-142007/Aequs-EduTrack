@@ -154,12 +154,14 @@
         }
 
         th {
-            background-color: #172554;
-            color: white;
+            background-color: #f8fafc;
+            color: #475569;
             padding: 13px 16px;
             text-align: left;
-            font-size: 14px;
+            font-size: 12.5px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
 
         td {
@@ -208,7 +210,7 @@
     <main class="main">
         <header class="topbar">
             <h1>🎓 Student Directory</h1>
-            <a href="{% url 'dashboard' %}" class="add-button" style="background-color: #64748b; font-size: 13px; padding: 6px 14px;">← Back to Dashboard</a>
+            <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
         </header>
 
         <section class="content">

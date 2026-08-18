@@ -3,6 +3,219 @@
 
 <style>
   /* =========================================================
+     GLOBAL UNIFIED THEME (EduTrack Design System)
+     ========================================================= */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    background-color: #f4f7fb !important;
+    color: #1f2937 !important;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Global Layout */
+  .main {
+    margin-left: 256px !important;
+    min-height: 100vh !important;
+    background-color: #f4f7fb !important;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Global Topbar */
+  .topbar, .events-header, .header:not(.sidebar-header):not(.profile-header):not(.form-header) {
+    background: #ffffff !important;
+    color: #111827 !important;
+    padding: 20px 35px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    box-shadow: none !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 90 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  .topbar h1, .events-header h1, .header:not(.sidebar-header) h1, .header .brand {
+    margin: 0 !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .header .subtitle {
+    display: none !important;
+  }
+
+  /* Global Content Padding */
+  .content, main.content, .container, main.container {
+    padding: 28px 35px !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* Global Buttons */
+  .btn-primary, .add-button, .btn-add, .add-btn, .btn.save, .save-button, .btn-save,
+  button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.cancel):not(.btn-back) {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    padding: 9px 18px !important;
+    border: 1px solid #2563eb !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25) !important;
+    transition: all 0.15s ease !important;
+  }
+
+  .btn-primary:hover, .add-button:hover, .btn-add:hover, .add-btn:hover, .btn.save:hover, .save-button:hover, .btn-save:hover,
+  button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.cancel):not(.btn-back):hover {
+    background-color: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+    color: #ffffff !important;
+  }
+
+  /* Global Secondary / Back Buttons */
+  .btn-secondary, .cancel, .btn-cancel, .cancel-button, .back, .back-button, .back-dashboard, .btn-back, a.cancel, a.back {
+    background-color: #ffffff !important;
+    color: #475569 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    padding: 8px 16px !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.15s ease !important;
+  }
+
+  .btn-secondary:hover, .cancel:hover, .btn-cancel:hover, .cancel-button:hover, .back:hover, .back-button:hover, .back-dashboard:hover, .btn-back:hover, a.cancel:hover, a.back:hover {
+    background-color: #f8fafc !important;
+    color: #1e293b !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Global Cards & Surfaces */
+  .card, .table-card, .form-card, .profile-card, .container-card, .filter-card, .filter, .table-container {
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+    border: 1px solid #e5e7eb !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* Global Unified Tables */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    text-align: left !important;
+  }
+
+  th {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 13px 16px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-top: none !important;
+  }
+
+  td {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 13.5px !important;
+    color: #334155 !important;
+    vertical-align: middle !important;
+  }
+
+  tr:hover td {
+    background-color: #f8fafc !important;
+  }
+
+  td a {
+    color: #2563eb !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+  }
+
+  td a:hover {
+    text-decoration: underline !important;
+  }
+
+  /* Global Badges / Status */
+  .status-badge, .badge, .status {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
+  }
+
+  .status-badge.active, .badge.active, .status.active, .status-active {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+  }
+
+  /* Global Form Inputs */
+  label {
+    display: block !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin-bottom: 6px !important;
+  }
+
+  input[type="text"], input[type="email"], input[type="date"], input[type="number"], input[type="password"], select, textarea {
+    width: 100% !important;
+    padding: 10px 14px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    color: #1f2937 !important;
+    background-color: #ffffff !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: #2563eb !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+  }
+
+  /* =========================================================
      DARK SLEEK SIDEBAR STYLES (Cascade / Linear inspired)
      ========================================================= */
   .sidebar {

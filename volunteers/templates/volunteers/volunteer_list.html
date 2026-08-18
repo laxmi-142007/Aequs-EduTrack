@@ -278,52 +278,22 @@
 
     <div class="main">
 
-        <header class="header">
-
-            <div class="header-content" style="display: flex; justify-content: space-between; align-items: center;">
-
-                <div>
-                    <div class="brand">
-                        👥 Volunteers
-                    </div>
-
-                    <div class="subtitle">
-                        Government School Foundation Management System
-                    </div>
-                </div>
-
-                <a href="{% url 'dashboard' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white;">
-                    ← Back to Dashboard
-                </a>
-
+        <header class="topbar">
+            <h1>👥 Volunteer Management</h1>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="{% url 'volunteers:create' %}" class="btn-primary">+ Add Volunteer</a>
+                <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
             </div>
-
         </header>
 
+        <div class="content">
 
-<main class="container">
-
-
-    <div class="page-header">
-
-        <div class="page-title">
-
-            <h1>Volunteer Management</h1>
-
-            <p>
-                Manage registered volunteers and their foundation activities.
-            </p>
-
-        </div>
-
-        <a
-            href="{% url 'volunteers:create' %}"
-            class="btn btn-primary"
-        >
-            Add Volunteer
-        </a>
-
-    </div>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+                <div class="page-title">
+                    <h2 style="margin: 0; font-size: 20px; color: #111827;">Registered Community Volunteers</h2>
+                    <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Manage registered volunteers and their foundation activities.</p>
+                </div>
+            </div>
 
 
     <!-- STATISTICS -->
@@ -589,7 +559,7 @@ function searchVolunteers() {
 </script>
 
 
-</main>
+</div>
 
 </div>
 

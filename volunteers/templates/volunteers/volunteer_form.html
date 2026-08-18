@@ -251,26 +251,11 @@
 
     <div class="main">
 
-        <header class="header">
-
-            <div class="header-content" style="display: flex; justify-content: space-between; align-items: center;">
-
-                <div>
-                    <div class="brand">
-                        👥 Register Volunteer
-                    </div>
-
-                    <div class="subtitle">
-                        Government School Foundation Management System
-                    </div>
-                </div>
-
-                <a href="{% url 'volunteers:list' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 10px 18px; border-radius: 7px; font-weight: 600;">
-                    ← Back to Volunteers
-                </a>
-
-            </div>
-
+        <header class="topbar">
+            <h1>👥 Register Volunteer</h1>
+            <a href="{% url 'volunteers:list' %}" class="btn-secondary">
+                ← Back to Volunteers
+            </a>
         </header>
 
 
