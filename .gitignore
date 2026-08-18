@@ -29,3 +29,9 @@ staticfiles/
 # OS
 .DS_Store
 Thumbs.db
+
+# Temporary project notes
+batch*.txt
+
+# Backup files
+*.backup*
