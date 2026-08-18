@@ -1,4 +1,5 @@
 from decimal import Decimal
+import re
 
 from students.models import Student
 from academics.models import AcademicRecord
@@ -6,41 +7,80 @@ from .models import EligibilityRecord, BenefitType
 
 
 def get_latest_academic_record(student, academic_year=None):
+    """Fetch the latest academic record for a student, optionally filtered by academic year"""
     records = AcademicRecord.objects.filter(student=student)
-
     if academic_year:
         records = records.filter(academic_year=academic_year)
-
     return records.order_by("-created_at").first()
 
 
-def is_class_number(class_or_course, number):
-    value = class_or_course.lower().strip()
+def parse_class_number(class_or_course):
+    """
+    Parses class/standard number from various text representations:
+    'Class 10', '10th', 'Standard 10', 'Std 10', 'X', '10', 'Class 5', etc.
+    """
+    if not class_or_course:
+        return None
+    val = str(class_or_course).lower().strip()
+    
+    # Roman numeral support for 1 to 10
+    roman_map = {
+        "x": 10, "ix": 9, "viii": 8, "vii": 7, "vi": 6,
+        "v": 5, "iv": 4, "iii": 3, "ii": 2, "i": 1
+    }
+    
+    for r, num in roman_map.items():
+        if val in [r, f"class {r}", f"standard {r}", f"std {r}"]:
+            return num
 
-    return (
-        value == f"class {number}"
-        or value == str(number)
-        or value == f"standard {number}"
-    )
+    # Match digits
+    match = re.search(r"\b([1-9]|10)\b", val)
+    if match:
+        return int(match.group(1))
+
+    # Match ordinal (1st, 2nd... 10th)
+    match_ord = re.search(r"\b([1-9]|10)(st|nd|rd|th)\b", val)
+    if match_ord:
+        return int(match_ord.group(1))
+
+    return None
+
+
+def is_class_number(class_or_course, number):
+    parsed = parse_class_number(class_or_course)
+    return parsed == number
 
 
 def is_school_class(class_or_course):
-    value = class_or_course.lower().strip()
+    return parse_class_number(class_or_course)
 
-    for number in range(1, 11):
-        if is_class_number(value, number):
-            return number
 
-    return None
+def is_first_puc(class_or_course):
+    if not class_or_course:
+        return False
+    val = str(class_or_course).lower().strip()
+    return any(term in val for term in ["1st puc", "1st pu", "first puc", "puc 1", "puc i", "class 11", "11th", "std 11"])
+
+
+def is_second_puc(class_or_course):
+    if not class_or_course:
+        return False
+    val = str(class_or_course).lower().strip()
+    return any(term in val for term in ["2nd puc", "2nd pu", "second puc", "puc 2", "puc ii", "class 12", "12th", "std 12"])
+
+
+def is_degree_student(class_or_course):
+    if not class_or_course:
+        return False
+    val = str(class_or_course).lower().strip()
+    return any(term in val for term in ["degree", "bca", "bsc", "b.sc", "bcom", "b.com", "btech", "b.tech", "be", "b.e", "ba", "b.a", "college", "undergraduate", "diploma"])
 
 
 def get_percentage(record):
     if record is None:
         return Decimal("0")
-
     if record.percentage is not None:
         return Decimal(str(record.percentage))
-
     if (
         record.marks_obtained is not None
         and record.total_marks is not None
@@ -50,7 +90,6 @@ def get_percentage(record):
             Decimal(str(record.marks_obtained))
             / Decimal(str(record.total_marks))
         ) * Decimal("100")
-
     return Decimal("0")
 
 
@@ -72,127 +111,82 @@ def create_or_update_eligibility(
             "reason": reason,
         },
     )
-
     return record
 
 
 # =========================================================
-# BOOK ELIGIBILITY
-# Class 1 to Class 10
+# 1. BOOK ELIGIBILITY (Class 1 to Class 10)
 # =========================================================
 
 def generate_book_eligibility(student, academic_record):
-    class_number = is_school_class(
-        academic_record.class_or_course
-    )
-
+    class_number = parse_class_number(academic_record.class_or_course)
     if class_number and 1 <= class_number <= 10:
         return create_or_update_eligibility(
             student=student,
             benefit_type=BenefitType.BOOK,
             academic_year=academic_record.academic_year,
             eligible=True,
-            reason=f"Student is studying in Class {class_number}.",
+            reason=f"Enrolled in Class {class_number} (eligible for standard books).",
         )
-
     return None
 
 
 # =========================================================
-# WORKBOOK ELIGIBILITY
-# Class 10
+# 2. WORKBOOK ELIGIBILITY (Class 10 Board Prep)
 # =========================================================
 
 def generate_workbook_eligibility(student, academic_record):
-    if is_class_number(
-        academic_record.class_or_course,
-        10,
-    ):
+    if is_class_number(academic_record.class_or_course, 10):
         return create_or_update_eligibility(
             student=student,
             benefit_type=BenefitType.WORKBOOK,
             academic_year=academic_record.academic_year,
             eligible=True,
-            reason="Student is studying in Class 10.",
+            reason="Enrolled in Class 10 (eligible for board exam preparation workbooks).",
         )
-
     return None
 
 
 # =========================================================
-# TOP 10 CLASS 10 STUDENTS
-# Study Kit
+# 3. STUDY KIT ELIGIBILITY (Top 10 Class 10 Students)
 # =========================================================
 
-def get_top_class_10_students(academic_year):
-    records = AcademicRecord.objects.filter(
-        academic_year=academic_year
-    )
-
-    class_10_records = []
-
-    for record in records:
-        if is_class_number(
-            record.class_or_course,
-            10,
-        ):
-            class_10_records.append(record)
-
-    class_10_records.sort(
-        key=get_percentage,
-        reverse=True,
-    )
-
-    return class_10_records[:10]
+def get_top_class_10_students(academic_year, limit=10):
+    records = AcademicRecord.objects.filter(academic_year=academic_year)
+    class_10_records = [
+        rec for rec in records
+        if is_class_number(rec.class_or_course, 10)
+    ]
+    class_10_records.sort(key=get_percentage, reverse=True)
+    return class_10_records[:limit]
 
 
-def generate_study_kit_eligibility(academic_year):
-    top_records = get_top_class_10_students(
-        academic_year
-    )
-
+def generate_study_kit_eligibility(academic_year, limit=10):
+    top_records = get_top_class_10_students(academic_year, limit=limit)
+    count = 0
     for rank, record in enumerate(top_records, start=1):
+        pct = get_percentage(record)
         create_or_update_eligibility(
             student=record.student,
             benefit_type=BenefitType.STUDY_KIT,
             academic_year=academic_year,
             eligible=True,
             selection_rank=rank,
-            reason=(
-                f"Top 10 Class 10 student. "
-                f"Selection rank: {rank}."
-            ),
+            reason=f"Top {limit} Merit Scholar in Class 10 (Rank #{rank} with {pct:.2f}% score).",
         )
+        count += 1
+    return count
 
 
 # =========================================================
-# STUDY KIT CONTINUATION
-# Continue up to 2nd PUC
+# 4. STUDY KIT CONTINUATION (1st & 2nd PUC)
 # =========================================================
 
-def generate_study_kit_continuation(
-    student,
-    academic_record,
-):
-    value = academic_record.class_or_course.lower().strip()
-
-    is_first_puc = (
-        "1st puc" in value
-        or "1st pu" in value
-        or "first puc" in value
-        or "first pu" in value
-    )
-
-    is_second_puc = (
-        "2nd puc" in value
-        or "2nd pu" in value
-        or "second puc" in value
-        or "second pu" in value
-    )
-
-    if not (is_first_puc or is_second_puc):
+def generate_study_kit_continuation(student, academic_record):
+    if not (is_first_puc(academic_record.class_or_course) or is_second_puc(academic_record.class_or_course)):
         return None
 
+    # Check if student was awarded Study Kit in any previous academic year
     previously_selected = EligibilityRecord.objects.filter(
         student=student,
         benefit_type=BenefitType.STUDY_KIT,
@@ -207,139 +201,128 @@ def generate_study_kit_continuation(
             benefit_type=BenefitType.STUDY_KIT,
             academic_year=academic_record.academic_year,
             eligible=True,
-            reason=(
-                "Student was previously selected for a "
-                "study kit and continues to receive the "
-                "study kit through PUC."
-            ),
+            reason="Merit continuation grant: Student was previously awarded a Study Kit and is continuing higher secondary education in PUC.",
         )
-
     return None
 
 
+def calculate_study_kit_continuation_batch(academic_year):
+    active_students = Student.objects.filter(status=Student.Status.ACTIVE)
+    count = 0
+    for student in active_students:
+        rec = get_latest_academic_record(student, academic_year)
+        if rec:
+            res = generate_study_kit_continuation(student, rec)
+            if res:
+                count += 1
+    return count
+
+
 # =========================================================
-# TOP 10 SECOND PUC STUDENTS
-# Laptop
+# 5. LAPTOP SCHOLARSHIP (Top 10 2nd PUC Students)
 # =========================================================
 
-def get_top_puc_students(academic_year):
-    records = AcademicRecord.objects.filter(
-        academic_year=academic_year
-    )
-
-    puc_records = []
-
-    for record in records:
-        value = record.class_or_course.lower().strip()
-
-        if (
-            "2nd puc" in value
-            or "2nd pu" in value
-            or "second puc" in value
-            or "second pu" in value
-        ):
-            puc_records.append(record)
-
-    puc_records.sort(
-        key=get_percentage,
-        reverse=True,
-    )
-
-    return puc_records[:10]
+def get_top_puc_students(academic_year, limit=10):
+    records = AcademicRecord.objects.filter(academic_year=academic_year)
+    puc_records = [
+        rec for rec in records
+        if is_second_puc(rec.class_or_course)
+    ]
+    puc_records.sort(key=get_percentage, reverse=True)
+    return puc_records[:limit]
 
 
-def generate_laptop_eligibility(academic_year):
-    top_records = get_top_puc_students(
-        academic_year
-    )
-
+def generate_laptop_eligibility(academic_year, limit=10):
+    top_records = get_top_puc_students(academic_year, limit=limit)
+    count = 0
     for rank, record in enumerate(top_records, start=1):
+        pct = get_percentage(record)
         create_or_update_eligibility(
             student=record.student,
             benefit_type=BenefitType.LAPTOP,
             academic_year=academic_year,
             eligible=True,
             selection_rank=rank,
-            reason=(
-                f"Top 10 second PUC student. "
-                f"Selection rank: {rank}."
-            ),
+            reason=f"Top {limit} Merit Laptop Scholar in 2nd PUC (Rank #{rank} with {pct:.2f}% score).",
         )
+        count += 1
+    return count
 
 
 # =========================================================
-# INTERNSHIP
-# Degree students
+# 6. INTERNSHIP (Degree / Higher Ed Candidates)
 # =========================================================
 
-def generate_internship_eligibility(
-    student,
-    academic_record,
-):
-    value = academic_record.class_or_course.lower().strip()
-
-    if "degree" in value:
+def generate_internship_eligibility(student, academic_record):
+    if is_degree_student(academic_record.class_or_course):
         return create_or_update_eligibility(
             student=student,
             benefit_type=BenefitType.INTERNSHIP,
             academic_year=academic_record.academic_year,
             eligible=True,
-            reason=(
-                "Degree student identified as an "
-                "internship candidate."
-            ),
+            reason=f"Higher education / Degree candidate ({academic_record.class_or_course}) identified for Aequs Industrial Internship Program.",
         )
-
     return None
 
 
 # =========================================================
-# GENERATE ELIGIBILITY FOR ONE STUDENT
+# GENERATE ELIGIBILITY FOR A SINGLE STUDENT
 # =========================================================
 
-def generate_student_eligibility(
-    student,
-    academic_year,
-):
-    academic_record = get_latest_academic_record(
-        student,
-        academic_year,
-    )
-
+def generate_student_eligibility(student, academic_year):
+    academic_record = get_latest_academic_record(student, academic_year)
     if not academic_record:
-        return []
+        current_cls = student.current_class or ""
+        class_number = parse_class_number(current_cls)
+        results = []
+        if class_number and 1 <= class_number <= 10:
+            b = create_or_update_eligibility(
+                student=student,
+                benefit_type=BenefitType.BOOK,
+                academic_year=academic_year,
+                eligible=True,
+                reason=f"Current enrolled class is {current_cls}.",
+            )
+            results.append(b)
+            if class_number == 10:
+                w = create_or_update_eligibility(
+                    student=student,
+                    benefit_type=BenefitType.WORKBOOK,
+                    academic_year=academic_year,
+                    eligible=True,
+                    reason=f"Current enrolled class is {current_cls} (Class 10 Workbook).",
+                )
+                results.append(w)
+        elif is_degree_student(current_cls):
+            i = create_or_update_eligibility(
+                student=student,
+                benefit_type=BenefitType.INTERNSHIP,
+                academic_year=academic_year,
+                eligible=True,
+                reason=f"Current enrolled program is {current_cls}.",
+            )
+            results.append(i)
+        return results
 
     results = []
 
-    book = generate_book_eligibility(
-        student,
-        academic_record,
-    )
-
+    # Books (Class 1 to 10)
+    book = generate_book_eligibility(student, academic_record)
     if book:
         results.append(book)
 
-    workbook = generate_workbook_eligibility(
-        student,
-        academic_record,
-    )
-
+    # Workbooks (Class 10)
+    workbook = generate_workbook_eligibility(student, academic_record)
     if workbook:
         results.append(workbook)
 
-    study_kit = generate_study_kit_continuation(
-        student,
-        academic_record,
-    )
-
+    # Study Kit continuation (PUC)
+    study_kit = generate_study_kit_continuation(student, academic_record)
     if study_kit:
         results.append(study_kit)
 
-    internship = generate_internship_eligibility(
-        student,
-        academic_record,
-    )
-
+    # Internship (Degree)
+    internship = generate_internship_eligibility(student, academic_record)
     if internship:
         results.append(internship)
 
@@ -347,26 +330,240 @@ def generate_student_eligibility(
 
 
 # =========================================================
-# GENERATE ELIGIBILITY FOR ALL ACTIVE STUDENTS
+# EVALUATE FULL 360 PROFILE FOR PREVIEW
 # =========================================================
 
-def generate_all_eligibility(academic_year):
-    students = Student.objects.filter(
-        status=Student.Status.ACTIVE
-    )
+def get_student_eligibility_profile(student, academic_year=None):
+    """
+    Returns an evaluation profile for a student covering all 5 benefit types
+    along with their academic standing and existing database records.
+    """
+    academic_record = get_latest_academic_record(student, academic_year)
+    effective_class = academic_record.class_or_course if academic_record else (student.current_class or "Unknown")
+    class_num = parse_class_number(effective_class)
+    pct = float(get_percentage(academic_record)) if academic_record else 0.0
+
+    # Fetch existing DB records
+    db_records_qs = EligibilityRecord.objects.filter(student=student)
+    if academic_year:
+        db_records_qs = db_records_qs.filter(academic_year=academic_year)
+    db_records = {r.benefit_type: r for r in db_records_qs}
+
+    # Evaluate potential eligibility for each
+    benefits_eval = []
+    
+    # 1. Books
+    book_rec = db_records.get(BenefitType.BOOK)
+    book_auto = (class_num is not None and 1 <= class_num <= 10)
+    benefits_eval.append({
+        "benefit_type": BenefitType.BOOK,
+        "benefit_display": "Books (Class 1-10)",
+        "icon": "📚",
+        "is_eligible": book_rec.eligible if book_rec else book_auto,
+        "record_exists": book_rec is not None,
+        "selection_rank": book_rec.selection_rank if book_rec else None,
+        "reason": book_rec.reason if book_rec else ("Eligible: Enrolled in Class 1-10" if book_auto else "Ineligible: Not in standard 1-10 range"),
+        "rule_summary": "Standard textbook package for all primary & secondary students (Class 1 - 10).",
+    })
+
+    # 2. Workbooks
+    wb_rec = db_records.get(BenefitType.WORKBOOK)
+    wb_auto = (class_num == 10)
+    benefits_eval.append({
+        "benefit_type": BenefitType.WORKBOOK,
+        "benefit_display": "Workbook (Class 10)",
+        "icon": "📝",
+        "is_eligible": wb_rec.eligible if wb_rec else wb_auto,
+        "record_exists": wb_rec is not None,
+        "selection_rank": wb_rec.selection_rank if wb_rec else None,
+        "reason": wb_rec.reason if wb_rec else ("Eligible: Enrolled in Class 10 Board preparation" if wb_auto else "Ineligible: Available only for Class 10"),
+        "rule_summary": "Intensive revision and STEM practice workbook for 10th standard board candidates.",
+    })
+
+    # 3. Study Kit
+    sk_rec = db_records.get(BenefitType.STUDY_KIT)
+    is_puc = is_first_puc(effective_class) or is_second_puc(effective_class)
+    prev_sk = EligibilityRecord.objects.filter(student=student, benefit_type=BenefitType.STUDY_KIT, eligible=True).exclude(academic_year=academic_year).exists()
+    sk_auto = (class_num == 10 and pct >= 80.0) or (is_puc and prev_sk)
+    benefits_eval.append({
+        "benefit_type": BenefitType.STUDY_KIT,
+        "benefit_display": "Study Kit (Merit & PUC Continuation)",
+        "icon": "🎒",
+        "is_eligible": sk_rec.eligible if sk_rec else sk_auto,
+        "record_exists": sk_rec is not None,
+        "selection_rank": sk_rec.selection_rank if sk_rec else None,
+        "reason": sk_rec.reason if sk_rec else ("Merit candidate: High academic ranking or PUC continuation" if sk_auto else "Requires Top 10 rank in Class 10 or PUC continuation grant"),
+        "rule_summary": "Awarded to Top 10 Class 10 rank holders and renewed through 1st & 2nd PUC.",
+    })
+
+    # 4. Laptop
+    lp_rec = db_records.get(BenefitType.LAPTOP)
+    lp_auto = is_second_puc(effective_class) and pct >= 85.0
+    benefits_eval.append({
+        "benefit_type": BenefitType.LAPTOP,
+        "benefit_display": "Laptop Scholarship (Top 10 2nd PUC)",
+        "icon": "💻",
+        "is_eligible": lp_rec.eligible if lp_rec else lp_auto,
+        "record_exists": lp_rec is not None,
+        "selection_rank": lp_rec.selection_rank if lp_rec else None,
+        "reason": lp_rec.reason if lp_rec else ("High merit 2nd PUC scholar eligible for laptop grant" if lp_auto else "Requires Top 10 merit rank in 2nd PUC state examinations"),
+        "rule_summary": "Top 10 highest-scoring 2nd PUC students transitioning to college.",
+    })
+
+    # 5. Internship
+    in_rec = db_records.get(BenefitType.INTERNSHIP)
+    in_auto = is_degree_student(effective_class)
+    benefits_eval.append({
+        "benefit_type": BenefitType.INTERNSHIP,
+        "benefit_display": "Internship (Degree Students)",
+        "icon": "💼",
+        "is_eligible": in_rec.eligible if in_rec else in_auto,
+        "record_exists": in_rec is not None,
+        "selection_rank": in_rec.selection_rank if in_rec else None,
+        "reason": in_rec.reason if in_rec else ("Degree candidate eligible for Aequs CSR internship track" if in_auto else "Reserved for undergraduate and technical degree candidates"),
+        "rule_summary": "Corporate and industrial internship program for degree scholars.",
+    })
+
+    return {
+        "student_id": student.id,
+        "student_name": student.student_name,
+        "admission_number": student.admission_number,
+        "school_name": student.school.name if student.school else "General",
+        "current_class": effective_class,
+        "percentage": pct,
+        "academic_year": academic_year or (academic_record.academic_year if academic_record else "2026-27"),
+        "benefits": benefits_eval,
+    }
+
+
+# =========================================================
+# GENERATE ELIGIBILITY FOR ALL ACTIVE STUDENTS (BATCH ENGINE)
+# =========================================================
+
+def generate_all_eligibility(academic_year, target_benefits=None):
+    """
+    Runs the automated eligibility evaluation engine for an academic year.
+    Returns metrics dict on generated / updated records.
+    """
+    students = Student.objects.filter(status=Student.Status.ACTIVE)
+    
+    do_all = not target_benefits or "ALL" in target_benefits
+    do_books = do_all or BenefitType.BOOK in target_benefits
+    do_workbooks = do_all or BenefitType.WORKBOOK in target_benefits
+    do_study_kit = do_all or BenefitType.STUDY_KIT in target_benefits
+    do_laptops = do_all or BenefitType.LAPTOP in target_benefits
+    do_internships = do_all or BenefitType.INTERNSHIP in target_benefits
+
+    processed_students = 0
+    books_count = 0
+    workbooks_count = 0
+    study_kit_cont_count = 0
+    internships_count = 0
 
     for student in students:
-        generate_student_eligibility(
-            student,
-            academic_year,
-        )
+        processed_students += 1
+        rec = get_latest_academic_record(student, academic_year)
+        
+        # Books
+        if do_books:
+            if rec:
+                b = generate_book_eligibility(student, rec)
+                if b and b.eligible:
+                    books_count += 1
+            else:
+                c_num = parse_class_number(student.current_class)
+                if c_num and 1 <= c_num <= 10:
+                    create_or_update_eligibility(
+                        student=student,
+                        benefit_type=BenefitType.BOOK,
+                        academic_year=academic_year,
+                        eligible=True,
+                        reason=f"Current enrolled class is {student.current_class}.",
+                    )
+                    books_count += 1
+
+        # Workbooks
+        if do_workbooks:
+            if rec:
+                w = generate_workbook_eligibility(student, rec)
+                if w and w.eligible:
+                    workbooks_count += 1
+            else:
+                if is_class_number(student.current_class, 10):
+                    create_or_update_eligibility(
+                        student=student,
+                        benefit_type=BenefitType.WORKBOOK,
+                        academic_year=academic_year,
+                        eligible=True,
+                        reason=f"Current enrolled class is {student.current_class} (Class 10 Workbook).",
+                    )
+                    workbooks_count += 1
+
+        # Study Kit continuation
+        if do_study_kit:
+            if rec:
+                sk = generate_study_kit_continuation(student, rec)
+                if sk and sk.eligible:
+                    study_kit_cont_count += 1
+
+        # Internships
+        if do_internships:
+            if rec:
+                in_res = generate_internship_eligibility(student, rec)
+                if in_res and in_res.eligible:
+                    internships_count += 1
+            else:
+                if is_degree_student(student.current_class):
+                    create_or_update_eligibility(
+                        student=student,
+                        benefit_type=BenefitType.INTERNSHIP,
+                        academic_year=academic_year,
+                        eligible=True,
+                        reason=f"Current enrolled program is {student.current_class}.",
+                    )
+                    internships_count += 1
 
     # Top 10 Class 10 → Study Kit
-    generate_study_kit_eligibility(
-        academic_year
-    )
+    study_kit_top_count = 0
+    if do_study_kit:
+        study_kit_top_count = generate_study_kit_eligibility(academic_year)
 
     # Top 10 2nd PUC → Laptop
-    generate_laptop_eligibility(
-        academic_year
-    )
+    laptop_count = 0
+    if do_laptops:
+        laptop_count = generate_laptop_eligibility(academic_year)
+
+    total_eligible = EligibilityRecord.objects.filter(
+        academic_year=academic_year,
+        eligible=True,
+    ).count()
+
+    return {
+        "academic_year": academic_year,
+        "processed_students": processed_students,
+        "books_count": books_count,
+        "workbooks_count": workbooks_count,
+        "study_kit_top_count": study_kit_top_count,
+        "study_kit_continuation_count": study_kit_cont_count,
+        "study_kit_total": study_kit_top_count + study_kit_cont_count,
+        "laptop_count": laptop_count,
+        "internships_count": internships_count,
+        "total_eligible_records": total_eligible,
+    }
+
+
+# =========================================================
+# ALIASES FOR MANAGEMENT COMMANDS & EXTERNAL CONSUMERS
+# =========================================================
+
+def calculate_student_eligibility(student, academic_year):
+    return generate_student_eligibility(student, academic_year)
+
+def calculate_study_kit_eligibility(academic_year, limit=10):
+    return generate_study_kit_eligibility(academic_year, limit=limit)
+
+def calculate_study_kit_continuation(academic_year):
+    return calculate_study_kit_continuation_batch(academic_year)
+
+def calculate_laptop_eligibility(academic_year, limit=10):
+    return generate_laptop_eligibility(academic_year, limit=limit)

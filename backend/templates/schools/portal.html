@@ -739,7 +739,7 @@
         </a>
 
         <!-- Eligibility -->
-        <a href="#" class="nav-item">
+        <a href="{% url 'eligibility:portal' %}" class="nav-item">
             <span>✅</span> <span>Eligibility</span>
         </a>
 
@@ -754,7 +754,7 @@
         </a>
 
         <!-- Internships -->
-        <a href="#" class="nav-item">
+        <a href="{% url 'internships:portal' %}" class="nav-item">
             <span>💼</span> <span>Internships</span>
         </a>
 
@@ -1138,7 +1138,7 @@
 
 <script>
 // Global State
-let currentSchoolId = {% if selected_school %}{{ selected_school.id }}{% else %}null{% endif %};
+let currentSchoolId = "{{ selected_school.id|default:'' }}" || null;
 let currentSchoolData = null;
 
 // Get CSRF Token for Django POST requests

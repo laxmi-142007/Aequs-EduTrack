@@ -24,6 +24,12 @@ urlpatterns = [
 
     # Inventory - Inventory Management Portal & APIs
     path("inventory/", include("inventory.urls")),
+
+    # Eligibility - Student Benefit Eligibility Portal & APIs
+    path("eligibility/", include("eligibility.urls")),
+
+    # Internships - Aequs Corporate & Industrial Internship Portal
+    path("internships/", include("internships.urls")),
 ]
 
 if settings.DEBUG:

@@ -5,6 +5,7 @@ from students.models import Student
 from academics.models import AcademicRecord
 from eligibility.models import EligibilityRecord
 from inventory.models import Laptop, LaptopAssignment
+from internships.models import InternshipPlacement, InternshipProgram
 
 
 def dashboard(request):
@@ -33,6 +34,15 @@ def dashboard(request):
             status=Laptop.Status.ISSUED
         ).count(),
 
+        "internship_count": InternshipPlacement.objects.count(),
+
+        "active_interns_count": InternshipPlacement.objects.filter(
+            status__in=[
+                InternshipPlacement.Status.SELECTED,
+                InternshipPlacement.Status.IN_PROGRESS,
+            ]
+        ).count(),
+
         "recent_eligibility": EligibilityRecord.objects.select_related(
             "student"
         ).order_by("-checked_at")[:10],
@@ -40,6 +50,11 @@ def dashboard(request):
         "recent_assignments": LaptopAssignment.objects.select_related(
             "student",
             "laptop",
+        ).order_by("-created_at")[:10],
+
+        "recent_internships": InternshipPlacement.objects.select_related(
+            "student",
+            "program",
         ).order_by("-created_at")[:10],
     }
 
