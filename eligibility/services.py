@@ -5,27 +5,37 @@ from academics.models import AcademicRecord
 from .models import EligibilityRecord, BenefitType
 
 
+# =========================================================
+# BASIC HELPERS
+# =========================================================
+
 def get_latest_academic_record(student, academic_year=None):
     records = AcademicRecord.objects.filter(student=student)
 
     if academic_year:
-        records = records.filter(academic_year=academic_year)
+        records = records.filter(
+            academic_year=academic_year
+        )
 
     return records.order_by("-created_at").first()
 
 
-def is_class_number(class_or_course, number):
-    value = class_or_course.lower().strip()
+def normalize_course(value):
+    return (value or "").lower().strip()
 
-    return (
-        value == f"class {number}"
-        or value == str(number)
-        or value == f"standard {number}"
+
+def is_class_number(class_or_course, number):
+    value = normalize_course(class_or_course)
+
+    return value in (
+        f"class {number}",
+        str(number),
+        f"standard {number}",
     )
 
 
 def is_school_class(class_or_course):
-    value = class_or_course.lower().strip()
+    value = normalize_course(class_or_course)
 
     for number in range(1, 11):
         if is_class_number(value, number):
@@ -77,11 +87,12 @@ def create_or_update_eligibility(
 
 
 # =========================================================
-# BOOK ELIGIBILITY
+# BOOKS
 # Class 1 to Class 10
 # =========================================================
 
 def generate_book_eligibility(student, academic_record):
+
     class_number = is_school_class(
         academic_record.class_or_course
     )
@@ -92,18 +103,21 @@ def generate_book_eligibility(student, academic_record):
             benefit_type=BenefitType.BOOK,
             academic_year=academic_record.academic_year,
             eligible=True,
-            reason=f"Student is studying in Class {class_number}.",
+            reason=(
+                f"Student is studying in Class {class_number}."
+            ),
         )
 
     return None
 
 
 # =========================================================
-# WORKBOOK ELIGIBILITY
+# WORKBOOK
 # Class 10
 # =========================================================
 
 def generate_workbook_eligibility(student, academic_record):
+
     if is_class_number(
         academic_record.class_or_course,
         10,
@@ -120,18 +134,20 @@ def generate_workbook_eligibility(student, academic_record):
 
 
 # =========================================================
-# TOP 10 CLASS 10 STUDENTS
-# Study Kit
+# TOP 10 CLASS 10
+# TOP 10 RECEIVE STUDY KIT
 # =========================================================
 
 def get_top_class_10_students(academic_year):
+
     records = AcademicRecord.objects.filter(
         academic_year=academic_year
-    )
+    ).select_related("student")
 
     class_10_records = []
 
     for record in records:
+
         if is_class_number(
             record.class_or_course,
             10,
@@ -147,11 +163,16 @@ def get_top_class_10_students(academic_year):
 
 
 def generate_study_kit_eligibility(academic_year):
+
     top_records = get_top_class_10_students(
         academic_year
     )
 
-    for rank, record in enumerate(top_records, start=1):
+    for rank, record in enumerate(
+        top_records,
+        start=1,
+    ):
+
         create_or_update_eligibility(
             student=record.student,
             benefit_type=BenefitType.STUDY_KIT,
@@ -159,101 +180,183 @@ def generate_study_kit_eligibility(academic_year):
             eligible=True,
             selection_rank=rank,
             reason=(
-                f"Top 10 Class 10 student. "
-                f"Selection rank: {rank}."
+                "Top 10 Class 10 student. "
+                f"Study Kit selection rank: {rank}."
             ),
         )
 
 
 # =========================================================
-# STUDY KIT CONTINUATION
-# Continue up to 2nd PUC
+# PRE-UNIVERSITY COURSES
+#
+# Students selected in Class 10 continue receiving
+# Study Kit during their pre-university course.
+#
+# Examples:
+#   1st PUC
+#   2nd PUC
+#   Diploma
+#   ITI
+#   Other pre-university courses
 # =========================================================
+
+def is_puc_course(class_or_course):
+
+    value = normalize_course(class_or_course)
+
+    return (
+        "1st puc" in value
+        or "1st pu" in value
+        or "first puc" in value
+        or "first pu" in value
+        or "2nd puc" in value
+        or "2nd pu" in value
+        or "second puc" in value
+        or "second pu" in value
+    )
+
+
+def is_diploma_course(class_or_course):
+
+    value = normalize_course(class_or_course)
+
+    return "diploma" in value
+
+
+def is_iti_course(class_or_course):
+
+    value = normalize_course(class_or_course)
+
+    return "iti" in value
+
+
+def is_pre_university_course(class_or_course):
+
+    return (
+        is_puc_course(class_or_course)
+        or is_diploma_course(class_or_course)
+        or is_iti_course(class_or_course)
+    )
+
 
 def generate_study_kit_continuation(
     student,
     academic_record,
 ):
-    value = academic_record.class_or_course.lower().strip()
 
-    is_first_puc = (
-        "1st puc" in value
-        or "1st pu" in value
-        or "first puc" in value
-        or "first pu" in value
+    if not is_pre_university_course(
+        academic_record.class_or_course
+    ):
+        return None
+
+    previously_selected = (
+        EligibilityRecord.objects.filter(
+            student=student,
+            benefit_type=BenefitType.STUDY_KIT,
+            eligible=True,
+        )
+        .exclude(
+            academic_year=academic_record.academic_year
+        )
+        .exists()
     )
 
-    is_second_puc = (
+    if not previously_selected:
+        return None
+
+    return create_or_update_eligibility(
+        student=student,
+        benefit_type=BenefitType.STUDY_KIT,
+        academic_year=academic_record.academic_year,
+        eligible=True,
+        reason=(
+            "Student was selected in the Class 10 Top 10 "
+            "and continues to receive Study Kit during "
+            "the pre-university course."
+        ),
+    )
+
+
+# =========================================================
+# LAPTOP QUALIFYING STAGE
+#
+# The final qualifying students are:
+#
+#   1. 2nd PUC
+#   2. Final-year Diploma
+#
+# These two groups are compared together by percentage.
+# Top 10 become laptop candidates.
+# =========================================================
+
+def is_second_puc(class_or_course):
+
+    value = normalize_course(class_or_course)
+
+    return (
         "2nd puc" in value
         or "2nd pu" in value
         or "second puc" in value
         or "second pu" in value
     )
 
-    if not (is_first_puc or is_second_puc):
-        return None
 
-    previously_selected = EligibilityRecord.objects.filter(
-        student=student,
-        benefit_type=BenefitType.STUDY_KIT,
-        eligible=True,
-    ).exclude(
-        academic_year=academic_record.academic_year
-    ).exists()
+def is_final_year_diploma(record):
 
-    if previously_selected:
-        return create_or_update_eligibility(
-            student=student,
-            benefit_type=BenefitType.STUDY_KIT,
-            academic_year=academic_record.academic_year,
-            eligible=True,
-            reason=(
-                "Student was previously selected for a "
-                "study kit and continues to receive the "
-                "study kit through PUC."
-            ),
-        )
-
-    return None
-
-
-# =========================================================
-# TOP 10 SECOND PUC STUDENTS
-# Laptop
-# =========================================================
-
-def get_top_puc_students(academic_year):
-    records = AcademicRecord.objects.filter(
-        academic_year=academic_year
+    value = normalize_course(
+        record.class_or_course
     )
 
-    puc_records = []
+    if "diploma" not in value:
+        return False
+
+    # If the course explicitly contains a year number,
+    # identify 3rd year as the final Diploma year.
+    return (
+        "3rd year" in value
+        or "third year" in value
+        or "3rd" in value
+        or "third" in value
+    )
+
+
+def get_laptop_qualifying_students(academic_year):
+
+    records = AcademicRecord.objects.filter(
+        academic_year=academic_year
+    ).select_related("student")
+
+    qualifying_records = []
 
     for record in records:
-        value = record.class_or_course.lower().strip()
 
-        if (
-            "2nd puc" in value
-            or "2nd pu" in value
-            or "second puc" in value
-            or "second pu" in value
+        if is_second_puc(
+            record.class_or_course
         ):
-            puc_records.append(record)
+            qualifying_records.append(record)
 
-    puc_records.sort(
+        elif is_final_year_diploma(record):
+            qualifying_records.append(record)
+
+    qualifying_records.sort(
         key=get_percentage,
         reverse=True,
     )
 
-    return puc_records[:10]
+    return qualifying_records[:10]
 
 
 def generate_laptop_eligibility(academic_year):
-    top_records = get_top_puc_students(
+
+    top_records = get_laptop_qualifying_students(
         academic_year
     )
 
-    for rank, record in enumerate(top_records, start=1):
+    for rank, record in enumerate(
+        top_records,
+        start=1,
+    ):
+
         create_or_update_eligibility(
             student=record.student,
             benefit_type=BenefitType.LAPTOP,
@@ -261,24 +364,134 @@ def generate_laptop_eligibility(academic_year):
             eligible=True,
             selection_rank=rank,
             reason=(
-                f"Top 10 second PUC student. "
-                f"Selection rank: {rank}."
+                "Top 10 student among 2nd PUC and "
+                "final-year Diploma students. "
+                f"Laptop selection rank: {rank}."
             ),
         )
 
 
 # =========================================================
+# LAPTOP DISTRIBUTION STAGE
+#
+# Laptop is given when the selected student enters Degree.
+#
+# Regular Degree student:
+#     Degree 1st year
+#
+# Diploma student:
+#     BE 2nd year through lateral entry
+#
+# NOTE:
+# The Top 10 ranking is determined at the qualifying
+# stage above. This function identifies the stage where
+# the laptop should actually be distributed.
+# =========================================================
+
+def is_degree_first_year(class_or_course):
+
+    value = normalize_course(class_or_course)
+
+    return (
+        (
+            "degree" in value
+            and (
+                "1st year" in value
+                or "first year" in value
+                or "1st" in value
+                or "first" in value
+            )
+        )
+        or (
+            "degree 1" in value
+        )
+    )
+
+
+def is_be_second_year(class_or_course):
+
+    value = normalize_course(class_or_course)
+
+    return (
+        (
+            "be" in value
+            and (
+                "2nd year" in value
+                or "second year" in value
+                or "2nd" in value
+                or "second" in value
+            )
+        )
+        or (
+            "b.e" in value
+            and (
+                "2nd year" in value
+                or "second year" in value
+            )
+        )
+    )
+
+
+def generate_laptop_distribution_eligibility(
+    student,
+    academic_record,
+):
+
+    if not (
+        is_degree_first_year(
+            academic_record.class_or_course
+        )
+        or is_be_second_year(
+            academic_record.class_or_course
+        )
+    ):
+        return None
+
+    previous_laptop = (
+        EligibilityRecord.objects.filter(
+            student=student,
+            benefit_type=BenefitType.LAPTOP,
+            eligible=True,
+        )
+        .exclude(
+            academic_year=academic_record.academic_year
+        )
+        .exists()
+    )
+
+    if not previous_laptop:
+        return None
+
+    return create_or_update_eligibility(
+        student=student,
+        benefit_type=BenefitType.LAPTOP,
+        academic_year=academic_record.academic_year,
+        eligible=True,
+        reason=(
+            "Previously selected student has entered "
+            "the Degree stage and is eligible to receive "
+            "the laptop."
+        ),
+    )
+
+
+# =========================================================
 # INTERNSHIP
-# Degree students
+#
+# Degree students can be internship candidates.
 # =========================================================
 
 def generate_internship_eligibility(
     student,
     academic_record,
 ):
-    value = academic_record.class_or_course.lower().strip()
 
-    if "degree" in value:
+    value = normalize_course(
+        academic_record.class_or_course
+    )
+
+    if "degree" in value or "b.e" in value or "be " in value:
+
         return create_or_update_eligibility(
             student=student,
             benefit_type=BenefitType.INTERNSHIP,
@@ -301,6 +514,7 @@ def generate_student_eligibility(
     student,
     academic_year,
 ):
+
     academic_record = get_latest_academic_record(
         student,
         academic_year,
@@ -335,6 +549,16 @@ def generate_student_eligibility(
     if study_kit:
         results.append(study_kit)
 
+    laptop_distribution = (
+        generate_laptop_distribution_eligibility(
+            student,
+            academic_record,
+        )
+    )
+
+    if laptop_distribution:
+        results.append(laptop_distribution)
+
     internship = generate_internship_eligibility(
         student,
         academic_record,
@@ -347,26 +571,34 @@ def generate_student_eligibility(
 
 
 # =========================================================
-# GENERATE ELIGIBILITY FOR ALL ACTIVE STUDENTS
+# GENERATE ALL ELIGIBILITY
 # =========================================================
 
 def generate_all_eligibility(academic_year):
+
     students = Student.objects.filter(
         status=Student.Status.ACTIVE
     )
 
     for student in students:
+
         generate_student_eligibility(
             student,
             academic_year,
         )
 
-    # Top 10 Class 10 → Study Kit
+    # -----------------------------------------
+    # Class 10 Top 10 -> Study Kit
+    # -----------------------------------------
+
     generate_study_kit_eligibility(
         academic_year
     )
 
-    # Top 10 2nd PUC → Laptop
+    # -----------------------------------------
+    # 2nd PUC + Final Diploma -> Top 10 Laptop
+    # -----------------------------------------
+
     generate_laptop_eligibility(
         academic_year
     )

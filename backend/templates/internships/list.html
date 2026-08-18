@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Internships - EduTrack</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #172554;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            background: #2563eb;
+            padding: 9px 15px;
+            border-radius: 7px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #94a3b8;
+            padding: 35px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <h1>EduTrack - Internships</h1>
+
+    <a href="{% url 'dashboard' %}" class="back">
+        &larr; Dashboard
+    </a>
+</header>
+
+<main class="content">
+
+    <div class="card">
+
+        <h2>Eligible Internship Students</h2>
+
+        {% if records %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Admission Number</th>
+                    <th>Academic Year</th>
+                    <th>Status</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for record in records %}
+
+            <tr>
+                <td>{{ record.student.student_name }}</td>
+                <td>{{ record.student.admission_number }}</td>
+                <td>{{ record.academic_year }}</td>
+                <td>
+                    <span class="badge">Eligible</span>
+                </td>
+                <td>{{ record.reason }}</td>
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+        {% else %}
+
+        <div class="empty">
+            No students are currently eligible for internships.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</main>
+
+</body>
+</html>
+
+

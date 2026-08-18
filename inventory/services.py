@@ -10,6 +10,10 @@ from .models import Laptop, LaptopAssignment
 def issue_laptop(student, laptop, academic_year):
     """Issue an available laptop to an eligible student."""
 
+    laptop = Laptop.objects.select_for_update().get(
+        pk=laptop.pk
+    )
+
     if laptop.status != Laptop.Status.AVAILABLE:
         raise ValidationError(
             f"Laptop {laptop.asset_number} is not available."
@@ -55,12 +59,21 @@ def issue_laptop(student, laptop, academic_year):
 def return_laptop(assignment, return_notes=""):
     """Return an issued laptop and make it available again."""
 
+    assignment = (
+        LaptopAssignment.objects
+        .select_for_update()
+        .select_related("laptop")
+        .get(pk=assignment.pk)
+    )
+
     if assignment.status != LaptopAssignment.Status.ISSUED:
         raise ValidationError(
             "This laptop assignment is not currently active."
         )
 
-    laptop = assignment.laptop
+    laptop = Laptop.objects.select_for_update().get(
+        pk=assignment.laptop_id
+    )
 
     assignment.status = LaptopAssignment.Status.RETURNED
     assignment.returned_date = timezone.localdate()
@@ -89,6 +102,17 @@ def replace_laptop(
 ):
     """Replace the laptop currently issued to a student."""
 
+    assignment = (
+        LaptopAssignment.objects
+        .select_for_update()
+        .select_related("laptop")
+        .get(pk=assignment.pk)
+    )
+
+    replacement_laptop = Laptop.objects.select_for_update().get(
+        pk=replacement_laptop.pk
+    )
+
     if assignment.status != LaptopAssignment.Status.ISSUED:
         raise ValidationError(
             "Only an actively issued laptop can be replaced."
@@ -100,9 +124,10 @@ def replace_laptop(
             "is not available."
         )
 
-    old_laptop = assignment.laptop
+    old_laptop = Laptop.objects.select_for_update().get(
+        pk=assignment.laptop_id
+    )
 
-    # Mark old assignment as replaced
     assignment.status = LaptopAssignment.Status.REPLACED
     assignment.returned_date = timezone.localdate()
     assignment.return_notes = reason
@@ -116,7 +141,7 @@ def replace_laptop(
         ]
     )
 
-    # Mark old laptop as replaced
+    # Old physical laptop is now available again.
     old_laptop.status = Laptop.Status.REPLACED
 
     old_laptop.save(
@@ -126,7 +151,6 @@ def replace_laptop(
         ]
     )
 
-    # Create replacement assignment
     new_assignment = LaptopAssignment.objects.create(
         laptop=replacement_laptop,
         student=assignment.student,
@@ -138,7 +162,6 @@ def replace_laptop(
         ),
     )
 
-    # Mark replacement laptop as issued
     replacement_laptop.status = Laptop.Status.ISSUED
 
     replacement_laptop.save(

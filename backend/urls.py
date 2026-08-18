@@ -5,15 +5,16 @@ from . import views
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # Dashboard
     path("", views.dashboard, name="dashboard"),
 
-    # Students
     path("students/", include("students.urls")),
-
-    # Distributions
-    path(
-        "distributions/",
-        include("distributions.urls"),
-    ),
+    path("schools/", include("schools.urls")),
+    path("distributions/", include("distributions.urls")),
+    path("academics/", include("academics.urls")),
+    path("eligibility/", include("eligibility.urls")),
+    path("inventory/", include("inventory.urls")),
+    path("internships/", include("internships.urls")),
+    path("reports/", include("reports.urls")),
+    path("events/", include("events.urls")),
+    path("volunteers/", include("volunteers.urls")),
 ]

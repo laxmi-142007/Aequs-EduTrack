@@ -10,6 +10,7 @@ class Laptop(models.Model):
         DAMAGED = "DAMAGED", "Damaged"
         LOST = "LOST", "Lost"
         RETIRED = "RETIRED", "Retired"
+        REPLACED = "REPLACED", "Replaced"
 
     class Condition(models.TextChoices):
         NEW = "NEW", "New"

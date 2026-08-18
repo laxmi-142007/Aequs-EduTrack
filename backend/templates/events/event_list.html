@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Events | Aequs EduTrack</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #ffffff;
+            color: #ffffff;
+            padding: 22px 35px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .back {
+            color: #ffffff;
+            text-decoration: none;
+            background: #4f46e5;
+            padding: 10px 16px;
+            border-radius: 8px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 25px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .top h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .add-button {
+            background: #4f46e5;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+        }
+
+        .event-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .event-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .event-info {
+            color: #64748b;
+            margin: 7px 0;
+        }
+
+        .empty {
+            background: white;
+            padding: 50px;
+            text-align: center;
+            border-radius: 14px;
+            color: #64748b;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+<style>
+.events-header {
+    background: #2563eb;
+    color: #ffffff;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 22px 32px;
+    margin: 0 0 28px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.20);
+}
+
+.events-header h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.back-dashboard {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #ffffff;
+    color: #2563eb;
+    padding: 11px 20px;
+    min-width: 180px;
+    min-height: 44px;
+    border: 2px solid #ffffff;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.back-dashboard:hover {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+@media (max-width: 650px) {
+    .events-header {
+        padding: 18px 20px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .events-header h1 {
+        font-size: 24px;
+    }
+
+    .back-dashboard {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+    
+
+    <div class="events-header">
+    <h1>&#128197; Events</h1>
+    <a href="/" class="back-dashboard">&#8592; <span>Back to Dashboard</span></a>
+</div>
+    <div class="container">
+
+        <div class="top">
+            <h2>Upcoming Events</h2>
+
+            {% if user.is_staff %}
+                <a href="/events/add/" class="add-button">
+                    + Add Event
+                </a>
+            {% endif %}
+        </div>
+
+        {% if events %}
+
+            <div class="event-grid">
+
+                {% for event in events %}
+
+                    <div class="event-card">
+
+                        <div class="event-icon">
+                        </div>
+
+                        <div class="event-title">
+                            {{ event.title }}
+                        </div>
+
+                        {% if event.description %}
+                            <div class="event-info">
+                                {{ event.description }}
+                            </div>
+                        {% endif %}
+
+                        {% if event.date %}
+                            <div class="event-info">
+                            </div>
+                        {% endif %}
+
+                        {% if event.location %}
+                            <div class="event-info">
+            <span class="event-location">&#128205; {{ event.location }}</span>
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty">
+
+                <div class="empty-icon">&#128197;</div>
+
+                <h3>No Events Yet</h3>
+
+                <p>
+                    There are currently no events available.
+                </p>
+
+                {% if user.is_staff %}
+                    <a href="/events/add/" class="add-button">
+                        Create First Event
+                    </a>
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

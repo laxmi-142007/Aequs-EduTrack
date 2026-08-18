@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Records</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            text-decoration: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            background: #2563eb;
+            padding: 10px 16px;
+        }
+
+        .btn-edit {
+            background: #f59e0b;
+        }
+
+        .btn-delete {
+            background: #dc2626;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .actions {
+            white-space: nowrap;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+        <h1>Academic Records</h1>
+
+        <a href="{% url 'academics:create' %}" class="btn btn-add">
+            Add Academic Record
+        </a>
+    </div>
+
+    {% if records %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Academic Year</th>
+                <th>Class / Course</th>
+                <th>Marks</th>
+                <th>Total Marks</th>
+                <th>Percentage</th>
+                <th>Rank</th>
+                <th>Promotion</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for record in records %}
+
+            <tr>
+                <td>{{ record.student.student_name }}</td>
+                <td>{{ record.academic_year }}</td>
+                <td>{{ record.class_or_course }}</td>
+                <td>{{ record.marks_obtained|default:"-" }}</td>
+                <td>{{ record.total_marks|default:"-" }}</td>
+
+                <td>
+                    {% if record.percentage %}
+                        {{ record.percentage }}%
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>{{ record.rank|default:"-" }}</td>
+                <td>{{ record.promotion_status|default:"-" }}</td>
+
+                <td class="actions">
+                    <a href="{% url 'academics:update' record.pk %}"
+                       class="btn btn-edit">
+                        Edit
+                    </a>
+
+                    <a href="{% url 'academics:delete' record.pk %}"
+                       class="btn btn-delete">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+    {% else %}
+
+        <div class="empty">
+            No academic records found.
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 from django import forms
 from .models import Distribution
+from eligibility.models import EligibilityRecord
 
 
 class DistributionForm(forms.ModelForm):
@@ -53,3 +54,50 @@ class DistributionForm(forms.ModelForm):
                 }
             ),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        student = cleaned_data.get("student")
+        benefit_type = cleaned_data.get("benefit_type")
+        academic_year = cleaned_data.get("academic_year")
+
+        if not student or not benefit_type or not academic_year:
+            return cleaned_data
+
+        # ==========================================
+        # CHECK ELIGIBILITY
+        # ==========================================
+
+        eligible = EligibilityRecord.objects.filter(
+            student=student,
+            benefit_type=benefit_type,
+            academic_year=academic_year,
+            eligible=True,
+        ).exists()
+
+        if not eligible:
+            raise forms.ValidationError(
+                f"{student.student_name} is not eligible for "
+                f"{benefit_type} for academic year "
+                f"{academic_year}."
+            )
+
+        # ==========================================
+        # CHECK DUPLICATE DISTRIBUTION
+        # ==========================================
+
+        already_distributed = Distribution.objects.filter(
+            student=student,
+            benefit_type=benefit_type,
+            academic_year=academic_year,
+        ).exists()
+
+        if already_distributed:
+            raise forms.ValidationError(
+                f"{student.student_name} has already received "
+                f"{benefit_type} for academic year "
+                f"{academic_year}."
+            )
+
+        return cleaned_data

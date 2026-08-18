@@ -1,9 +1,13 @@
 from django.contrib import admin
+
+from .forms import AcademicRecordForm
 from .models import AcademicRecord
 
 
 @admin.register(AcademicRecord)
 class AcademicRecordAdmin(admin.ModelAdmin):
+
+    form = AcademicRecordForm
 
     list_display = (
         "student",
@@ -13,6 +17,7 @@ class AcademicRecordAdmin(admin.ModelAdmin):
         "total_marks",
         "percentage",
         "rank",
+        "previous_class",
         "promotion_status",
     )
 
@@ -32,4 +37,10 @@ class AcademicRecordAdmin(admin.ModelAdmin):
     ordering = (
         "-academic_year",
         "student__student_name",
+    )
+
+    readonly_fields = (
+        "percentage",
+        "rank",
+        "previous_class",
     )

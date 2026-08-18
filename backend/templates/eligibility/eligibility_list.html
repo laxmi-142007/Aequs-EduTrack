@@ -1,0 +1,441 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Eligibility | EduTrack</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #172554;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            background: #2563eb;
+            padding: 9px 15px;
+            border-radius: 7px;
+        }
+
+        .content {
+            max-width: 1400px;
+            margin: auto;
+            padding: 30px;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0 0 6px;
+            color: #172554;
+        }
+
+        .header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .filter-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input,
+        select {
+            min-width: 180px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .button {
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+        }
+
+        .clear {
+            background: #64748b;
+        }
+
+        .clear:hover {
+            background: #475569;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #64748b;
+            font-size: 13px;
+            background: #f8fafc;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .student {
+            font-weight: 700;
+            color: #172554;
+        }
+
+        .eligible {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .not-eligible {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .benefit {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .rank {
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .reason {
+            color: #64748b;
+            max-width: 450px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 700px) {
+
+            .content {
+                padding: 18px;
+            }
+
+            .topbar {
+                padding: 15px 18px;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            input,
+            select {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .button {
+                text-align: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <h1>EduTrack - Eligibility</h1>
+
+    <a href="{% url 'dashboard' %}" class="back">
+        Dashboard
+    </a>
+
+</header>
+
+
+<main class="content">
+
+    <div class="header">
+
+        <h2>Student Benefit Eligibility</h2>
+
+        <p>
+            View calculated eligibility for books, workbooks,
+            study kits, laptops and internships.
+        </p>
+
+    </div>
+
+
+    <div class="filter-card">
+
+        <form method="get">
+
+            <div class="filters">
+
+                <div class="field">
+
+                    <label for="year">
+                        Academic Year
+                    </label>
+
+                    <input
+                        type="text"
+                        id="year"
+                        name="year"
+                        value="{{ selected_year }}"
+                        placeholder="Example: 2026-27"
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label for="benefit">
+                        Benefit
+                    </label>
+
+                    <select
+                        id="benefit"
+                        name="benefit"
+                    >
+
+                        <option value="">
+                            All Benefits
+                        </option>
+
+                        {% for value, label in benefit_choices %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if selected_benefit == value %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="button"
+                >
+                    Filter
+                </button>
+
+
+                <a
+                    href="{% url 'eligibility:list' %}"
+                    class="button clear"
+                >
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="table-card">
+
+        {% if records %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Student</th>
+                    <th>Benefit</th>
+                    <th>Academic Year</th>
+                    <th>Eligibility</th>
+                    <th>Rank</th>
+                    <th>Reason</th>
+                    <th>Checked At</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for record in records %}
+
+                <tr>
+
+                    <td class="student">
+                        {{ record.student.student_name }}
+                    </td>
+
+                    <td class="benefit">
+                        {{ record.get_benefit_type_display }}
+                    </td>
+
+                    <td>
+                        {{ record.academic_year }}
+                    </td>
+
+                    <td>
+
+                        {% if record.eligible %}
+
+                            <span class="eligible">
+                                Eligible
+                            </span>
+
+                        {% else %}
+
+                            <span class="not-eligible">
+                                Not Eligible
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if record.selection_rank %}
+                            <span class="rank">
+                                #{{ record.selection_rank }}
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </td>
+
+                    <td class="reason">
+                        {{ record.reason|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ record.checked_at|date:"d M Y, H:i" }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+        <div class="empty">
+            No eligibility records found.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</main>
+
+</body>
+</html>

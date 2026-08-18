@@ -8,6 +8,8 @@ class Distribution(models.Model):
         BOOK = "BOOK", "Books"
         WORKBOOK = "WORKBOOK", "Workbook"
         STUDY_KIT = "STUDY_KIT", "Study Kit"
+        LAPTOP = "LAPTOP", "Laptop"
+        INTERNSHIP = "INTERNSHIP", "Internship"
 
     student = models.ForeignKey(
         Student,

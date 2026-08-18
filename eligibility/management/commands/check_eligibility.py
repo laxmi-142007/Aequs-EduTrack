@@ -1,12 +1,11 @@
-from django.core.management.base import BaseCommand
+﻿from django.core.management.base import BaseCommand
 
 from students.models import Student
-from eligibility.models import EligibilityRecord
+
 from eligibility.services import (
-    calculate_student_eligibility,
-    calculate_study_kit_eligibility,
-    calculate_study_kit_continuation,
-    calculate_laptop_eligibility,
+    generate_student_eligibility,
+    generate_study_kit_eligibility,
+    generate_laptop_eligibility,
 )
 
 
@@ -33,62 +32,43 @@ class Command(BaseCommand):
         processed = 0
 
         # ----------------------------------------
-        # BOOKS + WORKBOOK
+        # BOOKS + WORKBOOK + CONTINUATION + INTERNSHIP
         # ----------------------------------------
+
         for student in students:
 
-            results = calculate_student_eligibility(
-                student,
-                academic_year
+            results = generate_student_eligibility(
+                student=student,
+                academic_year=academic_year,
             )
 
-            for result in results:
-
-                EligibilityRecord.objects.update_or_create(
-                    student=result.student,
-                    benefit_type=result.benefit_type,
-                    academic_year=result.academic_year,
-                    defaults={
-                        "eligible": result.eligible,
-                        "selection_rank": result.selection_rank,
-                        "reason": result.reason,
-                    },
-                )
-
-                processed += 1
+            processed += len(results)
 
         # ----------------------------------------
         # STUDY KIT - TOP 10 CLASS 10
         # ----------------------------------------
-        study_kit_count = calculate_study_kit_eligibility(
-            academic_year=academic_year,
-            limit=10,
-        )
 
-        # ----------------------------------------
-        # STUDY KIT CONTINUATION
-        # ----------------------------------------
-        continued_count = calculate_study_kit_continuation(
-            academic_year=academic_year,
+        generate_study_kit_eligibility(
+            academic_year=academic_year
         )
 
         # ----------------------------------------
         # LAPTOP - TOP 10 SECOND PUC
         # ----------------------------------------
-        laptop_count = calculate_laptop_eligibility(
-            academic_year=academic_year,
-            limit=10,
+
+        generate_laptop_eligibility(
+            academic_year=academic_year
         )
 
         # ----------------------------------------
         # FINAL RESULT
         # ----------------------------------------
+
         self.stdout.write(
             self.style.SUCCESS(
-                f"Eligibility calculation completed. "
-                f"{processed} basic records processed. "
-                f"{study_kit_count} Class 10 students ranked for Study Kit. "
-                f"{continued_count} previous Study Kit students continued. "
-                f"{laptop_count} 2nd PUC students ranked for Laptop."
+                f"Eligibility calculation completed successfully. "
+                f"{processed} individual eligibility records processed. "
+                f"Study Kit and Laptop rankings generated for "
+                f"{academic_year}."
             )
         )
