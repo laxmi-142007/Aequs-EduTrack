@@ -34,4 +34,5 @@ urlpatterns = [
     # Old views kept for ponytail compatibility
     path("", views.school_list, name="list"),
     path("add/", views.school_create, name="create"),
+    path("add/", views.school_create, name="add"),
 ]

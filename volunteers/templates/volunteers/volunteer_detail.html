@@ -52,15 +52,16 @@
     }
 }
 
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             font-family: "Segoe UI", Arial, sans-serif;
             background: #f4f7fb;
             color: #1f2937;
+        }
+
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
         }
 
         .header {
@@ -405,22 +406,32 @@
 
 <body>
 
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='volunteers' %}
 
-<header class="header">
+    <div class="main">
 
-    <div class="header-content">
+        <header class="header">
 
-        <div class="brand">
-            Aequs EduTrack
-        </div>
+            <div class="header-content" style="display: flex; justify-content: space-between; align-items: center;">
 
-        <div class="subtitle">
-            Government School Foundation Management System
-        </div>
+                <div>
+                    <div class="brand">
+                        👥 Volunteer Profile
+                    </div>
 
-    </div>
+                    <div class="subtitle">
+                        Government School Foundation Management System
+                    </div>
+                </div>
 
-</header>
+                <a href="{% url 'volunteers:list' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 10px 18px; border-radius: 7px; font-weight: 600;">
+                    ← Back to Volunteers
+                </a>
+
+            </div>
+
+        </header>
 
 
 <main class="container">
@@ -952,6 +963,7 @@
 
 </main>
 
+</div>
 
 </body>
 

@@ -14,10 +14,15 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .topbar {
-            background: #172554;
-            color: white;
-            padding: 18px 30px;
+            background: white;
+            padding: 20px 35px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -25,19 +30,22 @@
 
         .topbar h1 {
             margin: 0;
-            font-size: 23px;
+            font-size: 24px;
+            color: #111827;
         }
 
         .back {
-            color: white;
+            color: #4b5563;
             text-decoration: none;
-            background: #2563eb;
-            padding: 9px 15px;
-            border-radius: 7px;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .content {
-            padding: 30px;
+            padding: 30px 35px;
         }
 
         .card {
@@ -84,63 +92,70 @@
 
 <body>
 
-<header class="topbar">
-    <h1>EduTrack - Internships</h1>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='internships' %}
 
-    <a href="{% url 'dashboard' %}" class="back">
-        &larr; Dashboard
-    </a>
-</header>
+    <div class="main">
 
-<main class="content">
+        <header class="topbar">
+            <h1>💼 Internships</h1>
 
-    <div class="card">
+            <a href="{% url 'dashboard' %}" class="back">
+                ← Dashboard
+            </a>
+        </header>
 
-        <h2>Eligible Internship Students</h2>
+        <main class="content">
 
-        {% if records %}
+            <div class="card">
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Admission Number</th>
-                    <th>Academic Year</th>
-                    <th>Status</th>
-                    <th>Reason</th>
-                </tr>
-            </thead>
+                <h2>Eligible Internship Students</h2>
 
-            <tbody>
+                {% if records %}
 
-            {% for record in records %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Admission Number</th>
+                            <th>Academic Year</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
 
-            <tr>
-                <td>{{ record.student.student_name }}</td>
-                <td>{{ record.student.admission_number }}</td>
-                <td>{{ record.academic_year }}</td>
-                <td>
-                    <span class="badge">Eligible</span>
-                </td>
-                <td>{{ record.reason }}</td>
-            </tr>
+                    <tbody>
 
-            {% endfor %}
+                    {% for record in records %}
 
-            </tbody>
-        </table>
+                    <tr>
+                        <td>{{ record.student.student_name }}</td>
+                        <td>{{ record.student.admission_number }}</td>
+                        <td>{{ record.academic_year }}</td>
+                        <td>
+                            <span class="badge">Eligible</span>
+                        </td>
+                        <td>{{ record.reason }}</td>
+                    </tr>
 
-        {% else %}
+                    {% endfor %}
 
-        <div class="empty">
-            No students are currently eligible for internships.
-        </div>
+                    </tbody>
+                </table>
 
-        {% endif %}
+                {% else %}
+
+                <div class="empty">
+                    No students are currently eligible for internships.
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </main>
 
     </div>
-
-</main>
 
 </body>
 </html>

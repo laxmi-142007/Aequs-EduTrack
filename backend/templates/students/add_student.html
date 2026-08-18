@@ -47,6 +47,11 @@
         line-height: 1.5;
     }
 
+    .main {
+        margin-left: 256px;
+        min-height: 100vh;
+    }
+
     /* =========================
        TOP HEADER
     ========================== */
@@ -612,13 +617,14 @@
         }
     }
 </style>
-```
-
 </head>
 
 <body>
 
-```
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='students' %}
+
+    <div class="main">
 <!-- =========================
      HEADER
 ========================== -->
@@ -1164,6 +1170,8 @@
     </div>
 
 </main>
+
+</div>
 
 </body>
 </html>

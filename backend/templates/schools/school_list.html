@@ -18,10 +18,15 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 30px;
         }
 
         .header {
@@ -160,11 +165,16 @@
 
 <body>
 
-<div class="container">
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='schools' %}
 
-    <a href="/" class="back">
-        ← Back to Dashboard
-    </a>
+    <div class="main">
+
+        <div class="container">
+
+            <a href="{% url 'dashboard' %}" class="back">
+                ← Back to Dashboard
+            </a>
 
     <div class="header">
 
@@ -278,6 +288,8 @@
         {% endif %}
 
     </div>
+
+</div>
 
 </div>
 

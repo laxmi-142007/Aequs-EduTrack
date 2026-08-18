@@ -48,65 +48,12 @@
            1 SINGLE UNIFIED SIDEBAR
         ============================================================= */
 
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 240px;
-            height: 100vh;
-            background: var(--primary-dark);
-            color: white;
-            padding: 24px 16px;
-            overflow-y: auto;
-            z-index: 100;
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-            padding: 0 12px 28px;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .brand span {
-            color: #60a5fa;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #dbeafe;
-            text-decoration: none;
-            padding: 11px 14px;
-            margin: 4px 0;
-            border-radius: 8px;
-            font-size: 14.5px;
-            font-weight: 500;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .nav-item:hover {
-            background: #1e40af;
-            color: white;
-        }
-
-        .nav-item.active {
-            background: var(--primary-color);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
-        }
-
         /* =============================================================
            MAIN WORKSPACE AREA
         ============================================================= */
 
         .main {
-            margin-left: 240px;
+            margin-left: 256px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -709,70 +656,8 @@
     <!-- CSRF Token helper for JS AJAX -->
     {% csrf_token %}
 
-    <!-- =========================================================
-         1 ONLY SIDEBAR (Unified EduTrack Navigation)
-    ========================================================== -->
-    <aside class="sidebar">
-        <!-- Logo -->
-        <div class="brand">
-            Edu<span>Track</span>
-        </div>
-
-        <!-- Dashboard -->
-        <a href="{% url 'dashboard' %}" class="nav-item">
-            <span>🏠</span> <span>Dashboard</span>
-        </a>
-
-        <!-- Schools (Active) -->
-        <a href="{% url 'schools:portal' %}" class="nav-item active">
-            <span>🏫</span> <span>Schools</span>
-        </a>
-
-        <!-- Students -->
-        <a href="{% url 'students:list' %}" class="nav-item">
-            <span>🎓</span> <span>Students</span>
-        </a>
-
-        <!-- Academics -->
-        <a href="{% url 'academics:portal' %}" class="nav-item">
-            <span>📚</span> <span>Academics</span>
-        </a>
-
-        <!-- Eligibility -->
-        <a href="{% url 'eligibility:portal' %}" class="nav-item">
-            <span>✅</span> <span>Eligibility</span>
-        </a>
-
-        <!-- Inventory -->
-        <a href="{% url 'inventory:portal' %}" class="nav-item">
-            <span>💻</span> <span>Inventory</span>
-        </a>
-
-        <!-- Distributions -->
-        <a href="{% url 'distributions:list' %}" class="nav-item">
-            <span>📦</span> <span>Distributions</span>
-        </a>
-
-        <!-- Internships -->
-        <a href="{% url 'internships:portal' %}" class="nav-item">
-            <span>💼</span> <span>Internships</span>
-        </a>
-
-        <!-- Events -->
-        <a href="{% url 'events:list' %}" class="nav-item">
-            <span>📅</span> <span>Events</span>
-        </a>
-
-        <!-- Volunteers -->
-        <a href="{% url 'volunteers:list' %}" class="nav-item">
-            <span>👥</span> <span>Volunteers</span>
-        </a>
-
-        <!-- Reports -->
-        <a href="{% url 'reports:list' %}" class="nav-item">
-            <span>📊</span> <span>Reports</span>
-        </a>
-    </aside>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='schools' %}
 
     <!-- =========================================================
          MAIN WORKSPACE AREA

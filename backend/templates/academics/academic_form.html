@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if record %}Edit{% else %}Add{% endif %} Academic Record</title>
-
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f5f7fb;
             margin: 0;
+            padding: 0;
+        }
+
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
             padding: 30px;
         }
 
         .container {
             max-width: 800px;
-            margin: auto;
+            margin: 0 auto;
             background: white;
             padding: 30px;
             border-radius: 10px;
@@ -84,33 +88,40 @@
 
 <body>
 
-<div class="container">
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='academics' %}
 
-    <h1>
-        {% if record %}
-            Edit Academic Record
-        {% else %}
-            Add Academic Record
-        {% endif %}
-    </h1>
+    <div class="main">
 
-    <form method="post">
-        {% csrf_token %}
+        <div class="container">
 
-        {{ form.as_p }}
+            <h1>
+                {% if record %}
+                    Edit Academic Record
+                {% else %}
+                    Add Academic Record
+                {% endif %}
+            </h1>
 
-        <div class="buttons">
-            <button type="submit" class="btn btn-primary">
-                {% if record %}Update Record{% else %}Add Record{% endif %}
-            </button>
+            <form method="post">
+                {% csrf_token %}
 
-            <a href="{% url 'academics:list' %}" class="btn btn-secondary">
-                Cancel
-            </a>
+                {{ form.as_p }}
+
+                <div class="buttons">
+                    <button type="submit" class="btn btn-primary">
+                        {% if record %}Update Record{% else %}Add Record{% endif %}
+                    </button>
+
+                    <a href="{% url 'academics:list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+
         </div>
-    </form>
 
-</div>
+    </div>
 
 </body>
 </html>

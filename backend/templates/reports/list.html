@@ -18,10 +18,15 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .topbar {
-            background: #172554;
-            color: white;
-            padding: 18px 30px;
+            background: white;
+            padding: 20px 35px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -29,19 +34,22 @@
 
         .topbar h1 {
             margin: 0;
-            font-size: 23px;
+            font-size: 24px;
+            color: #111827;
         }
 
         .back {
-            color: white;
+            color: #4b5563;
             text-decoration: none;
-            background: #2563eb;
-            padding: 9px 15px;
-            border-radius: 7px;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .content {
-            padding: 30px;
+            padding: 30px 35px;
         }
 
         .filter {
@@ -96,99 +104,106 @@
 
 <body>
 
-<header class="topbar">
-    <h1>EduTrack - Reports</h1>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='reports' %}
 
-    <a href="{% url 'dashboard' %}" class="back">
-        &larr; Dashboard
-    </a>
-</header>
+    <div class="main">
 
-<main class="content">
+        <header class="topbar">
+            <h1>📊 Reports & Analytics</h1>
 
-    <div class="filter">
+            <a href="{% url 'dashboard' %}" class="back">
+                ← Dashboard
+            </a>
+        </header>
 
-        <form method="get">
+        <main class="content">
 
-            <label for="year">
-                Academic Year:
-            </label>
+            <div class="filter">
 
-            <select name="year" id="year">
+                <form method="get">
 
-                <option value="">
-                    All Years
-                </option>
+                    <label for="year">
+                        Academic Year:
+                    </label>
 
-                {% for year in academic_years %}
+                    <select name="year" id="year">
 
-                    <option value="{{ year }}"
-                        {% if selected_academic_year == year %}
-                            selected
-                        {% endif %}>
-                        {{ year }}
-                    </option>
+                        <option value="">
+                            All Years
+                        </option>
 
-                {% endfor %}
+                        {% for year in academic_years %}
 
-            </select>
+                            <option value="{{ year }}"
+                                {% if selected_academic_year == year %}
+                                    selected
+                                {% endif %}>
+                                {{ year }}
+                            </option>
 
-            <button type="submit">
-                Filter
-            </button>
+                        {% endfor %}
 
-        </form>
+                    </select>
+
+                    <button type="submit">
+                        Filter
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <div class="cards">
+
+                <div class="card">
+                    <h3>Active Students</h3>
+                    <div class="number">
+                        {{ total_students }}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Books Eligible</h3>
+                    <div class="number">
+                        {{ book_count }}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Workbook Eligible</h3>
+                    <div class="number">
+                        {{ workbook_count }}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Study Kit Eligible</h3>
+                    <div class="number">
+                        {{ study_kit_count }}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Laptop Eligible</h3>
+                    <div class="number">
+                        {{ laptop_count }}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Internship Eligible</h3>
+                    <div class="number">
+                        {{ internship_count }}
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
 
     </div>
-
-
-    <div class="cards">
-
-        <div class="card">
-            <h3>Active Students</h3>
-            <div class="number">
-                {{ total_students }}
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Books Eligible</h3>
-            <div class="number">
-                {{ book_count }}
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Workbook Eligible</h3>
-            <div class="number">
-                {{ workbook_count }}
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Study Kit Eligible</h3>
-            <div class="number">
-                {{ study_kit_count }}
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Laptop Eligible</h3>
-            <div class="number">
-                {{ laptop_count }}
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Internship Eligible</h3>
-            <div class="number">
-                {{ internship_count }}
-            </div>
-        </div>
-
-    </div>
-
-</main>
 
 </body>
 </html>

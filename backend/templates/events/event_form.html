@@ -17,6 +17,11 @@
             color: #1e293b;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .header {
             background: #2563eb;
             color: #ffffff;
@@ -145,89 +150,96 @@
 
 <body>
 
-<div class="header">
-    <h1>&#128197; Add Event</h1>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='events' %}
 
-    <a href="{% url 'events:list' %}" class="back-button">
-        &#8592; Back to Events
-    </a>
-</div>
+    <div class="main">
 
-<div class="container">
+        <div class="header">
+            <h1>&#128197; Add Event</h1>
 
-    <div class="card">
+            <a href="{% url 'events:list' %}" class="back-button">
+                &#8592; Back to Events
+            </a>
+        </div>
 
-        <h2>Create New Event</h2>
+        <div class="container">
 
-        <form method="post">
-            {% csrf_token %}
+            <div class="card">
 
-            <div class="form-group">
-                <label for="title">Event Title *</label>
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    maxlength="200"
-                    required
-                >
+                <h2>Create New Event</h2>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="title">Event Title *</label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            maxlength="200"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_date">Event Date *</label>
+                        <input
+                            type="date"
+                            id="event_date"
+                            name="event_date"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            maxlength="200"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organizer">Organizer</label>
+                        <input
+                            type="text"
+                            id="organizer"
+                            name="organizer"
+                            maxlength="150"
+                        >
+                    </div>
+
+                    <div class="actions">
+
+                        <button type="submit" class="save-button">
+                            Create Event
+                        </button>
+
+                        <a href="{% url 'events:list' %}" class="cancel-button">
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </form>
+
             </div>
 
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea
-                    id="description"
-                    name="description"
-                ></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="event_date">Event Date *</label>
-                <input
-                    type="date"
-                    id="event_date"
-                    name="event_date"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="location">Location</label>
-                <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    maxlength="200"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="organizer">Organizer</label>
-                <input
-                    type="text"
-                    id="organizer"
-                    name="organizer"
-                    maxlength="150"
-                >
-            </div>
-
-            <div class="actions">
-
-                <button type="submit" class="save-button">
-                    Create Event
-                </button>
-
-                <a href="{% url 'events:list' %}" class="cancel-button">
-                    Cancel
-                </a>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
-
-</div>
 
 </body>
 </html>

@@ -23,10 +23,15 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .container {
-            max-width: 850px;
-            margin: 40px auto;
-            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px;
         }
 
         .back {
@@ -174,11 +179,16 @@
 
 <body>
 
-<div class="container">
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='schools' %}
 
-    <a href="{% url 'schools:list' %}" class="back">
-        ← Back to Schools
-    </a>
+    <div class="main">
+
+        <div class="container">
+
+            <a href="{% url 'schools:portal' %}" class="back">
+                ← Back to Schools Portal
+            </a>
 
 
     <h1>Add School</h1>
@@ -407,6 +417,8 @@
         </form>
 
     </div>
+
+</div>
 
 </div>
 

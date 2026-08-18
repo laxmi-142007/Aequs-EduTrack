@@ -112,7 +112,7 @@
            MAIN LAYOUT & TOPBAR
         ============================================================= */
         .main {
-            margin-left: 240px;
+            margin-left: 256px;
             flex: 1;
             min-height: 100vh;
             display: flex;
@@ -1182,58 +1182,8 @@
 </head>
 <body>
 
-    <!-- =====================================================
-         UNIFIED SIDEBAR
-    ====================================================== -->
-    <aside class="sidebar">
-        <div class="brand">
-            📚 <span>EduTrack</span>
-        </div>
-
-        <a href="{% url 'dashboard' %}" class="nav-item">
-            🏠 Dashboard
-        </a>
-
-        <a href="{% url 'schools:portal' %}" class="nav-item">
-            🏫 Schools
-        </a>
-
-        <a href="{% url 'students:list' %}" class="nav-item">
-            🎓 Students
-        </a>
-
-        <a href="{% url 'academics:portal' %}" class="nav-item">
-            📚 Academics
-        </a>
-
-        <a href="{% url 'eligibility:portal' %}" class="nav-item active">
-            ✅ Eligibility
-        </a>
-
-        <a href="{% url 'inventory:portal' %}" class="nav-item">
-            💻 Inventory
-        </a>
-
-        <a href="{% url 'distributions:list' %}" class="nav-item">
-            📦 Distributions
-        </a>
-
-        <a href="{% url 'internships:portal' %}" class="nav-item">
-            💼 Internships
-        </a>
-
-        <a href="{% url 'events:list' %}" class="nav-item">
-            📅 Events
-        </a>
-
-        <a href="{% url 'volunteers:list' %}" class="nav-item">
-            👥 Volunteers
-        </a>
-
-        <a href="{% url 'reports:list' %}" class="nav-item">
-            📊 Reports
-        </a>
-    </aside>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='eligibility' %}
 
 
     <!-- =====================================================

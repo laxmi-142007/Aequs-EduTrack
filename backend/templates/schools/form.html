@@ -17,10 +17,15 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .topbar {
-            background: #172554;
-            color: white;
-            padding: 18px 30px;
+            background: white;
+            padding: 20px 35px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -28,21 +33,23 @@
 
         .topbar h1 {
             margin: 0;
-            font-size: 23px;
+            font-size: 24px;
+            color: #111827;
         }
 
         .back {
-            color: white;
+            color: #4b5563;
             text-decoration: none;
-            background: #2563eb;
-            padding: 9px 15px;
-            border-radius: 7px;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .content {
-            padding: 30px;
+            padding: 30px 35px;
             max-width: 1000px;
-            margin: auto;
         }
 
         .form-card {
@@ -154,15 +161,20 @@
 
 <body>
 
-<header class="topbar">
-    <h1>EduTrack - Add School</h1>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='schools' %}
 
-    <a href="{% url 'schools:portal' %}" class="back">
-        Back to Portal
-    </a>
-</header>
+    <div class="main">
 
-<main class="content">
+        <header class="topbar">
+            <h1>🏫 Add School</h1>
+
+            <a href="{% url 'schools:portal' %}" class="back">
+                ← Back to Portal
+            </a>
+        </header>
+
+        <main class="content">
 
     <div class="form-card">
 
@@ -204,7 +216,7 @@
                     Save School
                 </button>
 
-                <a href="{% url 'school_list' %}" class="button cancel">
+                <a href="{% url 'schools:portal' %}" class="button cancel">
                     Cancel
                 </a>
             </div>
@@ -214,6 +226,8 @@
     </div>
 
 </main>
+
+</div>
 
 </body>
 </html>

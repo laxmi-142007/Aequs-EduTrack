@@ -18,10 +18,15 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .topbar {
-            background: #172554;
-            color: white;
-            padding: 18px 30px;
+            background: white;
+            padding: 20px 35px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -29,21 +34,23 @@
 
         .topbar h1 {
             margin: 0;
-            font-size: 23px;
+            font-size: 24px;
+            color: #111827;
         }
 
         .back {
-            color: white;
+            color: #4b5563;
             text-decoration: none;
-            background: #2563eb;
-            padding: 9px 15px;
-            border-radius: 7px;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .content {
             max-width: 1000px;
-            margin: 0 auto;
-            padding: 30px;
+            padding: 30px 35px;
         }
 
         .form-card {
@@ -140,74 +147,81 @@
 
 <body>
 
-<header class="topbar">
-    <h1>EduTrack</h1>
-    <a href="{% url 'student_list' %}" class="back">← Students</a>
-</header>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='students' %}
 
-<main class="content">
+    <div class="main">
 
-    <div class="form-card">
+        <header class="topbar">
+            <h1>🎓 Student Registration</h1>
+            <a href="{% url 'students:list' %}" class="back">← Back to Students</a>
+        </header>
 
-    <h2>
-    {% if editing %}
-        Edit Student
-    {% else %}
-        Add Student
-    {% endif %}
-    </h2>
+        <main class="content">
 
-        <form method="post" enctype="multipart/form-data">
+            <div class="form-card">
 
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-                <div class="error">
-                    {{ form.non_field_errors }}
-                </div>
+            <h2>
+            {% if editing %}
+                Edit Student
+            {% else %}
+                Add Student
             {% endif %}
+            </h2>
 
-            <div class="form-grid">
+                <form method="post" enctype="multipart/form-data">
 
-                {% for field in form %}
-                    <div class="field {% if field.name == 'address' %}full{% endif %}">
+                    {% csrf_token %}
 
-                        <label for="{{ field.id_for_label }}">
-                            {{ field.label }}
-                        </label>
+                    {% if form.non_field_errors %}
+                        <div class="error">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-                        {{ field }}
+                    <div class="form-grid">
 
-                        {% for error in field.errors %}
-                            <div class="error">
-                                {{ error }}
+                        {% for field in form %}
+                            <div class="field {% if field.name == 'address' %}full{% endif %}">
+
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% for error in field.errors %}
+                                    <div class="error">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
                             </div>
                         {% endfor %}
 
                     </div>
-                {% endfor %}
+
+                    <div class="buttons">
+                        <button type="submit">
+                        {% if editing %}
+                        Update Student
+                         {% else %}
+                         Save Student
+                        {% endif %}
+                        </button>
+
+                        <a href="{% url 'students:list' %}" class="cancel">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
 
             </div>
 
-            <div class="buttons">
-                <button type="submit">
-                {% if editing %}
-                Update Student
-                 {% else %}
-                 Save Student
-                {% endif %}
-                </button>
-
-                <a href="{% url 'student_list' %}" class="cancel">
-                    Cancel
-                </a>
-            </div>
-
-        </form>
+        </main>
 
     </div>
-
-</main>
 
 </body>
 </html>

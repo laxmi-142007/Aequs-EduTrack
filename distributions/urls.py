@@ -7,6 +7,7 @@ urlpatterns = [
     # Portal View
     path("", views.distribution_list, name="list"),
     path("add/", views.distribution_create, name="create"),
+    path("add/", views.distribution_create, name="add"),
 
     # REST APIs - Eligibility & Student Pickers
     path("api/students/eligible/", views.api_eligible_students, name="api_eligible_students"),

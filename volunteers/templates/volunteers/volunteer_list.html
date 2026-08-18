@@ -21,6 +21,11 @@
             color: #1f2937;
         }
 
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
         .header {
             background: linear-gradient(135deg, #123c73, #1d5fa7);
             color: white;
@@ -268,28 +273,32 @@
 
 <body>
 
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='volunteers' %}
 
-<header class="header">
+    <div class="main">
 
-    <div class="header-content" style="display: flex; justify-content: space-between; align-items: center;">
+        <header class="header">
 
-        <div>
-            <div class="brand">
-                Aequs EduTrack
+            <div class="header-content" style="display: flex; justify-content: space-between; align-items: center;">
+
+                <div>
+                    <div class="brand">
+                        👥 Volunteers
+                    </div>
+
+                    <div class="subtitle">
+                        Government School Foundation Management System
+                    </div>
+                </div>
+
+                <a href="{% url 'dashboard' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white;">
+                    ← Back to Dashboard
+                </a>
+
             </div>
 
-            <div class="subtitle">
-                Government School Foundation Management System
-            </div>
-        </div>
-
-        <a href="{% url 'dashboard' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white;">
-            &#8592; Back to Dashboard
-        </a>
-
-    </div>
-
-</header>
+        </header>
 
 
 <main class="container">
@@ -579,6 +588,10 @@ function searchVolunteers() {
 
 </script>
 
+
+</main>
+
+</div>
 
 </body>
 

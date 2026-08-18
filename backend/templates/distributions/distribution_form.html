@@ -75,7 +75,7 @@
         ========================= */
 
         .main {
-            margin-left: 240px;
+            margin-left: 256px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -225,70 +225,8 @@
 </head>
 <body>
 
-    <!-- =========================================================
-         1 ONLY SIDEBAR (Unified EduTrack Navigation)
-    ========================================================== -->
-    <aside class="sidebar">
-        <!-- Logo -->
-        <div class="brand">
-            Edu<span>Track</span>
-        </div>
-
-        <!-- Dashboard -->
-        <a href="{% url 'dashboard' %}" class="nav-item">
-            🏠 Dashboard
-        </a>
-
-        <!-- Schools -->
-        <a href="{% url 'schools:portal' %}" class="nav-item">
-            🏫 Schools
-        </a>
-
-        <!-- Students -->
-        <a href="{% url 'students:list' %}" class="nav-item">
-            🎓 Students
-        </a>
-
-        <!-- Academics -->
-        <a href="{% url 'academics:portal' %}" class="nav-item">
-            📚 Academics
-        </a>
-
-        <!-- Eligibility -->
-        <a href="{% url 'eligibility:portal' %}" class="nav-item">
-            ✅ Eligibility
-        </a>
-
-        <!-- Inventory -->
-        <a href="{% url 'inventory:portal' %}" class="nav-item">
-            💻 Inventory
-        </a>
-
-        <!-- Distributions (Active) -->
-        <a href="{% url 'distributions:list' %}" class="nav-item active">
-            📦 Distributions
-        </a>
-
-        <!-- Internships -->
-        <a href="{% url 'internships:portal' %}" class="nav-item">
-            💼 Internships
-        </a>
-
-        <!-- Events -->
-        <a href="{% url 'events:list' %}" class="nav-item">
-            📅 Events
-        </a>
-
-        <!-- Volunteers -->
-        <a href="{% url 'volunteers:list' %}" class="nav-item">
-            👥 Volunteers
-        </a>
-
-        <!-- Reports -->
-        <a href="{% url 'reports:list' %}" class="nav-item">
-            📊 Reports
-        </a>
-    </aside>
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='distributions' %}
 
     <!-- =========================================================
          MAIN WORKSPACE AREA
