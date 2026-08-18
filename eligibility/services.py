@@ -201,17 +201,11 @@ def get_top_class_10_students(academic_year):
     return class_10_records[:10]
 
 
-def generate_study_kit_eligibility(academic_year):
-
-    top_records = get_top_class_10_students(
-        academic_year
-    )
-
-    for rank, record in enumerate(
-        top_records,
-        start=1,
-    ):
-
+def generate_study_kit_eligibility(academic_year, limit=10):
+    top_records = get_top_class_10_students(academic_year)
+    count = 0
+    for rank, record in enumerate(top_records[:limit], start=1):
+        pct = get_percentage(record)
         create_or_update_eligibility(
             student=record.student,
             benefit_type=BenefitType.STUDY_KIT,
@@ -375,28 +369,17 @@ def get_top_puc_students(academic_year, limit=10):
 
 
 def generate_laptop_eligibility(academic_year, limit=10):
-    top_records = get_top_puc_students(academic_year, limit=limit)
+    top_records = get_laptop_qualifying_students(academic_year)
     count = 0
-    for rank, record in enumerate(top_records, start=1):
+    for rank, record in enumerate(top_records[:limit], start=1):
         pct = get_percentage(record)
-def generate_laptop_eligibility(academic_year):
-
-    top_records = get_laptop_qualifying_students(
-        academic_year
-    )
-
-    for rank, record in enumerate(
-        top_records,
-        start=1,
-    ):
-
         create_or_update_eligibility(
             student=record.student,
             benefit_type=BenefitType.LAPTOP,
             academic_year=academic_year,
             eligible=True,
             selection_rank=rank,
-            reason=f"Top {limit} Merit Laptop Scholar in 2nd PUC (Rank #{rank} with {pct:.2f}% score).",
+            reason=f"Top {limit} Merit Laptop Scholar in 2nd PUC / Diploma Qualifying Stage (Rank #{rank} with {pct:.2f}% score).",
         )
         count += 1
     return count
