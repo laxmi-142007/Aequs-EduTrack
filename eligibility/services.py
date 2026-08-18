@@ -20,35 +20,59 @@ def get_latest_academic_record(student, academic_year=None):
 
 def parse_class_number(class_or_course):
     """
-    Parses class/standard number from various text representations:
-    'Class 10', '10th', 'Standard 10', 'Std 10', 'X', '10', 'Class 5', etc.
+    Parse school class/standard numbers only.
+
+    PUC, Diploma and ITI are higher/pre-university courses
+    and must not be interpreted as school classes.
     """
     if not class_or_course:
         return None
+
     val = str(class_or_course).lower().strip()
-    
-    # Roman numeral support for 1 to 10
+
+    # PUC/Diploma/ITI are NOT school classes.
+    if any(term in val for term in [
+        "puc",
+        "pre-university",
+        "pre university",
+        "diploma",
+        "iti",
+    ]):
+        return None
+
     roman_map = {
-        "x": 10, "ix": 9, "viii": 8, "vii": 7, "vi": 6,
-        "v": 5, "iv": 4, "iii": 3, "ii": 2, "i": 1
+        "x": 10,
+        "ix": 9,
+        "viii": 8,
+        "vii": 7,
+        "vi": 6,
+        "v": 5,
+        "iv": 4,
+        "iii": 3,
+        "ii": 2,
+        "i": 1,
     }
-    
+
     for r, num in roman_map.items():
-        if val in [r, f"class {r}", f"standard {r}", f"std {r}"]:
+        if val in [
+            r,
+            f"class {r}",
+            f"standard {r}",
+            f"std {r}",
+        ]:
             return num
 
-    # Match digits
-    match = re.search(r"\b([1-9]|10)\b", val)
+    # Match digits 1-10.
+    match = re.search(r"\b(10|[1-9])\b", val)
     if match:
         return int(match.group(1))
 
-    # Match ordinal (1st, 2nd... 10th)
-    match_ord = re.search(r"\b([1-9]|10)(st|nd|rd|th)\b", val)
+    # Match ordinal values such as 5th, 10th.
+    match_ord = re.search(r"\b(10|[1-9])(st|nd|rd|th)\b", val)
     if match_ord:
         return int(match_ord.group(1))
 
     return None
-
 
 def is_class_number(class_or_course, number):
     parsed = parse_class_number(class_or_course)

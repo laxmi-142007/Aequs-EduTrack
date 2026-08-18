@@ -30,24 +30,45 @@ class DistributionForm(forms.ModelForm):
             "remarks": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Distribution notes..."}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, skip_eligibility=False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.skip_eligibility = skip_eligibility
+
         self.fields["student"].required = False
         self.fields["school"].required = False
         self.fields["inventory_item"].required = False
-        self.fields["student"].queryset = Student.objects.select_related("school").all().order_by("student_name")
-        self.fields["school"].queryset = School.objects.all().order_by("name")
-        self.fields["inventory_item"].queryset = InventoryItem.objects.all().order_by("item_name")
+
+        self.fields["student"].queryset = (
+            Student.objects
+            .select_related("school")
+            .all()
+            .order_by("student_name")
+        )
+
+        self.fields["school"].queryset = (
+            School.objects
+            .all()
+            .order_by("name")
+        )
+
+        self.fields["inventory_item"].queryset = (
+            InventoryItem.objects
+            .all()
+            .order_by("item_name")
+        )
 
     def clean(self):
         cleaned_data = super().clean()
+
         student = cleaned_data.get("student")
         school = cleaned_data.get("school")
         benefit_type = cleaned_data.get("benefit_type")
         academic_year = cleaned_data.get("academic_year")
 
         if not student and not school:
-            raise forms.ValidationError("Please select either a Student or a School as the recipient.")
+            raise forms.ValidationError(
+                "Please select either a Student or a School as the recipient."
+            )
 
         if student and not school:
             cleaned_data["school"] = student.school
@@ -55,28 +76,23 @@ class DistributionForm(forms.ModelForm):
         if not student or not benefit_type or not academic_year:
             return cleaned_data
 
-        # ==========================================
-        # CHECK ELIGIBILITY
-        # ==========================================
+        # Check eligibility unless explicitly skipped by the create view.
+        if not self.skip_eligibility:
+            eligible = EligibilityRecord.objects.filter(
+                student=student,
+                benefit_type=benefit_type,
+                academic_year=academic_year,
+                eligible=True,
+            ).exists()
 
-        eligible = EligibilityRecord.objects.filter(
-            student=student,
-            benefit_type=benefit_type,
-            academic_year=academic_year,
-            eligible=True,
-        ).exists()
+            if not eligible:
+                raise forms.ValidationError(
+                    f"{student.student_name} is not eligible for "
+                    f"{benefit_type} for academic year "
+                    f"{academic_year}."
+                )
 
-        if not eligible:
-            raise forms.ValidationError(
-                f"{student.student_name} is not eligible for "
-                f"{benefit_type} for academic year "
-                f"{academic_year}."
-            )
-
-        # ==========================================
-        # CHECK DUPLICATE DISTRIBUTION
-        # ==========================================
-
+        # Check duplicate distribution.
         already_distributed = Distribution.objects.filter(
             student=student,
             benefit_type=benefit_type,

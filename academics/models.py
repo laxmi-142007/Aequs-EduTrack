@@ -185,9 +185,14 @@ class AcademicRecord(models.Model):
         whenever an academic record is saved.
         """
 
-        self.percentage = self._calculate_percentage()
+        # Only calculate percentage when marks are supplied.
+        # Otherwise preserve an explicitly provided percentage.
+        if self.marks_obtained is not None and self.total_marks is not None:
+            self.percentage = self._calculate_percentage()
 
-        self.previous_class = self._calculate_previous_class()
+        # Calculate previous class only when not explicitly supplied.
+        if not self.previous_class:
+            self.previous_class = self._calculate_previous_class()
 
         # Rank is calculated after the record has been saved.
         self.rank = None

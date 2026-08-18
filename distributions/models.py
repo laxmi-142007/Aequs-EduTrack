@@ -75,12 +75,6 @@ class Distribution(models.Model):
         max_length=30,
         choices=BenefitType.choices,
     )
-    class BenefitType(models.TextChoices):
-        BOOK = "BOOK", "Books"
-        WORKBOOK = "WORKBOOK", "Workbook"
-        STUDY_KIT = "STUDY_KIT", "Study Kit"
-        LAPTOP = "LAPTOP", "Laptop"
-        INTERNSHIP = "INTERNSHIP", "Internship"
 
     recipient_type = models.CharField(
         max_length=20,

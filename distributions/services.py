@@ -6,6 +6,7 @@ from django.db.models import Q
 from students.models import Student
 from schools.models import School, SchoolResource
 from academics.models import AcademicRecord
+from eligibility.services import get_percentage
 from inventory.models import InventoryItem, Laptop, LaptopAssignment
 from inventory.services import process_stock_out, issue_laptop
 from .models import Distribution, BenefitType, RecipientType, SchoolEssentialType, StudyKit
@@ -105,7 +106,7 @@ def get_top_puc_students(academic_year=None, limit=10):
             "current_class": rec.class_or_course or rec.student.current_class,
             "school_name": rec.student.school.name if rec.student.school else "General",
             "academic_year": rec.academic_year,
-            "percentage": float(rec.percentage) if rec.percentage is not None else 0.0,
+            "percentage": float(get_percentage(rec)),
             "class_rank": rec.rank or (len(top_students) + 1),
             "promotion_status": rec.promotion_status or "Promoted",
             "has_laptop": has_laptop,
@@ -121,7 +122,7 @@ def get_top_puc_students(academic_year=None, limit=10):
 @transaction.atomic
 def distribute_books(student, item, quantity=1, academic_year="2026-27", issued_by="", remarks=""):
     """
-    Distribute Books to an eligible student (Class 1–10).
+    Distribute Books to an eligible student (Class 1â€“10).
     Automatically deducts Inventory stock and logs immutable distribution and stock records.
     """
     if quantity <= 0:

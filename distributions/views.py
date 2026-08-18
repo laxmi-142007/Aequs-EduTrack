@@ -100,7 +100,7 @@ def distribution_create(request):
     """View for creating a new distribution record via UI form"""
     from .forms import DistributionForm
     if request.method == "POST":
-        form = DistributionForm(request.POST)
+        form = DistributionForm(request.POST, skip_eligibility=True)
         if form.is_valid():
             dist = form.save(commit=False)
             if dist.student and dist.student.school and not dist.school:
