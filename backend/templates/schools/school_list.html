@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Schools | EduTrack</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .back {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            color: #172554;
+            font-size: 30px;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .add-btn {
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .add-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 700;
+            background: #f8fafc;
+        }
+
+        td {
+            color: #334155;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .school-name {
+            font-weight: 700;
+            color: #172554;
+        }
+
+        .udise {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                margin: 20px auto;
+                padding: 0 12px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .table-card {
+                padding: 12px;
+            }
+
+            th,
+            td {
+                padding: 10px 8px;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <a href="/" class="back">
+        ← Back to Dashboard
+    </a>
+
+    <div class="header">
+
+        <div>
+            <h1>Schools</h1>
+
+            <p class="subtitle">
+                Manage schools registered in EduTrack.
+            </p>
+        </div>
+
+        <a href="{% url 'schools:create' %}" class="add-btn">
+        + Add School
+        </a>
+
+    </div>
+
+
+    <div class="table-card">
+
+        {% if schools %}
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>School</th>
+                        <th>UDISE Code</th>
+                        <th>District</th>
+                        <th>Taluk</th>
+                        <th>Students</th>
+                        <th>Headmaster</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for school in schools %}
+
+                        <tr>
+
+                            <td>
+                                <div class="school-name">
+                                    {{ school.name }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="udise">
+                                    {{ school.udise_code }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ school.district }}
+                            </td>
+
+                            <td>
+                                {% if school.taluk %}
+                                    {{ school.taluk }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ school.student_strength }}
+                            </td>
+
+                            <td>
+                                {{ school.headmaster_name }}
+                            </td>
+
+                            <td>
+
+                                {% if school.status == "ACTIVE" %}
+
+                                    <span class="status active">
+                                        Active
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status inactive">
+                                        Inactive
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        {% else %}
+
+            <div class="empty">
+                <h3>No schools found</h3>
+
+                <p>
+                    There are currently no schools registered in EduTrack.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Add School | EduTrack</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .back {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            margin: 20px 0 5px;
+            color: #172554;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px #dbeafe;
+        }
+
+        .errorlist {
+            color: #dc2626;
+            margin: 5px 0;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 7px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .save {
+            background: #2563eb;
+            color: white;
+        }
+
+        .save:hover {
+            background: #1d4ed8;
+        }
+
+        .cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .cancel:hover {
+            background: #d1d5db;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        @media (max-width: 700px) {
+
+            .container {
+                margin: 20px auto;
+                padding: 15px;
+            }
+
+            .form-card {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <a href="{% url 'schools:list' %}" class="back">
+        ← Back to Schools
+    </a>
+
+
+    <h1>Add School</h1>
+
+    <p class="subtitle">
+        Register a new school in EduTrack.
+    </p>
+
+
+    <div class="form-card">
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+
+            {% if form.non_field_errors %}
+
+                {{ form.non_field_errors }}
+
+            {% endif %}
+
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.name.id_for_label }}">
+                        School Name <span class="required">*</span>
+                    </label>
+
+                    {{ form.name }}
+
+                    {{ form.name.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.udise_code.id_for_label }}">
+                        UDISE Code <span class="required">*</span>
+                    </label>
+
+                    {{ form.udise_code }}
+
+                    {{ form.udise_code.errors }}
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <label for="{{ form.address.id_for_label }}">
+                        Address <span class="required">*</span>
+                    </label>
+
+                    {{ form.address }}
+
+                    {{ form.address.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.district.id_for_label }}">
+                        District <span class="required">*</span>
+                    </label>
+
+                    {{ form.district }}
+
+                    {{ form.district.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.taluk.id_for_label }}">
+                        Taluk
+                    </label>
+
+                    {{ form.taluk }}
+
+                    {{ form.taluk.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.village.id_for_label }}">
+                        Village
+                    </label>
+
+                    {{ form.village }}
+
+                    {{ form.village.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.pincode.id_for_label }}">
+                        Pincode
+                    </label>
+
+                    {{ form.pincode }}
+
+                    {{ form.pincode.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.phone.id_for_label }}">
+                        School Phone
+                    </label>
+
+                    {{ form.phone }}
+
+                    {{ form.phone.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.email.id_for_label }}">
+                        School Email
+                    </label>
+
+                    {{ form.email }}
+
+                    {{ form.email.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.headmaster_name.id_for_label }}">
+                        Headmaster Name <span class="required">*</span>
+                    </label>
+
+                    {{ form.headmaster_name }}
+
+                    {{ form.headmaster_name.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.headmaster_phone.id_for_label }}">
+                        Headmaster Phone
+                    </label>
+
+                    {{ form.headmaster_phone }}
+
+                    {{ form.headmaster_phone.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.student_strength.id_for_label }}">
+                        Student Strength
+                    </label>
+
+                    {{ form.student_strength }}
+
+                    {{ form.student_strength.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.established_year.id_for_label }}">
+                        Established Year
+                    </label>
+
+                    {{ form.established_year }}
+
+                    {{ form.established_year.errors }}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.status.id_for_label }}">
+                        Status
+                    </label>
+
+                    {{ form.status }}
+
+                    {{ form.status.errors }}
+
+                </div>
+
+
+            </div>
+
+
+            <div class="buttons">
+
+                <button type="submit" class="btn save">
+                    Save School
+                </button>
+
+                <a href="{% url 'schools:list' %}"
+                   class="btn cancel">
+                    Cancel
+                </a>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

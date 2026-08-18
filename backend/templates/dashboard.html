@@ -284,7 +284,7 @@
         </a>
 
         <!-- Students -->
-        <a href="/students/" class="nav-item">
+        <a href="{% url 'students:list' %}" class="nav-item">
             👨‍🎓 <span>Students</span>
         </a>
 
@@ -314,17 +314,17 @@
         </a>
 
         <!-- Events -->
-        <a href="/events/" class="nav-item">
+        <a href="{% url 'events:list' %}" class="nav-item">
             📅 <span>Events</span>
         </a>
 
         <!-- Volunteers -->
-        <a href="/volunteers/" class="nav-item">
-            🤝 <span>Volunteers</span>
+        <a href="{% url 'volunteers:list' %}" class="nav-item">
+            👥 <span>Volunteers</span>
         </a>
 
         <!-- Reports -->
-        <a href="/reports/" class="nav-item">
+        <a href="{% url 'reports:list' %}" class="nav-item">
             📊 <span>Reports</span>
         </a>
 

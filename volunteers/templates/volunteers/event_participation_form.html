@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Assign Event | Aequs EduTrack</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #123c73, #1d5fa7);
+            color: white;
+            padding: 22px 40px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        }
+
+        .header-content {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin-top: 5px;
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            color: #173b6c;
+            font-size: 28px;
+        }
+
+        .description {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .volunteer-name {
+            margin-top: 8px;
+            color: #1769aa;
+            font-weight: 600;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+
+        .section {
+            padding: 30px;
+        }
+
+        .section-title {
+            margin-bottom: 24px;
+        }
+
+        .section-title h2 {
+            margin: 0 0 5px;
+            color: #173b6c;
+            font-size: 19px;
+        }
+
+        .section-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            background: white;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #1769aa;
+            box-shadow: 0 0 0 3px rgba(23,105,170,0.10);
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .footer {
+            padding: 20px 30px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-back {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-primary {
+            background: #1769aa;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #12588f;
+        }
+
+        @media (max-width: 700px) {
+
+            .header {
+                padding: 18px 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+
+            .section {
+                padding: 22px 20px;
+            }
+
+            .footer {
+                padding: 18px 20px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="header-content">
+
+        <div class="brand">
+            Aequs EduTrack
+        </div>
+
+        <div class="subtitle">
+            Government School Foundation Management System
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>Assign Event</h1>
+
+            <p class="description">
+                Record a volunteer's participation in an event.
+            </p>
+
+            <div class="volunteer-name">
+                Volunteer: {{ volunteer.first_name }} {{ volunteer.last_name }}
+            </div>
+
+        </div>
+
+        <a
+            href="{% url 'volunteers:detail' volunteer.pk %}"
+            class="btn btn-back"
+        >
+            Back to Volunteer
+        </a>
+
+    </div>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="card">
+
+            <div class="section">
+
+                <div class="section-title">
+
+                    <h2>Event Participation</h2>
+
+                    <p>
+                        Enter the event assignment and participation details.
+                    </p>
+
+                </div>
+
+
+                <div class="grid">
+
+                    <div class="full">
+
+                        <label>
+                            Event
+                            <span class="required">*</span>
+                        </label>
+
+                        <select name="event" required>
+
+                            <option value="">
+                                Select an event
+                            </option>
+
+                            {% for event in events %}
+
+                            <option value="{{ event.pk }}">
+                                {{ event.title }} — {{ event.event_date }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div>
+
+                        <label>
+                            Volunteer Role
+                        </label>
+
+                        <input
+                            type="text"
+                            name="role"
+                            placeholder="Example: Event Coordinator"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label>
+                            Participation Status
+                        </label>
+
+                        <select name="participation_status">
+
+                            <option value="ASSIGNED">
+                                Assigned
+                            </option>
+
+                            <option value="ATTENDED">
+                                Attended
+                            </option>
+
+                            <option value="ABSENT">
+                                Absent
+                            </option>
+
+                            <option value="CANCELLED">
+                                Cancelled
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div>
+
+                        <label>
+                            Hours Contributed
+                        </label>
+
+                        <input
+                            type="number"
+                            name="hours_contributed"
+                            min="0"
+                            step="0.25"
+                            value="0"
+                            placeholder="Example: 4.5"
+                        >
+
+                    </div>
+
+
+                    <div class="full">
+
+                        <label>
+                            Remarks
+                        </label>
+
+                        <textarea
+                            name="remarks"
+                            placeholder="Add any additional notes about the volunteer's participation..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="footer">
+
+                <a
+                    href="{% url 'volunteers:detail' volunteer.pk %}"
+                    class="btn btn-back"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Save Participation
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</main>
+
+</body>
+
+</html>

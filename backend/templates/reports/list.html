@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reports - EduTrack</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #172554;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            background: #2563eb;
+            padding: 9px 15px;
+            border-radius: 7px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .filter {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        }
+
+        select,
+        button {
+            padding: 10px 14px;
+            border-radius: 7px;
+            border: 1px solid #d1d5db;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        }
+
+        .card h3 {
+            margin: 0;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 10px;
+            color: #172554;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <h1>EduTrack - Reports</h1>
+
+    <a href="{% url 'dashboard' %}" class="back">
+        &larr; Dashboard
+    </a>
+</header>
+
+<main class="content">
+
+    <div class="filter">
+
+        <form method="get">
+
+            <label for="year">
+                Academic Year:
+            </label>
+
+            <select name="year" id="year">
+
+                <option value="">
+                    All Years
+                </option>
+
+                {% for year in academic_years %}
+
+                    <option value="{{ year }}"
+                        {% if selected_academic_year == year %}
+                            selected
+                        {% endif %}>
+                        {{ year }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <button type="submit">
+                Filter
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Active Students</h3>
+            <div class="number">
+                {{ total_students }}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Books Eligible</h3>
+            <div class="number">
+                {{ book_count }}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Workbook Eligible</h3>
+            <div class="number">
+                {{ workbook_count }}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Study Kit Eligible</h3>
+            <div class="number">
+                {{ study_kit_count }}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Laptop Eligible</h3>
+            <div class="number">
+                {{ laptop_count }}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Internship Eligible</h3>
+            <div class="number">
+                {{ internship_count }}
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+</body>
+</html>
