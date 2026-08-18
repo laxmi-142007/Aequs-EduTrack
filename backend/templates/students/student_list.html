@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Students | EduTrack</title>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -12,9 +15,9 @@
         }
 
         body {
-            font-family: "Segoe UI", 'Outfit', Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
             min-height: 100vh;
         }
 
@@ -26,11 +29,12 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background: #f8fafc;
         }
 
         .topbar {
             background: #ffffff;
-            padding: 16px 30px;
+            padding: 14px 28px;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
@@ -42,8 +46,8 @@
 
         .topbar h1 {
             margin: 0;
-            font-size: 20px;
-            color: #172554;
+            font-size: 18px;
+            color: #0f172a;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -51,39 +55,199 @@
         }
 
         .content {
-            padding: 30px;
+            padding: 24px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .header-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.01em;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        .stats-summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .summary-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 12.5px;
+            color: #475569;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .summary-badge strong {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .summary-badge.active-badge {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
         }
 
         .add-button {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
+            gap: 6px;
+            padding: 8px 14px;
             background-color: #2563eb;
-            color: white;
+            color: #ffffff;
             text-decoration: none;
             border-radius: 6px;
             font-weight: 600;
-            font-size: 14px;
-            transition: background-color 0.2s;
+            font-size: 13px;
+            transition: background-color 0.15s ease;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
         }
 
         .add-button:hover {
             background-color: #1d4ed8;
+            color: #ffffff;
         }
 
+        /* =========================================================
+           SHADCN-STYLE FILTER BAR
+           ========================================================= */
+        .filter-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 10px;
+            color: #94a3b8;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-input {
+            width: 100%;
+            height: 36px;
+            padding: 0 10px 0 32px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12.5px;
+            color: #0f172a;
+            background: #ffffff;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .filter-select {
+            width: 100%;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12.5px;
+            color: #0f172a;
+            background: #ffffff;
+            cursor: pointer;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn-filter-submit {
+            height: 36px;
+            padding: 0 14px;
+            background-color: #2563eb;
+            color: #ffffff;
+            border: 1px solid #2563eb;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .btn-filter-submit:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-filter-reset {
+            height: 36px;
+            padding: 0 12px;
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .btn-filter-reset:hover {
+            background-color: #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* =========================================================
+           STUDENT TABLE CARD
+           ========================================================= */
         .table-card {
-            background: white;
-            border-radius: 10px;
+            background: #ffffff;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
             border: 1px solid #e2e8f0;
         }
 
@@ -94,39 +258,130 @@
 
         th {
             background-color: #f8fafc;
-            color: #475569;
-            padding: 13px 16px;
+            color: #64748b;
+            padding: 10px 14px;
             text-align: left;
-            font-size: 12.5px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 14px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            color: #334155;
+            vertical-align: middle;
         }
 
-        tr:hover {
+        tr:hover td {
             background-color: #f8fafc;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
+        .cell-student-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-weight: 600;
-            background: #dcfce7;
-            color: #166534;
+            color: #0f172a;
         }
 
-        .empty {
+        .avatar-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11.5px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .school-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #475569;
+            font-size: 12.5px;
+        }
+
+        .class-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status-inactive {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .status-other {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .empty-state {
             padding: 40px 20px;
             text-align: center;
-            color: #64748b;
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .empty-state i {
+            width: 32px;
+            height: 32px;
+            color: #cbd5e1;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+        @media (max-width: 1024px) {
+            .filter-form {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .filter-form {
+                grid-template-columns: 1fr;
+            }
+            .content {
+                padding: 16px;
+            }
         }
     </style>
 </head>
@@ -140,32 +395,123 @@
     ========================================================== -->
     <main class="main">
         <header class="topbar">
-            <h1>🎓 Student Directory</h1>
+            <h1>
+                <i data-lucide="graduation-cap" style="width: 20px; height: 20px; color: #2563eb;"></i>
+                Student Directory
+            </h1>
             <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
         </header>
 
         <section class="content">
+
+            <!-- HEADER & ACTIONS -->
             <div class="header-actions">
                 <div>
-                    <h2 style="font-size: 20px; color: #172554;">Enrolled Students</h2>
-                    <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Overview of all students registered in the EduTrack network.</p>
+                    <h2 class="page-title">Enrolled Students</h2>
+                    <p class="page-subtitle">Manage and track student profiles, schooling status, and academic progression.</p>
                 </div>
-                <a href="{% url 'students:add' %}" class="add-button">
-                    ➕ Add Student
-                </a>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="stats-summary">
+                        <span class="summary-badge">Total: <strong>{{ total_count }}</strong></span>
+                        <span class="summary-badge active-badge">Active: <strong>{{ active_count }}</strong></span>
+                        {% if search_query or selected_school or selected_class or selected_gender or selected_status %}
+                            <span class="summary-badge" style="background: #fffbeb; border-color: #fde68a; color: #b45309;">
+                                Filtered: <strong>{{ filtered_count }}</strong>
+                            </span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'students:add' %}" class="add-button">
+                        <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i>
+                        Add Student
+                    </a>
+                </div>
             </div>
 
+            <!-- SHADCN FILTER BAR -->
+            <div class="filter-card">
+                <form method="GET" action="{% url 'students:list' %}" class="filter-form">
+                    <!-- Search Input -->
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+                        </div>
+                        <input
+                            type="text"
+                            name="q"
+                            value="{{ search_query }}"
+                            placeholder="Search by name or admission number..."
+                            class="filter-input"
+                        >
+                    </div>
+
+                    <!-- School Filter -->
+                    <select name="school" class="filter-select">
+                        <option value="">All Schools</option>
+                        {% for school in schools %}
+                            <option value="{{ school.id }}" {% if selected_school == school.id|stringformat:"s" %}selected{% endif %}>
+                                {{ school.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Class Filter -->
+                    <select name="class" class="filter-select">
+                        <option value="">All Classes</option>
+                        {% for cls in distinct_classes %}
+                            <option value="{{ cls }}" {% if selected_class == cls %}selected{% endif %}>
+                                {{ cls }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Gender Filter -->
+                    <select name="gender" class="filter-select">
+                        <option value="">All Genders</option>
+                        {% for code, label in gender_choices %}
+                            <option value="{{ code }}" {% if selected_gender == code %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Status Filter -->
+                    <select name="status" class="filter-select">
+                        <option value="">All Statuses</option>
+                        {% for code, label in status_choices %}
+                            <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-filter-submit">
+                        <i data-lucide="filter" style="width: 13px; height: 13px;"></i>
+                        Filter
+                    </button>
+
+                    <!-- Reset Link -->
+                    {% if search_query or selected_school or selected_class or selected_gender or selected_status %}
+                        <a href="{% url 'students:list' %}" class="btn-filter-reset">
+                            <i data-lucide="x" style="width: 13px; height: 13px;"></i>
+                            Clear
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- STUDENT DATA TABLE -->
             <div class="table-card">
                 {% if students %}
                     <table>
                         <thead>
                             <tr>
-                                <th>Admission Number</th>
+                                <th>Admission No.</th>
                                 <th>Student Name</th>
-                                <th>School</th>
-                                <th>Class</th>
-                                <th>Section</th>
-                                <th>Roll Number</th>
+                                <th>School Institution</th>
+                                <th>Current Class</th>
+                                <th>Sec</th>
+                                <th>Roll</th>
                                 <th>Gender</th>
                                 <th>Status</th>
                             </tr>
@@ -174,25 +520,62 @@
                             {% for student in students %}
                                 <tr>
                                     <td><strong>{{ student.admission_number }}</strong></td>
-                                    <td>{{ student.student_name }}</td>
-                                    <td>{{ student.school.name }}</td>
-                                    <td>{{ student.current_class }}</td>
+                                    <td>
+                                        <div class="cell-student-name">
+                                            <div class="avatar-circle">
+                                                {{ student.student_name|make_list|first|upper }}
+                                            </div>
+                                            <span>{{ student.student_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="school-tag">
+                                            <i data-lucide="building-2" style="width: 13px; height: 13px; color: #64748b;"></i>
+                                            <span>{{ student.school.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="class-pill">{{ student.current_class }}</span>
+                                    </td>
                                     <td>{{ student.section|default:"-" }}</td>
                                     <td>{{ student.roll_number|default:"-" }}</td>
                                     <td>{{ student.get_gender_display }}</td>
-                                    <td><span class="status-badge">{{ student.get_status_display }}</span></td>
+                                    <td>
+                                        {% if student.status == 'ACTIVE' %}
+                                            <span class="status-badge status-active">● Active</span>
+                                        {% elif student.status == 'INACTIVE' %}
+                                            <span class="status-badge status-inactive">● Inactive</span>
+                                        {% else %}
+                                            <span class="status-badge status-other">{{ student.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 {% else %}
-                    <div class="empty">
-                        <p>No students found. Click "+ Add Student" to register a new student.</p>
+                    <div class="empty-state">
+                        <i data-lucide="users-2"></i>
+                        <p><strong>No matching students found.</strong></p>
+                        <p style="font-size: 12px; color: #94a3b8;">Try adjusting your filter parameters or search keywords.</p>
+                        {% if search_query or selected_school or selected_class or selected_gender or selected_status %}
+                            <a href="{% url 'students:list' %}" class="btn-filter-reset" style="margin-top: 8px;">
+                                Reset All Filters
+                            </a>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
+
         </section>
     </main>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
 </body>
 </html>
