@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -173,7 +173,7 @@
         <div class="container">
 
             <a href="{% url 'dashboard' %}" class="back">
-                ← Back to Dashboard
+                â† Back to Dashboard
             </a>
 
     <div class="header">
@@ -186,9 +186,15 @@
             </p>
         </div>
 
-        <a href="{% url 'schools:create' %}" class="add-btn">
+        <div style="display:flex; align-items:center; gap:10px;">
+    <a href="{% url 'schools:create' %}" class="add-btn">
         + Add School
-        </a>
+    </a>
+
+    <a href="{% url 'schools:bulk_upload' %}" class="add-btn" style="background:#2563eb;">
+        ↑ Bulk Upload
+    </a>
+</div>
 
     </div>
 
@@ -237,7 +243,7 @@
                                 {% if school.taluk %}
                                     {{ school.taluk }}
                                 {% else %}
-                                    —
+                                    â€”
                                 {% endif %}
                             </td>
 

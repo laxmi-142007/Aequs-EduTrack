@@ -1,9 +1,10 @@
-from django.urls import path
+﻿from django.urls import path
 from . import views
 
 app_name = "schools"
 
 urlpatterns = [
+    path("bulk-upload/", views.bulk_upload_schools, name="bulk_upload"),
     # Portal View
     path("", views.portal_view, name="portal"),
     path("list/", views.school_list, name="school_list"),

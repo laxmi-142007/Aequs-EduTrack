@@ -38,11 +38,10 @@ class DistributionForm(forms.ModelForm):
         self.fields["school"].required = False
         self.fields["inventory_item"].required = False
 
+        # Student list is populated dynamically from the eligibility API
+        # based on Benefit Type + Academic Year.
         self.fields["student"].queryset = (
-            Student.objects
-            .select_related("school")
-            .all()
-            .order_by("student_name")
+            Student.objects.none()
         )
 
         self.fields["school"].queryset = (

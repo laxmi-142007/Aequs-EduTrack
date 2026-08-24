@@ -1,0 +1,2 @@
+﻿admission_number,student_name,gender,school,current_class,parent_name,date_of_birth,section,roll_number,parent_phone,parent_email,relationship_to_student,student_phone,email,address,status,admission_date
+ADM001,Example Student,MALE,Example School,10,Parent Name,2010-05-15,A,1,9876543210,parent@example.com,Parent,9876543211,student@example.com,Example Address,ACTIVE,2026-06-01

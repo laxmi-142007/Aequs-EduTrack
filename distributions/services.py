@@ -45,22 +45,91 @@ def is_student_up_to_2nd_puc(current_class):
     return True
 
 
-def get_eligible_students_for_benefit(benefit_type):
-    """Query eligible students for specific benefit program"""
-    students = Student.objects.select_related("school").filter(status=Student.Status.ACTIVE)
+def get_eligible_students_for_benefit(benefit_type, academic_year=None):
+    """
+    Return ONLY students who are eligible for the selected benefit.
 
+    Distribution dropdown uses this function, so an ineligible student
+    must never appear as a selectable recipient.
+    """
+    from eligibility.models import EligibilityRecord
+
+    benefit_type = str(benefit_type or "").upper().strip()
+
+    students = Student.objects.select_related("school").filter(
+        status=Student.Status.ACTIVE
+    )
+
+    # Books and Workbooks can be determined directly from the student's
+    # current academic class.
     if benefit_type == BenefitType.BOOK:
-        # Class 1 to 10
-        return [s for s in students if is_student_class_1_to_10(s.current_class)]
-    elif benefit_type == BenefitType.WORKBOOK:
-        # Class 10 only
-        return [s for s in students if is_student_class_10(s.current_class)]
-    elif benefit_type == BenefitType.STUDY_KIT:
-        # Class 1 up to 2nd PUC
-        return [s for s in students if is_student_up_to_2nd_puc(s.current_class)]
+        return [
+            s for s in students
+            if is_student_class_1_to_10(s.current_class)
+        ]
 
-    return list(students)
+    if benefit_type == BenefitType.WORKBOOK:
+        return [
+            s for s in students
+            if is_student_class_10(s.current_class)
+        ]
 
+    # Study Kit and Laptop MUST use the eligibility records.
+    # This allows the eligibility module to handle:
+    #
+    #   Class 10 Top 10
+    #   -> 2-year Study Kit continuation
+    #   -> PUC / Diploma / other course progression
+    #   -> Overall Top 10 laptop selection
+    #   -> Laptop distribution stage
+    #   -> Degree Study Kit continuation
+    #
+    # without Distribution having to duplicate those rules.
+    if benefit_type in (
+        BenefitType.STUDY_KIT,
+        BenefitType.LAPTOP,
+    ):
+        qs = EligibilityRecord.objects.filter(
+            benefit_type=benefit_type,
+            eligible=True,
+            student__status=Student.Status.ACTIVE,
+        )
+
+        if academic_year:
+            qs = qs.filter(academic_year=academic_year)
+
+        student_ids = qs.values_list(
+            "student_id",
+            flat=True,
+        ).distinct()
+
+        return list(
+            students.filter(
+                id__in=student_ids
+            ).order_by("student_name")
+        )
+
+    # Internship and any future benefit types can also use
+    # EligibilityRecord when records exist.
+    qs = EligibilityRecord.objects.filter(
+        benefit_type=benefit_type,
+        eligible=True,
+        student__status=Student.Status.ACTIVE,
+    )
+
+    if academic_year:
+        qs = qs.filter(academic_year=academic_year)
+
+    student_ids = qs.values_list(
+        "student_id",
+        flat=True,
+    ).distinct()
+
+    return list(
+        students.filter(
+            id__in=student_ids
+        ).order_by("student_name")
+    )
 
 def get_top_puc_students(academic_year=None, limit=10):
     """

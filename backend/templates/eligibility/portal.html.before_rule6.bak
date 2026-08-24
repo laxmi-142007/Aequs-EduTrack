@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benefit Eligibility Engine - EduTrack</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-dark: #172554;
+            --primary-light: #eff6ff;
+            --secondary: #64748b;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --purple: #8b5cf6;
+            --purple-light: #f5f3ff;
+            --cyan: #0ea5e9;
+            --cyan-light: #f0f9ff;
+            --light-bg: #f4f7fb;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --card-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+            --card-shadow-hover: 0 10px 25px rgba(15, 23, 42, 0.08);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* =============================================================
+           MAIN LAYOUT & TOPBAR
+        ============================================================= */
+        .main {
+            margin-left: 256px;
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--light-bg);
+        }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .topbar-left h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar-left p {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .year-badge-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .year-badge-selector select {
+            background: transparent;
+            border: none;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            outline: none;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .user-pill .avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* =============================================================
+           CONTENT CONTAINER
+        ============================================================= */
+        .content {
+            padding: 28px 32px 60px;
+            max-width: 1600px;
+            width: 100%;
+        }
+
+        /* =============================================================
+           HERO ACTION BAR
+        ============================================================= */
+        .hero-action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .hero-heading h2 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .hero-heading p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-engine {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: white;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-engine:hover {
+            background: linear-gradient(135deg, #6d28d9, #4338ca);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-outline {
+            background: white;
+            border-color: var(--border);
+            color: #334155;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12.5px;
+        }
+
+        /* =============================================================
+           METRIC / STAT CARDS
+        ============================================================= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: transparent;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-shadow-hover);
+            border-color: #cbd5e1;
+        }
+
+        .stat-card.active-card {
+            border-color: var(--primary);
+            background: #f8fbff;
+        }
+
+        .stat-card.active-card::after {
+            background: var(--primary);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .icon-blue { background: #eff6ff; color: #2563eb; }
+        .icon-emerald { background: #ecfdf5; color: #10b981; }
+        .icon-amber { background: #fffbeb; color: #f59e0b; }
+        .icon-purple { background: #f5f3ff; color: #8b5cf6; }
+        .icon-cyan { background: #f0f9ff; color: #0ea5e9; }
+        .icon-slate { background: #f1f5f9; color: #475569; }
+
+        .stat-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-emerald { background: #d1fae5; color: #065f46; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-purple { background: #ede9fe; color: #5b21b6; }
+        .badge-cyan { background: #e0f2fe; color: #075985; }
+
+        .stat-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .stat-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        /* =============================================================
+           CATEGORY TABS
+        ============================================================= */
+        .tabs-wrapper {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 6px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .benefit-tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .benefit-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+
+        .tab-btn .tab-count {
+            background: rgba(0, 0, 0, 0.08);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        /* =============================================================
+           SEARCH, FILTER & ACTION TOOLBAR
+        ============================================================= */
+        .toolbar-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 15px;
+        }
+
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .custom-select {
+            padding: 9px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #334155;
+            background: white;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .custom-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            user-select: none;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            background: #f8fafc;
+            border: 1px solid var(--border);
+        }
+
+        /* =============================================================
+           DATA TABLE & RECORDS CONTAINER
+        ============================================================= */
+        .table-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .table-header-info {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafcff;
+        }
+
+        .table-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-records-count {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            padding: 12px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #64748b;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 14px 18px;
+            font-size: 13.5px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+            transition: background 0.15s ease;
+        }
+
+        .data-table tr:hover td {
+            background: #f8fbff;
+        }
+
+        /* Student cell info */
+        .student-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .student-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
+        }
+
+        .student-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-name {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .student-name:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .student-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .badge-gender {
+            background: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* School & Class cell */
+        .school-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .class-pill {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        /* Benefit pill badges */
+        .benefit-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .tag-BOOK { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .tag-WORKBOOK { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .tag-STUDY_KIT { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .tag-LAPTOP { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
+        .tag-INTERNSHIP { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+        /* Rank Badge */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #854d0e;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 1px solid #fcd34d;
+        }
+
+        .rank-badge.top-3 {
+            background: linear-gradient(135deg, #fef08a, #facc15);
+            color: #713f12;
+            box-shadow: 0 2px 6px rgba(234, 179, 8, 0.25);
+        }
+
+        /* Status Pills */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .status-eligible {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .status-eligible:hover {
+            background: #bbf7d0;
+        }
+
+        .status-ineligible {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .status-ineligible:hover {
+            background: #fecaca;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .dot-green { background: #16a34a; }
+        .dot-red { background: #dc2626; }
+
+        /* Rationale tooltip / preview */
+        .reason-text {
+            font-size: 12.5px;
+            color: #475569;
+            max-width: 280px;
+            line-height: 1.35;
+        }
+
+        /* Row actions */
+        .row-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: white;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .icon-btn:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+            border-color: #cbd5e1;
+        }
+
+        .icon-btn.danger:hover {
+            background: #fef2f2;
+            color: var(--danger);
+            border-color: #fca5a5;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            max-width: 450px;
+            margin: 0 auto 20px;
+            line-height: 1.4;
+        }
+
+        /* =============================================================
+           MODAL SYSTEM
+        ============================================================= */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-window {
+            background: white;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 680px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-backdrop.show .modal-window {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafcff;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            font-size: 22px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .modal-close:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fafcff;
+        }
+
+        /* Form elements inside modal */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* 360 Student Profiler Card View inside modal */
+        .student-profile-hero {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .profile-avatar-lg {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px);
+            font-size: 24px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+
+        .profile-info h4 {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .profile-info p {
+            font-size: 13.5px;
+            opacity: 0.9;
+            margin-top: 3px;
+        }
+
+        .benefits-profile-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .benefit-profile-item {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .benefit-profile-item:hover {
+            border-color: #cbd5e1;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .benefit-profile-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .benefit-profile-icon {
+            font-size: 24px;
+        }
+
+        .benefit-profile-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .benefit-profile-rule {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .benefit-profile-reason {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+            color: #475569;
+        }
+
+        /* Policy Guide List */
+        .policy-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 14px;
+            background: #fafcff;
+        }
+
+        .policy-card-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .policy-card p {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.45;
+        }
+
+        .policy-criteria-box {
+            background: white;
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12.5px;
+            margin-top: 8px;
+            color: #334155;
+        }
+
+        /* =============================================================
+           TOAST ALERTS
+        ============================================================= */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 420px;
+            pointer-events: auto;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success { border-left-color: var(--success); }
+        .toast-error { border-left-color: var(--danger); }
+        .toast-warning { border-left-color: var(--warning); }
+
+        .toast-icon { font-size: 18px; }
+        .toast-msg { font-size: 13.5px; font-weight: 600; color: #1e293b; }
+
+        /* Responsive Media Queries */
+        @media (max-width: 1024px) {
+            .content { padding: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .topbar { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 10px; }
+            .hero-action-bar { flex-direction: column; align-items: flex-start; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='eligibility' %}
+
+
+    <!-- =====================================================
+         MAIN WORKSPACE
+    ====================================================== -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>✅ Student Benefit Eligibility Portal</h1>
+                <p>Governing & automating Aequs CSR benefit allocations across Books, Kits, Laptops & Internships</p>
+            </div>
+            <div class="topbar-right">
+                <div class="year-badge-selector">
+                    <span>📅 Year:</span>
+                    <select id="globalYearSelect" onchange="handleYearChange(this.value)">
+                        <option value="ALL" {% if selected_year == 'ALL' %}selected{% endif %}>All Academic Years</option>
+                        {% for yr in all_years %}
+                        <option value="{{ yr }}" {% if selected_year == yr %}selected{% endif %}>{{ yr }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="user-pill">
+                    <div class="avatar">{{ username|slice:":1"|upper }}</div>
+                    <span>{{ username }}</span>
+                </div>
+            </div>
+        </header>
+
+
+        <!-- CONTENT WRAPPER -->
+        <div class="content">
+
+            <!-- HERO ACTION HEADER -->
+            <div class="hero-action-bar">
+                <div class="hero-heading">
+                    <h2>Eligibility Master Register</h2>
+                    <p>Evaluate academic performance, track continuous CSR awards, and approve student distributions</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-engine" onclick="openEngineModal()">
+                        ⚡ Run Auto-Evaluation Engine
+                    </button>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        ➕ Add / Override Record
+                    </button>
+                    <button class="btn btn-outline" onclick="exportCSV()">
+                        📥 Export CSV
+                    </button>
+                    <button class="btn btn-outline" onclick="openPolicyModal()">
+                        📜 Policy Criteria Guide
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- STAT / METRIC CARDS -->
+            <div class="stats-grid">
+                <!-- Total Beneficiaries -->
+                <div class="stat-card active-card" onclick="filterByBenefit('ALL', this)">
+                    <div class="stat-card-header">
+                        <div class="stat-icon icon-blue">🎓</div>
+                        <span class="stat-badge badge-blue">Master</span>
+                    </div>
+                    <div>
+                        <div class="stat-title">Total Eligible Beneficiaries</div>
+                        <div class="stat-number" id="statTotalEligible">{{ total_eligible }}</div>
+                        <div class="stat-desc">Across all 5 CSR benefit programs</div>
+                    </div>
+                </div>
+
+                <!-- Books (Class 1-10) -->
+                <div class="stat-card" onclick="filterByBenefit('BOOK', this)">
+                    <div class="stat-card-header">
+                        <div class="stat-icon icon-blue">📚</div>
+                        <span class="stat-badge badge-blue">Class 1-10</span>
+                    </div>
+                    <div>
+                        <div class="stat-title">Books Package</div>
+                        <div class="stat-number" id="statBooks">{{ books_count }}</div>
+                        <div class="stat-desc">Primary & secondary standard textbooks</div>
+                    </div>
+                </div>
+
+                <!-- Workbooks (Class 10) -->
+                <div class="stat-card" onclick="filterByBenefit('WORKBOOK', this)">
+                    <div class="stat-card-header">
+                        <div class="stat-icon icon-amber">📝</div>
+                        <span class="stat-badge badge-amber">Class 10</span>
+                    </div>
+                    <div>
+                        <div class="stat-title">Workbooks</div>
+                        <div class="stat-number" id="statWorkbooks">{{ workbooks_count }}</div>
+                        <div class="stat-desc">Intensive 10th board preparation kits</div>
+                    </div>
+                </div>
+
+                <!-- Study Kits (Top 10 & Continuation) -->
+                <div class="stat-card" onclick="filterByBenefit('STUDY_KIT', this)">
+                    <div class="stat-card-header">
+                        <div class="stat-icon icon-emerald">🎒</div>
+                        <span class="stat-badge badge-emerald">Merit & PUC</span>
+                    </div>
+                    <div>
+                        <div class="stat-title">Study Kits</div>
+                        <div class="stat-number" id="statStudyKits">{{ study_kits_count }}</div>
+                        <div class="stat-desc">Top 10 Class 10 & renewed PUC grants</div>
+                    </div>
+                </div>
+
+                <!-- Laptops (Top 10 2nd PUC) -->
+                <div class="stat-card" onclick="filterByBenefit('LAPTOP', this)">
+                    <div class="stat-card-header">
+                        <div class="stat-icon icon-purple">💻</div>
+                        <span class="stat-badge badge-purple">2nd PUC Merit</span>
+                    </div>
+                    <div>
+                        <div class="stat-title">Laptop Scholars</div>
+                        <div class="stat-number" id="statLaptops">{{ laptops_count }}</div>
+                        <div class="stat-desc">Top 10 2nd PUC state merit scholars</div>
+                    </div>
+                </div>
+
+                <!-- Internships (Degree) -->
+                <div class="stat-card" onclick="filterByBenefit('INTERNSHIP', this)">
+                    <div class="stat-card-header">
+                        <div class="stat-icon icon-cyan">💼</div>
+                        <span class="stat-badge badge-cyan">Degree</span>
+                    </div>
+                    <div>
+                        <div class="stat-title">Internships</div>
+                        <div class="stat-number" id="statInternships">{{ internships_count }}</div>
+                        <div class="stat-desc">Higher education career candidates</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SEARCH & FILTER TOOLBAR -->
+            <div class="toolbar-card">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search student name, admission no, school, reason..." oninput="debounceSearch()">
+                </div>
+
+                <div class="filter-controls">
+                    <!-- School Filter -->
+                    <select id="schoolSelect" class="custom-select" onchange="fetchRecords()">
+                        <option value="ALL">All Schools</option>
+                        {% for sc in schools %}
+                        <option value="{{ sc.id }}">{{ sc.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Status Filter -->
+                    <select id="statusSelect" class="custom-select" onchange="fetchRecords()">
+                        <option value="ALL">All Status</option>
+                        <option value="ELIGIBLE" selected>Eligible Only</option>
+                        <option value="INELIGIBLE">Ineligible / Excluded</option>
+                    </select>
+
+                    <!-- Merit Rank Checkbox -->
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rankOnlyCheckbox" onchange="fetchRecords()">
+                        <span>🏆 Merit Ranked Only</span>
+                    </label>
+                </div>
+            </div>
+
+
+            <!-- RECORDS DATA TABLE -->
+            <div class="table-card">
+                <div class="table-header-info">
+                    <div class="table-title">
+                        <span>📋</span>
+                        <span id="currentViewTitle">All Student Eligibility Records</span>
+                    </div>
+                    <div class="table-records-count" id="recordCountLabel">
+                        Showing {{ records|length }} records
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student Details</th>
+                                <th>School & Standard</th>
+                                <th>Benefit Type</th>
+                                <th>Merit Rank & Score</th>
+                                <th>Status</th>
+                                <th>Evaluation Rationale</th>
+                                <th>Audit / Checked</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody">
+                            {% for r in records %}
+                            <tr id="row-{{ r.id }}">
+                                <td>
+                                    <div class="student-cell">
+                                        <div class="student-avatar">{{ r.student.student_name|slice:":1"|upper }}</div>
+                                        <div class="student-meta">
+                                            <div class="student-name" data-student-id="{{ r.student.id }}" onclick="openProfileModal(this.dataset.studentId)">
+                                                {{ r.student.student_name }}
+                                            </div>
+                                            <div class="student-sub">
+                                                <span>{{ r.student.admission_number }}</span>
+                                                <span class="badge-gender">{{ r.student.get_gender_display }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="school-name">{{ r.student.school.name|default:"General" }}</div>
+                                    <div class="class-pill">{{ r.student.current_class }}</div>
+                                </td>
+                                <td>
+                                    <span class="benefit-tag tag-{{ r.benefit_type }}">
+                                        {% if r.benefit_type == 'BOOK' %}📚
+                                        {% elif r.benefit_type == 'WORKBOOK' %}📝
+                                        {% elif r.benefit_type == 'STUDY_KIT' %}🎒
+                                        {% elif r.benefit_type == 'LAPTOP' %}💻
+                                        {% elif r.benefit_type == 'INTERNSHIP' %}💼
+                                        {% endif %}
+                                        {{ r.get_benefit_type_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if r.selection_rank %}
+                                    <span class="rank-badge {% if r.selection_rank <= 3 %}top-3{% endif %}">
+                                        🏆 Rank #{{ r.selection_rank }}
+                                    </span>
+                                    {% else %}
+                                    <span style="color: #94a3b8; font-size: 13px;">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="status-pill {% if r.eligible %}status-eligible{% else %}status-ineligible{% endif %}" data-record-id="{{ r.id }}" onclick="toggleStatus(this.dataset.recordId)" title="Click to toggle eligibility">
+                                        <span class="status-dot {% if r.eligible %}dot-green{% else %}dot-red{% endif %}"></span>
+                                        <span>{% if r.eligible %}Eligible{% else %}Not Eligible{% endif %}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="reason-text" title="{{ r.reason }}">
+                                        {{ r.reason|truncatechars:65 }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="font-size: 12px; color: #64748b;">
+                                        {{ r.checked_at|date:"Y-m-d H:i"|default:"Auto-calculated" }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div class="row-actions" style="justify-content: flex-end;">
+                                        <button class="icon-btn" title="View 360° Student Profile" data-student-id="{{ r.student.id }}" onclick="openProfileModal(this.dataset.studentId)">
+                                            🔍
+                                        </button>
+                                        <button class="icon-btn" title="Edit Eligibility" data-record-id="{{ r.id }}" data-student-name="{{ r.student.student_name }}" data-benefit-type="{{ r.benefit_type }}" data-academic-year="{{ r.academic_year }}" data-eligible="{{ r.eligible|yesno:'true,false' }}" data-rank="{{ r.selection_rank|default_if_none:'' }}" data-reason="{{ r.reason }}" onclick="openEditModal(this.dataset.recordId, this.dataset.studentName, this.dataset.benefitType, this.dataset.academicYear, this.dataset.eligible === 'true', this.dataset.rank, this.dataset.reason)">
+                                            ✏️
+                                        </button>
+                                        <button class="icon-btn danger" title="Delete Record" data-record-id="{{ r.id }}" data-student-name="{{ r.student.student_name }}" onclick="deleteRecord(this.dataset.recordId, this.dataset.studentName)">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">📂</div>
+                                        <h3>No Eligibility Records Found</h3>
+                                        <p>Run the Auto-Evaluation Engine to calculate benefits for students, or adjust your search filters.</p>
+                                        <button class="btn btn-engine" onclick="openEngineModal()">
+                                            ⚡ Run Auto-Evaluation Engine
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+
+    <!-- =====================================================
+         MODAL 1: AUTO-EVALUATION ENGINE
+    ====================================================== -->
+    <div class="modal-backdrop" id="engineModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3>⚡ Auto-Evaluation Engine</h3>
+                <button class="modal-close" onclick="closeModal('engineModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.45;">
+                    The evaluation engine scans student enrollments, academic scores, and prior grant histories to compute exact benefit qualifications according to Aequs CSR guidelines.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label">Academic Year to Evaluate *</label>
+                    <select id="engineYear" class="form-select">
+                        {% for yr in all_years %}
+                        <option value="{{ yr }}" {% if selected_year == yr %}selected{% endif %}>{{ yr }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target Benefit Programs</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="engineBenefit" value="BOOK" checked>
+                            <span>📚 Books (Class 1-10)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="engineBenefit" value="WORKBOOK" checked>
+                            <span>📝 Workbooks (Class 10)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="engineBenefit" value="STUDY_KIT" checked>
+                            <span>🎒 Study Kits (Merit & PUC)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="engineBenefit" value="LAPTOP" checked>
+                            <span>💻 Laptop (2nd PUC Top 10)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="engineBenefit" value="INTERNSHIP" checked>
+                            <span>💼 Internships (Degree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="engineResultBox" style="display: none; background: #f0fdf4; border: 1px solid #86efac; border-radius: var(--radius-md); padding: 16px; margin-top: 18px;">
+                    <div style="font-weight: 700; color: #166534; font-size: 14.5px; margin-bottom: 8px;">
+                        ✅ Evaluation Completed Successfully!
+                    </div>
+                    <div id="engineResultSummary" style="font-size: 13px; color: #14532d; line-height: 1.5;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('engineModal')">Cancel</button>
+                <button class="btn btn-engine" id="btnExecuteEngine" onclick="executeEvaluationEngine()">
+                    🚀 Execute Evaluation
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         MODAL 2: ADD / EDIT ELIGIBILITY RECORD
+    ====================================================== -->
+    <div class="modal-backdrop" id="recordModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 id="recordModalTitle">➕ Add / Override Eligibility Record</h3>
+                <button class="modal-close" onclick="closeModal('recordModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalRecordId" value="">
+
+                <div class="form-group" id="studentSelectGroup">
+                    <label class="form-label">Student *</label>
+                    <select id="modalStudentSelect" class="form-select">
+                        <option value="">Select Student...</option>
+                        {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.student_name }} ({{ s.admission_number }}) - {{ s.current_class }} [{{ s.school.name|default:"General" }}]</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" id="studentNameDisplayGroup" style="display: none;">
+                    <label class="form-label">Student</label>
+                    <input type="text" id="modalStudentName" class="form-input" readonly>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Benefit Program *</label>
+                        <select id="modalBenefitType" class="form-select">
+                            <option value="BOOK">📚 Books (Class 1-10)</option>
+                            <option value="WORKBOOK">📝 Workbook (Class 10)</option>
+                            <option value="STUDY_KIT">🎒 Study Kit (Merit & PUC)</option>
+                            <option value="LAPTOP">💻 Laptop (2nd PUC)</option>
+                            <option value="INTERNSHIP">💼 Internship (Degree)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Academic Year *</label>
+                        <select id="modalAcademicYear" class="form-select">
+                            {% for yr in all_years %}
+                            <option value="{{ yr }}">{{ yr }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Eligibility Decision *</label>
+                        <select id="modalEligibleStatus" class="form-select">
+                            <option value="true">✅ Eligible (Approved)</option>
+                            <option value="false">❌ Ineligible (Excluded / Revoked)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Selection / Merit Rank (Optional)</label>
+                        <input type="number" id="modalRank" class="form-input" placeholder="e.g. 1, 2, 3..." min="1" max="1000">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Evaluation Reason / Approval Justification</label>
+                    <textarea id="modalReason" class="form-textarea" rows="3" placeholder="Enter criteria explanation or administrative approval note..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('recordModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveRecord()">Save Record</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         MODAL 3: 360° STUDENT ELIGIBILITY PROFILE
+    ====================================================== -->
+    <div class="modal-backdrop" id="profileModal">
+        <div class="modal-window" style="max-width: 780px;">
+            <div class="modal-header">
+                <h3>🔍 Student Benefit Eligibility Profiler</h3>
+                <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="student-profile-hero">
+                    <div class="profile-avatar-lg" id="profAvatar">A</div>
+                    <div class="profile-info">
+                        <h4 id="profName">Student Name</h4>
+                        <p id="profMeta">Admission No • Class • School Name</p>
+                    </div>
+                </div>
+
+                <h5 style="font-size: 15px; font-weight: 800; color: var(--primary-dark); margin-bottom: 12px;">
+                    CSR Benefit Evaluation Breakdown
+                </h5>
+
+                <div class="benefits-profile-grid" id="profBenefitsGrid">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('profileModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         MODAL 4: POLICY & CRITERIA GUIDE
+    ====================================================== -->
+    <div class="modal-backdrop" id="policyModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3>📜 Aequs EduTrack Eligibility Policy</h3>
+                <button class="modal-close" onclick="closeModal('policyModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 1. Books -->
+                <div class="policy-card">
+                    <div class="policy-card-title">📚 1. Textbooks Package</div>
+                    <p>All active students enrolled in Class 1 through Class 10 in adopted government schools receive standard textbooks and academic curriculum materials.</p>
+                    <div class="policy-criteria-box">
+                        <strong>Rule:</strong> <code>Student.current_class</code> is between Class 1 and Class 10.
+                    </div>
+                </div>
+
+                <!-- 2. Workbooks -->
+                <div class="policy-card">
+                    <div class="policy-card-title">📝 2. Class 10 Intensive Workbooks</div>
+                    <p>Supplementary board exam preparation and STEM activity workbooks allocated specifically to 10th standard candidates.</p>
+                    <div class="policy-criteria-box">
+                        <strong>Rule:</strong> <code>Student.current_class == Class 10</code>.
+                    </div>
+                </div>
+
+                <!-- 3. Study Kits -->
+                <div class="policy-card">
+                    <div class="policy-card-title">🎒 3. Study Kits (Merit & Continuation)</div>
+                    <p>Comprehensive study equipment kits (stationery, geometry instruments, bags, high-grade notebooks). Awarded to the Top 10 Class 10 rank holders by percentage score, and automatically renewed for recipients continuing through 1st PUC and 2nd PUC.</p>
+                    <div class="policy-criteria-box">
+                        <strong>Rule:</strong> Top 10 highest percentages in Class 10 <em>OR</em> enrolled in PUC with prior Study Kit award record.
+                    </div>
+                </div>
+
+                <!-- 4. Laptop Scholarships -->
+                <div class="policy-card">
+                    <div class="policy-card-title">💻 4. Laptop Scholarship</div>
+                    <p>High-performance laptops granted to the Top 10 second PUC students transitioning to undergraduate degrees.</p>
+                    <div class="policy-criteria-box">
+                        <strong>Rule:</strong> Top 10 ranking students in 2nd PUC state board marks.
+                    </div>
+                </div>
+
+                <!-- 5. Internships -->
+                <div class="policy-card">
+                    <div class="policy-card-title">💼 5. Industrial Internships</div>
+                    <p>Career launchpad connecting undergraduate degree scholars with corporate engineering and management internships across Aequs manufacturing and tech ecosystems.</p>
+                    <div class="policy-criteria-box">
+                        <strong>Rule:</strong> Students enrolled in degree/undergraduate programs (BCA, BSc, B.Tech, BE, B.Com, BA).
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('policyModal')">Understood</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         TOAST CONTAINER
+    ====================================================== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT CONTROLLER & API INTEGRATION
+    ====================================================== -->
+    <script>
+        // Global state
+        let currentBenefit = "ALL";
+        let searchTimeout = null;
+
+        // CSRF Token Helper
+        function getCsrfToken() {
+            const name = "csrftoken";
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Show Toast Notification
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${type}`;
+            
+            const icon = type === "success" ? "✅" : (type === "error" ? "⚠️" : "ℹ️");
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-msg">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add("show"), 50);
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Handle Year Change
+        function handleYearChange(year) {
+            fetchSummary();
+            fetchRecords();
+        }
+
+        // Handle Benefit Filter from Stat Card
+        function filterByBenefit(benefit, cardElement) {
+            currentBenefit = benefit;
+
+            // Update stat cards active style
+            document.querySelectorAll(".stat-card").forEach(c => c.classList.remove("active-card"));
+            if (cardElement) cardElement.classList.add("active-card");
+
+            fetchRecords();
+        }
+
+        // Debounce Search
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(fetchRecords, 250);
+        }
+
+        // Fetch Live Records from Backend REST API
+        async function fetchRecords() {
+            const year = document.getElementById("globalYearSelect").value;
+            const search = document.getElementById("searchInput").value.trim();
+            const schoolId = document.getElementById("schoolSelect").value;
+            const status = document.getElementById("statusSelect").value;
+            const rankOnly = document.getElementById("rankOnlyCheckbox").checked;
+
+            let url = `/eligibility/api/records/?year=${encodeURIComponent(year)}&benefit_type=${encodeURIComponent(currentBenefit)}&school_id=${encodeURIComponent(schoolId)}&status=${encodeURIComponent(status)}&rank_only=${rankOnly}&search=${encodeURIComponent(search)}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.success) {
+                    renderTableRows(data.records);
+                    document.getElementById("recordCountLabel").textContent = `Showing ${data.count} records`;
+                }
+            } catch (err) {
+                console.error("Failed to fetch eligibility records:", err);
+            }
+        }
+
+        // Fetch Live KPI Summary Counts
+        async function fetchSummary() {
+            const year = document.getElementById("globalYearSelect").value;
+            try {
+                const res = await fetch(`/eligibility/api/summary/?year=${encodeURIComponent(year)}`);
+                const data = await res.json();
+                if (data.success) {
+                    const s = data.summary;
+                    document.getElementById("statTotalEligible").textContent = s.total_eligible;
+                    document.getElementById("statBooks").textContent = s.books;
+                    document.getElementById("statWorkbooks").textContent = s.workbooks;
+                    document.getElementById("statStudyKits").textContent = s.study_kits;
+                    document.getElementById("statLaptops").textContent = s.laptops;
+                    document.getElementById("statInternships").textContent = s.internships;
+                }
+            } catch (err) {
+                console.error("Failed to fetch summary:", err);
+            }
+        }
+
+        // Render Table Rows Dynamically
+        function renderTableRows(records) {
+            const tbody = document.getElementById("recordsTableBody");
+            if (!records || records.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🔍</div>
+                                <h3>No Matching Eligibility Records</h3>
+                                <p>No records found matching your current filter criteria. Try adjusting filters or execute the auto-evaluation engine.</p>
+                                <button class="btn btn-engine" onclick="openEngineModal()">
+                                    ⚡ Run Auto-Evaluation Engine
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = "";
+            records.forEach(r => {
+                const firstLetter = (r.student_name || "S").charAt(0).toUpperCase();
+                
+                let benefitIcon = "📚";
+                if (r.benefit_type === "WORKBOOK") benefitIcon = "📝";
+                else if (r.benefit_type === "STUDY_KIT") benefitIcon = "🎒";
+                else if (r.benefit_type === "LAPTOP") benefitIcon = "💻";
+                else if (r.benefit_type === "INTERNSHIP") benefitIcon = "💼";
+
+                const rankHtml = r.selection_rank ? `
+                    <span class="rank-badge ${r.selection_rank <= 3 ? 'top-3' : ''}">
+                        🏆 Rank #${r.selection_rank} ${r.percentage ? `(${r.percentage}%)` : ''}
+                    </span>
+                ` : `<span style="color: #94a3b8; font-size: 13px;">—</span>`;
+
+                const statusClass = r.eligible ? "status-eligible" : "status-ineligible";
+                const dotClass = r.eligible ? "dot-green" : "dot-red";
+                const statusText = r.eligible ? "Eligible" : "Not Eligible";
+
+                html += `
+                    <tr id="row-${r.id}">
+                        <td>
+                            <div class="student-cell">
+                                <div class="student-avatar">${firstLetter}</div>
+                                <div class="student-meta">
+                                    <div class="student-name" onclick="openProfileModal(${r.student_id})">
+                                        ${r.student_name}
+                                    </div>
+                                    <div class="student-sub">
+                                        <span>${r.admission_number}</span>
+                                        <span class="badge-gender">${r.gender || 'Active'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="school-name">${r.school_name}</div>
+                            <div class="class-pill">${r.current_class}</div>
+                        </td>
+                        <td>
+                            <span class="benefit-tag tag-${r.benefit_type}">
+                                ${benefitIcon} ${r.benefit_type_display}
+                            </span>
+                        </td>
+                        <td>
+                            ${rankHtml}
+                        </td>
+                        <td>
+                            <div class="status-pill ${statusClass}" onclick="toggleStatus(${r.id})" title="Click to toggle status">
+                                <span class="status-dot ${dotClass}"></span>
+                                <span>${statusText}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="reason-text" title="${r.reason}">
+                                ${r.reason.length > 65 ? r.reason.substring(0, 65) + '...' : r.reason}
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size: 12px; color: #64748b;">${r.checked_at || 'Auto-evaluated'}</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="row-actions" style="justify-content: flex-end;">
+                                <button class="icon-btn" title="View 360° Profile" onclick="openProfileModal(${r.student_id})">
+                                    🔍
+                                </button>
+                                <button class="icon-btn" title="Edit Record" onclick="openEditModal(${r.id}, '${escapeQuote(r.student_name)}', '${r.benefit_type}', '${r.academic_year}', ${r.eligible}, '${r.selection_rank || ''}', '${escapeQuote(r.reason)}')">
+                                    ✏️
+                                </button>
+                                <button class="icon-btn danger" title="Delete Record" onclick="deleteRecord(${r.id}, '${escapeQuote(r.student_name)}')">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function escapeQuote(str) {
+            if (!str) return "";
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        // Toggle Status via AJAX
+        async function toggleStatus(recordId) {
+            try {
+                const res = await fetch(`/eligibility/api/toggle/${recordId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCsrfToken(),
+                        "Content-Type": "application/json",
+                    },
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, "success");
+                    fetchRecords();
+                    fetchSummary();
+                } else {
+                    showToast(data.error || "Failed to toggle status", "error");
+                }
+            } catch (err) {
+                showToast("Network error toggling status", "error");
+            }
+        }
+
+        // Delete Record via AJAX
+        async function deleteRecord(recordId, studentName) {
+            if (!confirm(`Are you sure you want to delete the eligibility record for "${studentName}"?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/eligibility/api/delete/${recordId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCsrfToken(),
+                        "Content-Type": "application/json",
+                    },
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, "success");
+                    fetchRecords();
+                    fetchSummary();
+                } else {
+                    showToast(data.error || "Failed to delete record", "error");
+                }
+            } catch (err) {
+                showToast("Network error deleting record", "error");
+            }
+        }
+
+        // Open Add Modal
+        function openAddModal() {
+            document.getElementById("recordModalTitle").textContent = "➕ Add / Override Benefit Record";
+            document.getElementById("modalRecordId").value = "";
+            document.getElementById("studentSelectGroup").style.display = "block";
+            document.getElementById("studentNameDisplayGroup").style.display = "none";
+            document.getElementById("modalStudentSelect").value = "";
+            document.getElementById("modalEligibleStatus").value = "true";
+            document.getElementById("modalRank").value = "";
+            document.getElementById("modalReason").value = "";
+            
+            const currentYear = document.getElementById("globalYearSelect").value;
+            if (currentYear && currentYear !== "ALL") {
+                document.getElementById("modalAcademicYear").value = currentYear;
+            }
+
+            openModal("recordModal");
+        }
+
+        // Open Edit Modal
+        function openEditModal(recordId, studentName, benefitType, academicYear, eligible, rank, reason) {
+            document.getElementById("recordModalTitle").textContent = "✏️ Edit Eligibility Record";
+            document.getElementById("modalRecordId").value = recordId;
+            document.getElementById("studentSelectGroup").style.display = "none";
+            document.getElementById("studentNameDisplayGroup").style.display = "block";
+            document.getElementById("modalStudentName").value = studentName;
+            document.getElementById("modalBenefitType").value = benefitType;
+            document.getElementById("modalAcademicYear").value = academicYear;
+            document.getElementById("modalEligibleStatus").value = eligible ? "true" : "false";
+            document.getElementById("modalRank").value = rank || "";
+            document.getElementById("modalReason").value = reason || "";
+
+            openModal("recordModal");
+        }
+
+        // Save (Create or Update) Record
+        async function saveRecord() {
+            const recordId = document.getElementById("modalRecordId").value;
+            const benefitType = document.getElementById("modalBenefitType").value;
+            const academicYear = document.getElementById("modalAcademicYear").value;
+            const eligible = document.getElementById("modalEligibleStatus").value === "true";
+            const selectionRank = document.getElementById("modalRank").value;
+            const reason = document.getElementById("modalReason").value.trim();
+
+            if (!recordId) {
+                // CREATE
+                const studentId = document.getElementById("modalStudentSelect").value;
+                if (!studentId) {
+                    alert("Please select a student.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch("/eligibility/api/create/", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCsrfToken(),
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            student_id: studentId,
+                            benefit_type: benefitType,
+                            academic_year: academicYear,
+                            eligible: eligible,
+                            selection_rank: selectionRank,
+                            reason: reason,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast(data.message, "success");
+                        closeModal("recordModal");
+                        fetchRecords();
+                        fetchSummary();
+                    } else {
+                        alert(data.error || "Failed to save record");
+                    }
+                } catch (err) {
+                    alert("Error saving record: " + err.message);
+                }
+            } else {
+                // UPDATE
+                try {
+                    const res = await fetch(`/eligibility/api/update/${recordId}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCsrfToken(),
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            benefit_type: benefitType,
+                            academic_year: academicYear,
+                            eligible: eligible,
+                            selection_rank: selectionRank,
+                            reason: reason,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast(data.message, "success");
+                        closeModal("recordModal");
+                        fetchRecords();
+                        fetchSummary();
+                    } else {
+                        alert(data.error || "Failed to update record");
+                    }
+                } catch (err) {
+                    alert("Error updating record: " + err.message);
+                }
+            }
+        }
+
+        // Open 360° Student Profiler Modal
+        async function openProfileModal(studentId) {
+            const year = document.getElementById("globalYearSelect").value;
+            try {
+                const res = await fetch(`/eligibility/api/student-profile/${studentId}/?year=${encodeURIComponent(year !== 'ALL' ? year : '')}`);
+                const data = await res.json();
+                if (data.success) {
+                    const p = data.profile;
+                    document.getElementById("profAvatar").textContent = p.student_name.charAt(0).toUpperCase();
+                    document.getElementById("profName").textContent = p.student_name;
+                    document.getElementById("profMeta").textContent = `${p.admission_number} • Enrolled: ${p.current_class} • School: ${p.school_name} ${p.percentage ? `(Academic Score: ${p.percentage}%)` : ''}`;
+
+                    const grid = document.getElementById("profBenefitsGrid");
+                    grid.innerHTML = p.benefits.map(b => `
+                        <div class="benefit-profile-item">
+                            <div class="benefit-profile-left">
+                                <div class="benefit-profile-icon">${b.icon}</div>
+                                <div>
+                                    <div class="benefit-profile-title">${b.benefit_display}</div>
+                                    <div class="benefit-profile-rule">${b.rule_summary}</div>
+                                    <div class="benefit-profile-reason" style="color: ${b.is_eligible ? '#15803d' : '#b91c1c'};">
+                                        ${b.reason}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="status-pill ${b.is_eligible ? 'status-eligible' : 'status-ineligible'}">
+                                    <span class="status-dot ${b.is_eligible ? 'dot-green' : 'dot-red'}"></span>
+                                    <span>${b.is_eligible ? 'Qualified' : 'Not Qualified'}</span>
+                                </span>
+                            </div>
+                        </div>
+                    `).join("");
+
+                    openModal("profileModal");
+                }
+            } catch (err) {
+                showToast("Failed to load student profile", "error");
+            }
+        }
+
+        // Open Engine Modal
+        function openEngineModal() {
+            document.getElementById("engineResultBox").style.display = "none";
+            document.getElementById("btnExecuteEngine").disabled = false;
+            document.getElementById("btnExecuteEngine").textContent = "🚀 Execute Evaluation";
+            openModal("engineModal");
+        }
+
+        // Execute Auto-Evaluation Engine
+        async function executeEvaluationEngine() {
+            const btn = document.getElementById("btnExecuteEngine");
+            const year = document.getElementById("engineYear").value;
+            
+            const checkboxes = document.querySelectorAll("input[name='engineBenefit']:checked");
+            const targetBenefits = Array.from(checkboxes).map(cb => cb.value);
+
+            if (targetBenefits.length === 0) {
+                alert("Please select at least one benefit program to evaluate.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "⏳ Computing Eligibility Matrix...";
+
+            try {
+                const res = await fetch("/eligibility/api/run-evaluation/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCsrfToken(),
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        academic_year: year,
+                        target_benefits: targetBenefits,
+                    }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const m = data.metrics;
+                    document.getElementById("engineResultSummary").innerHTML = `
+                        • Processed <strong>${m.processed_students}</strong> active student records.<br>
+                        • 📚 <strong>${m.books_count}</strong> Books packages generated.<br>
+                        • 📝 <strong>${m.workbooks_count}</strong> Class 10 Workbooks allocated.<br>
+                        • 🎒 <strong>${m.study_kit_top_count}</strong> Class 10 Merit Scholars & <strong>${m.study_kit_continuation_count}</strong> PUC continuers.<br>
+                        • 💻 <strong>${m.laptop_count}</strong> 2nd PUC Top 10 Laptop scholarships awarded.<br>
+                        • 💼 <strong>${m.internships_count}</strong> Degree Internship candidates identified.<br>
+                        • Total Eligible Records for <strong>${m.academic_year}</strong>: <strong>${m.total_eligible_records}</strong>.
+                    `;
+                    document.getElementById("engineResultBox").style.display = "block";
+                    btn.textContent = "✅ Evaluation Complete";
+                    showToast(data.message, "success");
+
+                    fetchRecords();
+                    fetchSummary();
+                } else {
+                    alert(data.error || "Engine execution failed");
+                    btn.disabled = false;
+                    btn.textContent = "🚀 Execute Evaluation";
+                }
+            } catch (err) {
+                alert("Execution error: " + err.message);
+                btn.disabled = false;
+                btn.textContent = "🚀 Execute Evaluation";
+            }
+        }
+
+        // Export CSV
+        function exportCSV() {
+            const year = document.getElementById("globalYearSelect").value;
+            const schoolId = document.getElementById("schoolSelect").value;
+            const status = document.getElementById("statusSelect").value;
+
+            const url = `/eligibility/export/csv/?year=${encodeURIComponent(year)}&benefit_type=${encodeURIComponent(currentBenefit)}&school_id=${encodeURIComponent(schoolId)}&status=${encodeURIComponent(status)}`;
+            window.location.href = url;
+        }
+
+        // Policy Modal
+        function openPolicyModal() {
+            openModal("policyModal");
+        }
+
+        // General Modal Helpers
+        function openModal(modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.add("show");
+        }
+
+        function closeModal(modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.remove("show");
+        }
+
+        // Close on background click
+        window.addEventListener("click", function (e) {
+            if (e.target.classList.contains("modal-backdrop")) {
+                e.target.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

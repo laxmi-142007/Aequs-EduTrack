@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -441,7 +441,696 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
+    
+/* =========================================================
+   AEQUS FOUNDATION - DASHBOARD BRAND THEME
+   Visual-only changes. Features/icons/URLs unchanged.
+   ========================================================= */
+
+:root {
+    --aequs-red: #ed1c24;
+    --aequs-red-dark: #c9141b;
+    --aequs-red-light: #fff1f1;
+    --aequs-black: #111111;
+    --aequs-text: #252525;
+    --aequs-muted: #6b7280;
+    --aequs-border: #e5e7eb;
+    --aequs-bg: #f7f7f7;
+    --aequs-white: #ffffff;
+}
+
+/* Dashboard page */
+body {
+    font-family: "Segoe UI", Arial, sans-serif !important;
+    background: var(--aequs-bg) !important;
+    color: var(--aequs-text) !important;
+}
+
+/* Main dashboard area */
+.main,
+.dashboard,
+.dashboard-container,
+.content {
+    background: var(--aequs-bg) !important;
+}
+
+/* =========================================================
+   TOP DASHBOARD HEADER
+   ========================================================= */
+
+.topbar,
+.dashboard-header,
+.page-header {
+    background: var(--aequs-white) !important;
+    border-bottom: 1px solid var(--aequs-border) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+}
+
+/* Dashboard title */
+.topbar h1,
+.dashboard-header h1,
+.page-header h1 {
+    color: var(--aequs-black) !important;
+    font-size: 21px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* Red accent before dashboard title */
+.topbar h1::before,
+.dashboard-header h1::before,
+.page-header h1::before {
+    content: "" !important;
+    display: inline-block !important;
+    width: 4px !important;
+    height: 22px !important;
+    background: var(--aequs-red) !important;
+    border-radius: 3px !important;
+    margin-right: 10px !important;
+}
+
+/* =========================================================
+   BRANDED WELCOME SECTION
+   ========================================================= */
+
+.welcome-section,
+.welcome-card,
+.hero,
+.dashboard-welcome {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #fff8f8 65%,
+            #fff1f1 100%
+        ) !important;
+
+    border: 1px solid #f3d0d0 !important;
+    border-left: 5px solid var(--aequs-red) !important;
+
+    border-radius: 12px !important;
+
+    padding: 24px 28px !important;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,0.05) !important;
+
+    margin-bottom: 22px !important;
+}
+
+/* Welcome heading */
+.welcome-section h2,
+.welcome-card h2,
+.hero h2,
+.dashboard-welcome h2 {
+    color: var(--aequs-black) !important;
+    font-size: 23px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    margin-bottom: 7px !important;
+}
+
+/* Welcome paragraph */
+.welcome-section p,
+.welcome-card p,
+.hero p,
+.dashboard-welcome p {
+    color: var(--aequs-muted) !important;
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
+}
+
+/* Highlight AEQUS */
+.welcome-section strong,
+.welcome-card strong,
+.hero strong,
+.dashboard-welcome strong {
+    color: var(--aequs-red) !important;
+    font-weight: 800 !important;
+}
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.btn-primary,
+.add-button,
+.btn-add,
+.action-button,
+.primary-action {
+    background: var(--aequs-red) !important;
+    border: 1px solid var(--aequs-red) !important;
+    color: #ffffff !important;
+
+    border-radius: 7px !important;
+
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+
+    padding: 8px 14px !important;
+
+    box-shadow:
+        0 2px 5px rgba(237, 28, 36, 0.18) !important;
+
+    transition:
+        background-color .15s ease,
+        transform .15s ease,
+        box-shadow .15s ease !important;
+}
+
+.btn-primary:hover,
+.add-button:hover,
+.btn-add:hover,
+.action-button:hover,
+.primary-action:hover {
+    background: var(--aequs-red-dark) !important;
+    border-color: var(--aequs-red-dark) !important;
+
+    transform: translateY(-1px) !important;
+
+    box-shadow:
+        0 4px 9px rgba(237, 28, 36, 0.22) !important;
+}
+
+/* Secondary actions */
+.btn-secondary,
+.secondary-action,
+.back-button {
+    background: #ffffff !important;
+    color: var(--aequs-black) !important;
+
+    border: 1px solid #d1d5db !important;
+    border-radius: 7px !important;
+
+    font-weight: 600 !important;
+}
+
+.btn-secondary:hover,
+.secondary-action:hover,
+.back-button:hover {
+    background: var(--aequs-red-light) !important;
+    color: var(--aequs-red-dark) !important;
+    border-color: #efb2b2 !important;
+}
+
+/* =========================================================
+   DASHBOARD CARDS
+   ========================================================= */
+
+.card,
+.stat-card,
+.dashboard-card,
+.summary-card {
+    background: #ffffff !important;
+    border: 1px solid var(--aequs-border) !important;
+    border-radius: 10px !important;
+
+    box-shadow:
+        0 2px 7px rgba(0,0,0,0.04) !important;
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease !important;
+}
+
+.card:hover,
+.stat-card:hover,
+.dashboard-card:hover,
+.summary-card:hover {
+    transform: translateY(-2px) !important;
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,0.07) !important;
+}
+
+/* Numbers */
+.stat-value,
+.card-value,
+.number {
+    color: var(--aequs-black) !important;
+    font-weight: 800 !important;
+}
+
+/* Card headings */
+.card-title,
+.card-label,
+.stat-label,
+.stat-info h4 {
+    color: #4b5563 !important;
+    font-weight: 650 !important;
+}
+
+/* =========================================================
+   RED ACCENT FOR STAT ICONS
+   ========================================================= */
+
+.stat-icon,
+.card-icon {
+    background: var(--aequs-red-light) !important;
+    color: var(--aequs-red) !important;
+
+    border: 1px solid #ffd5d5 !important;
+}
+
+/* =========================================================
+   DASHBOARD SECTION HEADINGS
+   ========================================================= */
+
+.dashboard h2,
+.dashboard h3,
+.content h2,
+.content h3 {
+    color: var(--aequs-black) !important;
+    font-weight: 750 !important;
+}
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.dashboard a:not(.btn-primary):not(.add-button):not(.btn-add) {
+    color: var(--aequs-red) !important;
+}
+
+.dashboard a:not(.btn-primary):not(.add-button):not(.btn-add):hover {
+    color: var(--aequs-red-dark) !important;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 850px) {
+    .welcome-section,
+    .welcome-card,
+    .hero,
+    .dashboard-welcome {
+        padding: 20px !important;
+    }
+
+    .welcome-section h2,
+    .welcome-card h2,
+    .hero h2,
+    .dashboard-welcome h2 {
+        font-size: 20px !important;
+    }
+}
+
+
+/* =========================================================
+   AEQUS FOUNDATION - COLOR ONLY
+   Do not change layout, typography, icons or features.
+   ========================================================= */
+
+:root {
+    --aequs-red: #ED1C24;
+    --aequs-red-dark: #C9141B;
+    --aequs-red-light: #FFF1F1;
+    --aequs-black: #111111;
+    --aequs-white: #FFFFFF;
+    --aequs-gray: #F5F5F5;
+    --aequs-border: #E5E5E5;
+}
+
+/* Page background */
+body {
+    background-color: var(--aequs-gray) !important;
+    color: var(--aequs-black) !important;
+}
+
+/* Main white areas */
+.main,
+.content,
+.container {
+    background-color: var(--aequs-gray) !important;
+}
+
+/* Headers */
+.topbar,
+.dashboard-header,
+.page-header {
+    background-color: var(--aequs-white) !important;
+    color: var(--aequs-black) !important;
+    border-color: var(--aequs-border) !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--aequs-black) !important;
+}
+
+/* Links */
+a {
+    color: var(--aequs-red) !important;
+}
+
+/* Primary buttons */
+button,
+.btn-primary,
+.add-button,
+.btn-add,
+.add-btn,
+.btn.save,
+.save-button,
+.btn-save {
+    background-color: var(--aequs-red) !important;
+    border-color: var(--aequs-red) !important;
+    color: #FFFFFF !important;
+}
+
+/* Button hover */
+button:hover,
+.btn-primary:hover,
+.add-button:hover,
+.btn-add:hover,
+.add-btn:hover,
+.btn.save:hover,
+.save-button:hover,
+.btn-save:hover {
+    background-color: var(--aequs-red-dark) !important;
+    border-color: var(--aequs-red-dark) !important;
+    color: #FFFFFF !important;
+}
+
+/* Cards */
+.card,
+.stat-card,
+.dashboard-card,
+.summary-card,
+.table-card,
+.form-card {
+    background-color: var(--aequs-white) !important;
+    border-color: var(--aequs-border) !important;
+}
+
+/* Small red accents */
+.stat-icon,
+.card-icon {
+    background-color: var(--aequs-red-light) !important;
+    color: var(--aequs-red) !important;
+}
+
+/* Active/highlight elements */
+.active,
+.selected,
+.nav-active {
+    background-color: var(--aequs-red) !important;
+    color: #FFFFFF !important;
+}
+
+/* AEQUS FOUNDATION - COLOR ONLY */
+
+:root {
+    --aequs-red: #ED1C24;
+    --aequs-red-dark: #C9141B;
+    --aequs-red-light: #FFF1F1;
+    --aequs-black: #111111;
+    --aequs-white: #FFFFFF;
+    --aequs-gray: #F5F5F5;
+    --aequs-border: #E5E5E5;
+}
+
+body {
+    background-color: #F5F5F5 !important;
+    color: #111111 !important;
+}
+
+.main,
+.content,
+.container {
+    background-color: #F5F5F5 !important;
+}
+
+.topbar,
+.dashboard-header,
+.page-header {
+    background-color: #FFFFFF !important;
+    color: #111111 !important;
+    border-color: #E5E5E5 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #111111 !important;
+}
+
+a {
+    color: #ED1C24 !important;
+}
+
+.btn-primary,
+.add-button,
+.btn-add,
+.add-btn,
+.btn.save,
+.save-button,
+.btn-save {
+    background-color: #ED1C24 !important;
+    border-color: #ED1C24 !important;
+    color: #FFFFFF !important;
+}
+
+.btn-primary:hover,
+.add-button:hover,
+.btn-add:hover,
+.add-btn:hover,
+.btn.save:hover,
+.save-button:hover,
+.btn-save:hover {
+    background-color: #C9141B !important;
+    border-color: #C9141B !important;
+    color: #FFFFFF !important;
+}
+
+.card,
+.stat-card,
+.dashboard-card,
+.summary-card,
+.table-card,
+.form-card {
+    background-color: #FFFFFF !important;
+    border-color: #E5E5E5 !important;
+}
+
+.stat-icon,
+.card-icon {
+    background-color: #FFF1F1 !important;
+    color: #ED1C24 !important;
+}
+/* AEQUS FOUNDATION COLORS ONLY */
+
+:root {
+    --aequs-red: #ED1C24;
+    --aequs-red-dark: #C9141B;
+    --aequs-red-light: #FFF1F1;
+    --aequs-black: #111111;
+    --aequs-white: #FFFFFF;
+    --aequs-gray: #F5F5F5;
+    --aequs-border: #E5E5E5;
+}
+
+body {
+    background-color: #F5F5F5 !important;
+    color: #111111 !important;
+}
+
+.main,
+.content,
+.container {
+    background-color: #F5F5F5 !important;
+}
+
+.topbar,
+.dashboard-header,
+.page-header {
+    background-color: #FFFFFF !important;
+    color: #111111 !important;
+    border-color: #E5E5E5 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #111111 !important;
+}
+
+a {
+    color: #ED1C24 !important;
+}
+
+.btn-primary,
+.add-button,
+.btn-add,
+.add-btn,
+.btn.save,
+.save-button,
+.btn-save {
+    background-color: #ED1C24 !important;
+    border-color: #ED1C24 !important;
+    color: #FFFFFF !important;
+}
+
+.btn-primary:hover,
+.add-button:hover,
+.btn-add:hover,
+.add-btn:hover,
+.btn.save:hover,
+.save-button:hover,
+.btn-save:hover {
+    background-color: #C9141B !important;
+    border-color: #C9141B !important;
+    color: #FFFFFF !important;
+}
+
+.card,
+.stat-card,
+.dashboard-card,
+.summary-card,
+.table-card,
+.form-card {
+    background-color: #FFFFFF !important;
+    border-color: #E5E5E5 !important;
+}
+
+.stat-icon,
+.card-icon {
+    background-color: #FFF1F1 !important;
+    color: #ED1C24 !important;
+}
+<style>
+/* =========================================================
+   AEQUS FOUNDATION — DASHBOARD HERO
+   Visual styling only
+   ========================================================= */
+
+.dashboard-hero,
+.hero,
+.welcome-section,
+.welcome-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-left: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+    padding: 24px 28px !important;
+    margin-bottom: 20px !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.dashboard-hero::before,
+.hero::before,
+.welcome-section::before,
+.welcome-card::before {
+    display: none !important;
+}
+
+.dashboard-hero h1,
+.hero h1,
+.welcome-section h1,
+.welcome-card h1 {
+    color: #171717 !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    margin-bottom: 6px !important;
+}
+
+.dashboard-hero p,
+.hero p,
+.welcome-section p,
+.welcome-card p {
+    color: #6b7280 !important;
+    font-weight: 400 !important;
+    line-height: 1.6 !important;
+}
+
+.dashboard-hero strong,
+.hero strong,
+.welcome-section strong,
+.welcome-card strong {
+    color: #ed1c24 !important;
+}
+
+/* AEQUS RED PRIMARY BUTTONS */
+.dashboard-hero .btn-primary,
+.hero .btn-primary,
+.welcome-section .btn-primary,
+.welcome-card .btn-primary,
+.dashboard-hero .action-btn,
+.hero .action-btn {
+    background: #ed1c24 !important;
+    border: 1px solid #ed1c24 !important;
+    color: #ffffff !important;
+    border-radius: 7px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 5px rgba(237, 28, 36, 0.18) !important;
+}
+
+.dashboard-hero .btn-primary:hover,
+.hero .btn-primary:hover,
+.welcome-section .btn-primary:hover,
+.welcome-card .btn-primary:hover,
+.dashboard-hero .action-btn:hover,
+.hero .action-btn:hover {
+    background: #c9141b !important;
+    border-color: #c9141b !important;
+}
+
+/* SECONDARY BUTTONS */
+.dashboard-hero .btn-secondary,
+.hero .btn-secondary,
+.welcome-section .btn-secondary,
+.welcome-card .btn-secondary {
+    background: #ffffff !important;
+    color: #374151 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 7px !important;
+    font-weight: 600 !important;
+}
+
+.dashboard-hero .btn-secondary:hover,
+.hero .btn-secondary:hover,
+.welcome-section .btn-secondary:hover,
+.welcome-card .btn-secondary:hover {
+    background: #fff5f5 !important;
+    color: #ed1c24 !important;
+    border-color: #ed1c24 !important;
+}
+
+/* LOGO */
+.dashboard-hero img,
+.hero img,
+.welcome-section img,
+.welcome-card img {
+    max-height: 48px !important;
+    width: auto !important;
+}
+
+/* ACTION AREA */
+.dashboard-hero .actions,
+.hero .actions,
+.welcome-section .actions,
+.welcome-card .actions {
+    display: flex !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+}
+
+@media (max-width: 700px) {
+    .dashboard-hero,
+    .hero,
+    .welcome-section,
+    .welcome-card {
+        padding: 20px !important;
+    }
+
+    .dashboard-hero .actions,
+    .hero .actions,
+    .welcome-section .actions,
+    .welcome-card .actions {
+        width: 100% !important;
+    }
+}
+</style>
+</style>
 </head>
 
 <body>
@@ -733,3 +1422,9 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+

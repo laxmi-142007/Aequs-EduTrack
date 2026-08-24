@@ -1,13 +1,17 @@
-import csv
+﻿import csv
 import json
 import random
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
+from django.contrib import messages
+from django.db import transaction
 from django.utils import timezone
+from openpyxl import load_workbook
 from .models import School, SchoolMilestone, SchoolResource, GradeStrength
 from django.shortcuts import render, redirect
 
@@ -666,3 +670,492 @@ def api_logout(request):
             "form": form,
         },
     )
+
+
+
+def bulk_upload_schools(request):
+
+    if request.method != "POST":
+        return render(
+            request,
+            "schools/bulk_upload.html",
+        )
+
+    uploaded_file = request.FILES.get("school_file")
+
+    if not uploaded_file:
+        messages.error(
+            request,
+            "Please select an Excel (.xlsx) or CSV (.csv) file."
+        )
+        return redirect("schools:bulk_upload")
+
+    filename = uploaded_file.name.lower()
+
+    if not filename.endswith((".xlsx", ".csv")):
+        messages.error(
+            request,
+            "Only Excel (.xlsx) and CSV (.csv) files are supported."
+        )
+        return redirect("schools:bulk_upload")
+
+    try:
+
+        # ------------------------------------------------------------
+        # READ EXCEL
+        # ------------------------------------------------------------
+
+        if filename.endswith(".xlsx"):
+
+            workbook = load_workbook(
+                filename=uploaded_file,
+                read_only=True,
+                data_only=True,
+            )
+
+            worksheet = workbook.active
+            rows = list(
+                worksheet.iter_rows(values_only=True)
+            )
+
+            workbook.close()
+
+            if not rows:
+                messages.error(
+                    request,
+                    "The Excel file is empty."
+                )
+                return redirect("schools:bulk_upload")
+
+            headers = [
+                str(value).strip().lower()
+                if value is not None else ""
+                for value in rows[0]
+            ]
+
+            data_rows = rows[1:]
+
+        # ------------------------------------------------------------
+        # READ CSV
+        # ------------------------------------------------------------
+
+        else:
+
+            decoded_file = uploaded_file.read().decode("utf-8-sig")
+
+            csv_file = io.StringIO(decoded_file)
+
+            reader = csv.reader(csv_file)
+
+            rows = list(reader)
+
+            if not rows:
+                messages.error(
+                    request,
+                    "The CSV file is empty."
+                )
+                return redirect("schools:bulk_upload")
+
+            headers = [
+                str(value).strip().lower()
+                if value is not None else ""
+                for value in rows[0]
+            ]
+
+            data_rows = rows[1:]
+
+        # ------------------------------------------------------------
+        # REQUIRED COLUMNS
+        # ------------------------------------------------------------
+
+        required_columns = {
+            "name",
+            "udise_code",
+            "district",
+        }
+
+        missing_columns = (
+            required_columns - set(headers)
+        )
+
+        if missing_columns:
+
+            messages.error(
+                request,
+                "Missing required columns: "
+                + ", ".join(sorted(missing_columns))
+            )
+
+            return redirect("schools:bulk_upload")
+
+        # ------------------------------------------------------------
+        # VALID OPTIONS
+        # ------------------------------------------------------------
+
+        valid_affiliations = {
+            choice[0]
+            for choice in School.AFFILIATION_CHOICES
+        }
+
+        valid_statuses = {
+            choice[0]
+            for choice in School.Status.choices
+        }
+
+        prepared_schools = []
+        errors = []
+
+        # ------------------------------------------------------------
+        # PROCESS ROWS
+        # ------------------------------------------------------------
+
+        for row_number, row in enumerate(
+            data_rows,
+            start=2
+        ):
+
+            data = {}
+
+            for index, header in enumerate(headers):
+
+                if not header:
+                    continue
+
+                value = (
+                    row[index]
+                    if index < len(row)
+                    else ""
+                )
+
+                if value is None:
+                    value = ""
+
+                data[header] = value
+
+            name = str(
+                data.get("name", "")
+            ).strip()
+
+            udise_code = str(
+                data.get("udise_code", "")
+            ).strip()
+
+            district = str(
+                data.get("district", "")
+            ).strip()
+
+            if not name:
+                errors.append(
+                    f"Row {row_number}: name is required."
+                )
+
+            if not udise_code:
+                errors.append(
+                    f"Row {row_number}: udise_code is required."
+                )
+
+            if not district:
+                errors.append(
+                    f"Row {row_number}: district is required."
+                )
+
+            if udise_code and School.objects.filter(
+                udise_code=udise_code
+            ).exists():
+
+                errors.append(
+                    f"Row {row_number}: UDISE code "
+                    f"'{udise_code}' already exists."
+                )
+
+            # --------------------------------------------------------
+            # AFFILIATION
+            # --------------------------------------------------------
+
+            affiliation = str(
+                data.get(
+                    "affiliation",
+                    "State"
+                )
+            ).strip()
+
+            if affiliation not in valid_affiliations:
+
+                errors.append(
+                    f"Row {row_number}: invalid affiliation "
+                    f"'{affiliation}'. Use CBSE, State or ICSE."
+                )
+
+            # --------------------------------------------------------
+            # STATUS
+            # --------------------------------------------------------
+
+            status = str(
+                data.get(
+                    "status",
+                    "ACTIVE"
+                )
+            ).strip().upper()
+
+            if status not in valid_statuses:
+
+                errors.append(
+                    f"Row {row_number}: invalid status "
+                    f"'{status}'. Use ACTIVE or INACTIVE."
+                )
+
+            # --------------------------------------------------------
+            # ESTABLISHED DATE
+            # --------------------------------------------------------
+
+            established_date = None
+
+            date_value = data.get(
+                "established_date",
+                ""
+            )
+
+            if date_value:
+
+                if isinstance(date_value, datetime):
+
+                    established_date = date_value.date()
+
+                elif hasattr(date_value, "year") and hasattr(
+                    date_value, "month"
+                ):
+
+                    established_date = date_value
+
+                else:
+
+                    try:
+
+                        established_date = datetime.strptime(
+                            str(date_value).strip(),
+                            "%Y-%m-%d"
+                        ).date()
+
+                    except ValueError:
+
+                        errors.append(
+                            f"Row {row_number}: established_date "
+                            "must be YYYY-MM-DD."
+                        )
+
+            # --------------------------------------------------------
+            # ESTABLISHED YEAR
+            # --------------------------------------------------------
+
+            established_year = None
+
+            year_value = data.get(
+                "established_year",
+                ""
+            )
+
+            if year_value != "":
+
+                try:
+
+                    established_year = int(
+                        float(year_value)
+                    )
+
+                except (
+                    ValueError,
+                    TypeError
+                ):
+
+                    errors.append(
+                        f"Row {row_number}: established_year "
+                        "must be a number."
+                    )
+
+            # --------------------------------------------------------
+            # HEADMASTER EXPERIENCE
+            # --------------------------------------------------------
+
+            headmaster_experience = None
+
+            experience_value = data.get(
+                "headmaster_experience",
+                ""
+            )
+
+            if experience_value != "":
+
+                try:
+
+                    headmaster_experience = int(
+                        float(experience_value)
+                    )
+
+                except (
+                    ValueError,
+                    TypeError
+                ):
+
+                    errors.append(
+                        f"Row {row_number}: headmaster_experience "
+                        "must be a number."
+                    )
+
+            # --------------------------------------------------------
+            # STUDENT STRENGTH
+            # --------------------------------------------------------
+
+            student_strength = 0
+
+            strength_value = data.get(
+                "student_strength",
+                0
+            )
+
+            if strength_value not in ("", None):
+
+                try:
+
+                    student_strength = int(
+                        float(strength_value)
+                    )
+
+                except (
+                    ValueError,
+                    TypeError
+                ):
+
+                    errors.append(
+                        f"Row {row_number}: student_strength "
+                        "must be a number."
+                    )
+
+            # --------------------------------------------------------
+            # PREPARE SCHOOL
+            # --------------------------------------------------------
+
+            prepared_schools.append(
+                {
+                    "name": name,
+                    "udise_code": udise_code,
+
+                    "address": str(
+                        data.get("address", "")
+                    ).strip(),
+
+                    "district": district,
+
+                    "taluk": str(
+                        data.get("taluk", "")
+                    ).strip(),
+
+                    "village": str(
+                        data.get("village", "")
+                    ).strip(),
+
+                    "pincode": str(
+                        data.get("pincode", "")
+                    ).strip(),
+
+                    "phone": str(
+                        data.get("phone", "")
+                    ).strip(),
+
+                    "email": str(
+                        data.get("email", "")
+                    ).strip(),
+
+                    "website": str(
+                        data.get("website", "")
+                    ).strip(),
+
+                    "headmaster_name": str(
+                        data.get("headmaster_name", "")
+                    ).strip(),
+
+                    "headmaster_phone": str(
+                        data.get("headmaster_phone", "")
+                    ).strip(),
+
+                    "headmaster_qualification": str(
+                        data.get("headmaster_qualification", "")
+                    ).strip(),
+
+                    "headmaster_experience":
+                        headmaster_experience,
+
+                    "affiliation":
+                        affiliation,
+
+                    "student_strength":
+                        student_strength,
+
+                    "established_date":
+                        established_date,
+
+                    "established_year":
+                        established_year,
+
+                    "status":
+                        status,
+                }
+            )
+
+        # ------------------------------------------------------------
+        # VALIDATION ERRORS
+        # ------------------------------------------------------------
+
+        if errors:
+
+            return render(
+                request,
+                "schools/bulk_upload.html",
+                {
+                    "errors": errors,
+                    "upload_failed": True,
+                },
+            )
+
+        # ------------------------------------------------------------
+        # CREATE SCHOOLS
+        # ------------------------------------------------------------
+
+        created_count = 0
+
+        with transaction.atomic():
+
+            for school_data in prepared_schools:
+
+                school = School.objects.create(
+                    **school_data
+                )
+
+                _ensure_default_grades(school)
+
+                created_count += 1
+
+        messages.success(
+            request,
+            f"Successfully uploaded {created_count} school(s)."
+        )
+
+        return redirect("schools:portal")
+
+    except UnicodeDecodeError:
+
+        messages.error(
+            request,
+            "Could not read the CSV file. "
+            "Please save it as UTF-8 CSV."
+        )
+
+        return redirect("schools:bulk_upload")
+
+    except Exception as exc:
+
+        messages.error(
+            request,
+            f"School upload failed: {exc}"
+        )
+
+        return redirect("schools:bulk_upload")

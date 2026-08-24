@@ -467,6 +467,10 @@
         <header class="topbar">
             <h1>📚 Academic Record Management</h1>
             <div class="topbar-right">
+                <a href="{% url 'academics:bulk_upload' %}"
+                   class="btn btn-primary btn-sm">
+                    Bulk Upload
+                </a>
                 <span class="user-badge">👤 {{ username }}</span>
                 <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
             </div>

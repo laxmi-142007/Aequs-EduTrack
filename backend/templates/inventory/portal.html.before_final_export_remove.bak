@@ -1,0 +1,2615 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory & Distributions - EduTrack</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-dark: #172554;
+            --primary-light: #eff6ff;
+            --secondary-color: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --bg-light: #f4f7fb;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --success-light: #ecfdf5;
+            --danger-color: #ef4444;
+            --danger-light: #fef2f2;
+            --warning-color: #f59e0b;
+            --warning-light: #fffbeb;
+            --info-color: #0ea5e9;
+            --info-light: #f0f9ff;
+            --card-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            --transition-speed: 0.2s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", 'Outfit', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: var(--bg-light);
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* =========================
+           MAIN WORKSPACE
+        ========================= */
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-light);
+        }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 28px 32px;
+            max-width: 1600px;
+            width: 100%;
+        }
+
+        /* =========================
+           KPI STATS CARDS
+        ========================= */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-color);
+        }
+
+        .kpi-card.kpi-warning::before { background: var(--warning-color); }
+        .kpi-card.kpi-danger::before { background: var(--danger-color); }
+        .kpi-card.kpi-success::before { background: var(--success-color); }
+        .kpi-card.kpi-info::before { background: var(--info-color); }
+
+        .kpi-title {
+            font-size: 12.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            line-height: 1.1;
+        }
+
+        .kpi-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* =========================
+           TAB NAVIGATION
+        ========================= */
+        .tabs-header {
+            display: flex;
+            gap: 6px;
+            background: #e2e8f0;
+            padding: 6px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 9px 15px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: var(--secondary-color);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--primary-color);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .tab-badge {
+            background: var(--danger-color);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 12px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================
+           CARDS & CONTAINERS
+        ========================= */
+        .card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #fafbfc;
+        }
+
+        .card-header h2 {
+            font-size: 16.5px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 22px;
+        }
+
+        /* =========================
+           PILLS & FILTERS
+        ========================= */
+        .category-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .pill-btn {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 6px 13px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pill-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: var(--primary-light);
+        }
+
+        .pill-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+        }
+
+        .filter-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 240px;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 9px 14px 9px 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color var(--transition-speed);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        .select-filter {
+            padding: 9px 13px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            outline: none;
+            background: white;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        /* =========================
+           BUTTONS
+        ========================= */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: all var(--transition-speed);
+            text-decoration: none;
+        }
+
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-warning { background: var(--warning-color); color: white; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #f1f5f9; color: var(--secondary-color); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 6px; }
+
+        .text-success { color: var(--success-color); }
+        .text-warning { color: var(--warning-color); }
+        .text-danger { color: var(--danger-color); }
+        .text-info { color: var(--info-color); }
+
+        /* =========================
+           TABLES
+        ========================= */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13.5px;
+        }
+
+        thead {
+            background: #f8fafc;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        th {
+            padding: 12px 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 11.5px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tbody tr:hover { background: #f8fafc; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* =========================
+           BADGES
+        ========================= */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-in-stock { background: var(--success-light); color: #065f46; border: 1px solid #a7f3d0; }
+        .status-low-stock { background: var(--warning-light); color: #92400e; border: 1px solid #fde68a; }
+        .status-out-stock { background: var(--danger-light); color: #991b1b; border: 1px solid #fecaca; font-weight: 700; }
+
+        .category-tag {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .category-tag.BOOKS { background: #eff6ff; color: #1d4ed8; }
+        .category-tag.WORKBOOKS { background: #f5f3ff; color: #6d28d9; }
+        .category-tag.STUDY_KITS { background: #ecfdf5; color: #047857; }
+        .category-tag.LAPTOPS { background: #fff7ed; color: #c2410c; }
+        .category-tag.SCHOOL_ESSENTIALS { background: #fdf2f8; color: #be185d; }
+        .category-tag.EVENT_MATERIALS { background: #fefce8; color: #a16207; }
+
+        .tx-type-badge {
+            padding: 3px 7px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .tx-type-in { background: #ecfdf5; color: #065f46; }
+        .tx-type-out { background: #eff6ff; color: #1e40af; }
+        .tx-type-adj { background: #fef3c7; color: #92400e; }
+
+        .action-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        /* Leaderboard Rank Badges */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .rank-gold { background: #fef08a; color: #854d0e; border: 2px solid #eab308; }
+        .rank-silver { background: #f1f5f9; color: #475569; border: 2px solid #94a3b8; }
+        .rank-bronze { background: #ffedd5; color: #9a3412; border: 2px solid #f97316; }
+        .rank-normal { background: #e0f2fe; color: #0369a1; }
+
+        /* =========================
+           FORMS & MODALS
+        ========================= */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 13px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color var(--transition-speed);
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 75px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            animation: modalFadeIn 0.2s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 14px;
+            max-width: 650px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .modal-body { padding: 22px; }
+
+        .modal-footer {
+            padding: 14px 22px;
+            border-top: 1px solid var(--border-color);
+            background: #fafbfc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-radius: 0 0 14px 14px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--secondary-color);
+            color: white;
+            padding: 13px 20px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 300;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.toast-success { background: #065f46; border-left: 4px solid var(--success-color); }
+        .toast.toast-error { background: #991b1b; border-left: 4px solid var(--danger-color); }
+        .toast.toast-warning { background: #92400e; border-left: 4px solid var(--warning-color); }
+    </style>
+</head>
+<body>
+
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='inventory' %}
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+    <main class="main">
+        <!-- Topbar -->
+        <header class="topbar">
+            <h1>ðŸ’» Inventory Management</h1>
+            <div class="topbar-actions">
+                <a href="{% url 'inventory:export_csv' %}?type=items" class="btn btn-secondary btn-sm" title="Export current stock inventory to CSV">
+                    ðŸ“¥ Export Stock CSV
+                </a>
+                <button class="btn btn-primary btn-sm" onclick="openAddItemModal()">
+                    âž• Add Item
+                </button>
+                <div class="user-badge">
+                    ðŸ‘¤ {{ username }}
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <!-- KPI Stats Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-info">
+                    <div class="kpi-title">Total Inventory Items ðŸ“¦</div>
+                    <div class="kpi-value" id="kpiTotalItems">{{ total_items }}</div>
+                    <div class="kpi-subtitle">Across 6 Core Categories</div>
+                </div>
+
+                <div class="kpi-card kpi-success">
+                    <div class="kpi-title">Total Stock Units ðŸ“Š</div>
+                    <div class="kpi-value" id="kpiTotalUnits">{{ total_stock_units }}</div>
+                    <div class="kpi-subtitle">Physical units in storage</div>
+                </div>
+
+                <div class="kpi-card {% if low_stock_count > 0 %}kpi-warning{% else %}kpi-success{% endif %}">
+                    <div class="kpi-title">Low Stock Alerts âš ï¸</div>
+                    <div class="kpi-value {% if low_stock_count > 0 %}text-warning{% else %}text-success{% endif %}" id="kpiLowStock">
+                        {{ low_stock_count }}
+                    </div>
+                    <div class="kpi-subtitle">{{ out_of_stock_count }} items completely out of stock</div>
+                </div>
+
+                <div class="kpi-card kpi-primary">
+                    <div class="kpi-title">Laptops Tracked ðŸ’»</div>
+                    <div class="kpi-value" id="kpiLaptops">{{ laptops_total }}</div>
+                    <div class="kpi-subtitle">{{ laptops_issued }} Issued | {{ laptops_available }} Available</div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Header -->
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('items-tab', this)">
+                    ðŸ“¦ All Inventory Items
+                </button>
+                <button class="tab-btn" onclick="switchTab('books-tab', this)">
+                    ðŸ“š Book Distribution (Class 1â€“10)
+                </button>
+                <button class="tab-btn" onclick="switchTab('workbooks-tab', this)">
+                    ðŸ“ Workbook Distribution (Class 10)
+                </button>
+                <button class="tab-btn" onclick="switchTab('study-kits-tab', this)">
+                    ðŸŽ’ Study Kits (Up to 2nd PUC)
+                </button>
+                <button class="tab-btn" onclick="switchTab('laptops-tab', this)">
+                    ðŸ’» Laptop Distribution & Top 10 PUC
+                </button>
+                <button class="tab-btn" onclick="switchTab('essentials-tab', this)">
+                    ðŸ« School Essentials (11 Types)
+                </button>
+                <button class="tab-btn" onclick="switchTab('alerts-tab', this)">
+                    âš ï¸ Low Stock Alerts
+                    {% if low_stock_count > 0 %}
+                        <span class="tab-badge" id="tabAlertBadge">{{ low_stock_count }}</span>
+                    {% endif %}
+                </button>
+                <button class="tab-btn" onclick="switchTab('ledger-tab', this)">
+                    ðŸ“œ Movement Ledger
+                </button>
+                <button class="tab-btn" onclick="switchTab('reports-tab', this)">
+                    ðŸ“Š Distribution Reports
+                </button>
+            </div>
+
+            <!-- =========================================================
+                 TAB 1: ALL INVENTORY ITEMS
+            ========================================================== -->
+            <div id="items-tab" class="tab-content active">
+                <div class="category-pills">
+                    <button class="pill-btn active" onclick="filterCategory('', this)">ðŸŒ All Categories</button>
+                    <button class="pill-btn" onclick="filterCategory('BOOKS', this)">ðŸ“š Books</button>
+                    <button class="pill-btn" onclick="filterCategory('WORKBOOKS', this)">ðŸ“ Workbooks</button>
+                    <button class="pill-btn" onclick="filterCategory('STUDY_KITS', this)">ðŸŽ’ Study Kits</button>
+                    <button class="pill-btn" onclick="filterCategory('LAPTOPS', this)">ðŸ’» Laptops</button>
+                    <button class="pill-btn" onclick="filterCategory('SCHOOL_ESSENTIALS', this)">ðŸ« School Essentials</button>
+                    <button class="pill-btn" onclick="filterCategory('EVENT_MATERIALS', this)">ðŸŽª Event Materials</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ“¦ Inventory Stock List</h2>
+                        <div class="filter-toolbar" style="margin-bottom: 0;">
+                            <div class="search-box">
+                                <span class="search-icon">ðŸ”</span>
+                                <input type="text" id="itemSearchInput" class="search-input" placeholder="Search item name, SKU, location..." oninput="filterItems()">
+                            </div>
+                            <select id="itemStatusFilter" class="select-filter" onchange="filterItems()">
+                                <option value="">All Stock Statuses</option>
+                                <option value="IN_STOCK">âœ… In Stock</option>
+                                <option value="LOW_STOCK">âš ï¸ Low Stock Alert</option>
+                                <option value="OUT_OF_STOCK">âŒ Out of Stock</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table id="inventoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name & Code</th>
+                                        <th>Category</th>
+                                        <th>Current Stock</th>
+                                        <th>Unit</th>
+                                        <th>Threshold</th>
+                                        <th>Location</th>
+                                        <th>Unit Cost</th>
+                                        <th>Stock Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody">
+                                    {% for item in items %}
+                                    <tr data-category="{{ item.category }}" data-status="{{ item.stock_status }}" data-id="{{ item.id }}">
+                                        <td>
+                                            <strong>{{ item.item_name }}</strong>
+                                            <br><small style="color: var(--text-light); font-family: monospace;">{{ item.sku }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="category-tag {{ item.category }}">{{ item.get_category_display }}</span>
+                                        </td>
+                                        <td><strong style="font-size: 15px;">{{ item.current_stock }}</strong></td>
+                                        <td>{{ item.unit }}</td>
+                                        <td>{{ item.low_stock_threshold }}</td>
+                                        <td>{{ item.location|default:"-" }}</td>
+                                        <td>â‚¹{{ item.unit_cost|floatformat:2 }}</td>
+                                        <td>
+                                            {% if item.current_stock == 0 %}
+                                                <span class="status-badge status-out-stock">Out of Stock</span>
+                                            {% elif item.is_low_stock %}
+                                                <span class="status-badge status-low-stock">âš ï¸ Low Stock</span>
+                                            {% else %}
+                                                <span class="status-badge status-in-stock">In Stock</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="action-group">
+                                                <button class="btn btn-success btn-sm" onclick="openStockInModal('{{ item.id }}', '{{ item.item_name|escapejs }}', '{{ item.unit|escapejs }}')">ðŸ“¥ In</button>
+                                                <button class="btn btn-warning btn-sm" onclick="openStockOutModal('{{ item.id }}', '{{ item.item_name|escapejs }}', '{{ item.current_stock }}', '{{ item.unit|escapejs }}')">ðŸ“¤ Out</button>
+                                                <button class="btn btn-secondary btn-sm" onclick="openEditModal('{{ item.id }}')">âœï¸</button>
+                                                <button class="btn btn-danger btn-sm" onclick="deleteItem('{{ item.id }}', '{{ item.item_name|escapejs }}')">ðŸ—‘ï¸</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 2: BOOK DISTRIBUTION (MODULE 6) - CLASS 1 TO 10
+            ========================================================== -->
+            <div id="books-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ“š Book Distribution Entry (Eligible: Class 1â€“10)</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="bookDistForm" onsubmit="handleDistributeBook(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="bookStudentSelect">Select Eligible Student (Class 1â€“10) *</label>
+                                    <select id="bookStudentSelect" class="form-control" required>
+                                        <option value="">-- Choose Class 1-10 Student --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bookItemSelect">Select Book Inventory Item *</label>
+                                    <select id="bookItemSelect" class="form-control" required>
+                                        <option value="">-- Choose Book from Inventory --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bookQuantity">Quantity *</label>
+                                    <input type="number" id="bookQuantity" class="form-control" value="1" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bookAcademicYear">Academic Year *</label>
+                                    <input type="text" id="bookAcademicYear" class="form-control" value="2026-27" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="bookRemarks">Remarks / Distribution Notes</label>
+                                    <input type="text" id="bookRemarks" class="form-control" placeholder="e.g. Term 1 Textbook set issued">
+                                </div>
+                            </div>
+                            <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 10px;">
+                                <button type="reset" class="btn btn-secondary">Reset</button>
+                                <button type="submit" id="bookDistSubmitBtn" class="btn btn-primary">ðŸ“š Complete Book Distribution</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Book Distribution History -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ“– Book Distribution History</h2>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student Name</th>
+                                        <th>Admission #</th>
+                                        <th>Class</th>
+                                        <th>School</th>
+                                        <th>Book Item</th>
+                                        <th>Qty</th>
+                                        <th>Issued By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookHistoryTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 3: WORKBOOK DISTRIBUTION (MODULE 7) - CLASS 10
+            ========================================================== -->
+            <div id="workbooks-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ“ Class 10 Workbook Distribution</h2>
+                        <span class="status-badge" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe;">Class 10 Exclusive Benefit</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="workbookDistForm" onsubmit="handleDistributeWorkbook(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="wbStudentSelect">Select Class 10 Student *</label>
+                                    <select id="wbStudentSelect" class="form-control" required>
+                                        <option value="">-- Choose Class 10 Student --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="wbItemSelect">Select Practice Workbook *</label>
+                                    <select id="wbItemSelect" class="form-control" required>
+                                        <option value="">-- Choose Workbook from Inventory --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="wbQuantity">Quantity *</label>
+                                    <input type="number" id="wbQuantity" class="form-control" value="1" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="wbAcademicYear">Academic Year *</label>
+                                    <input type="text" id="wbAcademicYear" class="form-control" value="2026-27" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="wbRemarks">Remarks</label>
+                                    <input type="text" id="wbRemarks" class="form-control" placeholder="e.g. Board exam revision question bank">
+                                </div>
+                            </div>
+                            <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 10px;">
+                                <button type="reset" class="btn btn-secondary">Reset</button>
+                                <button type="submit" id="wbDistSubmitBtn" class="btn btn-primary" style="background: #7c3aed;">ðŸ“ Issue Class 10 Workbook</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Workbook History -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ“‹ Class 10 Workbook Distribution Records</h2>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student Name</th>
+                                        <th>Admission #</th>
+                                        <th>School</th>
+                                        <th>Workbook Title</th>
+                                        <th>Qty</th>
+                                        <th>Issued By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="wbHistoryTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 4: STUDY KIT MANAGEMENT (MODULE 8) - UP TO 2ND PUC
+            ========================================================== -->
+            <div id="study-kits-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸŽ’ Study Kit Management & Issuance (Class 1 to 2nd PUC)</h2>
+                        <button class="btn btn-success btn-sm" onclick="openCreateStudyKitModal()">âž• Define New Study Kit</button>
+                    </div>
+                    <div class="card-body">
+                        <form id="studyKitDistForm" onsubmit="handleIssueStudyKit(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="kitStudentSelect">Select Student (Class 1 up to 2nd PUC) *</label>
+                                    <select id="kitStudentSelect" class="form-control" required>
+                                        <option value="">-- Choose Student --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="kitTypeSelect">Select Configured Study Kit *</label>
+                                    <select id="kitTypeSelect" class="form-control" required onchange="showKitComponents()">
+                                        <option value="">-- Choose Study Kit --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="kitInventoryItemSelect">Deduct Stock From Inventory Item</label>
+                                    <select id="kitInventoryItemSelect" class="form-control">
+                                        <option value="">-- Optional: Link Physical Inventory Item --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="kitQuantity">Quantity</label>
+                                    <input type="number" id="kitQuantity" class="form-control" value="1" min="1" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <div id="kitComponentsBox" style="display: none; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 13px;">
+                                        <strong>Kit Components:</strong>
+                                        <ul id="kitComponentsList" style="margin-left: 20px; margin-top: 6px; color: var(--text-muted);"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 10px;">
+                                <button type="submit" id="kitDistSubmitBtn" class="btn btn-success">ðŸŽ’ Issue Study Kit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Study Kit History -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ“¦ Study Kit Distribution History</h2>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student Name</th>
+                                        <th>Class</th>
+                                        <th>School</th>
+                                        <th>Study Kit Name</th>
+                                        <th>Qty</th>
+                                        <th>Issued By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kitHistoryTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 5: LAPTOP DISTRIBUTION & TOP 10 PUC (MODULE 9)
+            ========================================================== -->
+            <div id="laptops-tab" class="tab-content">
+                <!-- Top 10 PUC Merit Leaderboard Card -->
+                <div class="card" style="border-left: 4px solid #f59e0b;">
+                    <div class="card-header" style="background: #fffbeb;">
+                        <h2 style="color: #92400e;">ðŸ† Top 10 PUC Merit Students Selection (Laptop Scholarship)</h2>
+                        <span class="status-badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                            Merit Academic Rankings
+                        </span>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Student Name</th>
+                                        <th>Admission #</th>
+                                        <th>PUC Grade</th>
+                                        <th>School / PU College</th>
+                                        <th>Academic %</th>
+                                        <th>Laptop Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topPucTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Serialized Laptop Inventory & Details -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ’» Serialized Laptop Assets Tracker</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openRegisterLaptopModal()">âž• Register Laptop</button>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Asset Tag</th>
+                                        <th>Brand & Model</th>
+                                        <th>Serial Number</th>
+                                        <th>Condition</th>
+                                        <th>Status</th>
+                                        <th>Assigned To</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="laptopsTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 6: GOVERNMENT SCHOOL ESSENTIALS (MODULE 12)
+            ========================================================== -->
+            <div id="essentials-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ« Government School Essentials Distribution</h2>
+                        <span class="category-tag SCHOOL_ESSENTIALS">11 Core Resource Categories</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="essentialsDistForm" onsubmit="handleDistributeSchoolEssentials(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="essSchoolSelect">Destination Government School *</label>
+                                    <select id="essSchoolSelect" class="form-control" required>
+                                        <option value="">-- Choose Government School --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="essTypeSelect">Essential Resource Type *</label>
+                                    <select id="essTypeSelect" class="form-control" required onchange="filterEssentialsInventoryDropdown()">
+                                        <option value="BENCHES">ðŸª‘ Benches</option>
+                                        <option value="DESKS">ðŸªµ Desks</option>
+                                        <option value="CHAIRS">ðŸ’º Chairs</option>
+                                        <option value="WHITE_BOARDS">ðŸ“‹ White Boards</option>
+                                        <option value="LIBRARY_BOOKS">ðŸ“š Library Books</option>
+                                        <option value="LAB_EQUIPMENT">ðŸ”¬ Laboratory Equipment</option>
+                                        <option value="WATER_FILTERS">ðŸš° Water Filters</option>
+                                        <option value="FANS">ðŸ’¨ Fans</option>
+                                        <option value="SPORTS_KITS">âš½ Sports Kits</option>
+                                        <option value="PROJECTORS">ðŸ“½ï¸ Projectors</option>
+                                        <option value="OTHER">ðŸ“¦ Other Educational Resources</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="essItemSelect">Inventory Stock Item *</label>
+                                    <select id="essItemSelect" class="form-control" required>
+                                        <option value="">-- Choose Item from Inventory --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="essQuantity">Quantity to Allocate *</label>
+                                    <input type="number" id="essQuantity" class="form-control" min="1" value="1" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="essRemarks">Allocation Purpose & Handover Notes</label>
+                                    <input type="text" id="essRemarks" class="form-control" placeholder="e.g. Science lab refurbishment / Classroom upgrade">
+                                </div>
+                            </div>
+                            <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 10px;">
+                                <button type="submit" id="essDistSubmitBtn" class="btn btn-primary" style="background: #be185d;">ðŸ« Distribute School Resource</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- School Essentials Distribution History -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ›ï¸ School-wise Essentials Allocation Records</h2>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>School Name</th>
+                                        <th>UDISE Code</th>
+                                        <th>Resource Category</th>
+                                        <th>Item Name</th>
+                                        <th>Quantity</th>
+                                        <th>Purpose</th>
+                                        <th>Issued By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="essentialsHistoryTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 7: LOW STOCK ALERTS
+            ========================================================== -->
+            <div id="alerts-tab" class="tab-content">
+                <div class="card" style="border-left: 4px solid var(--warning-color);">
+                    <div class="card-header" style="background: var(--warning-light);">
+                        <h2 style="color: #92400e;">âš ï¸ Active Low Stock & Out of Stock Alerts</h2>
+                        <span class="status-badge status-low-stock">
+                            Automatic Reorder Notifications
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item Name & Code</th>
+                                        <th>Category</th>
+                                        <th>Current Stock</th>
+                                        <th>Threshold</th>
+                                        <th>Recommended Reorder</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="alertsTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 8: STOCK MOVEMENT LEDGER
+            ========================================================== -->
+            <div id="ledger-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ“œ Stock Movement Ledger (Audit Trail)</h2>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="ledgerTypeFilter" class="select-filter" onchange="fetchLedgerTransactions()">
+                                <option value="">All Movements</option>
+                                <option value="STOCK_IN">ðŸ“¥ Stock In Only</option>
+                                <option value="STOCK_OUT">ðŸ“¤ Stock Out Only</option>
+                                <option value="ADJUSTMENT">âš™ï¸ Adjustments Only</option>
+                            </select>
+                            <a href="{% url 'inventory:export_csv' %}?type=transactions" class="btn btn-secondary btn-sm">ðŸ“¥ Export Ledger CSV</a>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Item Name & SKU</th>
+                                        <th>Movement Type</th>
+                                        <th>Quantity</th>
+                                        <th>Stock Balance</th>
+                                        <th>Source / Beneficiary</th>
+                                        <th>Ref / Invoice #</th>
+                                        <th>Performed By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ledgerTableBody">
+                                    {% for tx in recent_transactions %}
+                                    <tr>
+                                        <td>{{ tx.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td><strong>{{ tx.item.item_name }}</strong><br><small style="color: var(--text-light);">{{ tx.item.sku }}</small></td>
+                                        <td>
+                                            {% if tx.transaction_type == 'STOCK_IN' %}
+                                                <span class="tx-type-badge tx-type-in">ðŸ“¥ Stock In</span>
+                                            {% elif tx.transaction_type == 'STOCK_OUT' %}
+                                                <span class="tx-type-badge tx-type-out">ðŸ“¤ Stock Out</span>
+                                            {% else %}
+                                                <span class="tx-type-badge tx-type-adj">âš™ï¸ Adjustment</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong class="{% if tx.transaction_type == 'STOCK_IN' %}text-success{% else %}text-danger{% endif %}">
+                                                {% if tx.transaction_type == 'STOCK_IN' %}+{% else %}-{% endif %}{{ tx.quantity }} {{ tx.item.unit }}
+                                            </strong>
+                                        </td>
+                                        <td>{{ tx.previous_stock }} âž” <strong>{{ tx.new_stock }}</strong></td>
+                                        <td>{{ tx.source_destination|default:"N/A" }}</td>
+                                        <td><small style="font-family: monospace;">{{ tx.reference_number|default:"-" }}</small></td>
+                                        <td>{{ tx.performed_by|default:"Admin" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 TAB 9: REPORTS HUB (SCHOOL-WISE & STUDENT-WISE)
+            ========================================================== -->
+            <div id="reports-tab" class="tab-content">
+                <!-- School-wise Distribution Report -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸ›ï¸ School-wise Distribution Summary Report</h2>
+                        <a href="{% url 'distributions:export_csv' %}?type=school_wise" class="btn btn-secondary btn-sm">ðŸ“¥ Export School CSV</a>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>School Name</th>
+                                        <th>UDISE Code</th>
+                                        <th>District</th>
+                                        <th>Books Distributed</th>
+                                        <th>Workbooks</th>
+                                        <th>Study Kits</th>
+                                        <th>Laptops</th>
+                                        <th>School Essentials</th>
+                                        <th>Total Delivered</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schoolReportTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student-wise Distribution Report -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>ðŸŽ“ Student-wise Benefit Distribution Report</h2>
+                        <a href="{% url 'distributions:export_csv' %}?type=student_wise" class="btn btn-secondary btn-sm">ðŸ“¥ Export Student CSV</a>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Admission #</th>
+                                        <th>Class</th>
+                                        <th>School</th>
+                                        <th>Books</th>
+                                        <th>Workbooks</th>
+                                        <th>Study Kits</th>
+                                        <th>Laptops</th>
+                                        <th>Total Benefits</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentReportTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- =========================================================
+         MODALS
+    ========================================================== -->
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>âž• Add New Inventory Item</h3>
+                <button class="modal-close" onclick="closeModal('addItemModal')">&times;</button>
+            </div>
+            <form id="addItemForm" onsubmit="handleCreateItem(event)">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="modalItemName">Item Name *</label>
+                            <input type="text" id="modalItemName" class="form-control" required placeholder="e.g. Mathematics Practice Workbook Grade 10">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalItemSku">SKU / Item Code *</label>
+                            <input type="text" id="modalItemSku" class="form-control" required placeholder="e.g. WB-MATH-10">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalItemCategory">Category *</label>
+                            <select id="modalItemCategory" class="form-control" required>
+                                <option value="BOOKS">Books</option>
+                                <option value="WORKBOOKS">Workbooks</option>
+                                <option value="STUDY_KITS">Study Kits</option>
+                                <option value="LAPTOPS">Laptops</option>
+                                <option value="SCHOOL_ESSENTIALS">School Essentials</option>
+                                <option value="EVENT_MATERIALS">Event Materials</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalItemUnit">Unit of Measurement</label>
+                            <input type="text" id="modalItemUnit" class="form-control" value="Pieces" placeholder="e.g. Pieces, Sets, Boxes, Units">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalInitialStock">Initial Stock Qty</label>
+                            <input type="number" id="modalInitialStock" class="form-control" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalLowThreshold">Low Stock Alert Threshold</label>
+                            <input type="number" id="modalLowThreshold" class="form-control" min="1" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalUnitCost">Estimated Unit Cost (â‚¹)</label>
+                            <input type="number" id="modalUnitCost" class="form-control" step="0.01" min="0" value="0.00">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="modalLocation">Storage Location / Rack</label>
+                            <input type="text" id="modalLocation" class="form-control" placeholder="e.g. Warehouse A - Rack 4">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addItemModal')">Cancel</button>
+                    <button type="submit" id="addItemSubmitBtn" class="btn btn-primary">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editItemModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>âœï¸ Edit Inventory Item</h3>
+                <button class="modal-close" onclick="closeModal('editItemModal')">&times;</button>
+            </div>
+            <form id="editItemForm" onsubmit="handleUpdateItem(event)">
+                <input type="hidden" id="editItemId">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="editItemName">Item Name *</label>
+                            <input type="text" id="editItemName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemCategory">Category *</label>
+                            <select id="editItemCategory" class="form-control" required>
+                                <option value="BOOKS">Books</option>
+                                <option value="WORKBOOKS">Workbooks</option>
+                                <option value="STUDY_KITS">Study Kits</option>
+                                <option value="LAPTOPS">Laptops</option>
+                                <option value="SCHOOL_ESSENTIALS">School Essentials</option>
+                                <option value="EVENT_MATERIALS">Event Materials</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemUnit">Unit</label>
+                            <input type="text" id="editItemUnit" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editLowThreshold">Low Stock Alert Threshold</label>
+                            <input type="number" id="editLowThreshold" class="form-control" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editUnitCost">Unit Cost (â‚¹)</label>
+                            <input type="number" id="editUnitCost" class="form-control" step="0.01" min="0">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="editLocation">Location / Shelf</label>
+                            <input type="text" id="editLocation" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editItemModal')">Cancel</button>
+                    <button type="submit" id="editItemSubmitBtn" class="btn btn-primary">Update Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Stock In Modal -->
+    <div id="quickStockInModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>ðŸ“¥ Stock In (Replenishment)</h3>
+                <button class="modal-close" onclick="closeModal('quickStockInModal')">&times;</button>
+            </div>
+            <form id="quickStockInForm" onsubmit="handleQuickStockIn(event)">
+                <input type="hidden" id="quickInItemId">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Item</label>
+                            <input type="text" id="quickInItemName" class="form-control" readonly style="background: #f1f5f9;">
+                        </div>
+                        <div class="form-group">
+                            <label for="quickInQty">Quantity to Add *</label>
+                            <input type="number" id="quickInQty" class="form-control" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quickInCost">Unit Cost (â‚¹)</label>
+                            <input type="number" id="quickInCost" class="form-control" step="0.01" min="0">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="quickInSource">Supplier / Vendor *</label>
+                            <input type="text" id="quickInSource" class="form-control" required placeholder="e.g. Navneet Publications / CSR Supplier">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('quickStockInModal')">Cancel</button>
+                    <button type="submit" id="quickInSubmitBtn" class="btn btn-success">Confirm Stock In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Stock Out Modal -->
+    <div id="quickStockOutModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>ðŸ“¤ Stock Out (Dispatch Item)</h3>
+                <button class="modal-close" onclick="closeModal('quickStockOutModal')">&times;</button>
+            </div>
+            <form id="quickStockOutForm" onsubmit="handleQuickStockOut(event)">
+                <input type="hidden" id="quickOutItemId">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Item</label>
+                            <input type="text" id="quickOutItemName" class="form-control" readonly style="background: #f1f5f9;">
+                        </div>
+                        <div class="form-group">
+                            <label for="quickOutQty">Quantity *</label>
+                            <input type="number" id="quickOutQty" class="form-control" min="1" required>
+                            <small id="quickOutMaxHint" style="color: var(--primary-color); font-weight: 600;"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="quickOutRef">Reference #</label>
+                            <input type="text" id="quickOutRef" class="form-control" placeholder="e.g. DSP-2026-01">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="quickOutDest">Destination / Recipient *</label>
+                            <input type="text" id="quickOutDest" class="form-control" required placeholder="e.g. Govt School Jayanagar">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('quickStockOutModal')">Cancel</button>
+                    <button type="submit" id="quickOutSubmitBtn" class="btn btn-warning">Confirm Stock Out</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Laptop Modal -->
+    <div id="registerLaptopModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>âž• Register Laptop Asset</h3>
+                <button class="modal-close" onclick="closeModal('registerLaptopModal')">&times;</button>
+            </div>
+            <form id="registerLaptopForm" onsubmit="handleRegisterLaptop(event)">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="modalAssetNo">Asset Number / Tag *</label>
+                            <input type="text" id="modalAssetNo" class="form-control" required placeholder="e.g. AEQ-LP-012">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalSerialNo">Serial Number *</label>
+                            <input type="text" id="modalSerialNo" class="form-control" required placeholder="e.g. SN-DL99812">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalBrand">Brand *</label>
+                            <input type="text" id="modalBrand" class="form-control" required placeholder="e.g. Dell / HP / Lenovo">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalModel">Model Name *</label>
+                            <input type="text" id="modalModel" class="form-control" required placeholder="e.g. Inspiron 3520">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalPurchaseCost">Purchase Cost (â‚¹)</label>
+                            <input type="number" id="modalPurchaseCost" class="form-control" step="0.01" min="0" placeholder="38000.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalCondition">Condition</label>
+                            <select id="modalCondition" class="form-control">
+                                <option value="NEW">New</option>
+                                <option value="GOOD">Good</option>
+                                <option value="FAIR">Fair</option>
+                                <option value="DAMAGED">Damaged</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('registerLaptopModal')">Cancel</button>
+                    <button type="submit" id="registerLaptopSubmitBtn" class="btn btn-primary">Register Laptop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Award Laptop Modal (for Top PUC Merit Student) -->
+    <div id="awardLaptopModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>ðŸŽ“ Award Merit Laptop Scholarship</h3>
+                <button class="modal-close" onclick="closeModal('awardLaptopModal')">&times;</button>
+            </div>
+            <form id="awardLaptopForm" onsubmit="handleAwardLaptop(event)">
+                <input type="hidden" id="awardStudentId">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Merit Student Recipient</label>
+                            <input type="text" id="awardStudentName" class="form-control" readonly style="background: #f1f5f9; font-weight: 700; color: #1e40af;">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="awardLaptopSelect">Select Available Laptop Asset *</label>
+                            <select id="awardLaptopSelect" class="form-control" required>
+                                <option value="">-- Choose Available Laptop --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="awardAcademicYear">Academic Year *</label>
+                            <input type="text" id="awardAcademicYear" class="form-control" value="2026-27" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="awardNotes">Scholarship Notes</label>
+                            <input type="text" id="awardNotes" class="form-control" value="Top PUC Merit Scholarship Award">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('awardLaptopModal')">Cancel</button>
+                    <button type="submit" id="awardLaptopSubmitBtn" class="btn btn-success">Confirm Laptop Handover</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Study Kit Modal -->
+    <div id="createStudyKitModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>ðŸŽ’ Define New Study Kit</h3>
+                <button class="modal-close" onclick="closeModal('createStudyKitModal')">&times;</button>
+            </div>
+            <form id="createStudyKitForm" onsubmit="handleCreateStudyKit(event)">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="newKitName">Kit Name *</label>
+                            <input type="text" id="newKitName" class="form-control" required placeholder="e.g. Senior Secondary STEM Kit">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="newKitGrade">Target Grade Level</label>
+                            <input type="text" id="newKitGrade" class="form-control" value="Class 1 to 2nd PUC" placeholder="e.g. Class 6-10 or 1st & 2nd PUC">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="newKitDesc">Description</label>
+                            <textarea id="newKitDesc" class="form-control" placeholder="Kit purpose and contents summary..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createStudyKitModal')">Cancel</button>
+                    <button type="submit" id="newKitSubmitBtn" class="btn btn-success">Save Study Kit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast">
+        <span id="toastIcon">â„¹ï¸</span>
+        <span id="toastMessage">Message</span>
+    </div>
+
+    <!-- =========================================================
+         JAVASCRIPT LOGIC
+    ========================================================== -->
+    <script>
+        let allItems = [];
+        let allLaptops = [];
+        let allStudyKits = [];
+        let currentCategoryFilter = '';
+
+        function getCSRFToken() {
+            const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookie ? cookie.split('=')[1] : '';
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const msgSpan = document.getElementById('toastMessage');
+            const iconSpan = document.getElementById('toastIcon');
+
+            toast.className = 'toast toast-' + type;
+            msgSpan.innerText = message;
+            iconSpan.innerText = type === 'success' ? 'âœ…' : (type === 'error' ? 'âŒ' : 'âš ï¸');
+
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            if (btnElement) btnElement.classList.add('active');
+
+            if (tabId === 'books-tab') loadBooksTab();
+            if (tabId === 'workbooks-tab') loadWorkbooksTab();
+            if (tabId === 'study-kits-tab') loadStudyKitsTab();
+            if (tabId === 'laptops-tab') loadLaptopsTab();
+            if (tabId === 'essentials-tab') loadEssentialsTab();
+            if (tabId === 'alerts-tab') fetchLowStockAlerts();
+            if (tabId === 'ledger-tab') fetchLedgerTransactions();
+            if (tabId === 'reports-tab') loadReportsTab();
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).classList.add('show'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('show'); }
+
+        // =========================================================
+        // INVENTORY ITEMS (TAB 1)
+        // =========================================================
+        async function fetchItems() {
+            try {
+                const res = await fetch('/inventory/api/items/');
+                const data = await res.json();
+                if (data.success) {
+                    allItems = data.items;
+                    renderInventoryTable(allItems);
+                    updateKPICounters();
+                }
+            } catch (err) {
+                console.error('Error fetching inventory items:', err);
+            }
+        }
+
+        function renderInventoryTable(items) {
+            const tbody = document.getElementById('inventoryTableBody');
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-light); padding: 40px;">No inventory items match your search.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = items.map(item => {
+                let statusBadge = '';
+                if (item.stock_status === 'OUT_OF_STOCK') statusBadge = `<span class="status-badge status-out-stock">Out of Stock</span>`;
+                else if (item.is_low_stock) statusBadge = `<span class="status-badge status-low-stock">âš ï¸ Low Stock (â‰¤${item.low_stock_threshold})</span>`;
+                else statusBadge = `<span class="status-badge status-in-stock">In Stock</span>`;
+
+                return `
+                    <tr data-category="${item.category}" data-status="${item.stock_status}">
+                        <td><strong>${escapeHTML(item.item_name)}</strong><br><small style="color: var(--text-light); font-family: monospace;">${escapeHTML(item.sku)}</small></td>
+                        <td><span class="category-tag ${item.category}">${escapeHTML(item.category_display)}</span></td>
+                        <td><strong style="font-size: 15px;">${item.current_stock}</strong></td>
+                        <td>${escapeHTML(item.unit)}</td>
+                        <td>${item.low_stock_threshold}</td>
+                        <td>${escapeHTML(item.location || '-')}</td>
+                        <td>â‚¹${item.unit_cost.toFixed(2)}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="action-group">
+                                <button class="btn btn-success btn-sm" onclick="openStockInModal('${item.id}', '${escapeJS(item.item_name)}', '${escapeJS(item.unit)}')">ðŸ“¥ In</button>
+                                <button class="btn btn-warning btn-sm" onclick="openStockOutModal('${item.id}', '${escapeJS(item.item_name)}', '${item.current_stock}', '${escapeJS(item.unit)}')">ðŸ“¤ Out</button>
+                                <button class="btn btn-secondary btn-sm" onclick="openEditModal('${item.id}')">âœï¸</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}', '${escapeJS(item.item_name)}')">ðŸ—‘ï¸</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterCategory(category, btnElement) {
+            currentCategoryFilter = category;
+            document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+            filterItems();
+        }
+
+        function filterItems() {
+            const query = (document.getElementById('itemSearchInput').value || '').toLowerCase().trim();
+            const statusFilter = document.getElementById('itemStatusFilter').value;
+
+            const filtered = allItems.filter(item => {
+                const matchCategory = !currentCategoryFilter || item.category === currentCategoryFilter;
+                const matchStatus = !statusFilter || item.stock_status === statusFilter;
+                const matchQuery = !query || item.item_name.toLowerCase().includes(query) || item.sku.toLowerCase().includes(query) || (item.location && item.location.toLowerCase().includes(query));
+                return matchCategory && matchStatus && matchQuery;
+            });
+            renderInventoryTable(filtered);
+        }
+
+        function updateKPICounters() {
+            document.getElementById('kpiTotalItems').innerText = allItems.length;
+            document.getElementById('kpiTotalUnits').innerText = allItems.reduce((sum, i) => sum + i.current_stock, 0);
+            const lowStockCount = allItems.filter(i => i.is_low_stock).length;
+            document.getElementById('kpiLowStock').innerText = lowStockCount;
+
+            const badge = document.getElementById('tabAlertBadge');
+            if (badge) {
+                badge.innerText = lowStockCount;
+                badge.style.display = lowStockCount > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        function openAddItemModal() { document.getElementById('addItemForm').reset(); openModal('addItemModal'); }
+
+        async function handleCreateItem(e) {
+            e.preventDefault();
+            const btn = document.getElementById('addItemSubmitBtn');
+            btn.disabled = true;
+
+            const payload = {
+                item_name: document.getElementById('modalItemName').value.trim(),
+                sku: document.getElementById('modalItemSku').value.trim(),
+                category: document.getElementById('modalItemCategory').value,
+                unit: document.getElementById('modalItemUnit').value.trim() || 'Pieces',
+                initial_stock: document.getElementById('modalInitialStock').value,
+                low_stock_threshold: document.getElementById('modalLowThreshold').value,
+                unit_cost: document.getElementById('modalUnitCost').value,
+                location: document.getElementById('modalLocation').value.trim(),
+            };
+
+            try {
+                const res = await fetch('/inventory/api/items/create/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    closeModal('addItemModal');
+                    await fetchItems();
+                } else {
+                    showToast(data.error || 'Failed to create item', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function openEditModal(itemId) {
+            const item = allItems.find(i => i.id == itemId);
+            if (!item) return;
+            document.getElementById('editItemId').value = item.id;
+            document.getElementById('editItemName').value = item.item_name;
+            document.getElementById('editItemCategory').value = item.category;
+            document.getElementById('editItemUnit').value = item.unit;
+            document.getElementById('editLowThreshold').value = item.low_stock_threshold;
+            document.getElementById('editUnitCost').value = item.unit_cost;
+            document.getElementById('editLocation').value = item.location;
+            openModal('editItemModal');
+        }
+
+        async function handleUpdateItem(e) {
+            e.preventDefault();
+            const btn = document.getElementById('editItemSubmitBtn');
+            btn.disabled = true;
+            const itemId = document.getElementById('editItemId').value;
+            const payload = {
+                item_name: document.getElementById('editItemName').value.trim(),
+                category: document.getElementById('editItemCategory').value,
+                unit: document.getElementById('editItemUnit').value.trim(),
+                low_stock_threshold: document.getElementById('editLowThreshold').value,
+                unit_cost: document.getElementById('editUnitCost').value,
+                location: document.getElementById('editLocation').value.trim(),
+            };
+
+            try {
+                const res = await fetch(`/inventory/api/items/${itemId}/update/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    closeModal('editItemModal');
+                    await fetchItems();
+                } else {
+                    showToast(data.error || 'Failed to update', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteItem(itemId, itemName) {
+            if (!confirm(`Delete '${itemName}' from inventory?`)) return;
+            try {
+                const res = await fetch(`/inventory/api/items/${itemId}/delete/`, { method: 'POST', headers: { 'X-CSRFToken': getCSRFToken() } });
+                const data = await res.json();
+                if (data.success) { showToast(data.message); await fetchItems(); }
+                else { showToast(data.error || 'Failed to delete', 'error'); }
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        }
+
+        function openStockInModal(itemId, itemName, unit) {
+            document.getElementById('quickInItemId').value = itemId;
+            document.getElementById('quickInItemName').value = `${itemName} (${unit})`;
+            document.getElementById('quickInQty').value = '';
+            document.getElementById('quickInSource').value = '';
+            openModal('quickStockInModal');
+        }
+
+        async function handleQuickStockIn(e) {
+            e.preventDefault();
+            const btn = document.getElementById('quickInSubmitBtn');
+            btn.disabled = true;
+            const payload = {
+                item_id: document.getElementById('quickInItemId').value,
+                quantity: document.getElementById('quickInQty').value,
+                unit_cost: document.getElementById('quickInCost').value,
+                source: document.getElementById('quickInSource').value.trim(),
+            };
+            try {
+                const res = await fetch('/inventory/api/stock/in/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) { showToast(data.message); closeModal('quickStockInModal'); await fetchItems(); }
+                else { showToast(data.error || 'Failed Stock In', 'error'); }
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+            finally { btn.disabled = false; }
+        }
+
+        function openStockOutModal(itemId, itemName, currentStock, unit) {
+            document.getElementById('quickOutItemId').value = itemId;
+            document.getElementById('quickOutItemName').value = itemName;
+            document.getElementById('quickOutQty').value = '';
+            document.getElementById('quickOutQty').max = currentStock;
+            document.getElementById('quickOutMaxHint').innerText = `Max available: ${currentStock} ${unit}`;
+            document.getElementById('quickOutDest').value = '';
+            openModal('quickStockOutModal');
+        }
+
+        async function handleQuickStockOut(e) {
+            e.preventDefault();
+            const btn = document.getElementById('quickOutSubmitBtn');
+            btn.disabled = true;
+            const payload = {
+                item_id: document.getElementById('quickOutItemId').value,
+                quantity: document.getElementById('quickOutQty').value,
+                destination: document.getElementById('quickOutDest').value.trim(),
+                reference_number: document.getElementById('quickOutRef').value.trim(),
+            };
+            try {
+                const res = await fetch('/inventory/api/stock/out/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) { showToast(data.message); closeModal('quickStockOutModal'); await fetchItems(); }
+                else { showToast(data.error || 'Failed Stock Out', 'error'); }
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+            finally { btn.disabled = false; }
+        }
+
+        // =========================================================
+        // MODULE 6: BOOK DISTRIBUTION (CLASS 1â€“10)
+        // =========================================================
+        async function loadBooksTab() {
+            try {
+                // Fetch eligible Class 1-10 students
+                const resStudents = await fetch('/distributions/api/students/eligible/?benefit_type=BOOK');
+                const stData = await resStudents.json();
+                const stSelect = document.getElementById('bookStudentSelect');
+                stSelect.innerHTML = `<option value="">-- Choose Class 1-10 Student --</option>` + stData.students.map(s => `
+                    <option value="${s.id}">${escapeHTML(s.name)} (${escapeHTML(s.current_class)}) - ${escapeHTML(s.school_name)}</option>
+                `).join('');
+
+                // Fetch Book inventory items
+                const bookItems = allItems.filter(i => i.category === 'BOOKS');
+                const itSelect = document.getElementById('bookItemSelect');
+                itSelect.innerHTML = `<option value="">-- Choose Book from Inventory --</option>` + bookItems.map(i => `
+                    <option value="${i.id}">${escapeHTML(i.item_name)} (${escapeHTML(i.sku)}) - In Stock: ${i.current_stock} ${escapeHTML(i.unit)}</option>
+                `).join('');
+
+                // Fetch Book distribution history
+                const resHist = await fetch('/distributions/api/history/?benefit_type=BOOK');
+                const histData = await resHist.json();
+                const tbody = document.getElementById('bookHistoryTableBody');
+                if (histData.distributions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-light); padding: 30px;">No book distributions logged yet.</td></tr>`;
+                } else {
+                    tbody.innerHTML = histData.distributions.map(d => `
+                        <tr>
+                            <td>${d.distribution_date}</td>
+                            <td><strong>${escapeHTML(d.student_name)}</strong></td>
+                            <td><small style="font-family: monospace;">${escapeHTML(d.admission_number)}</small></td>
+                            <td><span class="category-tag">${escapeHTML(d.student_class)}</span></td>
+                            <td>${escapeHTML(d.school_name)}</td>
+                            <td><strong>${escapeHTML(d.item_name)}</strong></td>
+                            <td>${d.quantity}</td>
+                            <td>${escapeHTML(d.issued_by)}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading Books tab:', err);
+            }
+        }
+
+        async function handleDistributeBook(e) {
+            e.preventDefault();
+            const btn = document.getElementById('bookDistSubmitBtn');
+            btn.disabled = true;
+
+            const payload = {
+                student_id: document.getElementById('bookStudentSelect').value,
+                item_id: document.getElementById('bookItemSelect').value,
+                quantity: document.getElementById('bookQuantity').value,
+                academic_year: document.getElementById('bookAcademicYear').value.trim(),
+                remarks: document.getElementById('bookRemarks').value.trim(),
+            };
+
+            try {
+                const res = await fetch('/distributions/api/distribute/book/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    document.getElementById('bookDistForm').reset();
+                    await fetchItems();
+                    await loadBooksTab();
+                } else {
+                    showToast(data.error || 'Failed to distribute book', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // =========================================================
+        // MODULE 7: WORKBOOK DISTRIBUTION (CLASS 10)
+        // =========================================================
+        async function loadWorkbooksTab() {
+            try {
+                const resStudents = await fetch('/distributions/api/students/eligible/?benefit_type=WORKBOOK');
+                const stData = await resStudents.json();
+                const stSelect = document.getElementById('wbStudentSelect');
+                stSelect.innerHTML = `<option value="">-- Choose Class 10 Student --</option>` + stData.students.map(s => `
+                    <option value="${s.id}">${escapeHTML(s.name)} (Class 10) - ${escapeHTML(s.school_name)}</option>
+                `).join('');
+
+                const wbItems = allItems.filter(i => i.category === 'WORKBOOKS');
+                const itSelect = document.getElementById('wbItemSelect');
+                itSelect.innerHTML = `<option value="">-- Choose Workbook from Inventory --</option>` + wbItems.map(i => `
+                    <option value="${i.id}">${escapeHTML(i.item_name)} (${escapeHTML(i.sku)}) - In Stock: ${i.current_stock} ${escapeHTML(i.unit)}</option>
+                `).join('');
+
+                const resHist = await fetch('/distributions/api/history/?benefit_type=WORKBOOK');
+                const histData = await resHist.json();
+                const tbody = document.getElementById('wbHistoryTableBody');
+                if (histData.distributions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-light); padding: 30px;">No workbook distributions logged yet.</td></tr>`;
+                } else {
+                    tbody.innerHTML = histData.distributions.map(d => `
+                        <tr>
+                            <td>${d.distribution_date}</td>
+                            <td><strong>${escapeHTML(d.student_name)}</strong></td>
+                            <td><small style="font-family: monospace;">${escapeHTML(d.admission_number)}</small></td>
+                            <td>${escapeHTML(d.school_name)}</td>
+                            <td><strong>${escapeHTML(d.item_name)}</strong></td>
+                            <td>${d.quantity}</td>
+                            <td>${escapeHTML(d.issued_by)}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading Workbooks tab:', err);
+            }
+        }
+
+        async function handleDistributeWorkbook(e) {
+            e.preventDefault();
+            const btn = document.getElementById('wbDistSubmitBtn');
+            btn.disabled = true;
+
+            const payload = {
+                student_id: document.getElementById('wbStudentSelect').value,
+                item_id: document.getElementById('wbItemSelect').value,
+                quantity: document.getElementById('wbQuantity').value,
+                academic_year: document.getElementById('wbAcademicYear').value.trim(),
+                remarks: document.getElementById('wbRemarks').value.trim(),
+            };
+
+            try {
+                const res = await fetch('/distributions/api/distribute/workbook/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    document.getElementById('workbookDistForm').reset();
+                    await fetchItems();
+                    await loadWorkbooksTab();
+                } else {
+                    showToast(data.error || 'Failed to distribute workbook', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // =========================================================
+        // MODULE 8: STUDY KIT MANAGEMENT (UP TO 2ND PUC)
+        // =========================================================
+        async function loadStudyKitsTab() {
+            try {
+                const resStudents = await fetch('/distributions/api/students/eligible/?benefit_type=STUDY_KIT');
+                const stData = await resStudents.json();
+                document.getElementById('kitStudentSelect').innerHTML = `<option value="">-- Choose Student (Class 1 to 2nd PUC) --</option>` + stData.students.map(s => `
+                    <option value="${s.id}">${escapeHTML(s.name)} (${escapeHTML(s.current_class)}) - ${escapeHTML(s.school_name)}</option>
+                `).join('');
+
+                const resKits = await fetch('/distributions/api/study-kits/');
+                const kitData = await resKits.json();
+                allStudyKits = kitData.kits;
+                document.getElementById('kitTypeSelect').innerHTML = `<option value="">-- Choose Study Kit --</option>` + allStudyKits.map(k => `
+                    <option value="${k.id}">${escapeHTML(k.name)} [${escapeHTML(k.target_grade_level)}]</option>
+                `).join('');
+
+                const kitItems = allItems.filter(i => i.category === 'STUDY_KITS');
+                document.getElementById('kitInventoryItemSelect').innerHTML = `<option value="">-- Optional: Link Physical Inventory Item --</option>` + kitItems.map(i => `
+                    <option value="${i.id}">${escapeHTML(i.item_name)} - In Stock: ${i.current_stock} ${escapeHTML(i.unit)}</option>
+                `).join('');
+
+                const resHist = await fetch('/distributions/api/history/?benefit_type=STUDY_KIT');
+                const histData = await resHist.json();
+                const tbody = document.getElementById('kitHistoryTableBody');
+                if (histData.distributions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-light); padding: 30px;">No study kits issued yet.</td></tr>`;
+                } else {
+                    tbody.innerHTML = histData.distributions.map(d => `
+                        <tr>
+                            <td>${d.distribution_date}</td>
+                            <td><strong>${escapeHTML(d.student_name)}</strong></td>
+                            <td><span class="category-tag">${escapeHTML(d.student_class)}</span></td>
+                            <td>${escapeHTML(d.school_name)}</td>
+                            <td><strong>${escapeHTML(d.study_kit_name || d.item_name)}</strong></td>
+                            <td>${d.quantity}</td>
+                            <td>${escapeHTML(d.issued_by)}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading Study Kits tab:', err);
+            }
+        }
+
+        function showKitComponents() {
+            const kitId = document.getElementById('kitTypeSelect').value;
+            const kit = allStudyKits.find(k => k.id == kitId);
+            const box = document.getElementById('kitComponentsBox');
+            const list = document.getElementById('kitComponentsList');
+
+            if (kit && kit.items && kit.items.length > 0) {
+                list.innerHTML = kit.items.map(it => `<li>${it.quantity}x ${escapeHTML(it.item_name)} ${it.spec ? '(' + escapeHTML(it.spec) + ')' : ''}</li>`).join('');
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function openCreateStudyKitModal() { document.getElementById('createStudyKitForm').reset(); openModal('createStudyKitModal'); }
+
+        async function handleCreateStudyKit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('newKitSubmitBtn');
+            btn.disabled = true;
+            const payload = {
+                name: document.getElementById('newKitName').value.trim(),
+                target_grade_level: document.getElementById('newKitGrade').value.trim(),
+                description: document.getElementById('newKitDesc').value.trim(),
+            };
+
+            try {
+                const res = await fetch('/distributions/api/study-kits/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) { showToast(data.message); closeModal('createStudyKitModal'); await loadStudyKitsTab(); }
+                else { showToast(data.error || 'Failed to create kit', 'error'); }
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+            finally { btn.disabled = false; }
+        }
+
+        async function handleIssueStudyKit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('kitDistSubmitBtn');
+            btn.disabled = true;
+
+            const payload = {
+                student_id: document.getElementById('kitStudentSelect').value,
+                kit_id: document.getElementById('kitTypeSelect').value,
+                item_id: document.getElementById('kitInventoryItemSelect').value,
+                quantity: document.getElementById('kitQuantity').value,
+            };
+
+            try {
+                const res = await fetch('/distributions/api/distribute/study-kit/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    document.getElementById('studyKitDistForm').reset();
+                    document.getElementById('kitComponentsBox').style.display = 'none';
+                    await fetchItems();
+                    await loadStudyKitsTab();
+                } else {
+                    showToast(data.error || 'Failed to issue study kit', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // =========================================================
+        // MODULE 9: LAPTOPS & TOP 10 PUC MERIT SELECTION
+        // =========================================================
+        async function loadLaptopsTab() {
+            try {
+                // Fetch Top 10 PUC Students
+                const resTop = await fetch('/distributions/api/students/top-puc/');
+                const topData = await resTop.json();
+                const topTbody = document.getElementById('topPucTableBody');
+
+                if (topData.top_students.length === 0) {
+                    topTbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-light); padding: 30px;">No PUC students found in academic records.</td></tr>`;
+                } else {
+                    topTbody.innerHTML = topData.top_students.map(s => {
+                        let rankClass = 'rank-normal';
+                        if (s.rank_position === 1) rankClass = 'rank-gold';
+                        else if (s.rank_position === 2) rankClass = 'rank-silver';
+                        else if (s.rank_position === 3) rankClass = 'rank-bronze';
+
+                        let statusCol = s.has_laptop
+                            ? `<span class="status-badge" style="background: #eff6ff; color: #1d4ed8;">âœ… Laptop Issued (${escapeHTML(s.assigned_laptop)})</span>`
+                            : `<span class="status-badge status-low-stock">â³ Eligible for Award</span>`;
+
+                        let actionCol = s.has_laptop
+                            ? `<button class="btn btn-secondary btn-sm" disabled>Assigned</button>`
+                            : `<button class="btn btn-success btn-sm" onclick="openAwardLaptopModal('${s.student_id}', '${escapeJS(s.student_name)}')">ðŸŽ“ Award Laptop</button>`;
+
+                        return `
+                            <tr>
+                                <td><span class="rank-badge ${rankClass}">#${s.rank_position}</span></td>
+                                <td><strong>${escapeHTML(s.student_name)}</strong></td>
+                                <td><small style="font-family: monospace;">${escapeHTML(s.admission_number)}</small></td>
+                                <td><span class="category-tag LAPTOPS">${escapeHTML(s.current_class)}</span></td>
+                                <td>${escapeHTML(s.school_name)}</td>
+                                <td><strong style="color: #047857; font-size: 14.5px;">${s.percentage.toFixed(1)}%</strong></td>
+                                <td>${statusCol}</td>
+                                <td>${actionCol}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                // Fetch Serialized Laptops
+                const resLaptops = await fetch('/inventory/api/laptops/');
+                const lapData = await resLaptops.json();
+                allLaptops = lapData.laptops;
+                renderLaptopsTable(allLaptops);
+                document.getElementById('kpiLaptops').innerText = allLaptops.length;
+            } catch (err) {
+                console.error('Error loading Laptops tab:', err);
+            }
+        }
+
+        function renderLaptopsTable(laptops) {
+            const tbody = document.getElementById('laptopsTableBody');
+            if (!laptops || laptops.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-light); padding: 30px;">No laptop assets registered.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = laptops.map(l => {
+                let statusBadge = l.status === 'AVAILABLE'
+                    ? `<span class="status-badge status-in-stock">Available</span>`
+                    : (l.status === 'ISSUED' ? `<span class="status-badge" style="background: #eff6ff; color: #1d4ed8;">Issued</span>` : `<span class="status-badge status-out-stock">${escapeHTML(l.status_display)}</span>`);
+
+                let assignmentInfo = l.current_assignment
+                    ? `<strong>${escapeHTML(l.current_assignment.student_name)}</strong><br><small style="color: var(--text-light);">${l.current_assignment.academic_year}</small>`
+                    : '<span style="color: var(--text-light);">-</span>';
+
+                let actionBtn = l.current_assignment
+                    ? `<button class="btn btn-warning btn-sm" onclick="returnLaptop('${l.id}', '${escapeJS(l.asset_number)}')">â†©ï¸ Return</button>`
+                    : (l.status === 'AVAILABLE' ? `<button class="btn btn-success btn-sm" onclick="openAwardLaptopModal('', '', '${l.id}')">ðŸŽ“ Issue</button>` : '');
+
+                return `
+                    <tr>
+                        <td><strong>${escapeHTML(l.asset_number)}</strong></td>
+                        <td>${escapeHTML(l.brand)} ${escapeHTML(l.model_name)}</td>
+                        <td><small style="font-family: monospace;">${escapeHTML(l.serial_number)}</small></td>
+                        <td><span class="category-tag">${escapeHTML(l.condition_display)}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${assignmentInfo}</td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openAwardLaptopModal(studentId, studentName, preselectedLaptopId = '') {
+            document.getElementById('awardStudentId').value = studentId;
+            document.getElementById('awardStudentName').value = studentName || 'Merit Scholarship Student';
+
+            const available = allLaptops.filter(l => l.status === 'AVAILABLE');
+            const select = document.getElementById('awardLaptopSelect');
+            select.innerHTML = `<option value="">-- Choose Available Laptop --</option>` + available.map(l => `
+                <option value="${l.id}" ${preselectedLaptopId == l.id ? 'selected' : ''}>${l.asset_number} - ${l.brand} ${l.model_name} (${l.serial_number})</option>
+            `).join('');
+
+            openModal('awardLaptopModal');
+        }
+
+        async function handleAwardLaptop(e) {
+            e.preventDefault();
+            const btn = document.getElementById('awardLaptopSubmitBtn');
+            btn.disabled = true;
+
+            const payload = {
+                student_id: document.getElementById('awardStudentId').value,
+                laptop_id: document.getElementById('awardLaptopSelect').value,
+                academic_year: document.getElementById('awardAcademicYear').value.trim(),
+                notes: document.getElementById('awardNotes').value.trim(),
+            };
+
+            try {
+                const res = await fetch('/distributions/api/distribute/laptop/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    closeModal('awardLaptopModal');
+                    await loadLaptopsTab();
+                } else {
+                    showToast(data.error || 'Failed to issue laptop', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function openRegisterLaptopModal() { document.getElementById('registerLaptopForm').reset(); openModal('registerLaptopModal'); }
+
+        async function handleRegisterLaptop(e) {
+            e.preventDefault();
+            const btn = document.getElementById('registerLaptopSubmitBtn');
+            btn.disabled = true;
+            const payload = {
+                asset_number: document.getElementById('modalAssetNo').value.trim(),
+                serial_number: document.getElementById('modalSerialNo').value.trim(),
+                brand: document.getElementById('modalBrand').value.trim(),
+                model_name: document.getElementById('modalModel').value.trim(),
+                purchase_cost: document.getElementById('modalPurchaseCost').value,
+                condition: document.getElementById('modalCondition').value,
+            };
+            try {
+                const res = await fetch('/inventory/api/laptops/create/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) { showToast(data.message); closeModal('registerLaptopModal'); await loadLaptopsTab(); }
+                else { showToast(data.error || 'Failed to register', 'error'); }
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+            finally { btn.disabled = false; }
+        }
+
+        async function returnLaptop(laptopId, assetNo) {
+            const notes = prompt(`Enter return notes for laptop ${assetNo}:`, 'Returned in good working condition');
+            if (notes === null) return;
+            try {
+                const res = await fetch(`/inventory/api/laptops/${laptopId}/return/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify({ return_notes: notes })
+                });
+                const data = await res.json();
+                if (data.success) { showToast(data.message); await loadLaptopsTab(); }
+                else { showToast(data.error || 'Failed to return', 'error'); }
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        }
+
+        // =========================================================
+        // MODULE 12: GOVERNMENT SCHOOL ESSENTIALS (11 CATEGORIES)
+        // =========================================================
+        async function loadEssentialsTab() {
+            try {
+                // Fetch schools
+                const resSchools = await fetch('/distributions/api/reports/school-wise/');
+                const schData = await resSchools.json();
+                document.getElementById('essSchoolSelect').innerHTML = `<option value="">-- Choose Government School --</option>` + schData.report.map(s => `
+                    <option value="${s.school_id}">${escapeHTML(s.school_name)} (${escapeHTML(s.udise_code)})</option>
+                `).join('');
+
+                filterEssentialsInventoryDropdown();
+
+                // Fetch history
+                const resHist = await fetch('/distributions/api/history/?benefit_type=SCHOOL_ESSENTIAL');
+                const histData = await resHist.json();
+                const tbody = document.getElementById('essentialsHistoryTableBody');
+                if (histData.distributions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-light); padding: 30px;">No school essentials allocated yet.</td></tr>`;
+                } else {
+                    tbody.innerHTML = histData.distributions.map(d => `
+                        <tr>
+                            <td>${d.distribution_date}</td>
+                            <td><strong>${escapeHTML(d.school_name)}</strong></td>
+                            <td><small style="font-family: monospace;">${escapeHTML(d.school_udise)}</small></td>
+                            <td><span class="category-tag SCHOOL_ESSENTIALS">${escapeHTML(d.essential_type_display || d.essential_type)}</span></td>
+                            <td><strong>${escapeHTML(d.item_name)}</strong></td>
+                            <td>${d.quantity} ${escapeHTML(d.item_unit)}</td>
+                            <td>${escapeHTML(d.remarks || '-')}</td>
+                            <td>${escapeHTML(d.issued_by)}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading Essentials tab:', err);
+            }
+        }
+
+        function filterEssentialsInventoryDropdown() {
+            const essentialType = document.getElementById('essTypeSelect').value;
+            const essItems = allItems.filter(i => i.category === 'SCHOOL_ESSENTIALS');
+            const select = document.getElementById('essItemSelect');
+
+            select.innerHTML = `<option value="">-- Choose Item from Inventory --</option>` + essItems.map(i => `
+                <option value="${i.id}">${escapeHTML(i.item_name)} (${escapeHTML(i.sku)}) - In Stock: ${i.current_stock} ${escapeHTML(i.unit)}</option>
+            `).join('');
+        }
+
+        async function handleDistributeSchoolEssentials(e) {
+            e.preventDefault();
+            const btn = document.getElementById('essDistSubmitBtn');
+            btn.disabled = true;
+
+            const payload = {
+                school_id: document.getElementById('essSchoolSelect').value,
+                essential_type: document.getElementById('essTypeSelect').value,
+                item_id: document.getElementById('essItemSelect').value,
+                quantity: document.getElementById('essQuantity').value,
+                remarks: document.getElementById('essRemarks').value.trim(),
+            };
+
+            try {
+                const res = await fetch('/distributions/api/distribute/school-essentials/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    document.getElementById('essentialsDistForm').reset();
+                    await fetchItems();
+                    await loadEssentialsTab();
+                } else {
+                    showToast(data.error || 'Failed to distribute essential', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // =========================================================
+        // LOW STOCK ALERTS & LEDGER (TAB 7 & 8)
+        // =========================================================
+        async function fetchLowStockAlerts() {
+            try {
+                const res = await fetch('/inventory/api/alerts/low-stock/');
+                const data = await res.json();
+                const tbody = document.getElementById('alertsTableBody');
+                if (data.alerts.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--success-color); padding: 40px; font-weight: 600;">ðŸŽ‰ All inventory items have healthy stock levels above minimum thresholds.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.alerts.map(item => {
+                    const shortage = Math.max(0, item.low_stock_threshold - item.current_stock);
+                    const recommended = shortage > 0 ? shortage + 20 : 25;
+                    return `
+                        <tr>
+                            <td><strong>${escapeHTML(item.item_name)}</strong><br><small style="color: var(--text-light); font-family: monospace;">${escapeHTML(item.sku)}</small></td>
+                            <td><span class="category-tag ${item.category}">${escapeHTML(item.category_display)}</span></td>
+                            <td><strong style="color: var(--danger-color); font-size: 15px;">${item.current_stock} ${escapeHTML(item.unit)}</strong></td>
+                            <td>${item.low_stock_threshold} ${escapeHTML(item.unit)}</td>
+                            <td><strong style="color: #d97706;">+${recommended} ${escapeHTML(item.unit)}</strong></td>
+                            <td>${item.current_stock === 0 ? '<span class="status-badge status-out-stock">Out of Stock</span>' : '<span class="status-badge status-low-stock">Low Stock</span>'}</td>
+                            <td><button class="btn btn-success btn-sm" onclick="openStockInModal('${item.id}', '${escapeJS(item.item_name)}', '${escapeJS(item.unit)}')">ðŸ“¥ Quick Restock</button></td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) { console.error('Error alerts:', err); }
+        }
+
+        async function fetchLedgerTransactions() {
+            const type = document.getElementById('ledgerTypeFilter').value;
+            let url = '/inventory/api/transactions/';
+            if (type) url += `?type=${type}`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const tbody = document.getElementById('ledgerTableBody');
+                if (data.transactions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-light); padding: 30px;">No movement transactions logged.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.transactions.map(tx => {
+                    let typeBadge = tx.transaction_type === 'STOCK_IN' ? '<span class="tx-type-badge tx-type-in">ðŸ“¥ Stock In</span>' : (tx.transaction_type === 'STOCK_OUT' ? '<span class="tx-type-badge tx-type-out">ðŸ“¤ Stock Out</span>' : '<span class="tx-type-badge tx-type-adj">âš™ï¸ Adjustment</span>');
+                    let color = tx.transaction_type === 'STOCK_IN' ? 'var(--success-color)' : 'var(--danger-color)';
+                    let sign = tx.transaction_type === 'STOCK_IN' ? '+' : '-';
+                    return `
+                        <tr>
+                            <td>${escapeHTML(tx.created_at)}</td>
+                            <td><strong>${escapeHTML(tx.item_name)}</strong><br><small style="color: var(--text-light);">${escapeHTML(tx.item_sku)}</small></td>
+                            <td>${typeBadge}</td>
+                            <td><strong style="color: ${color};">${sign}${tx.quantity} ${escapeHTML(tx.item_unit)}</strong></td>
+                            <td>${tx.previous_stock} âž” <strong>${tx.new_stock}</strong></td>
+                            <td>${escapeHTML(tx.source_destination)}</td>
+                            <td><small style="font-family: monospace;">${escapeHTML(tx.reference_number)}</small></td>
+                            <td>${escapeHTML(tx.performed_by)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) { console.error('Error ledger:', err); }
+        }
+
+        // =========================================================
+        // TAB 9: REPORTS HUB
+        // =========================================================
+        async function loadReportsTab() {
+            try {
+                const resSch = await fetch('/distributions/api/reports/school-wise/');
+                const schData = await resSch.json();
+                document.getElementById('schoolReportTableBody').innerHTML = schData.report.map(s => `
+                    <tr>
+                        <td><strong>${escapeHTML(s.school_name)}</strong></td>
+                        <td><small style="font-family: monospace;">${escapeHTML(s.udise_code)}</small></td>
+                        <td>${escapeHTML(s.district)}</td>
+                        <td><strong>${s.books_distributed}</strong></td>
+                        <td><strong>${s.workbooks_distributed}</strong></td>
+                        <td><strong>${s.study_kits_distributed}</strong></td>
+                        <td><strong>${s.laptops_issued}</strong></td>
+                        <td><strong>${s.school_essentials_units}</strong></td>
+                        <td><strong style="color: var(--primary-color); font-size: 15px;">${s.total_items_delivered}</strong></td>
+                    </tr>
+                `).join('');
+
+                const resSt = await fetch('/distributions/api/reports/student-wise/');
+                const stData = await resSt.json();
+                document.getElementById('studentReportTableBody').innerHTML = stData.report.map(s => `
+                    <tr>
+                        <td><strong>${escapeHTML(s.student_name)}</strong></td>
+                        <td><small style="font-family: monospace;">${escapeHTML(s.admission_number)}</small></td>
+                        <td><span class="category-tag">${escapeHTML(s.current_class)}</span></td>
+                        <td>${escapeHTML(s.school_name)}</td>
+                        <td>${s.books_received}</td>
+                        <td>${s.workbooks_received}</td>
+                        <td>${s.study_kits_received}</td>
+                        <td>${s.laptops_received}</td>
+                        <td><strong style="color: var(--success-color); font-size: 15px;">${s.total_benefits}</strong></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading reports:', err);
+            }
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function escapeJS(str) {
+            if (!str) return '';
+            return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchItems();
+        });
+    </script>
+</body>
+</html>
+

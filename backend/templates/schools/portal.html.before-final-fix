@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Schools - EduTrack</title>
+    <style>
+        /* ------------------------------------------------------------- */
+        /* GLOBAL DESIGN SYSTEM                                          */
+        /* ------------------------------------------------------------- */
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-dark: #172554;
+            --primary-light: #eff6ff;
+            --secondary-color: #1e293b;
+            --text-muted: #64748b;
+            --bg-light: #f4f7fb;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --border-focus: #2563eb;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #0ea5e9;
+            --card-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            --transition-speed: 0.2s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", 'Outfit', Arial, sans-serif;
+            background: var(--bg-light);
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        /* =============================================================
+           1 SINGLE UNIFIED SIDEBAR
+        ============================================================= */
+
+        /* =============================================================
+           MAIN WORKSPACE AREA
+        ============================================================= */
+
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-light);
+        }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--primary-dark);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #166534;
+            background: #dcfce7;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        .content {
+            padding: 26px 30px 40px;
+            flex: 1;
+        }
+
+        /* --- School Selector Banner Ribbon --- */
+        .school-selector-banner {
+            background: #ffffff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .selector-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .selector-group label {
+            margin: 0;
+            font-weight: 600;
+            font-size: 14px;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .school-select {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+            min-width: 280px;
+            cursor: pointer;
+        }
+
+        .school-meta-pill {
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* --- Main Card Container for Tabs --- */
+        .container {
+            background: #ffffff;
+            box-shadow: var(--card-shadow);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Tab Navigation Styling --- */
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .tab-button {
+            background-color: transparent;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all var(--transition-speed);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 3px solid transparent;
+            font-family: inherit;
+        }
+
+        .tab-button:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .tab-button.active {
+            background-color: #ffffff;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        /* --- Content Styling --- */
+        .tab-content {
+            padding: 30px;
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content h2 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-desc {
+            color: var(--text-muted);
+            margin-top: -10px;
+            margin-bottom: 22px;
+            font-size: 0.93rem;
+        }
+
+        /* --- Form Styling --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 13.5px;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="password"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: inherit;
+            background-color: #ffffff;
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--border-focus);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .form-actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition-speed);
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        /* --- Photo Preview Styling --- */
+        .photo-upload-container {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-top: 6px;
+        }
+
+        .photo-preview-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+            flex-shrink: 0;
+        }
+
+        .photo-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- Table Styling --- */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .data-table th {
+            background-color: var(--primary-dark);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .data-table tfoot td {
+            font-weight: 700;
+            background: #f1f5f9;
+            border-top: 2px solid #cbd5e1;
+        }
+
+        .change-pill {
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .change-positive { background: #dcfce7; color: #15803d; }
+        .change-negative { background: #fee2e2; color: #b91c1c; }
+        .change-neutral { background: #f1f5f9; color: #64748b; }
+
+        /* --- Cards for History & Resources --- */
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .info-card {
+            border: 1px solid var(--border-color);
+            padding: 18px 20px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: box-shadow var(--transition-speed);
+        }
+
+        .info-card:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            border-color: #cbd5e1;
+        }
+
+        .info-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .info-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        .status-badge.active { background: #dcfce7; color: #166534; }
+        .status-badge.delivered { background: #dbeafe; color: #1e40af; }
+        .status-badge.pending { background: #fef3c7; color: #92400e; }
+        .status-badge.in-progress { background: #e0e7ff; color: #3730a3; }
+
+        .info-card-body {
+            font-size: 13.5px;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        .section-header-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-header-action h2 {
+            margin-bottom: 0;
+        }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 24px 28px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        /* --- Login Module View --- */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 65vh;
+        }
+
+        .login-card {
+            background: #ffffff;
+            padding: 35px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 390px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-card h2 {
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 1.4rem;
+        }
+
+        .login-card p {
+            font-size: 0.92rem;
+            margin-bottom: 22px;
+            color: var(--text-muted);
+        }
+
+        .login-form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .login-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .demo-credentials-hint {
+            margin-top: 18px;
+            padding: 10px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #1e40af;
+            text-align: left;
+        }
+
+        /* --- Toast Notifications --- */
+        #toastContainer {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13.5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp 0.3s ease-out;
+            min-width: 250px;
+        }
+
+        .toast-success { background-color: #10b981; }
+        .toast-error { background-color: #ef4444; }
+        .toast-info { background-color: #3b82f6; }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 850px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .school-selector-banner { flex-direction: column; align-items: stretch; }
+            .school-select { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CSRF Token helper for JS AJAX -->
+    {% csrf_token %}
+
+    <!-- Modern Sleek Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='schools' %}
+
+    <!-- =========================================================
+         MAIN WORKSPACE AREA
+    ========================================================== -->
+    <main class="main">
+
+        <!-- Top Header Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>“š Government School Management System</h1>
+            </div>
+            <div class="topbar-right">
+                <div id="userBadgeContainer" class="{% if not user_authenticated %}hidden{% endif %}">
+                    <span class="user-badge">‘¤ <span id="displayUsername">{{ username }}</span></span>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="handleLogout()" style="margin-left: 6px;">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <section class="content">
+
+            <!-- ========================================= -->
+            <!-- LOGIN MODULE (When unauthenticated)       -->
+            <!-- ========================================= -->
+            <div id="login-module" class="login-wrapper {% if user_authenticated %}hidden{% endif %}">
+                <div class="login-card">
+                    <h2>”’ Admin Login</h2>
+                    <p>Please enter your credentials to access the School Dashboard.</p>
+                    <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+                        <div class="login-form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" required placeholder="Admin Username" value="admin" autocomplete="username">
+                        </div>
+                        <div class="login-form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" required placeholder="Password" value="admin123" autocomplete="current-password">
+                        </div>
+                        <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width: 100%; padding: 11px; margin-top: 5px;">Login to Dashboard</button>
+                        <div class="demo-credentials-hint">
+                            ’¡ <strong>Default Demo Credentials:</strong><br>
+                            Username: <code>admin</code> | Password: <code>admin123</code>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- DASHBOARD CONTAINER (When authenticated)  -->
+            <!-- ========================================= -->
+            <div id="dashboard-content" class="{% if not user_authenticated %}hidden{% endif %}">
+                
+                <!-- School Selector Ribbon -->
+                <div class="school-selector-banner" id="schoolSelectorBanner">
+                    <div class="selector-group">
+                        <label for="activeSchoolSelect">« Selected School:</label>
+                        <select id="activeSchoolSelect" class="school-select" onchange="onSelectedSchoolChange(this.value)">
+                            {% for s in schools %}
+                                <option value="{{ s.id }}" {% if selected_school and s.id == selected_school.id %}selected{% endif %}>
+                                    {{ s.name }} (UDISE: {{ s.udise_code }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="selector-group">
+                        <span class="school-meta-pill" id="bannerSchoolLocation">“ {{ selected_school.village|default:selected_school.district }}</span>
+                        <span class="school-meta-pill" id="bannerSchoolAffiliation">“œ {{ selected_school.affiliation|default:"State Board" }}</span>
+                        <span class="school-meta-pill" id="bannerSchoolStudents">{{ selected_school.student_strength }} Students</span>
+                    </div>
+                </div>
+
+                <!-- Tabs Container -->
+                <div class="container">
+                    <!-- Navigation Tabs -->
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="add-school">Add Government Schools</button>
+                        <button class="tab-button" data-tab="edit-details">Edit School Details</button>
+                        <button class="tab-button" data-tab="contact-info">“ž School Contact Information</button>
+                        <button class="tab-button" data-tab="headmaster-details">Headmaster Details</button>
+                        <button class="tab-button" data-tab="student-strength">Student Strength</button>
+                        <button class="tab-button" data-tab="view-history">“œ View School History</button>
+                        <button class="tab-button" data-tab="resources">› ï¸ Resources Provided</button>
+                    </div>
+
+                    <!-- 1. Add Government Schools Content -->
+                    <div id="add-school" class="tab-content active">
+                        <h2>Add New School</h2>
+                        <p class="section-desc">Register a new government or government-aided school into the EduTrack network.</p>
+                        <form id="addSchoolForm" onsubmit="handleAddSchool(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="schoolName">School Name *</label>
+                                    <input type="text" id="schoolName" name="schoolName" required placeholder="e.g., Govt. Model High School">
+                                </div>
+                                <div class="form-group">
+                                    <label for="udiseCode">UDISE Code (Auto-generated if left blank)</label>
+                                    <input type="text" id="udiseCode" name="udise_code" placeholder="e.g., 29010200301">
+                                </div>
+                                <div class="form-group">
+                                    <label for="location">Location / Village *</label>
+                                    <input type="text" id="location" name="location" required placeholder="e.g., Jayanagar">
+                                </div>
+                                <div class="form-group">
+                                    <label for="state">State / District *</label>
+                                    <input type="text" id="state" name="state" required placeholder="e.g., Bangalore Urban">
+                                </div>
+                                <div class="form-group">
+                                    <label for="admissionDate">Proposed Opening Date *</label>
+                                    <input type="date" id="admissionDate" name="admissionDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="addAffiliation">Affiliation / Board</label>
+                                    <select id="addAffiliation" name="affiliation">
+                                        <option value="State" selected>State Board</option>
+                                        <option value="CBSE">CBSE</option>
+                                        <option value="ICSE">ICSE</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="addSchoolSubmitBtn">Add School</button>
+    <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb; text-decoration:none; margin-left:8px;">Bulk Upload</a>
+    <button type="button" class="btn btn-secondary" onclick="resetForm('addSchoolForm')">Cancel</button>
+</div>
+                        </form>
+                    </div>
+
+                    <!-- 2. Edit School Details Content -->
+                    <div id="edit-details" class="tab-content">
+                        <h2>Edit General School Details</h2>
+                        <p class="section-desc">Update school identification, official affiliation, and principal assignment.</p>
+                        <form id="editSchoolForm" onsubmit="handleEditSchool(event)">
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="editSchoolName">School Name *</label>
+                                    <input type="text" id="editSchoolName" name="editSchoolName" required placeholder="Enter current school name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="editPrincipal">Head Teacher / Principal *</label>
+                                    <input type="text" id="editPrincipal" name="editPrincipal" required placeholder="Name of current head teacher">
+                                </div>
+                                <div class="form-group">
+                                    <label for="editAffiliation">Affiliation / Board *</label>
+                                    <select id="editAffiliation" name="editAffiliation" required>
+                                        <option value="" disabled>Select Board</option>
+                                        <option value="CBSE">CBSE</option>
+                                        <option value="State">State Board</option>
+                                        <option value="ICSE">ICSE</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="editSchoolSubmitBtn">’¾ Update Details</button>
+                                <button type="button" class="btn btn-secondary" onclick="loadSchoolDataIntoForms()">Reset Changes</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 3. School Contact Information Content -->
+                    <div id="contact-info" class="tab-content">
+                        <h2>“ž School Contact Information</h2>
+                        <p class="section-desc">Manage primary telecom lines, official correspondence email, and web addresses.</p>
+                        <form id="contactForm" onsubmit="handleSaveContactInfo(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="phone">Primary Phone Number *</label>
+                                    <input type="text" id="phone" name="phone" placeholder="e.g., +91 98765 43210" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Official Email Address *</label>
+                                    <input type="email" id="email" name="email" required placeholder="info@schoolname.edu">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="website">School Website (Optional)</label>
+                                    <input type="text" id="website" name="website" placeholder="https://schoolname.edu.in">
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="saveContactSubmitBtn">’¾ Save Contact Details</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 4. Headmaster Details Content -->
+                    <div id="headmaster-details" class="tab-content">
+                        <h2>Headmaster / Administrator Details</h2>
+                        <p class="section-desc">Maintain administrator profiles, academic qualifications, experience, and ID photo.</p>
+                        <form id="headmasterForm" onsubmit="handleSaveHeadmasterDetails(event)" enctype="multipart/form-data">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="headmasterName">Headmaster Name *</label>
+                                    <input type="text" id="headmasterName" name="headmasterName" required placeholder="e.g., Dr. Ramesh Kumar">
+                                </div>
+                                <div class="form-group">
+                                    <label for="headmasterQualification">Qualification *</label>
+                                    <input type="text" id="headmasterQualification" name="headmasterQualification" required placeholder="M.A., B.Ed., M.Ed., Ph.D.">
+                                </div>
+                                <div class="form-group">
+                                    <label for="headmasterExperience">Years of Experience *</label>
+                                    <input type="number" id="headmasterExperience" name="headmasterExperience" required min="0" placeholder="e.g., 15">
+                                </div>
+                                <div class="form-group">
+                                    <label for="headmasterPhoto">Photo Upload</label>
+                                    <div class="photo-upload-container">
+                                        <div class="photo-preview-box" id="headmasterPhotoPreview">
+                                            <span style="font-size: 26px; color: #94a3b8;">“·</span>
+                                        </div>
+                                        <input type="file" id="headmasterPhoto" name="headmasterPhoto" accept="image/*" onchange="previewHeadmasterPhoto(this)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="saveHeadmasterSubmitBtn">’¾ Update Headmaster Profile</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 5. Student Strength Content -->
+                    <div id="student-strength" class="tab-content data-view">
+                        <div class="section-header-action">
+                            <div>
+                                <h2>School-wise Student Strength (Dashboard View)</h2>
+                                <p class="section-desc">This section provides a real-time overview of student enrollment across grades.</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-success" onclick="exportStudentStrengthCSV()">“¥ Export Data (CSV)</button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Grade Level</th>
+                                        <th>Male Students</th>
+                                        <th>Female Students</th>
+                                        <th>Total Students</th>
+                                        <th>Change (vs. Last Year)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentStrengthTableBody">
+                                    <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading student strength data...</td></tr>
+                                </tbody>
+                                <tfoot id="studentStrengthTableFoot">
+                                    <!-- Calculated dynamically -->
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 6. View School History Content -->
+                    <div id="view-history" class="tab-content data-view">
+                        <div class="section-header-action">
+                            <div>
+                                <h2>“œ School Operational History & Milestones</h2>
+                                <p class="section-desc">Review key historical records, improvements, and major changes in the school's operations.</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary btn-sm" onclick="openAddMilestoneModal()">Add Milestone</button>
+                            </div>
+                        </div>
+                        
+                        <div id="historyMilestonesContainer" class="card-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- 7. Resources Provided Content -->
+                    <div id="resources" class="tab-content data-view">
+                        <div class="section-header-action">
+                            <div>
+                                <h2>› ï¸ Resources Provided</h2>
+                                <p class="section-desc">Track resources, equipment, meals, and educational materials allocated to this school.</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">Allocate Resource</button>
+                            </div>
+                        </div>
+
+                        <div id="resourcesContainer" class="card-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Milestone Modal -->
+    <div id="addMilestoneModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>“œ Add History Milestone</h3>
+                <button class="modal-close" onclick="closeModal('addMilestoneModal')">&times;</button>
+            </div>
+            <form id="addMilestoneForm" onsubmit="handleAddMilestone(event)">
+                <div class="form-group">
+                    <label for="milestoneTitle">Milestone Title *</label>
+                    <input type="text" id="milestoneTitle" required placeholder="e.g., Completion of New Science Wing">
+                </div>
+                <div class="form-group">
+                    <label for="milestoneYear">Year / Date</label>
+                    <input type="text" id="milestoneYear" placeholder="e.g., 2024 or October 2024">
+                </div>
+                <div class="form-group">
+                    <label for="milestoneDetails">Details *</label>
+                    <textarea id="milestoneDetails" rows="3" required placeholder="Describe what was accomplished..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="milestoneImpact">Impact / Outcome</label>
+                    <textarea id="milestoneImpact" rows="2" placeholder="e.g., Increased student engagement in STEM labs..."></textarea>
+                </div>
+                <div class="form-actions" style="margin-top: 15px;">
+                    <button type="submit" class="btn btn-primary">Save Milestone</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addMilestoneModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Resource Modal -->
+    <div id="addResourceModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>› ï¸ Allocate New Resource</h3>
+                <button class="modal-close" onclick="closeModal('addResourceModal')">&times;</button>
+            </div>
+            <form id="addResourceForm" onsubmit="handleAddResource(event)">
+                <div class="form-group">
+                    <label for="resourceName">Resource Name *</label>
+                    <input type="text" id="resourceName" required placeholder="e.g., Digital Smart Classroom Kits">
+                </div>
+                <div class="form-group">
+                    <label for="resourceStatus">Status</label>
+                    <select id="resourceStatus">
+                        <option value="Active">Active</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="resourceQuantity">Quantity</label>
+                    <input type="number" id="resourceQuantity" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label for="resourceLastUpdated">Date / Period Note</label>
+                    <input type="text" id="resourceLastUpdated" placeholder="e.g., August 2024">
+                </div>
+                <div class="form-group">
+                    <label for="resourceDetails">Details / Description</label>
+                    <textarea id="resourceDetails" rows="2" placeholder="Specifications, vendor or allocation details..."></textarea>
+                </div>
+                <div class="form-actions" style="margin-top: 15px;">
+                    <button type="submit" class="btn btn-primary">Allocate Resource</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addResourceModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer"></div>
+
+<script>
+// Global State
+let currentSchoolId = "{{ selected_school.id|default:'' }}" || null;
+let currentSchoolData = null;
+
+// Get CSRF Token for Django POST requests
+function getCSRFToken() {
+    const input = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (input) return input.value;
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue || '';
+}
+
+// Toast notification helper
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    const icon = type === 'success' ? 'OK' : (type === 'error' ? 'ERROR' : 'INFO');
+    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// Handle Login Form Submission
+async function handleLoginSubmit(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!username || !password) {
+        showToast('Please enter both username and password.', 'error');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Verifying...';
+
+    try {
+        const response = await fetch('/schools/api/auth/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ username, password })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(result.message || 'Login successful!');
+            document.getElementById('login-module').classList.add('hidden');
+            document.getElementById('dashboard-content').classList.remove('hidden');
+            document.getElementById('userBadgeContainer').classList.remove('hidden');
+            if (result.user && result.user.username) {
+                document.getElementById('displayUsername').innerText = result.user.username;
+            }
+            if (currentSchoolId) {
+                fetchAndPopulateSchoolData(currentSchoolId);
+            }
+        } else {
+            showToast(result.error || 'Invalid credentials', 'error');
+        }
+    } catch (err) {
+        showToast('Login request failed: ' + err.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Login to Dashboard';
+    }
+}
+
+// Handle Logout
+async function handleLogout() {
+    try {
+        await fetch('/schools/api/auth/logout/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() }
+        });
+    } catch (e) {}
+    document.getElementById('dashboard-content').classList.add('hidden');
+    document.getElementById('login-module').classList.remove('hidden');
+    document.getElementById('userBadgeContainer').classList.add('hidden');
+    showToast('Logged out successfully', 'info');
+}
+
+// Tab navigation logic
+function activateTab(tabName) {
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach((c) => c.classList.remove('active'));
+    
+    const buttons = document.querySelectorAll('.tab-button');
+    buttons.forEach((b) => b.classList.remove('active'));
+    
+    const activeContent = document.getElementById(tabName);
+    if (activeContent) {
+        activeContent.classList.add('active');
+    }
+    const activeButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+}
+
+// Attach click listeners to tab buttons
+document.querySelectorAll('.tab-button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        if (tab) activateTab(tab);
+    });
+});
+
+// Fetch complete school details and populate all tabs
+async function fetchAndPopulateSchoolData(schoolId) {
+    if (!schoolId) return;
+    try {
+        const res = await fetch(`/schools/api/schools/${schoolId}/`);
+        const data = await res.json();
+        if (data.success) {
+            currentSchoolId = schoolId;
+            currentSchoolData = data;
+            
+            // Update Banner
+            const school = data.school;
+            const loc = school.village || school.district || 'General';
+            document.getElementById('bannerSchoolLocation').innerText = `“ ${loc}`;
+            document.getElementById('bannerSchoolAffiliation').innerText = `“œ ${school.affiliation || 'State Board'}`;
+                        <span class="school-meta-pill" id="bannerSchoolStudents">{{ selected_school.student_strength }} Students</span>
+
+            // Populate Edit Form
+            document.getElementById('editSchoolName').value = school.name || '';
+            document.getElementById('editPrincipal').value = school.headmaster_name || '';
+            document.getElementById('editAffiliation').value = school.affiliation || 'State';
+
+            // Populate Contact Form
+            document.getElementById('phone').value = school.phone || '';
+            document.getElementById('email').value = school.email || '';
+            document.getElementById('website').value = school.website || '';
+
+            // Populate Headmaster Form
+            document.getElementById('headmasterName').value = school.headmaster_name || '';
+            document.getElementById('headmasterQualification').value = school.headmaster_qualification || '';
+            document.getElementById('headmasterExperience').value = school.headmaster_experience !== null ? school.headmaster_experience : '';
+            
+            const previewBox = document.getElementById('headmasterPhotoPreview');
+            if (school.headmaster_photo_url) {
+                previewBox.innerHTML = '<span style="font-size: 18px; color: #94a3b8;">Headmaster</span>';
+            } else {
+                previewBox.innerHTML = '<span style="font-size: 18px; color: #94a3b8;">Headmaster</span>';
+            }
+
+            // Populate Student Strength Table
+            renderStudentStrengthTable(data.strengths, school.student_strength);
+
+            // Populate Milestones History
+            renderMilestones(data.milestones);
+
+            // Populate Resources
+            renderResources(data.resources);
+        }
+    } catch (err) {
+        console.error("Error fetching school data:", err);
+    }
+}
+
+// On School Dropdown Change
+function onSelectedSchoolChange(schoolId) {
+    currentSchoolId = schoolId;
+    fetchAndPopulateSchoolData(schoolId);
+}
+
+// Render Student Strength Table
+function renderStudentStrengthTable(strengths, totalStrength) {
+    const tbody = document.getElementById('studentStrengthTableBody');
+    const tfoot = document.getElementById('studentStrengthTableFoot');
+    if (!tbody) return;
+
+    if (!strengths || strengths.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">No grade records available.</td></tr>`;
+        tfoot.innerHTML = '';
+        return;
+    }
+
+    let maleSum = 0;
+    let femaleSum = 0;
+    let totalSum = 0;
+
+    tbody.innerHTML = strengths.map(row => {
+        maleSum += (row.male_students || 0);
+        femaleSum += (row.female_students || 0);
+        totalSum += (row.total_students || 0);
+
+        let changeClass = 'change-neutral';
+        const ch = (row.change_vs_last_year || '0').trim();
+        if (ch.startsWith('+')) changeClass = 'change-positive';
+        else if (ch.startsWith('-')) changeClass = 'change-negative';
+
+        return `
+            <tr>
+                <td><strong>${row.grade_level}</strong></td>
+                <td>${row.male_students}</td>
+                <td>${row.female_students}</td>
+                <td><strong>${row.total_students}</strong></td>
+                <td><span class="change-pill ${changeClass}">${row.change_vs_last_year || '0'}</span></td>
+            </tr>
+        `;
+    }).join('');
+
+    tfoot.innerHTML = `
+        <tr>
+            <td><strong>Total Strength</strong></td>
+            <td><strong>${maleSum}</strong></td>
+            <td><strong>${femaleSum}</strong></td>
+            <td><strong>${totalSum || totalStrength}</strong></td>
+            <td>-</td>
+        </tr>
+    `;
+}
+
+// Render Milestones
+function renderMilestones(milestones) {
+    const container = document.getElementById('historyMilestonesContainer');
+    if (!container) return;
+
+    if (!milestones || milestones.length === 0) {
+        container.innerHTML = `<div style="padding: 20px; text-align: center; color: #94a3b8; background: #fff; border-radius: 8px; border: 1px dashed #cbd5e1;">No historical milestones recorded yet. Click "Add Milestone" to create one.</div>`;
+        return;
+    }
+
+    container.innerHTML = milestones.map(m => `
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="info-card-title">“Œ Milestone: ${m.title} ${m.year_or_date ? `(${m.year_or_date})` : ''}</div>
+                <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px; background: #ef4444;" onclick="deleteMilestone(${m.id})">Delete</button>
+            </div>
+            <div class="info-card-body">
+                <strong>Details:</strong> ${m.details || 'N/A'}<br>
+                <strong>Impact:</strong> ${m.impact || 'N/A'}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Render Resources
+function renderResources(resources) {
+    const container = document.getElementById('resourcesContainer');
+    if (!container) return;
+
+    if (!resources || resources.length === 0) {
+        container.innerHTML = `<div style="padding: 20px; text-align: center; color: #94a3b8; background: #fff; border-radius: 8px; border: 1px dashed #cbd5e1;">No allocated resources logged yet. Click "Allocate Resource" to add.</div>`;
+        return;
+    }
+
+    container.innerHTML = resources.map(r => {
+        let stClass = 'active';
+        const st = (r.status || 'Active').toLowerCase();
+        if (st.includes('deliver')) stClass = 'delivered';
+        else if (st.includes('progress')) stClass = 'in-progress';
+        else if (st.includes('pend')) stClass = 'pending';
+
+        return `
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-title">“¦ Resource: ${r.resource_name}</div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="status-badge ${stClass}">${r.status}</span>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px; background: #ef4444;" onclick="deleteResource(${r.id})">Delete</button>
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    <strong>Status:</strong> ${r.status}<br>
+                    <strong>Quantity:</strong> ${r.quantity || 1}<br>
+                    ${r.details ? `<strong>Details:</strong> ${r.details}<br>` : ''}
+                    <strong>Last Updated:</strong> ${r.last_updated_note || 'Recent'}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 1. Handle Add School (Tab 1)
+async function handleAddSchool(e) {
+    e.preventDefault();
+    const btn = document.getElementById('addSchoolSubmitBtn');
+    btn.disabled = true;
+
+    const payload = {
+        name: document.getElementById('schoolName').value.trim(),
+        udise_code: document.getElementById('udiseCode').value.trim(),
+        location: document.getElementById('location').value.trim(),
+        state: document.getElementById('state').value.trim(),
+        admissionDate: document.getElementById('admissionDate').value,
+        affiliation: document.getElementById('addAffiliation').value,
+    };
+
+    try {
+        const res = await fetch('/schools/api/schools/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'School added successfully!');
+            document.getElementById('addSchoolForm').reset();
+            
+            // Add to dropdown and select it
+            const select = document.getElementById('activeSchoolSelect');
+            const opt = document.createElement('option');
+            opt.value = data.school.id;
+            opt.text = `${data.school.name} (UDISE: ${data.school.udise_code})`;
+            select.appendChild(opt);
+            select.value = data.school.id;
+            
+            currentSchoolId = data.school.id;
+            fetchAndPopulateSchoolData(currentSchoolId);
+            activateTab('edit-details');
+        } else {
+            showToast(data.error || 'Failed to add school', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 2. Handle Edit School Details (Tab 2)
+async function handleEditSchool(e) {
+    e.preventDefault();
+    if (!currentSchoolId) {
+        showToast('No school selected.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('editSchoolSubmitBtn');
+    btn.disabled = true;
+
+    const payload = {
+        name: document.getElementById('editSchoolName').value.trim(),
+        principal: document.getElementById('editPrincipal').value.trim(),
+        affiliation: document.getElementById('editAffiliation').value
+    };
+
+    try {
+        const res = await fetch(`/schools/api/schools/${currentSchoolId}/edit/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'School details updated!');
+            const select = document.getElementById('activeSchoolSelect');
+            const opt = select.querySelector(`option[value="${currentSchoolId}"]`);
+            if (opt) opt.text = `${data.school.name} (UDISE: ${data.school.udise_code})`;
+            fetchAndPopulateSchoolData(currentSchoolId);
+        } else {
+            showToast(data.error || 'Failed to update details', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 3. Handle Save Contact Info (Tab 3)
+async function handleSaveContactInfo(e) {
+    e.preventDefault();
+    if (!currentSchoolId) {
+        showToast('No school selected.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('saveContactSubmitBtn');
+    btn.disabled = true;
+
+    const payload = {
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        website: document.getElementById('website').value.trim()
+    };
+
+    try {
+        const res = await fetch(`/schools/api/schools/${currentSchoolId}/contact/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Contact details saved!');
+        } else {
+            showToast(data.error || 'Failed to save contact details', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 4. Handle Save Headmaster Details (Tab 4)
+async function handleSaveHeadmasterDetails(e) {
+    e.preventDefault();
+    if (!currentSchoolId) {
+        showToast('No school selected.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('saveHeadmasterSubmitBtn');
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('headmasterName', document.getElementById('headmasterName').value.trim());
+    formData.append('headmasterQualification', document.getElementById('headmasterQualification').value.trim());
+    formData.append('headmasterExperience', document.getElementById('headmasterExperience').value.trim());
+
+    const photoInput = document.getElementById('headmasterPhoto');
+    if (photoInput.files && photoInput.files[0]) {
+        formData.append('headmasterPhoto', photoInput.files[0]);
+    }
+
+    try {
+        const res = await fetch(`/schools/api/schools/${currentSchoolId}/headmaster/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Headmaster profile updated!');
+            if (data.photo_url) {
+                document.getElementById('headmasterPhotoPreview').innerHTML = `<img src="${data.photo_url}" alt="Headmaster Photo">`;
+            }
+            fetchAndPopulateSchoolData(currentSchoolId);
+        } else {
+            showToast(data.error || 'Failed to update profile', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// Preview Headmaster Photo before upload
+function previewHeadmasterPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('headmasterPhotoPreview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 5. Export CSV
+function exportStudentStrengthCSV() {
+    if (!currentSchoolId) {
+        window.location.href = '/schools/export/student-strength/';
+    } else {
+        window.location.href = `/schools/export/student-strength/${currentSchoolId}/`;
+    }
+    showToast('Exporting student strength CSV...', 'info');
+}
+
+// 6. Milestones Modals and Handlers
+function openAddMilestoneModal() {
+    if (!currentSchoolId) {
+        showToast('Please select a school first', 'error');
+        return;
+    }
+    document.getElementById('addMilestoneForm').reset();
+    document.getElementById('addMilestoneModal').classList.add('open');
+}
+
+async function handleAddMilestone(e) {
+    e.preventDefault();
+    const payload = {
+        title: document.getElementById('milestoneTitle').value.trim(),
+        year_or_date: document.getElementById('milestoneYear').value.trim(),
+        details: document.getElementById('milestoneDetails').value.trim(),
+        impact: document.getElementById('milestoneImpact').value.trim()
+    };
+
+    try {
+        const res = await fetch(`/schools/api/schools/${currentSchoolId}/milestones/add/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Milestone added!');
+            closeModal('addMilestoneModal');
+            fetchAndPopulateSchoolData(currentSchoolId);
+        } else {
+            showToast(data.error || 'Failed to add milestone', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+async function deleteMilestone(id) {
+    if (!confirm('Are you sure you want to delete this milestone record?')) return;
+    try {
+        const res = await fetch(`/schools/api/milestones/${id}/delete/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() }
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Milestone deleted.');
+            fetchAndPopulateSchoolData(currentSchoolId);
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+// 7. Resource Modals and Handlers
+function openAddResourceModal() {
+    if (!currentSchoolId) {
+        showToast('Please select a school first', 'error');
+        return;
+    }
+    document.getElementById('addResourceForm').reset();
+    document.getElementById('addResourceModal').classList.add('open');
+}
+
+async function handleAddResource(e) {
+    e.preventDefault();
+    const payload = {
+        resource_name: document.getElementById('resourceName').value.trim(),
+        status: document.getElementById('resourceStatus').value,
+        quantity: document.getElementById('resourceQuantity').value,
+        last_updated_note: document.getElementById('resourceLastUpdated').value.trim(),
+        details: document.getElementById('resourceDetails').value.trim()
+    };
+
+    try {
+        const res = await fetch(`/schools/api/schools/${currentSchoolId}/resources/add/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Resource allocated!');
+            closeModal('addResourceModal');
+            fetchAndPopulateSchoolData(currentSchoolId);
+        } else {
+            showToast(data.error || 'Failed to allocate resource', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+async function deleteResource(id) {
+    if (!confirm('Are you sure you want to delete this allocated resource record?')) return;
+    try {
+        const res = await fetch(`/schools/api/resources/${id}/delete/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() }
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Resource removed.');
+            fetchAndPopulateSchoolData(currentSchoolId);
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+// Modal helper
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
+}
+
+// Reset Form helper
+function resetForm(formId) {
+    const form = document.getElementById(formId);
+    if (form) form.reset();
+}
+
+function loadSchoolDataIntoForms() {
+    if (currentSchoolId) {
+        fetchAndPopulateSchoolData(currentSchoolId);
+    }
+}
+
+// Initial setup
+document.addEventListener('DOMContentLoaded', () => {
+    if (currentSchoolId) {
+        fetchAndPopulateSchoolData(currentSchoolId);
+    }
+});
+</script>
+</body>
+</html>
+
+
+
+
+

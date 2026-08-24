@@ -202,5 +202,134 @@
         </section>
     </main>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const benefitField = document.getElementById("id_benefit_type");
+    const studentField = document.getElementById("id_student");
+    const academicYearField = document.getElementById("id_academic_year");
+
+    if (!benefitField || !studentField) {
+        console.warn("Eligibility dropdown fields were not found.");
+        return;
+    }
+
+    function loadEligibleStudents() {
+
+        const benefitType = benefitField.value;
+        const academicYear = academicYearField
+            ? academicYearField.value.trim()
+            : "";
+
+        studentField.innerHTML = "";
+
+        const loadingOption = document.createElement("option");
+        loadingOption.value = "";
+        loadingOption.textContent = benefitType
+            ? "Loading eligible students..."
+            : "Select Benefit Type first";
+
+        studentField.appendChild(loadingOption);
+
+        if (!benefitType) {
+            return;
+        }
+
+        let url =
+            "{% url 'distributions:api_eligible_students' %}" +
+            "?benefit_type=" +
+            encodeURIComponent(benefitType);
+
+        if (academicYear) {
+            url += "&academic_year=" +
+                encodeURIComponent(academicYear);
+        }
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("HTTP " + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+
+                studentField.innerHTML = "";
+
+                const placeholder = document.createElement("option");
+                placeholder.value = "";
+
+                if (data.success && data.count > 0) {
+                    placeholder.textContent =
+                        "Select eligible student";
+                } else {
+                    placeholder.textContent =
+                        "No eligible students found";
+                }
+
+                studentField.appendChild(placeholder);
+
+                if (!data.success || !data.students) {
+                    return;
+                }
+
+                data.students.forEach(student => {
+
+                    const option = document.createElement("option");
+
+                    option.value = student.id;
+
+                    option.textContent =
+                        student.name +
+                        " (" +
+                        student.admission_number +
+                        ") - " +
+                        student.current_class +
+                        " - " +
+                        student.school_name;
+
+                    studentField.appendChild(option);
+                });
+            })
+            .catch(error => {
+
+                console.error(
+                    "Error loading eligible students:",
+                    error
+                );
+
+                studentField.innerHTML = "";
+
+                const errorOption = document.createElement("option");
+                errorOption.value = "";
+                errorOption.textContent =
+                    "Unable to load eligible students";
+
+                studentField.appendChild(errorOption);
+            });
+    }
+
+    // Change Benefit Type ? reload students
+    benefitField.addEventListener(
+        "change",
+        loadEligibleStudents
+    );
+
+    // Change Academic Year ? reload students
+    if (academicYearField) {
+        academicYearField.addEventListener(
+            "change",
+            loadEligibleStudents
+        );
+    }
+
+    // Load automatically if Benefit Type is already selected
+    if (benefitField.value) {
+        loadEligibleStudents();
+    }
+});
+</script>
+
 </body>
 </html>

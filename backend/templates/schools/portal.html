@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -646,18 +646,28 @@
     <main class="main">
 
         <!-- Top Header Bar -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <h1>📚 Government School Management System</h1>
-            </div>
-            <div class="topbar-right">
-                <div id="userBadgeContainer" class="{% if not user_authenticated %}hidden{% endif %}">
-                    <span class="user-badge">👤 <span id="displayUsername">{{ username }}</span></span>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="handleLogout()" style="margin-left: 6px;">Logout</button>
-                </div>
-            </div>
-        </header>
+        <header class="topbar" style="display:flex; align-items:center; width:100%; box-sizing:border-box;">
 
+    <div class="topbar-left" style="flex:1;">
+        <h1>Government School Management System</h1>
+    </div>
+
+    <div class="topbar-right" style="display:flex; align-items:center;">
+        <div id="userBadgeContainer" class="{% if not user_authenticated %}hidden{% endif %}">
+            <span class="user-badge">
+                <span id="displayUsername">{{ username }}</span>
+            </span>
+
+            <button type="button"
+                    class="btn btn-secondary btn-sm"
+                    onclick="handleLogout()"
+                    style="margin-left:6px;">
+                Logout
+            </button>
+        </div>
+    </div>
+
+</header>
         <!-- Main Content Area -->
         <section class="content">
 
@@ -666,7 +676,7 @@
             <!-- ========================================= -->
             <div id="login-module" class="login-wrapper {% if user_authenticated %}hidden{% endif %}">
                 <div class="login-card">
-                    <h2>🔒 Admin Login</h2>
+                    <h2> Admin Login</h2>
                     <p>Please enter your credentials to access the School Dashboard.</p>
                     <form id="loginForm" onsubmit="handleLoginSubmit(event)">
                         <div class="login-form-group">
@@ -679,7 +689,7 @@
                         </div>
                         <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width: 100%; padding: 11px; margin-top: 5px;">Login to Dashboard</button>
                         <div class="demo-credentials-hint">
-                            💡 <strong>Default Demo Credentials:</strong><br>
+                            <strong>Default Demo Credentials:</strong><br>
                             Username: <code>admin</code> | Password: <code>admin123</code>
                         </div>
                     </form>
@@ -694,7 +704,7 @@
                 <!-- School Selector Ribbon -->
                 <div class="school-selector-banner" id="schoolSelectorBanner">
                     <div class="selector-group">
-                        <label for="activeSchoolSelect">🏫 Selected School:</label>
+<label for="activeSchoolSelect">Selected School:</label>
                         <select id="activeSchoolSelect" class="school-select" onchange="onSelectedSchoolChange(this.value)">
                             {% for s in schools %}
                                 <option value="{{ s.id }}" {% if selected_school and s.id == selected_school.id %}selected{% endif %}>
@@ -704,9 +714,9 @@
                         </select>
                     </div>
                     <div class="selector-group">
-                        <span class="school-meta-pill" id="bannerSchoolLocation">📍 {{ selected_school.village|default:selected_school.district }}</span>
-                        <span class="school-meta-pill" id="bannerSchoolAffiliation">📜 {{ selected_school.affiliation|default:"State Board" }}</span>
-                        <span class="school-meta-pill" id="bannerSchoolStudents">🧑‍🎓 {{ selected_school.student_strength }} Students</span>
+                        <span class="school-meta-pill" id="bannerSchoolLocation">{{ selected_school.village|default:selected_school.district }}</span>
+                        <span class="school-meta-pill" id="bannerSchoolAffiliation">{{ selected_school.affiliation|default:"State Board" }}</span>
+                        <span class="school-meta-pill" id="bannerSchoolStudents">{{ selected_school.student_strength }} Students</span>
                     </div>
                 </div>
 
@@ -714,18 +724,18 @@
                 <div class="container">
                     <!-- Navigation Tabs -->
                     <div class="tabs">
-                        <button class="tab-button active" data-tab="add-school">➕ Add Government Schools</button>
-                        <button class="tab-button" data-tab="edit-details">✏️ Edit School Details</button>
-                        <button class="tab-button" data-tab="contact-info">📞 School Contact Information</button>
-                        <button class="tab-button" data-tab="headmaster-details">👨‍🏫 Headmaster Details</button>
-                        <button class="tab-button" data-tab="student-strength">🧑‍🎓 School-wise Student Strength</button>
-                        <button class="tab-button" data-tab="view-history">📜 View School History</button>
-                        <button class="tab-button" data-tab="resources">🛠️ Resources Provided</button>
+                        <button class="tab-button active" data-tab="add-school">Add Government Schools</button>
+                        <button class="tab-button" data-tab="edit-details">Edit School Details</button>
+                        <button class="tab-button" data-tab="contact-info">School Contact Information</button>
+                        <button class="tab-button" data-tab="headmaster-details">Headmaster Details</button>
+                        <button class="tab-button" data-tab="student-strength">Student Strength</button>
+                        <button class="tab-button" data-tab="view-history">View School History</button>
+                        <button class="tab-button" data-tab="resources">Resources Provided</button>
                     </div>
 
                     <!-- 1. Add Government Schools Content -->
                     <div id="add-school" class="tab-content active">
-                        <h2>➕ Add New School</h2>
+                        <h2>Add New School</h2>
                         <p class="section-desc">Register a new government or government-aided school into the EduTrack network.</p>
                         <form id="addSchoolForm" onsubmit="handleAddSchool(event)">
                             <div class="form-grid">
@@ -759,15 +769,16 @@
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary" id="addSchoolSubmitBtn">➕ Add School</button>
-                                <button type="button" class="btn btn-secondary" onclick="resetForm('addSchoolForm')">Cancel</button>
-                            </div>
+                                <button type="submit" class="btn btn-primary" id="addSchoolSubmitBtn">Add School</button>
+    <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb; text-decoration:none; margin-left:8px;">Bulk Upload</a>
+    <button type="button" class="btn btn-secondary" onclick="resetForm('addSchoolForm')">Cancel</button>
+</div>
                         </form>
                     </div>
 
                     <!-- 2. Edit School Details Content -->
                     <div id="edit-details" class="tab-content">
-                        <h2>✏️ Edit General School Details</h2>
+                        <h2>Edit General School Details</h2>
                         <p class="section-desc">Update school identification, official affiliation, and principal assignment.</p>
                         <form id="editSchoolForm" onsubmit="handleEditSchool(event)">
                             <div class="form-grid">
@@ -790,7 +801,7 @@
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary" id="editSchoolSubmitBtn">💾 Update Details</button>
+                                <button type="submit" class="btn btn-primary" id="editSchoolSubmitBtn"> Update Details</button>
                                 <button type="button" class="btn btn-secondary" onclick="loadSchoolDataIntoForms()">Reset Changes</button>
                             </div>
                         </form>
@@ -798,7 +809,7 @@
 
                     <!-- 3. School Contact Information Content -->
                     <div id="contact-info" class="tab-content">
-                        <h2>📞 School Contact Information</h2>
+                        <h2> School Contact Information</h2>
                         <p class="section-desc">Manage primary telecom lines, official correspondence email, and web addresses.</p>
                         <form id="contactForm" onsubmit="handleSaveContactInfo(event)">
                             <div class="form-grid">
@@ -816,14 +827,14 @@
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary" id="saveContactSubmitBtn">💾 Save Contact Details</button>
+                                <button type="submit" class="btn btn-primary" id="saveContactSubmitBtn"> Save Contact Details</button>
                             </div>
                         </form>
                     </div>
 
                     <!-- 4. Headmaster Details Content -->
                     <div id="headmaster-details" class="tab-content">
-                        <h2>👨‍🏫 Headmaster / Administrator Details</h2>
+                        <h2>Headmaster / Administrator Details</h2>
                         <p class="section-desc">Maintain administrator profiles, academic qualifications, experience, and ID photo.</p>
                         <form id="headmasterForm" onsubmit="handleSaveHeadmasterDetails(event)" enctype="multipart/form-data">
                             <div class="form-grid">
@@ -843,14 +854,14 @@
                                     <label for="headmasterPhoto">Photo Upload</label>
                                     <div class="photo-upload-container">
                                         <div class="photo-preview-box" id="headmasterPhotoPreview">
-                                            <span style="font-size: 26px; color: #94a3b8;">📷</span>
+                                            <span style="font-size: 26px; color: #94a3b8;"></span>
                                         </div>
                                         <input type="file" id="headmasterPhoto" name="headmasterPhoto" accept="image/*" onchange="previewHeadmasterPhoto(this)">
                                     </div>
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary" id="saveHeadmasterSubmitBtn">💾 Update Headmaster Profile</button>
+                                <button type="submit" class="btn btn-primary" id="saveHeadmasterSubmitBtn"> Update Headmaster Profile</button>
                             </div>
                         </form>
                     </div>
@@ -859,11 +870,11 @@
                     <div id="student-strength" class="tab-content data-view">
                         <div class="section-header-action">
                             <div>
-                                <h2>🧑‍🎓 School-wise Student Strength (Dashboard View)</h2>
+                                <h2>School-wise Student Strength (Dashboard View)</h2>
                                 <p class="section-desc">This section provides a real-time overview of student enrollment across grades.</p>
                             </div>
                             <div>
-                                <button class="btn btn-success" onclick="exportStudentStrengthCSV()">📥 Export Data (CSV)</button>
+                                <button class="btn btn-success" onclick="exportStudentStrengthCSV()"> Export Data (CSV)</button>
                             </div>
                         </div>
                         
@@ -879,7 +890,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="studentStrengthTableBody">
-                                    <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading student strength data...</td></tr>
+                                    <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading Student Strength data...</td></tr>
                                 </tbody>
                                 <tfoot id="studentStrengthTableFoot">
                                     <!-- Calculated dynamically -->
@@ -892,11 +903,11 @@
                     <div id="view-history" class="tab-content data-view">
                         <div class="section-header-action">
                             <div>
-                                <h2>📜 School Operational History & Milestones</h2>
+                                <h2> School Operational History & Milestones</h2>
                                 <p class="section-desc">Review key historical records, improvements, and major changes in the school's operations.</p>
                             </div>
                             <div>
-                                <button class="btn btn-primary btn-sm" onclick="openAddMilestoneModal()">➕ Add Milestone</button>
+                                <button class="btn btn-primary btn-sm" onclick="openAddMilestoneModal()">Add Milestone</button>
                             </div>
                         </div>
                         
@@ -909,11 +920,11 @@
                     <div id="resources" class="tab-content data-view">
                         <div class="section-header-action">
                             <div>
-                                <h2>🛠️ Resources Provided</h2>
+                                <h2>ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂºÃƒâ€šÃ‚Â Ãƒâ€šÃ‚Â Resources Provided</h2>
                                 <p class="section-desc">Track resources, equipment, meals, and educational materials allocated to this school.</p>
                             </div>
                             <div>
-                                <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">➕ Allocate Resource</button>
+                                <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">Allocate Resource</button>
                             </div>
                         </div>
 
@@ -930,7 +941,7 @@
     <div id="addMilestoneModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>📜 Add History Milestone</h3>
+                <h3> Add History Milestone</h3>
                 <button class="modal-close" onclick="closeModal('addMilestoneModal')">&times;</button>
             </div>
             <form id="addMilestoneForm" onsubmit="handleAddMilestone(event)">
@@ -962,7 +973,7 @@
     <div id="addResourceModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>🛠️ Allocate New Resource</h3>
+                <h3>ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂºÃƒâ€šÃ‚Â Ãƒâ€šÃ‚Â Allocate New Resource</h3>
                 <button class="modal-close" onclick="closeModal('addResourceModal')">&times;</button>
             </div>
             <form id="addResourceForm" onsubmit="handleAddResource(event)">
@@ -1024,7 +1035,7 @@ function showToast(message, type = 'success') {
     if (!container) return;
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    const icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
+    const icon = type === 'success' ? 'OK' : (type === 'error' ? 'ERROR' : 'INFO');
     toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
     container.appendChild(toast);
     setTimeout(() => {
@@ -1136,9 +1147,10 @@ async function fetchAndPopulateSchoolData(schoolId) {
             // Update Banner
             const school = data.school;
             const loc = school.village || school.district || 'General';
-            document.getElementById('bannerSchoolLocation').innerText = `📍 ${loc}`;
-            document.getElementById('bannerSchoolAffiliation').innerText = `📜 ${school.affiliation || 'State Board'}`;
-            document.getElementById('bannerSchoolStudents').innerText = `🧑‍🎓 ${school.student_strength} Students`;
+            document.getElementById('bannerSchoolLocation').innerText = loc;
+            document.getElementById('bannerSchoolAffiliation').innerText = school.affiliation || 'State Board';
+            document.getElementById('bannerSchoolStudents').innerText =
+                (school.student_strength || 0) + ' Students';
 
             // Populate Edit Form
             document.getElementById('editSchoolName').value = school.name || '';
@@ -1157,9 +1169,9 @@ async function fetchAndPopulateSchoolData(schoolId) {
             
             const previewBox = document.getElementById('headmasterPhotoPreview');
             if (school.headmaster_photo_url) {
-                previewBox.innerHTML = `<img src="${school.headmaster_photo_url}" alt="Headmaster Photo">`;
+                previewBox.innerHTML = '<span style="font-size: 18px; color: #94a3b8;">Headmaster</span>';
             } else {
-                previewBox.innerHTML = `<span style="font-size: 26px; color: #94a3b8;">👨‍🏫</span>`;
+                previewBox.innerHTML = '<span style="font-size: 18px; color: #94a3b8;">Headmaster</span>';
             }
 
             // Populate Student Strength Table
@@ -1243,7 +1255,7 @@ function renderMilestones(milestones) {
     container.innerHTML = milestones.map(m => `
         <div class="info-card">
             <div class="info-card-header">
-                <div class="info-card-title">📌 Milestone: ${m.title} ${m.year_or_date ? `(${m.year_or_date})` : ''}</div>
+                <div class="info-card-title">Ãƒâ€¦Ã¢â‚¬â„¢ Milestone: ${m.title} ${m.year_or_date ? `(${m.year_or_date})` : ''}</div>
                 <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px; background: #ef4444;" onclick="deleteMilestone(${m.id})">Delete</button>
             </div>
             <div class="info-card-body">
@@ -1274,7 +1286,7 @@ function renderResources(resources) {
         return `
             <div class="info-card">
                 <div class="info-card-header">
-                    <div class="info-card-title">📦 Resource: ${r.resource_name}</div>
+                    <div class="info-card-title">Ãƒâ€šÃ‚Â¦ Resource: ${r.resource_name}</div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <span class="status-badge ${stClass}">${r.status}</span>
                         <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px; background: #ef4444;" onclick="deleteResource(${r.id})">Delete</button>
@@ -1487,7 +1499,7 @@ function exportStudentStrengthCSV() {
     } else {
         window.location.href = `/schools/export/student-strength/${currentSchoolId}/`;
     }
-    showToast('Exporting student strength CSV...', 'info');
+    showToast('Exporting Student Strength CSV...', 'info');
 }
 
 // 6. Milestones Modals and Handlers
@@ -1634,3 +1646,9 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+
+
+
+
+

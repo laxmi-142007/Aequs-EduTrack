@@ -1,0 +1,764 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Upload Students | Aequs EduTrack</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Helvetica, Arial, sans-serif;
+            background: #f7f8fa;
+            color: #1f2937;
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header {
+    width: 100%;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+        .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+        .logo {
+    width: 110px;
+    height: 55px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+}
+
+        .title-area h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.3px;
+}
+
+        .title-area p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 500;
+    color: #64748b;
+}
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            background: #fff;
+            color: #374151;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            background: #f9fafb;
+            border-color: #bfc4cc;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+            margin-bottom: 18px;
+        }
+
+        .card-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 16px;
+            color: #111827;
+        }
+
+        .card-header p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 12.5px;
+        }
+
+        .card-body {
+            padding: 22px 20px;
+        }
+
+        .upload-box {
+            border: 2px dashed #d1d5db;
+            border-radius: 9px;
+            padding: 34px 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: 0.15s ease;
+        }
+
+        .upload-box:hover {
+            border-color: #ed1c24;
+            background: #fffafa;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            background: #fff1f1;
+            color: #ed1c24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .upload-box h3 {
+            margin: 0 0 5px;
+            font-size: 15px;
+            color: #111827;
+        }
+
+        .upload-box p {
+            margin: 0 0 16px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .file-input {
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            background: #fff;
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            border-radius: 7px;
+            padding: 9px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-primary {
+            background: #ed1c24;
+            color: #fff;
+            border: 1px solid #ed1c24;
+            box-shadow: 0 2px 4px rgba(237, 28, 36, 0.18);
+        }
+
+        .btn-primary:hover {
+            background: #c9141b;
+            border-color: #c9141b;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .info-box {
+            padding: 16px;
+            border-radius: 8px;
+            background: #f9fafb;
+            border: 1px solid #eef0f3;
+        }
+
+        .info-box h3 {
+            margin: 0 0 10px;
+            font-size: 13px;
+            color: #111827;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #334155;
+            font-size: 11px;
+        }
+
+        .error-box {
+            background: #fff1f1;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            border-radius: 8px;
+            padding: 15px 18px;
+            margin-bottom: 18px;
+        }
+
+        .error-box h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+
+        .error-list {
+            margin: 0;
+            padding-left: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .error-list li {
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        .messages {
+            margin-bottom: 18px;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .message.error {
+            background: #fff1f1;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        @media (max-width: 700px) {
+            .header {
+    width: 100%;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+            /* =====================================================
+           AEQUS FOUNDATION BULK UPLOAD THEME
+           ===================================================== */
+
+        :root {
+            --aequs-red: #ed1c24;
+            --aequs-red-dark: #c9141b;
+            --aequs-red-light: #fff1f1;
+            --aequs-text: #111827;
+            --aequs-muted: #64748b;
+            --aequs-border: #e5e7eb;
+        }
+
+        body {
+            background: #f8fafc;
+            color: var(--aequs-text);
+        }
+
+        .page {
+            max-width: 980px;
+            padding: 36px 28px;
+        }
+
+        .header {
+    width: 100%;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+        .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+        .logo {
+    width: 110px;
+    height: 55px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+}
+
+        .title-area h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.3px;
+}
+
+        .title-area p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 500;
+    color: #64748b;
+}
+
+        .back-btn {
+            border-color: #d1d5db;
+            transition: all .15s ease;
+        }
+
+        .back-btn:hover {
+            color: var(--aequs-red);
+            border-color: var(--aequs-red);
+            background: var(--aequs-red-light);
+        }
+
+        .card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, .05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 22px;
+            background: #ffffff;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .upload-box {
+            border: 2px dashed #d1d5db;
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 42px 24px;
+            transition: all .18s ease;
+        }
+
+        .upload-box:hover {
+            border-color: var(--aequs-red);
+            background: #fffafa;
+        }
+
+        .upload-icon {
+            background: var(--aequs-red-light);
+            color: var(--aequs-red);
+            border: 1px solid #fecaca;
+        }
+
+        .file-input {
+            border-color: #d1d5db;
+        }
+
+        .file-input:focus {
+            outline: 2px solid rgba(237, 28, 36, .15);
+            border-color: var(--aequs-red);
+        }
+
+        .btn-primary {
+            background: var(--aequs-red);
+            border-color: var(--aequs-red);
+        }
+
+        .btn-primary:hover {
+            background: var(--aequs-red-dark);
+            border-color: var(--aequs-red-dark);
+        }
+
+        .info-box {
+            background: #fafafa;
+            border-color: #e5e7eb;
+        }
+
+        code {
+            background: var(--aequs-red-light);
+            color: #b91c1c;
+        }
+
+        .message.error,
+        .error-box {
+            background: #fff1f1;
+            border-color: #fecaca;
+        }
+
+        .template-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 14px;
+            padding: 8px 13px;
+            border-radius: 7px;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .template-btn:hover {
+            color: var(--aequs-red);
+            border-color: var(--aequs-red);
+            background: var(--aequs-red-light);
+        }
+    
+/* =========================================================
+   BULK STUDENT UPLOAD - MATCH BULK ACADEMIC UPLOAD HEADER
+   ========================================================= */
+
+.header {
+    width: 100%;
+    height: 88px;
+    padding: 14px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header .logo {
+    width: 90px;
+    height: 45px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+}
+
+.header .title-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.header .title-area h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 22px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.2px;
+}
+
+.header .title-area p {
+    margin: 2px 0 0;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 500;
+    color: #64748b;
+}
+
+/* Keep header compact on smaller screens */
+@media (max-width: 700px) {
+    .header {
+        height: auto;
+        min-height: 82px;
+        padding: 12px 18px;
+    }
+
+    .header .logo {
+        width: 78px;
+        height: 39px;
+    }
+
+    .header .title-area h1 {
+        font-size: 19px;
+    }
+
+    .header .title-area p {
+        font-size: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="header">
+        <div class="header-left">
+            <img
+                src="{% static 'images/Aequs-logo.png' %}"
+                alt="Aequs Foundation"
+                class="logo"
+            >
+
+            <div class="title-area">
+                <h1>Bulk Student Upload</h1>
+                <p>Aequs Foundation - EduTrack</p>
+            </div>
+        </div>
+
+        <a href="{% url 'students:list' %}" class="back-btn">
+            Students
+        </a>
+    </div>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if errors %}
+        <div class="error-box">
+            <h3>Upload could not be completed</h3>
+
+            <ul class="error-list">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="card">
+
+        <div class="card-header">
+            <h2>Upload Student Records</h2>
+<a href="{% static 'students_bulk_upload_template.csv' %}"
+   download
+   class="template-btn">
+    Download CSV Template
+</a>
+            <p>
+                Upload a CSV or Excel (.xlsx) file containing multiple student records.
+            </p>
+        </div>
+
+        <div class="card-body">
+
+            <form
+                method="post"
+                enctype="multipart/form-data"
+            >
+
+                {% csrf_token %}
+
+                <div class="upload-box">
+
+                    <div class="upload-icon">
+                        ↑
+                    </div>
+
+                    <h3>Select CSV or Excel File</h3>
+
+                    <p>
+                        Choose the student data file from your computer.
+                    </p>
+
+                    <input
+                        type="file"
+                        name="csv_file"
+                        accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        class="file-input"
+                        required
+                    >
+
+                </div>
+
+                <div class="actions">
+
+                    <a
+                        href="{% url 'students:list' %}"
+                        class="btn btn-secondary"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Upload Students
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <div class="card">
+
+        <div class="card-header">
+            <h2>File Format</h2>
+            <p>
+                Make sure your file uses these column names.
+            </p>
+        </div>
+
+        <div class="card-body">
+
+            <div class="info-grid">
+
+                <div class="info-box">
+                    <h3>Required columns</h3>
+
+                    <p><code>admission_number</code></p>
+                    <p><code>student_name</code></p>
+                    <p><code>gender</code></p>
+                    <p><code>school</code></p>
+                    <p><code>current_class</code></p>
+                    <p><code>parent_name</code></p>
+                </div>
+
+                <div class="info-box">
+                    <h3>Optional columns</h3>
+
+                    <p><code>date_of_birth</code></p>
+                    <p><code>section</code></p>
+                    <p><code>roll_number</code></p>
+                    <p><code>parent_phone</code></p>
+                    <p><code>parent_email</code></p>
+                    <p><code>student_phone</code></p>
+                    <p><code>email</code></p>
+                    <p><code>address</code></p>
+                    <p><code>status</code></p>
+                    <p><code>admission_date</code></p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card">
+
+        <div class="card-header">
+            <h2>Important</h2>
+        </div>
+
+        <div class="card-body">
+
+            <div class="info-box">
+
+                <p>
+                    <strong>Date format:</strong>
+                    YYYY-MM-DD
+                </p>
+
+                <p>
+                    <strong>Gender:</strong>
+                    MALE, FEMALE or OTHER
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    ACTIVE, TRANSFERRED, PASSED_OUT or INACTIVE
+                </p>
+
+                <p>
+                    <strong>School:</strong>
+                    The school name must exactly match an existing school
+                    in EduTrack.
+                </p>
+
+                <p>
+                    Existing admission numbers will not be imported.
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+

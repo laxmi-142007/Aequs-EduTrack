@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Students | EduTrack</title>
-    <!-- Lucide Icons CDN -->
+
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -15,15 +15,13 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Helvetica, Arial, sans-serif;
             background: #f8fafc;
             color: #0f172a;
             min-height: 100vh;
         }
 
-        /* =========================
-           MAIN WORKSPACE AREA
-        ========================= */
         .main {
             margin-left: 256px;
             min-height: 100vh;
@@ -116,6 +114,7 @@
         .add-button {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             padding: 8px 14px;
             background-color: #2563eb;
@@ -124,8 +123,9 @@
             border-radius: 6px;
             font-weight: 600;
             font-size: 13px;
-            transition: background-color 0.15s ease;
+            transition: all 0.15s ease;
             box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+            white-space: nowrap;
         }
 
         .add-button:hover {
@@ -134,8 +134,50 @@
         }
 
         /* =========================================================
-           SHADCN-STYLE FILTER BAR
+           BULK UPLOAD BUTTON
            ========================================================= */
+
+        .bulk-upload-button {
+            background-color: #16a34a;
+            border: 1px solid #16a34a;
+            color: #ffffff;
+        }
+
+        .bulk-upload-button:hover {
+            background-color: #15803d;
+            border-color: #15803d;
+            color: #ffffff;
+        }
+
+        /* =========================================================
+           BACK BUTTON
+           ========================================================= */
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            background: #ffffff;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #0f172a;
+        }
+
+        /* =========================================================
+           FILTER BAR
+           ========================================================= */
+
         .filter-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -191,7 +233,8 @@
             transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        .filter-input:focus, .filter-select:focus {
+        .filter-input:focus,
+        .filter-select:focus {
             border-color: #2563eb;
             outline: none;
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
@@ -241,18 +284,20 @@
         }
 
         /* =========================================================
-           STUDENT TABLE CARD
+           TABLE
            ========================================================= */
+
         .table-card {
             background: #ffffff;
             border-radius: 8px;
-            overflow: hidden;
+            overflow-x: auto;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
             border: 1px solid #e2e8f0;
         }
 
         table {
             width: 100%;
+            min-width: 900px;
             border-collapse: collapse;
         }
 
@@ -366,75 +411,283 @@
             color: #cbd5e1;
         }
 
-        /* =========================
+        /* =========================================================
+           MESSAGES
+           ========================================================= */
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 7px;
+            font-size: 13px;
+            border: 1px solid;
+        }
+
+        .message.success {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #047857;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+
+        .message.warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #b45309;
+        }
+
+        .message.info {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        /* =========================================================
            RESPONSIVE
-        ========================= */
+           ========================================================= */
+
+        @media (max-width: 1200px) {
+            .filter-form {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
         @media (max-width: 1024px) {
+            .main {
+                margin-left: 0;
+            }
+
             .filter-form {
                 grid-template-columns: 1fr 1fr;
             }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 760px) {
+            .topbar {
+                padding: 12px 16px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .header-actions {
+                align-items: flex-start;
+            }
+
+            .header-actions > div:last-child {
+                width: 100%;
+            }
+
+            .stats-summary {
+                width: 100%;
+            }
+
             .filter-form {
                 grid-template-columns: 1fr;
             }
+        }
+
+        @media (max-width: 640px) {
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .header-actions > div:last-child {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stats-summary {
+                margin-bottom: 5px;
+            }
+
+            .add-button {
+                width: 100%;
+            }
+
             .content {
-                padding: 16px;
+                padding: 14px;
             }
         }
     </style>
 </head>
+
 <body>
 
-    <!-- Modern Sleek Sidebar -->
     {% include 'includes/sidebar.html' with active_page='students' %}
 
-    <!-- =========================================================
-         MAIN WORKSPACE AREA
-    ========================================================== -->
     <main class="main">
+
         <header class="topbar">
+
             <h1>
-                <i data-lucide="graduation-cap" style="width: 20px; height: 20px; color: #2563eb;"></i>
+                <i
+                    data-lucide="graduation-cap"
+                    style="width:20px;height:20px;color:#2563eb;"
+                ></i>
                 Student Directory
             </h1>
-            <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
+
+            <a
+                href="{% url 'dashboard' %}"
+                class="btn-secondary"
+            >
+                ← Back to Dashboard
+            </a>
+
         </header>
 
         <section class="content">
 
-            <!-- HEADER & ACTIONS -->
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- =====================================================
+                 PAGE HEADER
+            ====================================================== -->
+
             <div class="header-actions">
+
                 <div>
-                    <h2 class="page-title">Enrolled Students</h2>
-                    <p class="page-subtitle">Manage and track student profiles, schooling status, and academic progression.</p>
+                    <h2 class="page-title">
+                        Enrolled Students
+                    </h2>
+
+                    <p class="page-subtitle">
+                        Manage and track student profiles, schooling status,
+                        and academic progression.
+                    </p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
+
+                <!-- ACTION BUTTONS -->
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:10px;
+                        flex-wrap:wrap;
+                    "
+                >
+
+                    <!-- STATISTICS -->
+
                     <div class="stats-summary">
-                        <span class="summary-badge">Total: <strong>{{ total_count }}</strong></span>
-                        <span class="summary-badge active-badge">Active: <strong>{{ active_count }}</strong></span>
+
+                        <span class="summary-badge">
+                            Total:
+                            <strong>{{ total_count }}</strong>
+                        </span>
+
+                        <span class="summary-badge active-badge">
+                            Active:
+                            <strong>{{ active_count }}</strong>
+                        </span>
+
                         {% if search_query or selected_school or selected_class or selected_gender or selected_status %}
-                            <span class="summary-badge" style="background: #fffbeb; border-color: #fde68a; color: #b45309;">
-                                Filtered: <strong>{{ filtered_count }}</strong>
+
+                            <span
+                                class="summary-badge"
+                                style="
+                                    background:#fffbeb;
+                                    border-color:#fde68a;
+                                    color:#b45309;
+                                "
+                            >
+                                Filtered:
+                                <strong>{{ filtered_count }}</strong>
                             </span>
+
                         {% endif %}
+
                     </div>
-                    <a href="{% url 'students:add' %}" class="add-button">
-                        <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i>
-                        Add Student
+
+                    <!-- =================================================
+                         BULK UPLOAD BUTTON
+                    ================================================== -->
+
+                    <a
+                        href="{% url 'students:bulk_upload' %}"
+                        class="add-button bulk-upload-button"
+                    >
+
+                        <i
+                            data-lucide="upload"
+                            style="width:14px;height:14px;"
+                        ></i>
+
+                        Bulk Upload
+
                     </a>
+
+                    <!-- =================================================
+                         ADD STUDENT BUTTON
+                    ================================================== -->
+
+                    <a
+                        href="{% url 'students:add' %}"
+                        class="add-button"
+                    >
+
+                        <i
+                            data-lucide="user-plus"
+                            style="width:14px;height:14px;"
+                        ></i>
+
+                        Add Student
+
+                    </a>
+
                 </div>
+
             </div>
 
-            <!-- SHADCN FILTER BAR -->
+            <!-- =====================================================
+                 FILTER BAR
+            ====================================================== -->
+
             <div class="filter-card">
-                <form method="GET" action="{% url 'students:list' %}" class="filter-form">
-                    <!-- Search Input -->
+
+                <form
+                    method="GET"
+                    action="{% url 'students:list' %}"
+                    class="filter-form"
+                >
+
+                    <!-- Search -->
+
                     <div class="input-group">
+
                         <div class="input-icon">
-                            <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+
+                            <i
+                                data-lucide="search"
+                                style="width:15px;height:15px;"
+                            ></i>
+
                         </div>
+
                         <input
                             type="text"
                             name="q"
@@ -442,140 +695,359 @@
                             placeholder="Search by name or admission number..."
                             class="filter-input"
                         >
+
                     </div>
 
-                    <!-- School Filter -->
-                    <select name="school" class="filter-select">
-                        <option value="">All Schools</option>
+                    <!-- School -->
+
+                    <select
+                        name="school"
+                        class="filter-select"
+                    >
+
+                        <option value="">
+                            All Schools
+                        </option>
+
                         {% for school in schools %}
-                            <option value="{{ school.id }}" {% if selected_school == school.id|stringformat:"s" %}selected{% endif %}>
+
+                            <option
+                                value="{{ school.id }}"
+                                {% if selected_school == school.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
                                 {{ school.name }}
                             </option>
+
                         {% endfor %}
+
                     </select>
 
-                    <!-- Class Filter -->
-                    <select name="class" class="filter-select">
-                        <option value="">All Classes</option>
+                    <!-- Class -->
+
+                    <select
+                        name="class"
+                        class="filter-select"
+                    >
+
+                        <option value="">
+                            All Classes
+                        </option>
+
                         {% for cls in distinct_classes %}
-                            <option value="{{ cls }}" {% if selected_class == cls %}selected{% endif %}>
+
+                            <option
+                                value="{{ cls }}"
+                                {% if selected_class == cls %}
+                                    selected
+                                {% endif %}
+                            >
                                 {{ cls }}
                             </option>
+
                         {% endfor %}
+
                     </select>
 
-                    <!-- Gender Filter -->
-                    <select name="gender" class="filter-select">
-                        <option value="">All Genders</option>
+                    <!-- Gender -->
+
+                    <select
+                        name="gender"
+                        class="filter-select"
+                    >
+
+                        <option value="">
+                            All Genders
+                        </option>
+
                         {% for code, label in gender_choices %}
-                            <option value="{{ code }}" {% if selected_gender == code %}selected{% endif %}>
+
+                            <option
+                                value="{{ code }}"
+                                {% if selected_gender == code %}
+                                    selected
+                                {% endif %}
+                            >
                                 {{ label }}
                             </option>
+
                         {% endfor %}
+
                     </select>
 
-                    <!-- Status Filter -->
-                    <select name="status" class="filter-select">
-                        <option value="">All Statuses</option>
+                    <!-- Status -->
+
+                    <select
+                        name="status"
+                        class="filter-select"
+                    >
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
                         {% for code, label in status_choices %}
-                            <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>
+
+                            <option
+                                value="{{ code }}"
+                                {% if selected_status == code %}
+                                    selected
+                                {% endif %}
+                            >
                                 {{ label }}
                             </option>
+
                         {% endfor %}
+
                     </select>
 
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn-filter-submit">
-                        <i data-lucide="filter" style="width: 13px; height: 13px;"></i>
+                    <!-- Filter -->
+
+                    <button
+                        type="submit"
+                        class="btn-filter-submit"
+                    >
+
+                        <i
+                            data-lucide="filter"
+                            style="width:13px;height:13px;"
+                        ></i>
+
                         Filter
+
                     </button>
 
-                    <!-- Reset Link -->
+                    <!-- Clear -->
+
                     {% if search_query or selected_school or selected_class or selected_gender or selected_status %}
-                        <a href="{% url 'students:list' %}" class="btn-filter-reset">
-                            <i data-lucide="x" style="width: 13px; height: 13px;"></i>
+
+                        <a
+                            href="{% url 'students:list' %}"
+                            class="btn-filter-reset"
+                        >
+
+                            <i
+                                data-lucide="x"
+                                style="width:13px;height:13px;"
+                            ></i>
+
                             Clear
+
                         </a>
+
                     {% endif %}
+
                 </form>
+
             </div>
 
-            <!-- STUDENT DATA TABLE -->
+            <!-- =====================================================
+                 STUDENT TABLE
+            ====================================================== -->
+
             <div class="table-card">
+
                 {% if students %}
+
                     <table>
+
                         <thead>
+
                             <tr>
-                                <th>Admission No.</th>
-                                <th>Student Name</th>
-                                <th>School Institution</th>
-                                <th>Current Class</th>
-                                <th>Sec</th>
-                                <th>Roll</th>
-                                <th>Gender</th>
-                                <th>Status</th>
+
+                                <th>
+                                    Admission No.
+                                </th>
+
+                                <th>
+                                    Student Name
+                                </th>
+
+                                <th>
+                                    School Institution
+                                </th>
+
+                                <th>
+                                    Current Class
+                                </th>
+
+                                <th>
+                                    Sec
+                                </th>
+
+                                <th>
+                                    Roll
+                                </th>
+
+                                <th>
+                                    Gender
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
                             </tr>
+
                         </thead>
+
                         <tbody>
+
                             {% for student in students %}
+
                                 <tr>
-                                    <td><strong>{{ student.admission_number }}</strong></td>
+
                                     <td>
+                                        <strong>
+                                            {{ student.admission_number }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+
                                         <div class="cell-student-name">
+
                                             <div class="avatar-circle">
+
                                                 {{ student.student_name|make_list|first|upper }}
+
                                             </div>
-                                            <span>{{ student.student_name }}</span>
+
+                                            <span>
+                                                {{ student.student_name }}
+                                            </span>
+
                                         </div>
+
                                     </td>
+
                                     <td>
+
                                         <div class="school-tag">
-                                            <i data-lucide="building-2" style="width: 13px; height: 13px; color: #64748b;"></i>
-                                            <span>{{ student.school.name }}</span>
+
+                                            <i
+                                                data-lucide="building-2"
+                                                style="
+                                                    width:13px;
+                                                    height:13px;
+                                                    color:#64748b;
+                                                "
+                                            ></i>
+
+                                            <span>
+                                                {{ student.school.name }}
+                                            </span>
+
                                         </div>
+
                                     </td>
+
                                     <td>
-                                        <span class="class-pill">{{ student.current_class }}</span>
+
+                                        <span class="class-pill">
+                                            {{ student.current_class }}
+                                        </span>
+
                                     </td>
-                                    <td>{{ student.section|default:"-" }}</td>
-                                    <td>{{ student.roll_number|default:"-" }}</td>
-                                    <td>{{ student.get_gender_display }}</td>
+
                                     <td>
+                                        {{ student.section|default:"-" }}
+                                    </td>
+
+                                    <td>
+                                        {{ student.roll_number|default:"-" }}
+                                    </td>
+
+                                    <td>
+                                        {{ student.get_gender_display }}
+                                    </td>
+
+                                    <td>
+
                                         {% if student.status == 'ACTIVE' %}
-                                            <span class="status-badge status-active">● Active</span>
+
+                                            <span class="status-badge status-active">
+                                                ● Active
+                                            </span>
+
                                         {% elif student.status == 'INACTIVE' %}
-                                            <span class="status-badge status-inactive">● Inactive</span>
+
+                                            <span class="status-badge status-inactive">
+                                                ● Inactive
+                                            </span>
+
                                         {% else %}
-                                            <span class="status-badge status-other">{{ student.get_status_display }}</span>
+
+                                            <span class="status-badge status-other">
+                                                {{ student.get_status_display }}
+                                            </span>
+
                                         {% endif %}
+
                                     </td>
+
                                 </tr>
+
                             {% endfor %}
+
                         </tbody>
+
                     </table>
+
                 {% else %}
+
                     <div class="empty-state">
+
                         <i data-lucide="users-2"></i>
-                        <p><strong>No matching students found.</strong></p>
-                        <p style="font-size: 12px; color: #94a3b8;">Try adjusting your filter parameters or search keywords.</p>
+
+                        <p>
+                            <strong>
+                                No matching students found.
+                            </strong>
+                        </p>
+
+                        <p
+                            style="
+                                font-size:12px;
+                                color:#94a3b8;
+                            "
+                        >
+                            Try adjusting your filter parameters
+                            or search keywords.
+                        </p>
+
                         {% if search_query or selected_school or selected_class or selected_gender or selected_status %}
-                            <a href="{% url 'students:list' %}" class="btn-filter-reset" style="margin-top: 8px;">
+
+                            <a
+                                href="{% url 'students:list' %}"
+                                class="btn-filter-reset"
+                                style="margin-top:8px;"
+                            >
                                 Reset All Filters
                             </a>
+
                         {% endif %}
+
                     </div>
+
                 {% endif %}
+
             </div>
 
         </section>
+
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener("DOMContentLoaded", function () {
+
             if (window.lucide) {
                 lucide.createIcons();
             }
+
         });
     </script>
+
 </body>
 </html>

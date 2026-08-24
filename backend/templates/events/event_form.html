@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Event</title>
+
+    <title>{{ page_title }} | Aequs EduTrack</title>
 
     <style>
         * {
@@ -12,7 +13,7 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background: #f8fafc;
             color: #1e293b;
         }
@@ -46,6 +47,10 @@
             font-weight: 700;
         }
 
+        .back-button:hover {
+            background: #eff6ff;
+        }
+
         .container {
             max-width: 750px;
             margin: 40px auto;
@@ -57,11 +62,19 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
         }
 
         .card h2 {
             margin-top: 0;
             color: #1e40af;
+            font-size: 22px;
+        }
+
+        .card-subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
         }
 
         .form-group {
@@ -72,6 +85,7 @@
             display: block;
             margin-bottom: 7px;
             font-weight: 600;
+            color: #334155;
         }
 
         input,
@@ -81,6 +95,7 @@
             border: 1px solid #cbd5e1;
             border-radius: 7px;
             font-size: 15px;
+            font-family: inherit;
         }
 
         textarea {
@@ -125,12 +140,26 @@
             font-weight: 700;
         }
 
+        .cancel-button:hover {
+            background: #cbd5e1;
+        }
+
+        @media (max-width: 850px) {
+            .main {
+                margin-left: 0;
+            }
+        }
+
         @media (max-width: 650px) {
             .header {
                 padding: 18px 20px;
                 flex-direction: column;
                 gap: 15px;
                 align-items: stretch;
+            }
+
+            .header h1 {
+                font-size: 24px;
             }
 
             .back-button {
@@ -144,90 +173,152 @@
             .actions {
                 flex-direction: column;
             }
+
+            .save-button,
+            .cancel-button {
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Modern Sleek Sidebar -->
     {% include 'includes/sidebar.html' with active_page='events' %}
 
     <div class="main">
 
         <div class="header">
-            <h1>&#128197; Add Event</h1>
 
-            <a href="{% url 'events:list' %}" class="back-button">
+            <h1>
+                &#128197; {{ page_title }}
+            </h1>
+
+            <a
+                href="{% url 'events:list' %}"
+                class="back-button"
+            >
                 &#8592; Back to Events
             </a>
+
         </div>
 
         <div class="container">
 
             <div class="card">
 
-                <h2>Create New Event</h2>
+                <h2>
+                    {{ form_title }}
+                </h2>
+
+                <p class="card-subtitle">
+                    {% if event %}
+                        Update the details of this foundation event.
+                    {% else %}
+                        Add a new foundation event to Aequs EduTrack.
+                    {% endif %}
+                </p>
 
                 <form method="post">
+
                     {% csrf_token %}
 
                     <div class="form-group">
-                        <label for="title">Event Title *</label>
+
+                        <label for="title">
+                            Event Title *
+                        </label>
+
                         <input
                             type="text"
                             id="title"
                             name="title"
                             maxlength="200"
+                            value="{{ event.title|default:'' }}"
                             required
                         >
+
                     </div>
 
                     <div class="form-group">
-                        <label for="description">Description</label>
+
+                        <label for="description">
+                            Description
+                        </label>
+
                         <textarea
                             id="description"
                             name="description"
-                        ></textarea>
+                        >{{ event.description|default:'' }}</textarea>
+
                     </div>
 
                     <div class="form-group">
-                        <label for="event_date">Event Date *</label>
+
+                        <label for="event_date">
+                            Event Date *
+                        </label>
+
                         <input
                             type="date"
                             id="event_date"
                             name="event_date"
+                            value="{{ event.event_date|date:'Y-m-d' }}"
                             required
                         >
+
                     </div>
 
                     <div class="form-group">
-                        <label for="location">Location</label>
+
+                        <label for="location">
+                            Location
+                        </label>
+
                         <input
                             type="text"
                             id="location"
                             name="location"
                             maxlength="200"
+                            value="{{ event.location|default:'' }}"
                         >
+
                     </div>
 
                     <div class="form-group">
-                        <label for="organizer">Organizer</label>
+
+                        <label for="organizer">
+                            Organizer
+                        </label>
+
                         <input
                             type="text"
                             id="organizer"
                             name="organizer"
                             maxlength="150"
+                            value="{{ event.organizer|default:'' }}"
                         >
+
                     </div>
 
                     <div class="actions">
 
-                        <button type="submit" class="save-button">
-                            Create Event
+                        <button
+                            type="submit"
+                            class="save-button"
+                        >
+                            {% if event %}
+                                Save Changes
+                            {% else %}
+                                Create Event
+                            {% endif %}
                         </button>
 
-                        <a href="{% url 'events:list' %}" class="cancel-button">
+                        <a
+                            href="{% url 'events:list' %}"
+                            class="cancel-button"
+                        >
                             Cancel
                         </a>
 

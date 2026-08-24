@@ -1052,3 +1052,134 @@ def assignment_list(request):
             "assignments": assignments,
         },
     )
+
+# =============================================================================
+# BULK INVENTORY UPLOAD
+# =============================================================================
+
+
+# =============================================================================
+# BULK INVENTORY CSV TEMPLATE
+# =============================================================================
+
+def inventory_csv_template(request):
+    """Download the blank CSV template for bulk inventory upload."""
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = (
+        'attachment; filename="inventory_bulk_upload_template.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        "item_name",
+        "sku",
+        "category",
+        "quantity",
+        "unit",
+        "low_stock_threshold",
+        "unit_cost",
+        "location",
+        "description",
+    ])
+
+    return response
+
+def inventory_bulk_upload(request):
+
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+
+    if request.method == "POST":
+
+        uploaded_file = request.FILES.get("file")
+
+        if not uploaded_file:
+
+            from django.contrib import messages
+
+            messages.error(
+                request,
+                "Please select a CSV or Excel file.",
+            )
+
+            return render(
+                request,
+                "inventory/bulk_upload.html",
+            )
+
+        filename = uploaded_file.name.lower()
+
+        if not filename.endswith(
+            (".csv", ".xlsx")
+        ):
+
+            from django.contrib import messages
+
+            messages.error(
+                request,
+                "Invalid file format. "
+                "Please upload CSV or XLSX.",
+            )
+
+            return render(
+                request,
+                "inventory/bulk_upload.html",
+            )
+
+        try:
+
+            from .services import bulk_import_inventory
+
+            result = bulk_import_inventory(
+                file_obj=uploaded_file,
+                filename=uploaded_file.name,
+                performed_by=(
+                    request.user.username
+                    if request.user.is_authenticated
+                    else "Admin"
+                ),
+            )
+
+            from django.contrib import messages
+
+            messages.success(
+                request,
+                (
+                    f"Successfully imported "
+                    f"{result['created']} inventory item(s)."
+                ),
+            )
+
+            return redirect(
+                "inventory:bulk_upload"
+            )
+
+        except ValidationError as exc:
+
+            from django.contrib import messages
+
+            if hasattr(exc, "messages"):
+                error_message = " ".join(exc.messages)
+            else:
+                error_message = str(exc)
+
+            messages.error(
+                request,
+                error_message,
+            )
+
+        except Exception as exc:
+
+            from django.contrib import messages
+
+            messages.error(
+                request,
+                f"Import failed: {exc}",
+            )
+
+    return render(
+        request,
+        "inventory/bulk_upload.html",
+    )
+

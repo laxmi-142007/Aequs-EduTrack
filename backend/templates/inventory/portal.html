@@ -647,11 +647,10 @@
         <header class="topbar">
             <h1>💻 Inventory Management</h1>
             <div class="topbar-actions">
-                <a href="{% url 'inventory:export_csv' %}?type=items" class="btn btn-secondary btn-sm" title="Export current stock inventory to CSV">
-                    📥 Export Stock CSV
-                </a>
                 <button class="btn btn-primary btn-sm" onclick="openAddItemModal()">
-                    ➕ Add Item
+                <a href="{% url 'inventory:bulk_upload' %}" class="btn btn-secondary btn-sm">
+                    📤 Bulk Upload
+                </a>                    ➕ Add Item
                 </button>
                 <div class="user-badge">
                     👤 {{ username }}

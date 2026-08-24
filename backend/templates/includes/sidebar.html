@@ -1,61 +1,125 @@
+﻿{% load static %}
 <!-- Lucide Icons CDN -->
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <style>
   /* =========================================================
-     GLOBAL UNIFIED THEME (EduTrack Compact Design System)
+     AEQUS FOUNDATION THEME
+     Visual-only theme override
+     Icons / URLs / Features remain unchanged
      ========================================================= */
-  *, *::before, *::after {
+
+  :root {
+    --aequs-red: #ed1c24;
+    --aequs-red-dark: #c9141b;
+    --aequs-red-light: #fff1f1;
+
+    --aequs-black: #171717;
+    --aequs-dark: #242424;
+    --aequs-text: #222222;
+    --aequs-muted: #666666;
+
+    --aequs-border: #e5e5e5;
+    --aequs-light-border: #eeeeee;
+    --aequs-bg: #f7f7f7;
+    --aequs-white: #ffffff;
+  }
+
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
-  html, body {
+  html,
+  body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-    background-color: #f4f7fb !important;
-    color: #1f2937 !important;
+
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif !important;
+
+    background: #f7f7f7 !important;
+    color: var(--aequs-text) !important;
+
     font-size: 13px !important;
+
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Global Layout */
+  /* =========================================================
+     MAIN APPLICATION AREA
+     ========================================================= */
+
   .main {
     margin-left: 256px !important;
     min-height: 100vh !important;
-    background-color: #f4f7fb !important;
+
+    background: #f7f7f7 !important;
+
     display: flex;
     flex-direction: column;
+
     box-sizing: border-box;
   }
 
-  /* Global Topbar */
-  .topbar, .events-header, .header:not(.sidebar-header):not(.profile-header):not(.form-header) {
+  /* =========================================================
+     TOP BAR
+     ========================================================= */
+
+  .topbar,
+  .events-header,
+  .header:not(.sidebar-header):not(.profile-header):not(.form-header) {
     background: #ffffff !important;
-    color: #111827 !important;
-    padding: 12px 24px !important;
-    border-bottom: 1px solid #e5e7eb !important;
+
+    color: #171717 !important;
+
+    padding: 14px 26px !important;
+
+    border-bottom: 1px solid #e5e5e5 !important;
+
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
+
     box-shadow: none !important;
+
     position: sticky !important;
     top: 0 !important;
+
     z-index: 90 !important;
+
     border-radius: 0 !important;
     margin: 0 !important;
-    min-height: 54px !important;
+
+    min-height: 76px !important;
   }
 
-  .topbar h1, .events-header h1, .header:not(.sidebar-header) h1, .header .brand {
+  .topbar h1,
+  .events-header h1,
+  .header:not(.sidebar-header) h1,
+  .header .brand {
     margin: 0 !important;
-    font-size: 18px !important;
+
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif !important;
+
+    font-size: 19px !important;
+
     font-weight: 700 !important;
-    color: #111827 !important;
+
+    color: #171717 !important;
+
     display: flex !important;
     align-items: center !important;
+
     gap: 8px !important;
+
     letter-spacing: -0.01em !important;
   }
 
@@ -63,581 +127,1520 @@
     display: none !important;
   }
 
-  /* Global Content Padding */
-  .content, main.content, .container, main.container, .main-container {
-    padding: 18px 24px !important;
+  /* =========================================================
+     CONTENT
+     ========================================================= */
+
+  .content,
+  main.content,
+  .container,
+  main.container,
+  .main-container {
+    padding: 22px 26px !important;
+
     max-width: 100% !important;
+
     margin: 0 !important;
+
     box-sizing: border-box;
   }
 
-  /* Global Cards & Surfaces */
-  .card, .table-card, .form-card, .profile-card, .container-card, .filter-card, .filter, .table-container, .card-container {
+  /* =========================================================
+     CARDS
+     ========================================================= */
+
+  .card,
+  .table-card,
+  .form-card,
+  .profile-card,
+  .container-card,
+  .filter-card,
+  .filter,
+  .table-container,
+  .card-container {
     background: #ffffff !important;
-    border-radius: 8px !important;
-    padding: 16px 18px !important;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
-    border: 1px solid #e5e7eb !important;
-    margin-bottom: 16px !important;
-  }
 
-  /* Compact Tabs */
-  .tabs-header {
-    padding: 0 12px !important;
-  }
+    border-radius: 3px !important;
 
-  .tab-btn {
-    padding: 10px 15px !important;
-    font-size: 12.5px !important;
-    font-weight: 600 !important;
-  }
+    padding: 18px 20px !important;
 
-  /* Compact Stat Cards */
-  .stats-grid, .cards {
-    gap: 14px !important;
+    box-shadow:
+      0 1px 4px rgba(0, 0, 0, 0.06) !important;
+
+    border: 1px solid #e5e5e5 !important;
+
     margin-bottom: 18px !important;
   }
 
-  .stat-card, .card.stat {
-    padding: 12px 16px !important;
-    border-radius: 8px !important;
+  /* =========================================================
+     TABS
+     ========================================================= */
+
+  .tabs-header {
+    padding: 0 12px !important;
+
+    background: #ffffff !important;
+
+    border-bottom: 1px solid #e5e5e5 !important;
   }
 
-  .stat-info .stat-value, .card-value, .number {
-    font-size: 22px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-  }
+  .tab-btn {
+    padding: 11px 16px !important;
 
-  .stat-info h4, .card-label, .card-title {
-    font-size: 11.5px !important;
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif !important;
+
+    font-size: 13px !important;
+
     font-weight: 600 !important;
+
+    color: #555555 !important;
+
+    background: transparent !important;
+
+    border: none !important;
+
+    border-bottom: 2px solid transparent !important;
   }
 
-  .stat-icon, .card-icon {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 20px !important;
+  .tab-btn:hover {
+    color: var(--aequs-red) !important;
   }
 
-  /* Global Unified Tables */
-  table, .data-table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    text-align: left !important;
-    font-size: 12.5px !important;
-  }
+  .tab-btn.active {
+    color: var(--aequs-red) !important;
 
-  th, table th, .data-table th {
-    background-color: #f8fafc !important;
-    color: #64748b !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    padding: 8px 12px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    border-top: none !important;
-    white-space: nowrap !important;
-  }
-
-  td, table td, .data-table td {
-    padding: 9px 12px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    font-size: 12.5px !important;
-    color: #334155 !important;
-    vertical-align: middle !important;
-  }
-
-  tr:hover td, .data-table tr:hover td {
-    background-color: #f8fafc !important;
-  }
-
-  td a, .data-table td a {
-    color: #2563eb !important;
-    text-decoration: none !important;
-    font-weight: 600 !important;
-  }
-
-  /* Global Buttons */
-  .btn-primary, .add-button, .btn-add, .add-btn, .btn.save, .save-button, .btn-save, .button:not(.btn-secondary),
-  button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.cancel):not(.btn-back) {
-    background-color: #2563eb !important;
-    color: #ffffff !important;
-    border-radius: 6px !important;
-    font-weight: 600 !important;
-    font-size: 12.5px !important;
-    padding: 6px 12px !important;
-    border: 1px solid #2563eb !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 5px !important;
-    text-decoration: none !important;
-    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15) !important;
-    transition: all 0.15s ease !important;
-    line-height: 1.3 !important;
-  }
-
-  .btn-primary:hover, .add-button:hover, .btn-add:hover, .add-btn:hover, .btn.save:hover, .save-button:hover, .btn-save:hover,
-  button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.cancel):not(.btn-back):hover {
-    background-color: #1d4ed8 !important;
-    border-color: #1d4ed8 !important;
-    color: #ffffff !important;
-  }
-
-  /* Global Secondary / Back Buttons */
-  .btn-secondary, .cancel, .btn-cancel, .cancel-button, .back, .back-button, .back-dashboard, .btn-back, a.cancel, a.back {
-    background-color: #ffffff !important;
-    color: #475569 !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 6px !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
-    padding: 5px 10px !important;
-    text-decoration: none !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 4px !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
-    transition: all 0.15s ease !important;
-    line-height: 1.3 !important;
-  }
-
-  .btn-secondary:hover, .cancel:hover, .btn-cancel:hover, .cancel-button:hover, .back:hover, .back-button:hover, .back-dashboard:hover, .btn-back:hover, a.cancel:hover, a.back:hover {
-    background-color: #f8fafc !important;
-    color: #1e293b !important;
-    border-color: #cbd5e1 !important;
-  }
-
-  /* Global Badges / Status */
-  .status-badge, .badge, .status {
-    display: inline-flex !important;
-    align-items: center !important;
-    padding: 2px 7px !important;
-    border-radius: 10px !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    text-transform: capitalize !important;
-    line-height: 1.3 !important;
-  }
-
-  .status-badge.active, .badge.active, .status.active, .status-active {
-    background-color: #dcfce7 !important;
-    color: #166534 !important;
-  }
-
-  /* Global Form Inputs */
-  label {
-    display: block !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    color: #374151 !important;
-    margin-bottom: 3px !important;
-  }
-
-  input[type="text"], input[type="email"], input[type="date"], input[type="number"], input[type="password"], select, textarea, .filter-select, .search-input {
-    width: 100% !important;
-    padding: 6px 10px !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
-    font-size: 12.5px !important;
-    font-family: inherit !important;
-    color: #1f2937 !important;
-    background-color: #ffffff !important;
-    box-sizing: border-box !important;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
-  }
-
-  input:focus, select:focus, textarea:focus, .filter-select:focus, .search-input:focus {
-    border-color: #2563eb !important;
-    outline: none !important;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
+    border-bottom-color: var(--aequs-red) !important;
   }
 
   /* =========================================================
-     LIGHT MODERN SIDEBAR STYLES (Matching White/Blue Theme)
+     STAT CARDS
      ========================================================= */
-  .sidebar, aside.sidebar {
-    width: 256px !important;
-    min-width: 256px !important;
-    max-width: 256px !important;
-    padding: 0 !important;
-    margin: 0 !important;
+
+  .stats-grid,
+  .cards {
+    gap: 16px !important;
+
+    margin-bottom: 20px !important;
+  }
+
+  .stat-card,
+  .card.stat {
+    background: #ffffff !important;
+
+    padding: 15px 17px !important;
+
+    border-radius: 3px !important;
+
+    border: 1px solid #e5e5e5 !important;
+
+    box-shadow:
+      0 1px 4px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .stat-info .stat-value,
+  .card-value,
+  .number {
+    font-size: 23px !important;
+
+    font-weight: 700 !important;
+
+    line-height: 1.2 !important;
+
+    color: #171717 !important;
+  }
+
+  .stat-info h4,
+  .card-label,
+  .card-title {
+    font-size: 11.5px !important;
+
+    font-weight: 600 !important;
+
+    color: #666666 !important;
+
+    text-transform: uppercase !important;
+
+    letter-spacing: 0.03em !important;
+  }
+
+  .stat-icon,
+  .card-icon {
+    width: 36px !important;
+    height: 36px !important;
+
+    font-size: 20px !important;
+
+    background: var(--aequs-red-light) !important;
+
+    color: var(--aequs-red) !important;
+
+    border-radius: 3px !important;
+  }
+
+  /* =========================================================
+     TABLES
+     ========================================================= */
+
+  table,
+  .data-table {
+    width: 100% !important;
+
+    border-collapse: collapse !important;
+
+    text-align: left !important;
+
+    font-size: 12.5px !important;
+  }
+
+  th,
+  table th,
+  .data-table th {
+    background: #fafafa !important;
+
+    color: #555555 !important;
+
+    font-size: 10.5px !important;
+
+    font-weight: 700 !important;
+
+    text-transform: uppercase !important;
+
+    letter-spacing: 0.05em !important;
+
+    padding: 10px 12px !important;
+
+    border-bottom: 2px solid #e5e5e5 !important;
+
+    border-top: none !important;
+
+    white-space: nowrap !important;
+  }
+
+  td,
+  table td,
+  .data-table td {
+    padding: 10px 12px !important;
+
+    border-bottom: 1px solid #eeeeee !important;
+
+    font-size: 12.5px !important;
+
+    color: #333333 !important;
+
+    vertical-align: middle !important;
+  }
+
+  tr:hover td,
+  .data-table tr:hover td {
+    background: #fff8f8 !important;
+  }
+
+  td a,
+  .data-table td a {
+    color: var(--aequs-red) !important;
+
+    text-decoration: none !important;
+
+    font-weight: 600 !important;
+  }
+
+  td a:hover,
+  .data-table td a:hover {
+    color: var(--aequs-red-dark) !important;
+
+    text-decoration: underline !important;
+  }
+
+  /* =========================================================
+     PRIMARY BUTTONS
+     AEQUS RED
+     ========================================================= */
+
+  .btn-primary,
+  .add-button,
+  .btn-add,
+  .add-btn,
+  .btn.save,
+  .save-button,
+  .btn-save,
+  .button:not(.btn-secondary),
+  button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.cancel):not(.btn-back) {
+
+    background-color: var(--aequs-red) !important;
+
+    color: #ffffff !important;
+
+    border-radius: 3px !important;
+
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif !important;
+
+    font-weight: 700 !important;
+
+    font-size: 12.5px !important;
+
+    padding: 7px 13px !important;
+
+    border: 1px solid var(--aequs-red) !important;
+
+    cursor: pointer !important;
+
+    display: inline-flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    gap: 5px !important;
+
+    text-decoration: none !important;
+
+    box-shadow: none !important;
+
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease !important;
+
+    line-height: 1.3 !important;
+  }
+
+  .btn-primary:hover,
+  .add-button:hover,
+  .btn-add:hover,
+  .add-btn:hover,
+  .btn.save:hover,
+  .save-button:hover,
+  .btn-save:hover,
+  button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.cancel):not(.btn-back):hover {
+
+    background-color: var(--aequs-red-dark) !important;
+
+    border-color: var(--aequs-red-dark) !important;
+
+    color: #ffffff !important;
+  }
+
+  /* =========================================================
+     SECONDARY / BACK BUTTONS
+     ========================================================= */
+
+  .btn-secondary,
+  .cancel,
+  .btn-cancel,
+  .cancel-button,
+  .back,
+  .back-button,
+  .back-dashboard,
+  .btn-back,
+  a.cancel,
+  a.back {
+
     background-color: #ffffff !important;
-    color: #475569 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100vh !important;
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
-    border-right: 1px solid #e5e7eb !important;
-    font-size: 13px !important;
+
+    color: #333333 !important;
+
+    border: 1px solid #cccccc !important;
+
+    border-radius: 3px !important;
+
+    font-weight: 600 !important;
+
+    font-size: 12px !important;
+
+    padding: 6px 11px !important;
+
+    text-decoration: none !important;
+
+    cursor: pointer !important;
+
+    display: inline-flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    gap: 4px !important;
+
+    box-shadow: none !important;
+
+    transition: all 0.15s ease !important;
+
+    line-height: 1.3 !important;
+  }
+
+  .btn-secondary:hover,
+  .cancel:hover,
+  .btn-cancel:hover,
+  .cancel-button:hover,
+  .back:hover,
+  .back-button:hover,
+  .back-dashboard:hover,
+  .btn-back:hover,
+  a.cancel:hover,
+  a.back:hover {
+
+    background-color: #f5f5f5 !important;
+
+    color: #111111 !important;
+
+    border-color: #aaaaaa !important;
+  }
+
+  /* =========================================================
+     BADGES / STATUS
+     ========================================================= */
+
+  .status-badge,
+  .badge,
+  .status {
+
+    display: inline-flex !important;
+
+    align-items: center !important;
+
+    padding: 3px 8px !important;
+
+    border-radius: 2px !important;
+
+    font-size: 11px !important;
+
+    font-weight: 600 !important;
+
+    text-transform: capitalize !important;
+
+    line-height: 1.3 !important;
+  }
+
+  .status-badge.active,
+  .badge.active,
+  .status.active,
+  .status-active {
+
+    background-color: #eaf7ed !important;
+
+    color: #237a3b !important;
+  }
+
+  /* =========================================================
+     FORM ELEMENTS
+     ========================================================= */
+
+  label {
+
+    display: block !important;
+
+    font-size: 12px !important;
+
+    font-weight: 700 !important;
+
+    color: #333333 !important;
+
+    margin-bottom: 4px !important;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="date"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea,
+  .filter-select,
+  .search-input {
+
+    width: 100% !important;
+
+    padding: 7px 10px !important;
+
+    border: 1px solid #cccccc !important;
+
+    border-radius: 3px !important;
+
+    font-size: 12.5px !important;
+
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif !important;
+
+    color: #222222 !important;
+
+    background-color: #ffffff !important;
+
     box-sizing: border-box !important;
+
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease !important;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus,
+  .filter-select:focus,
+  .search-input:focus {
+
+    border-color: var(--aequs-red) !important;
+
+    outline: none !important;
+
+    box-shadow:
+      0 0 0 2px rgba(237, 28, 36, 0.12) !important;
+  }
+
+  /* =========================================================
+     AEQUS FOUNDATION SIDEBAR
+     ========================================================= */
+
+  .sidebar,
+  aside.sidebar {
+
+    width: 256px !important;
+
+    min-width: 256px !important;
+
+    max-width: 256px !important;
+
+    padding: 0 !important;
+
+    margin: 0 !important;
+
+    background-color: #ffffff !important;
+
+    color: #333333 !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    height: 100vh !important;
+
+    position: fixed !important;
+
+    left: 0 !important;
+
+    top: 0 !important;
+
+    border-right: 1px solid #dddddd !important;
+
+    font-size: 13px !important;
+
+    box-sizing: border-box !important;
+
     z-index: 1000 !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif !important;
+
     overflow: hidden !important;
   }
 
+  /* =========================================================
+     SIDEBAR HEADER
+     ========================================================= */
+
   .sidebar-header {
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid #f1f5f9;
-    background-color: #ffffff;
+
+    padding: 18px 18px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 12px !important;
+
+    border-bottom: 1px solid #eeeeee !important;
+
+    background-color: #ffffff !important;
+
+    min-height: 76px !important;
   }
 
+  /* Keep existing E logo/icon */
   .brand-logo {
-    width: 32px;
-    height: 32px;
-    background-color: #2563eb;
-    color: #ffffff;
-    border-radius: 6px;
+    width: 150px;
+    height: 55px;
+    background: #ffffff;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 15px;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    justify-content: flex-start;
+    flex-shrink: 0;
+    box-shadow: none;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+.brand-logo img {
+    width: 145px;
+    height: auto;
+    max-height: 52px;
+    object-fit: contain;
+    object-position: left center;
+    display: block;
+}
+
+  .brand-logo::after {
+
+    content: "" !important;
+
+    position: absolute !important;
+
+    bottom: -3px !important;
+
+    right: -3px !important;
+
+    width: 9px !important;
+
+    height: 9px !important;
+
+    background-color: var(--aequs-red) !important;
+
+    transform: rotate(45deg) !important;
   }
 
   .brand-info {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    line-height: 1.25 !important;
   }
 
   .brand-title {
-    color: #0f172a;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+
+    color: #111111 !important;
+
+    font-size: 15px !important;
+
+    font-weight: 800 !important;
+
+    letter-spacing: 0.01em !important;
+
+    text-transform: uppercase !important;
   }
 
   .brand-subtitle {
-    color: #64748b;
-    font-size: 11.5px;
-    font-weight: 500;
+
+    color: #666666 !important;
+
+    font-size: 10.5px !important;
+
+    font-weight: 500 !important;
+
+    letter-spacing: 0.04em !important;
+
+    text-transform: uppercase !important;
+
+    margin-top: 2px !important;
   }
 
+  /* =========================================================
+     SIDEBAR NAVIGATION
+     ========================================================= */
+
   .sidebar-nav {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px 12px;
+
+    flex: 1 !important;
+
+    overflow-y: auto !important;
+
+    padding: 14px 12px !important;
+
+    background: #ffffff !important;
   }
 
   .sidebar-nav::-webkit-scrollbar {
-    width: 4px;
+
+    width: 4px !important;
   }
 
   .sidebar-nav::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 4px;
+
+    background: #d5d5d5 !important;
+
+    border-radius: 4px !important;
   }
 
+  .sidebar-nav::-webkit-scrollbar-track {
+
+    background: transparent !important;
+  }
+
+  /* =========================================================
+     SECTION HEADINGS
+     ========================================================= */
+
   .nav-section-title {
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: #94a3b8;
-    text-transform: uppercase;
-    margin: 16px 0 6px 8px;
+
+    font-size: 10px !important;
+
+    font-weight: 700 !important;
+
+    letter-spacing: 0.09em !important;
+
+    color: #888888 !important;
+
+    text-transform: uppercase !important;
+
+    margin: 18px 0 7px 10px !important;
   }
 
   .nav-section-title:first-of-type {
-    margin-top: 4px;
+
+    margin-top: 4px !important;
   }
 
+  /* =========================================================
+     NAV LIST
+     ========================================================= */
+
   .nav-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 0;
-    margin: 0;
+
+    list-style: none !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    gap: 2px !important;
+
+    padding: 0 !important;
+
+    margin: 0 !important;
   }
 
   .nav-item a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    color: #475569;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-    font-size: 13px;
-    font-weight: 500;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 11px !important;
+
+    padding: 9px 10px !important;
+
+    color: #3b3b3b !important;
+
+    text-decoration: none !important;
+
+    border-radius: 2px !important;
+
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease !important;
+
+    font-size: 13px !important;
+
+    font-weight: 600 !important;
+
+    border-left: 3px solid transparent !important;
   }
 
   .nav-item a:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+
+    background-color: #fafafa !important;
+
+    color: var(--aequs-red) !important;
+
+    border-left-color: #f5b0b3 !important;
   }
+
+  /* =========================================================
+     ACTIVE NAV ITEM
+     Aequs red highlight
+     ========================================================= */
 
   .nav-item.active a {
-    background-color: #2563eb;
-    color: #ffffff;
-    font-weight: 600;
-    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+
+    background-color: var(--aequs-red-light) !important;
+
+    color: var(--aequs-red) !important;
+
+    font-weight: 700 !important;
+
+    border-left: 3px solid var(--aequs-red) !important;
+
+    box-shadow: none !important;
   }
 
+  .nav-item.active a:hover {
+
+    background-color: #ffe8e8 !important;
+
+    color: var(--aequs-red-dark) !important;
+  }
+
+  /* =========================================================
+     LUCIDE ICONS
+     Icons are NOT changed
+     ========================================================= */
+
   .nav-item i {
-    width: 17px;
-    height: 17px;
-    stroke-width: 1.8;
-    color: inherit;
-    flex-shrink: 0;
+
+    width: 17px !important;
+
+    height: 17px !important;
+
+    stroke-width: 1.9 !important;
+
+    color: inherit !important;
+
+    flex-shrink: 0 !important;
   }
 
   .nav-item span.label {
-    flex: 1;
+
+    flex: 1 !important;
   }
 
+  /* =========================================================
+     NAV BADGES
+     ========================================================= */
+
   .nav-badge {
-    font-size: 11px;
-    background: #f1f5f9;
-    color: #64748b;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-weight: 600;
+
+    font-size: 10.5px !important;
+
+    background: #f3f3f3 !important;
+
+    color: #666666 !important;
+
+    padding: 2px 6px !important;
+
+    border-radius: 2px !important;
+
+    font-weight: 700 !important;
   }
 
   .nav-item.active .nav-badge {
-    background: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
+
+    background: var(--aequs-red) !important;
+
+    color: #ffffff !important;
   }
 
+  /* =========================================================
+     SIDEBAR FOOTER
+     ========================================================= */
+
   .sidebar-footer {
-    padding: 10px 12px 14px;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background-color: #f8fafc;
+
+    padding: 11px 12px 14px !important;
+
+    border-top: 1px solid #eeeeee !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    gap: 4px !important;
+
+    background-color: #fafafa !important;
   }
 
   .footer-action {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 8px;
-    color: #64748b;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-    font-size: 12.5px;
-    font-weight: 500;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 10px !important;
+
+    padding: 8px 10px !important;
+
+    color: #555555 !important;
+
+    text-decoration: none !important;
+
+    border-radius: 2px !important;
+
+    transition: all 0.15s ease !important;
+
+    font-size: 12.5px !important;
+
+    font-weight: 600 !important;
   }
 
   .footer-action:hover {
-    background-color: #edf2f7;
-    color: #0f172a;
+
+    background-color: #ffffff !important;
+
+    color: var(--aequs-red) !important;
   }
 
   .footer-action i {
-    width: 16px;
-    height: 16px;
-    stroke-width: 1.8;
-    flex-shrink: 0;
+
+    width: 16px !important;
+
+    height: 16px !important;
+
+    stroke-width: 1.8 !important;
+
+    flex-shrink: 0 !important;
   }
 
+  /* =========================================================
+     USER PROFILE
+     ========================================================= */
+
   .user-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 8px 2px;
-    margin-top: 2px;
-    text-decoration: none;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 10px !important;
+
+    padding: 7px 10px 3px !important;
+
+    margin-top: 2px !important;
+
+    text-decoration: none !important;
   }
 
   .user-avatar {
-    width: 30px;
-    height: 30px;
-    background: #eff6ff;
-    color: #2563eb;
-    border: 1px solid #bfdbfe;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    flex-shrink: 0;
+
+    width: 30px !important;
+
+    height: 30px !important;
+
+    background: #171717 !important;
+
+    color: #ffffff !important;
+
+    border: none !important;
+
+    border-radius: 2px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    font-size: 12px !important;
+
+    font-weight: 700 !important;
+
+    letter-spacing: 0.02em !important;
+
+    flex-shrink: 0 !important;
   }
 
   .user-details {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
-    overflow: hidden;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    line-height: 1.25 !important;
+
+    overflow: hidden !important;
   }
 
   .user-name {
-    color: #0f172a;
-    font-size: 12.5px;
-    font-weight: 600;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+
+    color: #222222 !important;
+
+    font-size: 12.5px !important;
+
+    font-weight: 700 !important;
+
+    white-space: nowrap !important;
+
+    text-overflow: ellipsis !important;
+
+    overflow: hidden !important;
   }
 
   .user-role {
-    color: #64748b;
-    font-size: 11px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+
+    color: #777777 !important;
+
+    font-size: 10.5px !important;
+
+    white-space: nowrap !important;
+
+    text-overflow: ellipsis !important;
+
+    overflow: hidden !important;
   }
+
+  /* =========================================================
+     RED ACCENT ELEMENTS
+     ========================================================= */
+
+  .text-primary,
+  .primary,
+  .text-blue,
+  .text-info {
+
+    color: var(--aequs-red) !important;
+  }
+
+  .border-primary,
+  .border-blue {
+
+    border-color: var(--aequs-red) !important;
+  }
+
+  /* =========================================================
+     LINKS
+     ========================================================= */
+
+  a {
+
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease !important;
+  }
+
+  /* =========================================================
+     MOBILE / COMPACT SIDEBAR
+     ========================================================= */
 
   @media (max-width: 850px) {
-    .sidebar, aside.sidebar {
-      width: 68px !important;
-      min-width: 68px !important;
-      max-width: 68px !important;
+
+    .sidebar,
+    aside.sidebar {
+
+      width: 76px !important;
+
+      min-width: 76px !important;
+
+      max-width: 76px !important;
     }
+
     .main {
+
       margin-left: 68px !important;
     }
-    .brand-info, .nav-section-title, .nav-item span.label, .nav-badge, .footer-action span, .user-details {
-      display: none;
+
+    .brand-info,
+    .nav-section-title,
+    .nav-item span.label,
+    .nav-badge,
+    .footer-action span,
+    .user-details {
+
+      display: none !important;
     }
+
     .sidebar-header {
-      justify-content: center;
-      padding: 14px 0;
+
+      justify-content: center !important;
+
+      padding: 14px 0 !important;
     }
-    .nav-item a, .footer-action {
-      justify-content: center;
-      padding: 10px 0;
+
+    .nav-item a,
+    .footer-action {
+
+      justify-content: center !important;
+
+      padding: 10px 0 !important;
+
+      border-left: none !important;
     }
+
+    .nav-item.active a {
+
+      border-left: none !important;
+
+      border-bottom: 2px solid var(--aequs-red) !important;
+
+      background-color: var(--aequs-red-light) !important;
+    }
+
     .user-profile {
-      justify-content: center;
-      padding: 6px 0;
+
+      justify-content: center !important;
+
+      padding: 6px 0 !important;
     }
   }
+
+/* =========================================================
+   AEQUS FOUNDATION LOGO - FINAL OVERRIDE
+   ========================================================= */
+
+.sidebar .brand-logo {
+    width: 150px !important;
+    height: 55px !important;
+    background: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    color: transparent !important;
+    font-size: 0 !important;
+}
+
+.sidebar .brand-logo::before,
+.sidebar .brand-logo::after {
+    content: none !important;
+    display: none !important;
+}
+
+.sidebar .brand-logo img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 145px !important;
+    height: auto !important;
+    max-width: 145px !important;
+    max-height: 52px !important;
+    object-fit: contain !important;
+    object-position: left center !important;
+}
+
+/* =========================================================
+   AEQUS BRANDING - LOGO + TEXT ALIGNMENT
+   ========================================================= */
+
+.sidebar-header {
+  width: 100%;
+  min-height: 68px;
+  padding: 12px 16px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #f1f1f1 !important;
+  box-sizing: border-box !important;
+}
+
+.brand-logo {
+  width: 125px !important;
+  height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 125px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.brand-logo img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.brand-info {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  flex: 1 1 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 2px !important;
+  line-height: 1.2 !important;
+}
+
+.brand-title {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #1f1f1f !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+}
+
+.brand-subtitle {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #777777 !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.04em !important;
+  white-space: nowrap !important;
+}
+
+
+
+/* =========================================================
+   AEQUS BRANDING - FINAL FLEXBOX ALIGNMENT
+   ========================================================= */
+
+.sidebar-header {
+    width: 100% !important;
+    height: 76px !important;
+    min-height: 76px !important;
+    padding: 10px 16px !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    gap: 12px !important;
+}
+
+/* Logo container */
+.sidebar-header .brand-logo {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    flex-shrink: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Actual Aequs logo */
+.sidebar-header .brand-logo img {
+    width: 42px !important;
+    height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
+
+    display: block !important;
+    object-fit: contain !important;
+    object-position: center !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Text container */
+.sidebar-header .brand-info {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    gap: 3px !important;
+}
+
+/* AEQUS EDUTRACK */
+.sidebar-header .brand-title {
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #111111 !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    line-height: 16px !important;
+
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+}
+
+/* FOUNDATION PORTAL */
+.sidebar-header .brand-subtitle {
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #ed1c24 !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    line-height: 13px !important;
+
+    letter-spacing: 0.04em !important;
+    white-space: nowrap !important;
+}
+
+/* Prevent other sidebar rules from moving the branding */
+.sidebar-header > .brand-logo,
+.sidebar-header > .brand-info {
+    position: static !important;
+    transform: none !important;
+    float: none !important;
+}
+
+/* Mobile */
+@media (max-width: 850px) {
+    .sidebar-header {
+        width: 76px !important;
+        height: 76px !important;
+        min-height: 76px !important;
+        padding: 10px 0 !important;
+
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+
+    .sidebar-header .brand-logo {
+        width: 42px !important;
+        min-width: 42px !important;
+    }
+
+    .sidebar-header .brand-info {
+        display: none !important;
+    }
+}
+
+
+/* Increase Aequs logo size without changing text alignment */
+.sidebar-header .brand-logo {
+    width: 76px !important;
+    height: 76px !important;
+    min-width: 76px !important;
+    max-width: 76px !important;
+}
+
+.sidebar-header .brand-logo img {
+    width: 76px !important;
+    height: 76px !important;
+    max-width: 76px !important;
+    max-height: 76px !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
 </style>
 
+
+<!-- =========================================================
+     SIDEBAR
+     Functionality and icons unchanged
+     ========================================================= -->
+
 <aside class="sidebar">
+
   <!-- Header -->
   <div class="sidebar-header">
-    <div class="brand-logo">E</div>
+
+    <div class="brand-logo"><img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs Foundation"></div>
+
     <div class="brand-info">
-      <span class="brand-title">Aequs EduTrack</span>
-      <span class="brand-subtitle">Foundation Portal</span>
+
+      <span class="brand-title">
+        Aequs EduTrack
+      </span>
+
+      <span class="brand-subtitle">
+        Foundation Portal
+      </span>
+
     </div>
+
   </div>
+
 
   <!-- Navigation Scroll -->
   <div class="sidebar-nav">
+
     <!-- Core Management -->
-    <div class="nav-section-title">Core Management</div>
+    <div class="nav-section-title">
+      Core Management
+    </div>
+
     <ul class="nav-list">
+
       <li class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
         <a href="{% url 'dashboard' %}">
           <i data-lucide="layout-dashboard"></i>
           <span class="label">Dashboard</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'schools' %}active{% endif %}">
         <a href="{% url 'schools:portal' %}">
           <i data-lucide="school"></i>
           <span class="label">Schools</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'students' %}active{% endif %}">
         <a href="{% url 'students:list' %}">
           <i data-lucide="graduation-cap"></i>
           <span class="label">Students</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'academics' %}active{% endif %}">
         <a href="{% url 'academics:portal' %}">
           <i data-lucide="book-open"></i>
           <span class="label">Academics</span>
         </a>
       </li>
+
     </ul>
 
+
     <!-- Programs & Benefits -->
-    <div class="nav-section-title">Programs & Benefits</div>
+    <div class="nav-section-title">
+      Programs & Benefits
+    </div>
+
     <ul class="nav-list">
+
       <li class="nav-item {% if active_page == 'eligibility' %}active{% endif %}">
         <a href="{% url 'eligibility:portal' %}">
           <i data-lucide="check-circle-2"></i>
           <span class="label">Eligibility</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'inventory' %}active{% endif %}">
         <a href="{% url 'inventory:portal' %}">
           <i data-lucide="laptop"></i>
           <span class="label">Inventory</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'distributions' %}active{% endif %}">
         <a href="{% url 'distributions:list' %}">
           <i data-lucide="package"></i>
           <span class="label">Distributions</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'internships' %}active{% endif %}">
         <a href="{% url 'internships:portal' %}">
           <i data-lucide="briefcase"></i>
           <span class="label">Internships</span>
         </a>
       </li>
+
     </ul>
 
-    <!-- Foundation & Community -->
-    <div class="nav-section-title">Foundation</div>
+
+    <!-- Foundation -->
+    <div class="nav-section-title">
+      Foundation
+    </div>
+
     <ul class="nav-list">
+
       <li class="nav-item {% if active_page == 'events' %}active{% endif %}">
         <a href="{% url 'events:list' %}">
           <i data-lucide="calendar"></i>
           <span class="label">Events</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'volunteers' %}active{% endif %}">
         <a href="{% url 'volunteers:list' %}">
           <i data-lucide="users"></i>
           <span class="label">Volunteers</span>
         </a>
       </li>
+
       <li class="nav-item {% if active_page == 'reports' %}active{% endif %}">
         <a href="{% url 'reports:list' %}">
           <i data-lucide="bar-chart-3"></i>
           <span class="label">Reports</span>
         </a>
       </li>
+
     </ul>
+
   </div>
+
 
   <!-- Footer -->
   <div class="sidebar-footer">
+
     <a href="/admin/" class="footer-action">
+
       <i data-lucide="settings"></i>
-      <span>Admin Console</span>
+
+      <span>
+        Admin Console
+      </span>
+
     </a>
-    
+
+
     <div class="user-profile">
+
       <div class="user-avatar">
+
         {{ request.user.username|slice:":1"|upper|default:"A" }}
+
       </div>
+
       <div class="user-details">
-        <span class="user-name">{{ request.user.get_full_name|default:request.user.username|default:"Aequs Admin" }}</span>
-        <span class="user-role">{% if request.user.is_staff %}System Admin{% else %}Coordinator{% endif %}</span>
+
+        <span class="user-name">
+
+          {{ request.user.get_full_name|default:request.user.username|default:"Aequs Admin" }}
+
+        </span>
+
+        <span class="user-role">
+
+          {% if request.user.is_staff %}
+            System Admin
+          {% else %}
+            Coordinator
+          {% endif %}
+
+        </span>
+
       </div>
+
     </div>
+
   </div>
+
 </aside>
 
+
+<!-- Lucide initialization -->
 <script>
   if (window.lucide) {
     lucide.createIcons();
   }
 </script>
+
+
+
+
+
+
+
+
+
+
+

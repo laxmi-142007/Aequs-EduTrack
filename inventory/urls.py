@@ -25,6 +25,10 @@ urlpatterns = [
     path("api/laptops/issue/", views.api_issue_laptop, name="api_issue_laptop"),
     path("api/laptops/<int:laptop_id>/return/", views.api_return_laptop, name="api_return_laptop"),
 
+    # Bulk Upload
+    path("bulk-upload/template/", views.inventory_csv_template, name="csv_template"),
+    path("bulk-upload/", views.inventory_bulk_upload, name="bulk_upload"),
     # CSV Export
     path("export/csv/", views.api_export_csv, name="export_csv"),
 ]
+

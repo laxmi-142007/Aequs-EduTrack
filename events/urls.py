@@ -1,4 +1,4 @@
-from django.urls import path
+﻿from django.urls import path
 
 from . import views
 
@@ -18,6 +18,18 @@ urlpatterns = [
         "add/",
         views.event_create,
         name="create",
+    ),
+
+    path(
+        "<int:pk>/edit/",
+        views.event_edit,
+        name="edit",
+    ),
+
+    path(
+        "<int:pk>/delete/",
+        views.event_delete,
+        name="delete",
     ),
 
 ]

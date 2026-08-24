@@ -497,6 +497,209 @@
             margin-top: 2px;
         }
 
+
+/* =========================================
+   PROGRAM CARD FOOTER
+   ========================================= */
+
+.program-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Mentor information */
+
+.program-mentor {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.mentor-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.program-mentor strong {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+
+
+/* =========================================
+   ACTION BUTTON GROUP
+   ========================================= */
+
+.program-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+
+/* Base button */
+
+.action-btn {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    padding: 0 13px;
+
+    border-radius: 7px;
+    border: 1px solid transparent;
+
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+
+    line-height: 1;
+    white-space: nowrap;
+
+    cursor: pointer;
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+/* =========================================
+   PRIMARY - ASSIGN SCHOLAR
+   ========================================= */
+
+.action-primary {
+    color: #ffffff;
+    background: #2563eb;
+    border-color: #2563eb;
+
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15);
+}
+
+.action-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.22);
+    transform: translateY(-1px);
+}
+
+.action-primary span {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+
+/* =========================================
+   SECONDARY - EDIT
+   ========================================= */
+
+.action-secondary {
+    color: #475569;
+    background: #ffffff;
+    border-color: #cbd5e1;
+}
+
+.action-secondary:hover {
+    color: #1e293b;
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+
+/* =========================================
+   DANGER - DELETE
+   ========================================= */
+
+.action-danger {
+    color: #dc2626;
+    background: #ffffff;
+    border-color: #fecaca;
+}
+
+.action-danger:hover {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+
+/* =========================================
+   FOCUS / ACCESSIBILITY
+   ========================================= */
+
+.action-btn:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.18);
+    outline-offset: 2px;
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    .program-footer {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .program-mentor {
+        width: 100%;
+    }
+
+    .program-mentor strong {
+        max-width: 100%;
+    }
+
+    .program-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .action-btn {
+        flex: 1;
+    }
+}
+
+
+@media (max-width: 430px) {
+
+    .program-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .action-primary {
+        grid-column: 1 / -1;
+    }
+}
+
         /* =========================
            BADGES & STATUS
         ========================= */
@@ -973,17 +1176,17 @@
         <!-- Top Bar -->
         <header class="topbar">
             <h1>
-                <span>💼</span> Internship Management Portal
+                <span>&#128188;</span> Internship Management Portal
             </h1>
             <div class="topbar-actions">
                 <a href="{% url 'internships:export_csv' %}" class="btn btn-secondary btn-sm" title="Export Placements as CSV">
-                    <span>📥</span> Export CSV
+                    <span>&#128229;</span> Export CSV
                 </a>
                 <button class="btn btn-secondary btn-sm" onclick="openProgramModal()">
-                    <span>🏢</span> + New Program Track
+                    <span>&#127970;</span> + New Program Track
                 </button>
                 <button class="btn btn-primary btn-sm" onclick="openPlacementModal()">
-                    <span>➕</span> + Place Intern
+                    <span>&#10133;</span> + Place Intern
                 </button>
             </div>
         </header>
@@ -992,7 +1195,7 @@
 
             <!-- Page Title Header -->
             <div class="page-header">
-                <h2>Corporate & Industrial Internship Hub</h2>
+                <h2>Corporate &amp; Industrial Internship Hub</h2>
                 <p>Governing student industrial postings, Aequs Aerospace apprenticeships, stipend disbursements, and completion credentials.</p>
             </div>
 
@@ -1004,7 +1207,7 @@
                 <div class="kpi-card kpi-blue">
                     <div class="kpi-header">
                         <span class="kpi-label">Total Placements</span>
-                        <div class="kpi-icon">🎓</div>
+                        <div class="kpi-icon">&#127891;</div>
                     </div>
                     <div class="kpi-value" id="kpi-total-interns">{{ kpis.total_interns|default:"0" }}</div>
                     <div class="kpi-subtext">Registered candidates across tracks</div>
@@ -1014,7 +1217,7 @@
                 <div class="kpi-card kpi-amber">
                     <div class="kpi-header">
                         <span class="kpi-label">Active Scholars</span>
-                        <div class="kpi-icon">⚡</div>
+                        <div class="kpi-icon">&#9889;</div>
                     </div>
                     <div class="kpi-value" id="kpi-active-interns">{{ kpis.active_interns|default:"0" }}</div>
                     <div class="kpi-subtext">Currently on shopfloor training</div>
@@ -1023,8 +1226,8 @@
                 <!-- Completed & Certified -->
                 <div class="kpi-card kpi-green">
                     <div class="kpi-header">
-                        <span class="kpi-label">Completed & Certified</span>
-                        <div class="kpi-icon">🏆</div>
+                        <span class="kpi-label">Completed &amp; Certified</span>
+                        <div class="kpi-icon">&#127942;</div>
                     </div>
                     <div class="kpi-value" id="kpi-completed-interns">{{ kpis.completed_interns|default:"0" }}</div>
                     <div class="kpi-subtext">{{ kpis.certificates_issued|default:"0" }} Certificates Generated</div>
@@ -1034,9 +1237,9 @@
                 <div class="kpi-card kpi-teal">
                     <div class="kpi-header">
                         <span class="kpi-label">Total Stipend Budget</span>
-                        <div class="kpi-icon">₹</div>
+                        <div class="kpi-icon">&#8377;</div>
                     </div>
-                    <div class="kpi-value" id="kpi-total-stipend">₹{{ kpis.total_stipend|floatformat:0 }}</div>
+                    <div class="kpi-value" id="kpi-total-stipend">&#8377;{{ kpis.total_stipend|floatformat:0 }}</div>
                     <div class="kpi-subtext">Disbursed across active programs</div>
                 </div>
 
@@ -1044,7 +1247,7 @@
                 <div class="kpi-card kpi-purple">
                     <div class="kpi-header">
                         <span class="kpi-label">Active Tracks</span>
-                        <div class="kpi-icon">🏢</div>
+                        <div class="kpi-icon">&#127970;</div>
                     </div>
                     <div class="kpi-value" id="kpi-open-programs">{{ kpis.total_programs|default:"0" }}</div>
                     <div class="kpi-subtext">{{ kpis.open_programs|default:"0" }} Open for Enrolment</div>
@@ -1056,16 +1259,16 @@
             ================================================== -->
             <div class="tab-nav">
                 <button class="tab-btn active" onclick="switchTab('tab-placements', this)">
-                    <span>👥</span> Intern Placements <span class="tab-badge" id="badge-placements-count">{{ kpis.total_interns }}</span>
+                    <span>&#127970;</span> Intern Placements <span class="tab-badge" id="badge-placements-count">{{ kpis.total_interns }}</span>
                 </button>
                 <button class="tab-btn" onclick="switchTab('tab-programs', this)">
-                    <span>🏢</span> Programs & Tracks <span class="tab-badge">{{ kpis.total_programs }}</span>
+                    <span>&#127970;</span> Programs &amp; Tracks <span class="tab-badge">{{ kpis.total_programs }}</span>
                 </button>
                 <button class="tab-btn" onclick="switchTab('tab-candidates', this)">
-                    <span>🎯</span> Eligible Candidates Pool
+                    <span>&#128188;</span> Eligible Candidates Pool
                 </button>
                 <button class="tab-btn" onclick="switchTab('tab-evaluations', this)">
-                    <span>📝</span> Performance & Certification
+                    <span>&#128196;</span> Performance &amp; Certification
                 </button>
             </div>
 
@@ -1077,7 +1280,7 @@
                     <!-- Filters & Search Toolbar -->
                     <div class="filter-toolbar">
                         <div class="search-box">
-                            <span class="search-box-icon">🔍</span>
+                            <span class="search-box-icon">&#128269;</span>
                             <input type="text" id="filter-search" placeholder="Search by student name, admission no, project, mentor..." oninput="debounceFilter()">
                         </div>
 
@@ -1107,7 +1310,7 @@
                             </select>
 
                             <button class="btn btn-secondary btn-sm" onclick="resetFilters()">
-                                ↺ Reset
+                                &#8634; Reset
                             </button>
                         </div>
                     </div>
@@ -1149,7 +1352,7 @@
                         <p>Available apprenticeships and capacity tracks at Aequs SEZ and corporate units.</p>
                     </div>
                     <button class="btn btn-primary btn-sm" onclick="openProgramModal()">
-                        <span>➕</span> Create New Track
+                        <span>&#10133;</span> Create New Track
                     </button>
                 </div>
 
@@ -1165,7 +1368,7 @@
                             </div>
                             <h4 class="program-title">{{ prog.title }}</h4>
                             <div class="program-company">
-                                <span>🏢</span> {{ prog.company_name }} • {{ prog.location }}
+                                <span>&#127970;</span> {{ prog.company_name }} &bull; {{ prog.location }}
                             </div>
                             <p class="program-desc">{{ prog.description|default:"Industrial apprenticeship offering comprehensive shopfloor learning and mentor guidance." }}</p>
                         </div>
@@ -1178,7 +1381,7 @@
                                 </div>
                                 <div class="prog-stat-item">
                                     <div class="stat-lbl">Stipend</div>
-                                    <div class="stat-val">₹{{ prog.stipend_amount|floatformat:0 }}/mo</div>
+                                    <div class="stat-val">&#8377;{{ prog.stipend_amount|floatformat:0 }}/mo</div>
                                 </div>
                             </div>
 
@@ -1193,14 +1396,35 @@
                             </div>
 
                             <div class="program-footer">
-                                <span style="font-size: 12px; color: var(--text-muted);">
-                                    Mentor: <strong>{{ prog.mentor_in_charge|default:"Staff Lead" }}</strong>
-                                </span>
-                                <button class="btn btn-primary btn-sm" onclick="openPlacementModalForProgram('{{ prog.id }}')">
-                                    + Assign Scholar
-                                </button>
-                            </div>
-                        </div>
+    <div class="program-mentor">
+        <span class="mentor-label">Mentor</span>
+        <strong>{{ prog.mentor_in_charge|default:"Staff Lead" }}</strong>
+    </div>
+
+    <div class="program-actions">
+        <button
+            type="button"
+            class="action-btn action-primary"
+            onclick="openPlacementModalForProgram('{{ prog.id }}')">
+            <span>+</span>
+            Assign Scholar
+        </button>
+
+        <button
+            type="button"
+            class="action-btn action-secondary"
+            onclick="editProgram({{ prog.id }})">
+            Edit
+        </button>
+
+        <button
+            type="button"
+            class="action-btn action-danger"
+            onclick="deleteProgram({{ prog.id }})">
+            Delete
+        </button>
+    </div>
+</div>                        </div>
                     </div>
                     {% empty %}
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-light);">
@@ -1218,10 +1442,10 @@
                     <div class="card-header-row">
                         <div class="card-header-title">
                             <h3>Eligible Higher Education Candidates</h3>
-                            <p>Degree & higher secondary scholars identified by the EduTrack eligibility rules engine.</p>
+                            <p>Degree &amp; higher secondary scholars identified by the EduTrack eligibility rules engine.</p>
                         </div>
                         <button class="btn btn-secondary btn-sm" onclick="loadCandidates()">
-                            <span>🔄</span> Refresh Pool
+                            <span>&#128260;</span> Refresh Pool
                         </button>
                     </div>
 
@@ -1238,7 +1462,7 @@
                 <div class="portal-card">
                     <div class="card-header-row">
                         <div class="card-header-title">
-                            <h3>Performance Grading & Completion Credentials</h3>
+                            <h3>Performance Grading &amp; Completion Credentials</h3>
                             <p>Verify supervisor reviews, evaluate project outcomes, and issue authenticated Aequs CSR completion certificates.</p>
                         </div>
                     </div>
@@ -1247,7 +1471,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Student & Project</th>
+                                    <th>Student &amp; Project</th>
                                     <th>Program / Track</th>
                                     <th>Supervisor Remarks</th>
                                     <th>Attendance</th>
@@ -1273,8 +1497,8 @@
     <div id="modal-placement" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <h3 id="modal-placement-title"><span>➕</span> Add Internship Placement</h3>
-                <button class="modal-close" onclick="closeModal('modal-placement')">×</button>
+                <h3 id="modal-placement-title"><span>&#10133;</span> Add Internship Placement</h3>
+                <button class="modal-close" onclick="closeModal('modal-placement')">&times;</button>
             </div>
             <form id="form-placement" onsubmit="savePlacement(event)">
                 <input type="hidden" id="p-id">
@@ -1321,7 +1545,7 @@
                         <!-- Project Title -->
                         <div class="form-group form-group-full">
                             <label for="p-project">Project Title / Apprenticeship Role</label>
-                            <input type="text" id="p-project" class="form-control" placeholder="e.g. Precision Tooling & 5-Axis CNC Calibration">
+                            <input type="text" id="p-project" class="form-control" placeholder="e.g. Precision Tooling &amp; 5-Axis CNC Calibration">
                         </div>
 
                         <!-- Monthly Stipend -->
@@ -1382,7 +1606,7 @@
 
                         <!-- Feedback Remarks -->
                         <div class="form-group form-group-full">
-                            <label for="p-feedback">Supervisor Performance & Evaluation Remarks</label>
+                            <label for="p-feedback">Supervisor Performance &amp; Evaluation Remarks</label>
                             <textarea id="p-feedback" class="form-control" placeholder="Log technical milestones, safety adherence, and project achievements..."></textarea>
                         </div>
                     </div>
@@ -1401,8 +1625,8 @@
     <div id="modal-program" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <h3 id="modal-program-title"><span>🏢</span> Create Internship Track</h3>
-                <button class="modal-close" onclick="closeModal('modal-program')">×</button>
+                <h3 id="modal-program-title"><span>&#127970;</span> Create Internship Track</h3>
+                <button class="modal-close" onclick="closeModal('modal-program')">&times;</button>
             </div>
             <form id="form-program" onsubmit="saveProgram(event)">
                 <input type="hidden" id="prog-id">
@@ -1410,7 +1634,7 @@
                     <div class="form-grid">
                         <div class="form-group form-group-full">
                             <label for="prog-title">Track Title *</label>
-                            <input type="text" id="prog-title" class="form-control" placeholder="e.g. Aequs Aerospace Metrology & CMM Inspection" required>
+                            <input type="text" id="prog-title" class="form-control" placeholder="e.g. Aequs Aerospace Metrology &amp; CMM Inspection" required>
                         </div>
 
                         <div class="form-group">
@@ -1477,7 +1701,7 @@
                         </div>
 
                         <div class="form-group form-group-full">
-                            <label for="prog-desc">Description & Learning Outcomes</label>
+                            <label for="prog-desc">Description &amp; Learning Outcomes</label>
                             <textarea id="prog-desc" class="form-control" placeholder="Describe the practical hands-on apprenticeship topics..."></textarea>
                         </div>
                     </div>
@@ -1496,8 +1720,8 @@
     <div id="modal-eval" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <h3><span>📝</span> Update Evaluation & Certification</h3>
-                <button class="modal-close" onclick="closeModal('modal-eval')">×</button>
+                <h3><span>&#128196;</span> Update Evaluation &amp; Certification</h3>
+                <button class="modal-close" onclick="closeModal('modal-eval')">&times;</button>
             </div>
             <form id="form-eval" onsubmit="saveFastEvaluation(event)">
                 <input type="hidden" id="eval-p-id">
@@ -1527,7 +1751,7 @@
                         </div>
 
                         <div class="form-group form-group-full">
-                            <label for="eval-feedback">Supervisor Performance & Learning Feedback</label>
+                            <label for="eval-feedback">Supervisor Performance &amp; Learning Feedback</label>
                             <textarea id="eval-feedback" class="form-control" placeholder="Detail student competence, adherence to safety, and project milestones completed..."></textarea>
                         </div>
 
@@ -1544,7 +1768,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('modal-eval')">Cancel</button>
-                    <button type="submit" class="btn btn-success">Update & Certify</button>
+                    <button type="submit" class="btn btn-success">Update &amp; Certify</button>
                 </div>
             </form>
         </div>
@@ -1556,14 +1780,14 @@
     <div id="modal-cert" class="modal-overlay">
         <div class="modal-box modal-box-lg">
             <div class="modal-header">
-                <h3><span>🏆</span> Certificate of Industrial Internship Completion</h3>
-                <button class="modal-close" onclick="closeModal('modal-cert')">×</button>
+                <h3><span>&#127970;</span> Certificate of Industrial Internship Completion</h3>
+                <button class="modal-close" onclick="closeModal('modal-cert')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="cert-container" id="printable-cert">
-                    <div class="cert-seal">🏅</div>
-                    <div class="cert-corp-name">AEQUS FOUNDATION & CSR</div>
-                    <div class="cert-corp-sub">Aequs Aerospace SEZ • EduTrack Impact Initiative</div>
+                    <div class="cert-seal">&#127970;</div>
+                    <div class="cert-corp-name">AEQUS FOUNDATION &amp; CSR</div>
+                    <div class="cert-corp-sub">Aequs Aerospace SEZ &bull; EduTrack Impact Initiative</div>
                     
                     <div class="cert-title">Certificate of Completion</div>
                     
@@ -1584,7 +1808,7 @@
                     <div class="cert-meta-row">
                         <div class="cert-sign-col">
                             <div style="font-family: 'Brush Script MT', cursive; font-size: 22px; color: #1e293b;">Aravind Melligeri</div>
-                            <div class="cert-sign-line">Chairman & CEO, Aequs</div>
+                            <div class="cert-sign-line">Chairman &amp; CEO, Aequs</div>
                         </div>
                         <div class="cert-sign-col">
                             <div style="font-family: 'Segoe UI'; font-weight: 700; font-size: 13px; color: var(--primary);" id="cert-view-mentor">Mentor Signature</div>
@@ -1599,7 +1823,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeModal('modal-cert')">Close</button>
-                <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Print Certificate</button>
+                <button type="button" class="btn btn-primary" onclick="window.print()">&#128424;&#65039; Print Certificate</button>
             </div>
         </div>
     </div>
@@ -1610,8 +1834,8 @@
     <div id="modal-quick-alloc" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <h3><span>🎯</span> Assign Candidate to Internship Track</h3>
-                <button class="modal-close" onclick="closeModal('modal-quick-alloc')">×</button>
+                <h3><span>&#127919;</span> Assign Candidate to Internship Track</h3>
+                <button class="modal-close" onclick="closeModal('modal-quick-alloc')">&times;</button>
             </div>
             <form id="form-quick-alloc" onsubmit="saveQuickAllocation(event)">
                 <input type="hidden" id="alloc-student-id">
@@ -1626,7 +1850,7 @@
                         <select id="alloc-program-id" class="form-control" required>
                             <option value="">-- Choose Track --</option>
                             {% for p in programs %}
-                                <option value="{{ p.id }}">{{ p.title }} ({{ p.program_code }}) - ₹{{ p.stipend_amount|floatformat:0 }}/mo</option>
+                                <option value="{{ p.id }}">{{ p.title }} ({{ p.program_code }}) - &#8377;{{ p.stipend_amount|floatformat:0 }}/mo</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -1666,7 +1890,7 @@
             const container = document.getElementById('toast-box');
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span> <div>${message}</div>`;
+            toast.innerHTML = `<span>${type === 'success' ? '\u2705' : '\u26A0\uFE0F'}</span> <div>${message}</div>`;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.style.opacity = '0';
@@ -1747,7 +1971,7 @@
                                 <div class="student-avatar">${initials}</div>
                                 <div>
                                     <div class="student-name">${p.student_name}</div>
-                                    <div class="student-meta">${p.school_name} • ${p.student_class || 'Scholar'}</div>
+                                    <div class="student-meta">${p.school_name} &bull; ${p.student_class || 'Scholar'}</div>
                                 </div>
                             </div>
                         </td>
@@ -1759,7 +1983,7 @@
                             <span class="badge badge-dept">${p.department_display}</span>
                         </td>
                         <td>
-                            <strong style="color: var(--primary-dark);">₹${p.stipend_amount.toLocaleString()}</strong><span style="font-size: 11.5px; color: var(--text-muted);">/mo</span>
+                            <strong style="color: var(--primary-dark);">\u20B9${p.stipend_amount.toLocaleString()}</strong><span style="font-size: 11.5px; color: var(--text-muted);">/mo</span>
                         </td>
                         <td>
                             <span class="badge badge-status-${p.status}">${p.status_display}</span>
@@ -1770,13 +1994,13 @@
                         </td>
                         <td>
                             ${p.certificate_issued 
-                                ? `<button class="btn btn-sm btn-secondary" onclick='viewCertificate(${JSON.stringify(p)})' title="View Credential">🏆 ${p.certificate_number || 'Certified'}</button>` 
+                                ? `<button class="btn btn-sm btn-secondary" onclick='viewCertificate(${JSON.stringify(p)})' title="View Credential">\uD83C\uDFC5 ${p.certificate_number || 'Certified'}</button>` 
                                 : `<span style="font-size: 12px; color: var(--text-light);">Not Issued</span>`}
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
-                            <button class="btn btn-secondary btn-sm" onclick='openFastEvalModal(${JSON.stringify(p)})' title="Update Grade & Status">📝 Grade</button>
-                            <button class="btn btn-secondary btn-sm" onclick='editPlacement(${JSON.stringify(p)})' title="Edit Placement">✏️</button>
-                            <button class="btn btn-secondary btn-sm" style="color: var(--danger);" onclick="deletePlacement(${p.id})" title="Delete Placement">🗑️</button>
+                            <button class="btn btn-secondary btn-sm" onclick='openFastEvalModal(${JSON.stringify(p)})' title="Update Grade & Status">\uD83D\uDCC4 Grade</button>
+                            <button class="btn btn-secondary btn-sm" onclick='editPlacement(${JSON.stringify(p)})' title="Edit Placement">\u270F\uFE0F</button>
+                            <button class="btn btn-secondary btn-sm" style="color: var(--danger);" onclick="deletePlacement(${p.id})" title="Delete Placement">\uD83D\uDDD1\uFE0F</button>
                         </td>
                     </tr>
                 `;
@@ -1813,7 +2037,7 @@
                         </td>
                         <td>
                             ${p.certificate_issued
-                                ? `<span class="badge badge-status-COMPLETED">🏆 Certified (${p.certificate_number})</span>`
+                                ? `<span class="badge badge-status-COMPLETED">\uD83C\uDFC5 Certified (${p.certificate_number})</span>`
                                 : `<span class="badge badge-grade-PENDING">Pending Completion</span>`}
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
@@ -1842,13 +2066,13 @@
                                     </span>
                                 </div>
                                 <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">
-                                    🏫 ${c.school_name}
+                                    \uD83C\uDFEB ${c.school_name}
                                 </div>
                                 <div style="font-size: 12.5px; color: #475569;">
-                                    🎓 Class: <strong>${c.current_class || 'Degree Candidate'}</strong> • Adm: ${c.admission_number}
+                                    \uD83C\uDF93 Class: <strong>${c.current_class || 'Degree Candidate'}</strong> \u2022 Adm: ${c.admission_number}
                                 </div>
                                 <div style="font-size: 11.5px; color: var(--primary); margin-top: 6px; font-weight: 600;">
-                                    ✓ Source: ${c.source}
+                                    \u2713 Source: ${c.source}
                                 </div>
                             </div>
 
@@ -1884,7 +2108,7 @@
         function openPlacementModal() {
             document.getElementById('form-placement').reset();
             document.getElementById('p-id').value = '';
-            document.getElementById('modal-placement-title').innerHTML = `<span>➕</span> Add Internship Placement`;
+            document.getElementById('modal-placement-title').innerHTML = `<span>\u2795</span> Add Internship Placement`;
             document.getElementById('p-student').disabled = false;
             document.getElementById('p-start-date').valueAsDate = new Date();
             openModal('modal-placement');
@@ -1898,7 +2122,7 @@
 
         function editPlacement(p) {
             document.getElementById('p-id').value = p.id;
-            document.getElementById('modal-placement-title').innerHTML = `<span>✏️</span> Edit Internship Placement`;
+            document.getElementById('modal-placement-title').innerHTML = `<span>\u270F\uFE0F</span> Edit Internship Placement`;
             document.getElementById('p-student').value = p.student_id;
             document.getElementById('p-student').disabled = true;
             document.getElementById('p-program').value = p.program_id || '';
@@ -1992,7 +2216,7 @@
         function openFastEvalModal(p) {
             document.getElementById('eval-p-id').value = p.id;
             document.getElementById('eval-student-name').innerText = `${p.student_name} (${p.admission_number || 'N/A'})`;
-            document.getElementById('eval-project-name').innerText = `${p.program_title} • ${p.company_name}`;
+            document.getElementById('eval-project-name').innerText = `${p.program_title} \u2022 ${p.company_name}`;
             document.getElementById('eval-status').value = p.status;
             document.getElementById('eval-grade').value = p.performance_grade;
             document.getElementById('eval-feedback').value = p.evaluation_feedback || '';
@@ -2037,7 +2261,7 @@
         function openProgramModal() {
             document.getElementById('form-program').reset();
             document.getElementById('prog-id').value = '';
-            document.getElementById('modal-program-title').innerHTML = `<span>🏢</span> Create Internship Track`;
+            document.getElementById('modal-program-title').innerHTML = `<span>\uD83C\uDFE2</span> Create Internship Track`;
             openModal('modal-program');
         }
 
@@ -2087,11 +2311,83 @@
             }
         }
 
+        // Edit an existing internship track
+        async function editProgram(id) {
+            try {
+                const res = await fetch(`/internships/api/programs/`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    showToast(data.error || "Unable to load program.", "error");
+                    return;
+                }
+
+                const program = data.results.find(p => Number(p.id) === Number(id));
+
+                if (!program) {
+                    showToast("Internship track not found.", "error");
+                    return;
+                }
+
+                document.getElementById('prog-id').value = program.id;
+                document.getElementById('prog-title').value = program.title || '';
+                document.getElementById('prog-code').value = program.program_code || '';
+                document.getElementById('prog-company').value = program.company_name || '';
+                document.getElementById('prog-dept').value = program.department || '';
+                document.getElementById('prog-location').value = program.location || '';
+                document.getElementById('prog-duration').value = program.duration_months || '';
+                document.getElementById('prog-stipend').value = program.stipend_amount || '';
+                document.getElementById('prog-slots').value = program.total_slots || '';
+                document.getElementById('prog-status').value = program.status || '';
+                document.getElementById('prog-mentor').value = program.mentor_in_charge || '';
+                document.getElementById('prog-contact').value = program.mentor_contact || '';
+                document.getElementById('prog-criteria').value = program.eligibility_criteria || '';
+                document.getElementById('prog-desc').value = program.description || '';
+
+                document.getElementById('modal-program-title').innerHTML =
+                    `<span>\uD83C\uDFE2</span> Edit Internship Track`;
+
+                openModal('modal-program');
+
+            } catch (err) {
+                console.error("Edit program error:", err);
+                showToast("Server error loading program.", "error");
+            }
+        }
+
+        // Delete an internship track
+        async function deleteProgram(id) {
+            if (!confirm("Are you sure you want to delete this internship track? This action cannot be undone.")) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/internships/api/programs/${id}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast(data.message || "Internship track deleted successfully.");
+                    window.location.reload();
+                } else {
+                    showToast(data.error || "Failed to delete internship track.", "error");
+                }
+
+            } catch (err) {
+                console.error("Delete program error:", err);
+                showToast("Server error deleting program.", "error");
+            }
+        }
         // 1-Click Candidate Match Modal
         function openQuickAllocModal(c) {
             document.getElementById('alloc-student-id').value = c.id;
             document.getElementById('alloc-student-name').innerText = c.name;
-            document.getElementById('alloc-student-school').innerText = `${c.school_name} • ${c.current_class || 'Degree'}`;
+            document.getElementById('alloc-student-school').innerText = `${c.school_name} \u2022 ${c.current_class || 'Degree'}`;
             openModal('modal-quick-alloc');
         }
 

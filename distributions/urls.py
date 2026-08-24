@@ -9,6 +9,10 @@ urlpatterns = [
     path("add/", views.distribution_create, name="create"),
     path("add/", views.distribution_create, name="add"),
 
+    # Edit / Delete distribution records
+    path("<int:pk>/edit/", views.distribution_edit, name="edit"),
+    path("<int:pk>/delete/", views.distribution_delete, name="delete"),
+
     # REST APIs - Eligibility & Student Pickers
     path("api/students/eligible/", views.api_eligible_students, name="api_eligible_students"),
     path("api/students/top-puc/", views.api_top_puc_students, name="api_top_puc_students"),
