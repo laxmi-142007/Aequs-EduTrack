@@ -41,7 +41,9 @@ class DistributionForm(forms.ModelForm):
         # Student list is populated dynamically from the eligibility API
         # based on Benefit Type + Academic Year.
         self.fields["student"].queryset = (
-            Student.objects.none()
+            Student.objects
+            .all()
+            .order_by("student_name")
         )
 
         self.fields["school"].queryset = (
@@ -106,3 +108,5 @@ class DistributionForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+

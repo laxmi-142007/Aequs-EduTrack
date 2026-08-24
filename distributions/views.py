@@ -336,7 +336,7 @@ def distribution_create(request):
 
     if request.method == "POST":
 
-        form = DistributionForm(request.POST)
+        form = DistributionForm(request.POST, skip_eligibility=True)
 
         if form.is_valid():
 
@@ -2155,3 +2155,6 @@ def api_export_distribution_csv(request):
             )
 
     return response
+
+
+
