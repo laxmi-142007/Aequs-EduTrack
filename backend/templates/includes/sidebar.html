@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!-- Lucide Icons CDN -->
 <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -648,7 +648,7 @@
 
   .sidebar-header {
 
-    padding: 18px 18px !important;
+    padding: 10px 14px !important;
 
     display: flex !important;
 
@@ -660,7 +660,7 @@
 
     background-color: #ffffff !important;
 
-    min-height: 76px !important;
+    min-height: 52px !important;
   }
 
   /* Keep existing E logo/icon */
@@ -752,21 +752,25 @@
 
     overflow-y: auto !important;
 
-    padding: 14px 12px !important;
+    padding: 4px 8px !important;
 
     background: #ffffff !important;
+
+    scrollbar-width: none !important;
+
+    -ms-overflow-style: none !important;
   }
 
   .sidebar-nav::-webkit-scrollbar {
 
-    width: 4px !important;
+    display: none !important;
+
+    width: 0 !important;
   }
 
   .sidebar-nav::-webkit-scrollbar-thumb {
 
-    background: #d5d5d5 !important;
-
-    border-radius: 4px !important;
+    display: none !important;
   }
 
   .sidebar-nav::-webkit-scrollbar-track {
@@ -790,7 +794,7 @@
 
     text-transform: uppercase !important;
 
-    margin: 18px 0 7px 10px !important;
+    margin: 8px 0 4px 8px !important;
   }
 
   .nav-section-title:first-of-type {
@@ -823,9 +827,9 @@
 
     align-items: center !important;
 
-    gap: 11px !important;
+    gap: 9px !important;
 
-    padding: 9px 10px !important;
+    padding: 5px 8px !important;
 
     color: #3b3b3b !important;
 
@@ -1587,6 +1591,16 @@
 
       <span>
         Admin Console
+      </span>
+
+    </a>
+
+    <a href="{% url 'logout' %}" class="footer-action" style="color: #ef4444 !important;">
+
+      <i data-lucide="log-out"></i>
+
+      <span>
+        Log Out
       </span>
 
     </a>

@@ -868,34 +868,6 @@ def calculate_study_kit_continuation(academic_year):
 
 def calculate_laptop_eligibility(academic_year, limit=10):
     return generate_laptop_eligibility(academic_year, limit=limit)
-# GENERATE ALL ELIGIBILITY
-# =========================================================
-
-def generate_all_eligibility(academic_year):
-
-    students = Student.objects.filter(
-        status=Student.Status.ACTIVE
-    )
-
-    for student in students:
-
-        generate_student_eligibility(
-            student,
-            academic_year,
-        )
-
-    # -----------------------------------------
-    # Class 10 Top 10 -> Study Kit
-    # -----------------------------------------
-
-    generate_study_kit_eligibility(
-        academic_year
-    )
-
-    # -----------------------------------------
-    # 2nd PUC + Final Diploma -> Top 10 Laptop
-    # -----------------------------------------
-
-    generate_laptop_eligibility(
-        academic_year
-    )
+# Legacy alias pointing to main batch engine
+def run_legacy_generate_all_eligibility(academic_year):
+    return generate_all_eligibility(academic_year)

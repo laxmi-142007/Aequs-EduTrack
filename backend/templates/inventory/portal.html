@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory & Distributions - EduTrack</title>
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
+            --primary-color: #dd2d27;
+            --primary-hover: #b91c1c;
             --primary-dark: #172554;
-            --primary-light: #eff6ff;
-            --secondary-color: #1e293b;
+            --primary-light: #fef2f2;
+            --secondary-color: #231f20;
             --text-muted: #64748b;
             --text-light: #94a3b8;
             --bg-light: #f4f7fb;
@@ -37,7 +39,7 @@
         body {
             font-family: "Segoe UI", 'Outfit', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             background: var(--bg-light);
-            color: #1e293b;
+            color: #231f20;
             min-height: 100vh;
         }
 
@@ -301,7 +303,7 @@
             color: white;
             border-color: var(--primary-color);
             font-weight: 600;
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 2px 6px rgba(221, 45, 39, 0.25);
         }
 
         .filter-toolbar {
@@ -458,7 +460,7 @@
             font-weight: 600;
         }
 
-        .category-tag.BOOKS { background: #eff6ff; color: #1d4ed8; }
+        .category-tag.BOOKS { background: #fef2f2; color: #b91c1c; }
         .category-tag.WORKBOOKS { background: #f5f3ff; color: #6d28d9; }
         .category-tag.STUDY_KITS { background: #ecfdf5; color: #047857; }
         .category-tag.LAPTOPS { background: #fff7ed; color: #c2410c; }
@@ -472,7 +474,7 @@
             font-weight: 700;
         }
         .tx-type-in { background: #ecfdf5; color: #065f46; }
-        .tx-type-out { background: #eff6ff; color: #1e40af; }
+        .tx-type-out { background: #fef2f2; color: #1e40af; }
         .tx-type-adj { background: #fef3c7; color: #92400e; }
 
         .action-group {
@@ -659,6 +661,12 @@
         </header>
 
         <div class="content">
+
+            <!-- Portal Hero Banner -->
+            <div class="portal-hero" style="background: linear-gradient(110deg, rgba(255, 255, 255, 0.95) 45%, rgba(255, 255, 255, 0.85) 100%), url('https://www.aequs.com/wp-content/uploads/2025/05/Consumer-IMage-scaled.jpg'); background-size: cover; background-position: center right; border: 1px solid #e2e8f0; border-radius: 4px; padding: 20px 24px; border-left: 4px solid #dd2d27; margin-bottom: 24px;">
+                <h2 style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 700; color: #231f20; margin-bottom: 4px;">Aequs Foundation CSR Hardware & Inventory Control</h2>
+                <p style="color: #64748b; font-size: 13.5px;">Tracking laptop allocations, digital classroom kits, STEM hardware, and educational supplies dispatched to regional schools.</p>
+            </div>
 
             <!-- KPI Stats Cards -->
             <div class="kpi-grid">
@@ -1515,9 +1523,11 @@
                             <input type="text" id="quickOutItemName" class="form-control" readonly style="background: #f1f5f9;">
                         </div>
                         <div class="form-group">
-                            <label for="quickOutQty">Quantity *</label>
-                            <input type="number" id="quickOutQty" class="form-control" min="1" required>
-                            <small id="quickOutMaxHint" style="color: var(--primary-color); font-weight: 600;"></small>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <label for="quickOutQty" style="margin: 0; font-weight: 600;">Quantity *</label>
+                                <div id="quickOutMaxHint" style="padding: 4px 10px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-weight: 700; font-size: 12px; border: 1px solid #bae6fd;">Available: 0</div>
+                            </div>
+                            <input type="number" id="quickOutQty" class="form-control" min="1" required placeholder="Enter quantity to dispatch">
                         </div>
                         <div class="form-group">
                             <label for="quickOutRef">Reference #</label>
@@ -1924,15 +1934,51 @@
             finally { btn.disabled = false; }
         }
 
+        let currentOutMaxStock = 0;
+        let currentOutUnit = '';
+
         function openStockOutModal(itemId, itemName, currentStock, unit) {
             document.getElementById('quickOutItemId').value = itemId;
             document.getElementById('quickOutItemName').value = itemName;
             document.getElementById('quickOutQty').value = '';
             document.getElementById('quickOutQty').max = currentStock;
-            document.getElementById('quickOutMaxHint').innerText = `Max available: ${currentStock} ${unit}`;
+            currentOutMaxStock = parseInt(currentStock) || 0;
+            currentOutUnit = unit || '';
+            updateQuickOutHint(0);
             document.getElementById('quickOutDest').value = '';
             openModal('quickStockOutModal');
         }
+
+        function updateQuickOutHint(enteredQty) {
+            const qty = parseInt(enteredQty) || 0;
+            const remaining = currentOutMaxStock - qty;
+            const hintEl = document.getElementById('quickOutMaxHint');
+            if (!hintEl) return;
+            
+            if (qty === 0) {
+                hintEl.style.background = '#e0f2fe';
+                hintEl.style.color = '#0369a1';
+                hintEl.style.border = '1px solid #bae6fd';
+                hintEl.innerHTML = `Available Stock: <strong>${currentOutMaxStock}</strong> ${currentOutUnit}`;
+            } else if (remaining >= 0) {
+                hintEl.style.background = '#f0fdf4';
+                hintEl.style.color = '#166534';
+                hintEl.style.border = '1px solid #bbf7d0';
+                hintEl.innerHTML = `Remaining Stock: <strong>${remaining}</strong> ${currentOutUnit}`;
+            } else {
+                hintEl.style.background = '#fef2f2';
+                hintEl.style.color = '#991b1b';
+                hintEl.style.border = '1px solid #fecaca';
+                hintEl.innerHTML = `⚠️ Exceeds stock by <strong>${Math.abs(remaining)}</strong> ${currentOutUnit}!`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const qtyInput = document.getElementById('quickOutQty');
+            if (qtyInput) {
+                qtyInput.addEventListener('input', (e) => updateQuickOutHint(e.target.value));
+            }
+        });
 
         async function handleQuickStockOut(e) {
             e.preventDefault();
@@ -2253,7 +2299,7 @@
                         else if (s.rank_position === 3) rankClass = 'rank-bronze';
 
                         let statusCol = s.has_laptop
-                            ? `<span class="status-badge" style="background: #eff6ff; color: #1d4ed8;">✅ Laptop Issued (${escapeHTML(s.assigned_laptop)})</span>`
+                            ? `<span class="status-badge" style="background: #fef2f2; color: #b91c1c;">✅ Laptop Issued (${escapeHTML(s.assigned_laptop)})</span>`
                             : `<span class="status-badge status-low-stock">⏳ Eligible for Award</span>`;
 
                         let actionCol = s.has_laptop
@@ -2296,7 +2342,7 @@
             tbody.innerHTML = laptops.map(l => {
                 let statusBadge = l.status === 'AVAILABLE'
                     ? `<span class="status-badge status-in-stock">Available</span>`
-                    : (l.status === 'ISSUED' ? `<span class="status-badge" style="background: #eff6ff; color: #1d4ed8;">Issued</span>` : `<span class="status-badge status-out-stock">${escapeHTML(l.status_display)}</span>`);
+                    : (l.status === 'ISSUED' ? `<span class="status-badge" style="background: #fef2f2; color: #b91c1c;">Issued</span>` : `<span class="status-badge status-out-stock">${escapeHTML(l.status_display)}</span>`);
 
                 let assignmentInfo = l.current_assignment
                     ? `<strong>${escapeHTML(l.current_assignment.student_name)}</strong><br><small style="color: var(--text-light);">${l.current_assignment.academic_year}</small>`

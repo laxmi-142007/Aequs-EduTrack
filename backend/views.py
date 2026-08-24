@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 
 from schools.models import School
 from students.models import Student
@@ -9,7 +10,36 @@ from internships.models import InternshipPlacement, InternshipProgram
 from distributions.models import Distribution
 
 
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    
+    error = None
+    next_url = request.GET.get("next", "dashboard")
+    
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+        next_url = request.POST.get("next", "dashboard") or "dashboard"
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect(next_url)
+        else:
+            error = "Invalid username or password. Please check your credentials."
+
+    return render(request, "login.html", {"error": error, "next": next_url})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect("login")
+
+
 def dashboard(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     context = {
         # =========================
         # BASIC COUNTS

@@ -1,6 +1,7 @@
-﻿import csv
+import csv
 import json
 import random
+import io
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
@@ -35,7 +36,7 @@ def _ensure_default_grades(school):
     if not school.grade_strengths.exists():
         total_sum = 0
         for item in DEFAULT_GRADES:
-            total = item["male"] + item["female"]
+            total = int(item["male"]) + int(item["female"])
             total_sum += total
             GradeStrength.objects.create(
                 school=school,
@@ -144,11 +145,14 @@ def portal_view(request):
     for s in schools:
         _ensure_default_grades(s)
 
+    from django.db.models import Sum
+    total_students = School.objects.aggregate(total=Sum("student_strength"))["total"] or 0
     selected_school = schools.first()
 
     context = {
         "schools": schools,
         "selected_school": selected_school,
+        "total_students": total_students,
         "user_authenticated": request.user.is_authenticated,
         "username": request.user.username if request.user.is_authenticated else "Admin",
     }
@@ -161,26 +165,12 @@ def school_list(request):
 
 
 def school_create(request):
-    """Fallback view for standard form create"""
-    return render(
-        request,
-        "schools/school_list.html",
-        {
-            "schools": schools,
-        },
-    )
-
-
-def school_create(request):
-
     if request.method == "POST":
         form = SchoolForm(request.POST, request.FILES)
         if form.is_valid():
             school = form.save()
             _ensure_default_grades(school)
             return redirect("schools:portal")
-            form.save()
-            return redirect("schools:list")
 
     else:
         form = SchoolForm()
@@ -281,6 +271,12 @@ def api_add_school(request):
         # Initialize default grades & strength
         _ensure_default_grades(school)
 
+        try:
+            from reports.models import log_activity
+            log_activity(request, f"Registered new school '{school.name}' (UDISE: {school.udise_code})", category="SCHOOL")
+        except Exception:
+            pass
+
         return JsonResponse({
             "success": True,
             "message": f"School '{school.name}' created successfully!",
@@ -294,7 +290,7 @@ def api_add_school(request):
 
 @require_http_methods(["POST"])
 def api_edit_school(request, school_id):
-    """Edit school details from Tab 2"""
+    """Edit school details from Modal or Tab 2"""
     try:
         school = get_object_or_404(School, id=school_id)
         if request.content_type == "application/json":
@@ -303,21 +299,57 @@ def api_edit_school(request, school_id):
             data = request.POST
 
         name = data.get("name") or data.get("editSchoolName")
-        principal = data.get("principal") or data.get("editPrincipal")
+        udise_code = data.get("udise_code")
+        village = data.get("village") or data.get("location")
+        district = data.get("district") or data.get("state")
+        address = data.get("address")
+        phone = data.get("phone")
+        email = data.get("email")
+        website = data.get("website")
+        principal = data.get("headmaster_name") or data.get("principal") or data.get("editPrincipal")
+        headmaster_phone = data.get("headmaster_phone")
+        headmaster_qualification = data.get("headmaster_qualification")
         affiliation = data.get("affiliation") or data.get("editAffiliation")
+        student_strength = data.get("student_strength")
+        status = data.get("status")
 
         if name:
             school.name = name.strip()
+        if udise_code:
+            school.udise_code = udise_code.strip()
+        if village is not None:
+            school.village = village.strip()
+        if district is not None:
+            school.district = district.strip()
+        if address is not None:
+            school.address = address.strip()
+        if phone is not None:
+            school.phone = phone.strip()
+        if email is not None:
+            school.email = email.strip()
+        if website is not None:
+            school.website = website.strip()
         if principal is not None:
             school.headmaster_name = principal.strip()
+        if headmaster_phone is not None:
+            school.headmaster_phone = headmaster_phone.strip()
+        if headmaster_qualification is not None:
+            school.headmaster_qualification = headmaster_qualification.strip()
         if affiliation:
             school.affiliation = affiliation.strip()
+        if status and status in dict(School.Status.choices):
+            school.status = status
+        if student_strength is not None:
+            try:
+                school.student_strength = int(student_strength)
+            except (ValueError, TypeError):
+                pass
 
         school.save()
 
         return JsonResponse({
             "success": True,
-            "message": "School details updated successfully!",
+            "message": f"School '{school.name}' updated successfully!",
             "school": _school_to_dict(school),
         })
     except Exception as e:
@@ -663,16 +695,6 @@ def api_logout(request):
     """Logout API"""
     logout(request)
     return JsonResponse({"success": True, "message": "Logged out successfully."})
-    return render(
-        request,
-        "schools/school_form.html",
-        {
-            "form": form,
-        },
-    )
-
-
-
 def bulk_upload_schools(request):
 
     if request.method != "POST":
@@ -714,6 +736,10 @@ def bulk_upload_schools(request):
             )
 
             worksheet = workbook.active
+            if worksheet is None:
+                messages.error(request, "The Excel file is empty or has no active sheet.")
+                return redirect("schools:bulk_upload")
+
             rows = list(
                 worksheet.iter_rows(values_only=True)
             )

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Reports - EduTrack</title>
+    <title>Reports & Audit Logs - EduTrack</title>
 
     <style>
         * {
@@ -13,9 +14,10 @@
 
         body {
             margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: #f4f7fb;
-            color: #1f2937;
+            color: #231f20;
+            font-size: 13px;
         }
 
         .main {
@@ -25,7 +27,7 @@
 
         .topbar {
             background: white;
-            padding: 20px 35px;
+            padding: 18px 32px;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
@@ -34,8 +36,9 @@
 
         .topbar h1 {
             margin: 0;
-            font-size: 24px;
-            color: #111827;
+            font-size: 22px;
+            font-weight: 700;
+            color: #231f20;
         }
 
         .back {
@@ -49,56 +52,119 @@
         }
 
         .content {
-            padding: 30px 35px;
+            padding: 28px 32px;
         }
 
         .filter {
             background: white;
-            padding: 20px;
+            padding: 18px 22px;
             border-radius: 12px;
             margin-bottom: 25px;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        select,
-        button {
-            padding: 10px 14px;
-            border-radius: 7px;
+        select, button {
+            padding: 9px 14px;
+            border-radius: 6px;
             border: 1px solid #d1d5db;
+            font-size: 13px;
         }
 
         button {
-            background: #2563eb;
+            background: #dd2d27;
             color: white;
             border: none;
             cursor: pointer;
+            font-weight: 600;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
         }
 
         .card {
             background: white;
-            padding: 22px;
+            padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .card h3 {
             margin: 0;
             color: #64748b;
-            font-size: 15px;
+            font-size: 13px;
+            font-weight: 600;
         }
 
         .number {
-            font-size: 32px;
-            font-weight: 700;
-            margin-top: 10px;
-            color: #172554;
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 8px;
+            color: #231f20;
         }
+
+        /* --- Audit Log Section --- */
+        .audit-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .audit-header h2 {
+            margin: 0;
+            font-size: 17px;
+            color: #231f20;
+        }
+
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .audit-table th, .audit-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .audit-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .cat-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .cat-INVENTORY { background: #e0f2fe; color: #0369a1; }
+        .cat-SCHOOL { background: #fef3c7; color: #92400e; }
+        .cat-STUDENT { background: #dcfce7; color: #166534; }
+        .cat-AUTH { background: #f3e8ff; color: #6b21a8; }
+        .cat-GENERAL { background: #f1f5f9; color: #475569; }
     </style>
 </head>
 
@@ -110,100 +176,125 @@
     <div class="main">
 
         <header class="topbar">
-            <h1>📊 Reports & Analytics</h1>
-
-            <a href="{% url 'dashboard' %}" class="back">
-                ← Dashboard
-            </a>
+            <h1>📊 Reports & Real-Time Activity Audit Logs</h1>
+            <a href="{% url 'dashboard' %}" class="back">← Dashboard</a>
         </header>
 
         <main class="content">
 
-            <div class="filter">
-
-                <form method="get">
-
-                    <label for="year">
-                        Academic Year:
-                    </label>
-
-                    <select name="year" id="year">
-
-                        <option value="">
-                            All Years
-                        </option>
-
-                        {% for year in academic_years %}
-
-                            <option value="{{ year }}"
-                                {% if selected_academic_year == year %}
-                                    selected
-                                {% endif %}>
-                                {{ year }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                    <button type="submit">
-                        Filter
-                    </button>
-
-                </form>
-
-            </div>
-
-
+            <!-- Summary KPI Cards -->
             <div class="cards">
-
                 <div class="card">
                     <h3>Active Students</h3>
-                    <div class="number">
-                        {{ total_students }}
-                    </div>
+                    <div class="number">{{ total_students }}</div>
                 </div>
-
                 <div class="card">
                     <h3>Books Eligible</h3>
-                    <div class="number">
-                        {{ book_count }}
-                    </div>
+                    <div class="number">{{ book_count }}</div>
                 </div>
-
                 <div class="card">
-                    <h3>Workbook Eligible</h3>
-                    <div class="number">
-                        {{ workbook_count }}
-                    </div>
+                    <h3>Workbooks Eligible</h3>
+                    <div class="number">{{ workbook_count }}</div>
                 </div>
-
                 <div class="card">
-                    <h3>Study Kit Eligible</h3>
-                    <div class="number">
-                        {{ study_kit_count }}
-                    </div>
+                    <h3>Study Kits Eligible</h3>
+                    <div class="number">{{ study_kit_count }}</div>
                 </div>
-
                 <div class="card">
-                    <h3>Laptop Eligible</h3>
-                    <div class="number">
-                        {{ laptop_count }}
-                    </div>
+                    <h3>Laptops Eligible</h3>
+                    <div class="number">{{ laptop_count }}</div>
                 </div>
-
                 <div class="card">
-                    <h3>Internship Eligible</h3>
-                    <div class="number">
-                        {{ internship_count }}
+                    <h3>Internships Eligible</h3>
+                    <div class="number">{{ internship_count }}</div>
+                </div>
+            </div>
+
+            <!-- Activity Audit Log Card -->
+            <div class="audit-card">
+                <div class="audit-header">
+                    <div>
+                        <h2>📋 Real-Time Activity Audit Logs</h2>
+                        <p style="margin: 4px 0 0; color: #64748b; font-size: 12.5px;">Every system action, stock dispatch, school edit, and user login is automatically logged here.</p>
+                    </div>
+
+                    <!-- Category Filter & Live Pulse -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: #166534; background: #dcfce7; padding: 4px 10px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #22c55e;"></span> Real-Time Auto Update
+                        </span>
+
+                        <form method="get" style="display: flex; gap: 8px;">
+                            <select name="category" id="category-filter-select" onchange="this.form.submit()">
+                                <option value="">All Action Categories</option>
+                                <option value="INVENTORY" {% if category_filter == 'INVENTORY' %}selected{% endif %}>Inventory & Stock Out</option>
+                                <option value="SCHOOL" {% if category_filter == 'SCHOOL' %}selected{% endif %}>School Updates</option>
+                                <option value="STUDENT" {% if category_filter == 'STUDENT' %}selected{% endif %}>Student Records</option>
+                                <option value="AUTH" {% if category_filter == 'AUTH' %}selected{% endif %}>Auth & Login</option>
+                            </select>
+                        </form>
                     </div>
                 </div>
 
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Category</th>
+                            <th>Action / Activity Description</th>
+                            <th>Performed By</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-logs-tbody">
+                        {% for log in activity_logs %}
+                        <tr>
+                            <td style="color: #64748b; font-size: 12px; white-space: nowrap;">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                            <td><span class="cat-badge cat-{{ log.category }}">{{ log.category }}</span></td>
+                            <td style="font-weight: 600; color: #231f20;">{{ log.action }}</td>
+                            <td style="color: #475569;">👤 {{ log.user.username|default:"System Admin" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #64748b; padding: 25px;">No activity logs recorded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
         </main>
 
     </div>
 
+    <!-- Real-Time Auto Refresh Script -->
+    <script>
+        async function fetchLiveAuditLogs() {
+            try {
+                const category = document.getElementById('category-filter-select').value;
+                const res = await fetch(`/reports/api/logs/?category=${encodeURIComponent(category)}`);
+                const data = await res.json();
+                if (data.success && data.logs) {
+                    const tbody = document.getElementById('audit-logs-tbody');
+                    if (data.logs.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 25px;">No activity logs recorded yet.</td></tr>`;
+                        return;
+                    }
+                    tbody.innerHTML = data.logs.map(log => `
+                        <tr>
+                            <td style="color: #64748b; font-size: 12px; white-space: nowrap;">${log.timestamp}</td>
+                            <td><span class="cat-badge cat-${log.category}">${log.category}</span></td>
+                            <td style="font-weight: 600; color: #231f20;">${log.action}</td>
+                            <td style="color: #475569;">👤 ${log.username}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error("Live audit log refresh error:", err);
+            }
+        }
+
+        // Auto-refresh logs every 3 seconds for real-time tracking
+        setInterval(fetchLiveAuditLogs, 3000);
+    </script>
 </body>
 </html>

@@ -1315,30 +1315,38 @@
                         </div>
                     </div>
 
-                    <!-- Placements Table -->
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Student Beneficiary</th>
-                                    <th>Program / Track</th>
-                                    <th>Department</th>
-                                    <th>Monthly Stipend</th>
-                                    <th>Status</th>
-                                    <th>Attendance / Grade</th>
-                                    <th>Certificate</th>
-                                    <th style="text-align: right;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="placements-tbody">
-                                <tr>
-                                    <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">
-                                        Loading internship placements...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Placements Cards Grid View -->
+                    <div id="placements-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; margin-bottom: 24px;">
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-light);">Loading student internship cards...</div>
                     </div>
+
+                    <!-- Placements Table View -->
+                    <details style="margin-top: 10px;">
+                        <summary style="font-weight: 600; cursor: pointer; color: var(--text-muted); margin-bottom: 12px;">📋 Show Detailed Table View</summary>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Beneficiary</th>
+                                        <th>Program / Track</th>
+                                        <th>Department</th>
+                                        <th>Monthly Stipend</th>
+                                        <th>Status</th>
+                                        <th>Attendance / Grade</th>
+                                        <th>Certificate</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="placements-tbody">
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">
+                                            Loading internship placements...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
                 </div>
             </div>
 
@@ -1957,54 +1965,109 @@
 
         function renderPlacementsTable(placements) {
             const tbody = document.getElementById('placements-tbody');
+            const cardsGrid = document.getElementById('placements-cards-grid');
+
             if (!placements || placements.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-light);">No internship placements match your criteria.</td></tr>`;
+                if (cardsGrid) cardsGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-light); background: #ffffff; border-radius: 12px; border: 1px solid var(--border-color);">No internship candidate records match your criteria.</div>`;
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-light);">No internship placements match your criteria.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = placements.map(p => {
-                const initials = p.student_name ? p.student_name.split(' ').map(n => n[0]).join('').substring(0, 2) : 'ST';
-                return `
-                    <tr>
-                        <td>
-                            <div class="student-cell">
-                                <div class="student-avatar">${initials}</div>
-                                <div>
-                                    <div class="student-name">${p.student_name}</div>
-                                    <div class="student-meta">${p.school_name} &bull; ${p.student_class || 'Scholar'}</div>
+            if (cardsGrid) {
+                cardsGrid.innerHTML = placements.map(p => {
+                    const initials = p.student_name ? p.student_name.split(' ').map(n => n[0]).join('').substring(0, 2) : 'ST';
+                    return `
+                        <div class="program-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="program-header" style="margin-bottom: 12px;">
+                                    <div class="student-cell">
+                                        <div class="student-avatar" style="width: 38px; height: 38px; font-size: 14px;">${initials}</div>
+                                        <div>
+                                            <div class="student-name" style="font-size: 15px; font-weight: 700;">${p.student_name}</div>
+                                            <div class="student-meta" style="font-size: 12px;">${p.school_name} &bull; ${p.student_class || 'Scholar'}</div>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-status-${p.status}">${p.status_display}</span>
+                                </div>
+
+                                <div style="padding: 12px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 14px; border: 1px solid #e2e8f0;">
+                                    <div style="font-weight: 700; color: var(--primary-dark); font-size: 13.5px; margin-bottom: 3px;">💼 ${p.program_title}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">🏢 ${p.company_name} &bull; <span class="badge badge-dept" style="font-size: 11px;">${p.department_display}</span></div>
+                                </div>
+
+                                <div class="program-stats-row" style="margin-bottom: 14px;">
+                                    <div class="prog-stat-item">
+                                        <div class="stat-lbl">Monthly Stipend</div>
+                                        <div class="stat-val" style="color: #166534;">₹${p.stipend_amount.toLocaleString()}</div>
+                                    </div>
+                                    <div class="prog-stat-item">
+                                        <div class="stat-lbl">Attendance & Grade</div>
+                                        <div class="stat-val" style="font-size: 13px;">${p.attendance_percentage}% • <span class="badge badge-grade-${p.performance_grade}">${p.performance_grade_display}</span></div>
+                                    </div>
                                 </div>
                             </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 13.5px;">${p.program_title}</div>
-                            <div style="font-size: 12px; color: var(--text-muted);">${p.company_name}</div>
-                        </td>
-                        <td>
-                            <span class="badge badge-dept">${p.department_display}</span>
-                        </td>
-                        <td>
-                            <strong style="color: var(--primary-dark);">\u20B9${p.stipend_amount.toLocaleString()}</strong><span style="font-size: 11.5px; color: var(--text-muted);">/mo</span>
-                        </td>
-                        <td>
-                            <span class="badge badge-status-${p.status}">${p.status_display}</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; font-size: 13px;">${p.attendance_percentage}% Attd</div>
-                            <span class="badge badge-grade-${p.performance_grade}">${p.performance_grade_display}</span>
-                        </td>
-                        <td>
-                            ${p.certificate_issued 
-                                ? `<button class="btn btn-sm btn-secondary" onclick='viewCertificate(${JSON.stringify(p)})' title="View Credential">\uD83C\uDFC5 ${p.certificate_number || 'Certified'}</button>` 
-                                : `<span style="font-size: 12px; color: var(--text-light);">Not Issued</span>`}
-                        </td>
-                        <td style="text-align: right; white-space: nowrap;">
-                            <button class="btn btn-secondary btn-sm" onclick='openFastEvalModal(${JSON.stringify(p)})' title="Update Grade & Status">\uD83D\uDCC4 Grade</button>
-                            <button class="btn btn-secondary btn-sm" onclick='editPlacement(${JSON.stringify(p)})' title="Edit Placement">\u270F\uFE0F</button>
-                            <button class="btn btn-secondary btn-sm" style="color: var(--danger);" onclick="deletePlacement(${p.id})" title="Delete Placement">\uD83D\uDDD1\uFE0F</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+
+                            <div style="display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9; align-items: center;">
+                                <button type="button" class="action-btn action-primary" style="flex: 1; padding: 7px 10px; font-size: 12.5px;" onclick='openFastEvalModal(${JSON.stringify(p)})'>
+                                    📄 Grade & Certify
+                                </button>
+                                <button type="button" class="action-btn action-secondary" style="padding: 7px 12px; font-size: 12.5px;" onclick='editPlacement(${JSON.stringify(p)})' title="Edit Placement">
+                                    ✏️ Edit
+                                </button>
+                                <button type="button" class="action-btn action-danger" style="padding: 7px 12px; font-size: 12.5px;" onclick="deletePlacement(${p.id})" title="Delete Placement">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (tbody) {
+                tbody.innerHTML = placements.map(p => {
+                    const initials = p.student_name ? p.student_name.split(' ').map(n => n[0]).join('').substring(0, 2) : 'ST';
+                    return `
+                        <tr>
+                            <td>
+                                <div class="student-cell">
+                                    <div class="student-avatar">${initials}</div>
+                                    <div>
+                                        <div class="student-name">${p.student_name}</div>
+                                        <div class="student-meta">${p.school_name} &bull; ${p.student_class || 'Scholar'}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: var(--primary-dark); font-size: 13.5px;">${p.program_title}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">${p.company_name}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-dept">${p.department_display}</span>
+                            </td>
+                            <td>
+                                <strong style="color: var(--primary-dark);">\u20B9${p.stipend_amount.toLocaleString()}</strong><span style="font-size: 11.5px; color: var(--text-muted);">/mo</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-status-${p.status}">${p.status_display}</span>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; font-size: 13px;">${p.attendance_percentage}% Attd</div>
+                                <span class="badge badge-grade-${p.performance_grade}">${p.performance_grade_display}</span>
+                            </td>
+                            <td>
+                                ${p.certificate_issued 
+                                    ? `<button class="btn btn-sm btn-secondary" onclick='viewCertificate(${JSON.stringify(p)})' title="View Credential">\uD83C\uDFC5 ${p.certificate_number || 'Certified'}</button>` 
+                                    : `<span style="font-size: 12px; color: var(--text-light);">Not Issued</span>`}
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <button class="btn btn-secondary btn-sm" onclick='openFastEvalModal(${JSON.stringify(p)})' title="Update Grade & Status">\uD83D\uDCC4 Grade</button>
+                                <button class="btn btn-secondary btn-sm" onclick='editPlacement(${JSON.stringify(p)})' title="Edit Placement">\u270F\uFE0F Edit</button>
+                                <button class="btn btn-secondary btn-sm" style="color: var(--danger);" onclick="deletePlacement(${p.id})" title="Delete Placement">\uD83D\uDDD1\uFE0F Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
         }
 
         function renderEvaluationsTable(placements) {

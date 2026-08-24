@@ -609,6 +609,16 @@ def api_stock_out(request):
             notes=notes,
         )
 
+        try:
+            from reports.models import log_activity
+            log_activity(
+                request,
+                f"Dispatched {quantity} {item.unit} of '{item.item_name}' to {destination}",
+                category="INVENTORY"
+            )
+        except Exception:
+            pass
+
         return JsonResponse({
             "success": True,
             "message": f"Stock Out of {quantity} {item.unit} for '{item.item_name}' processed. Remaining Stock: {item.current_stock}.",

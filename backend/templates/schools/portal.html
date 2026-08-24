@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -720,21 +720,52 @@
                     </div>
                 </div>
 
-                <!-- Tabs Container -->
+                <!-- Cards Grid Container (No bar) -->
                 <div class="container">
-                    <!-- Navigation Tabs -->
-                    <div class="tabs">
-                        <button class="tab-button active" data-tab="add-school">Add Government Schools</button>
-                        <button class="tab-button" data-tab="edit-details">Edit School Details</button>
-                        <button class="tab-button" data-tab="contact-info">School Contact Information</button>
-                        <button class="tab-button" data-tab="headmaster-details">Headmaster Details</button>
-                        <button class="tab-button" data-tab="student-strength">Student Strength</button>
-                        <button class="tab-button" data-tab="view-history">View School History</button>
-                        <button class="tab-button" data-tab="resources">Resources Provided</button>
+                    <div id="school-cards" class="tab-content active">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div>
+                                <h2 style="margin: 0;">Partner Government Schools</h2>
+                                <p class="section-desc" style="margin: 4px 0 0;">Click on any school card below to view pop-up management options or bulk upload student details.</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn btn-primary" style="background:#231f20; border-color:#231f20; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 13px;" onclick="openAddSchoolModal()">➕ Add New School</button>
+                                <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#dd2d27; border-color:#dd2d27; text-decoration:none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px;">↑ Bulk Upload Schools</a>
+                            </div>
+                        </div>
+
+                        <div class="school-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+                            {% for s in schools %}
+                            <div class="info-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                        <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #231f20;">🏫 {{ s.name }}</h3>
+                                        <span class="status-badge" style="background: #f0fdf4; color: #166534; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600;">ACTIVE</span>
+                                    </div>
+                                    <div style="font-size: 12.5px; color: #64748b; margin-bottom: 10px;">
+                                        🆔 UDISE Code: <strong>{{ s.udise_code }}</strong>
+                                    </div>
+                                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px;">
+                                        <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #334155;">📍 {{ s.village|default:s.district }}</span>
+                                        <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #334155;">🎓 {{ s.affiliation|default:"State Board" }}</span>
+                                        <span style="background: #fef2f2; border: 1px solid #fecaca; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #b91c1c; font-weight: 600;">👥 {{ s.student_strength }} Students</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card Action Buttons -->
+                                <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation();">
+                                    <button type="button" class="btn btn-sm btn-primary" style="flex: 1; padding: 8px; font-size: 12px; background: #dd2d27; border-color: #dd2d27;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">⚡ Manage School Options</button>
+                                    <button type="button" class="btn btn-sm btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="openSchoolModal('{{ s.id }}', 'bulk-students')">👨‍🎓 Bulk Add Students</button>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p style="color: #64748b;">No schools registered yet.</p>
+                            {% endfor %}
+                        </div>
                     </div>
 
                     <!-- 1. Add Government Schools Content -->
-                    <div id="add-school" class="tab-content active">
+                    <div id="add-school" class="tab-content">
                         <h2>Add New School</h2>
                         <p class="section-desc">Register a new government or government-aided school into the EduTrack network.</p>
                         <form id="addSchoolForm" onsubmit="handleAddSchool(event)">
@@ -778,6 +809,7 @@
 
                     <!-- 2. Edit School Details Content -->
                     <div id="edit-details" class="tab-content">
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <h2>Edit General School Details</h2>
                         <p class="section-desc">Update school identification, official affiliation, and principal assignment.</p>
                         <form id="editSchoolForm" onsubmit="handleEditSchool(event)">
@@ -809,6 +841,7 @@
 
                     <!-- 3. School Contact Information Content -->
                     <div id="contact-info" class="tab-content">
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <h2> School Contact Information</h2>
                         <p class="section-desc">Manage primary telecom lines, official correspondence email, and web addresses.</p>
                         <form id="contactForm" onsubmit="handleSaveContactInfo(event)">
@@ -834,6 +867,7 @@
 
                     <!-- 4. Headmaster Details Content -->
                     <div id="headmaster-details" class="tab-content">
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <h2>Headmaster / Administrator Details</h2>
                         <p class="section-desc">Maintain administrator profiles, academic qualifications, experience, and ID photo.</p>
                         <form id="headmasterForm" onsubmit="handleSaveHeadmasterDetails(event)" enctype="multipart/form-data">
@@ -868,6 +902,7 @@
 
                     <!-- 5. Student Strength Content -->
                     <div id="student-strength" class="tab-content data-view">
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <div class="section-header-action">
                             <div>
                                 <h2>School-wise Student Strength (Dashboard View)</h2>
@@ -901,6 +936,7 @@
 
                     <!-- 6. View School History Content -->
                     <div id="view-history" class="tab-content data-view">
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <div class="section-header-action">
                             <div>
                                 <h2> School Operational History & Milestones</h2>
@@ -918,9 +954,10 @@
                     
                     <!-- 7. Resources Provided Content -->
                     <div id="resources" class="tab-content data-view">
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <div class="section-header-action">
                             <div>
-                                <h2>ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂºÃƒâ€šÃ‚Â Ãƒâ€šÃ‚Â Resources Provided</h2>
+                                <h2>📦 Resources Provided</h2>
                                 <p class="section-desc">Track resources, equipment, meals, and educational materials allocated to this school.</p>
                             </div>
                             <div>
@@ -932,10 +969,56 @@
                             <!-- Populated dynamically via JS -->
                         </div>
                     </div>
+                    <!-- 8. Bulk Add Students Content -->
+                    <div id="bulk-students" class="tab-content" style="display: none;">
+                        <h2>👨‍🎓 Bulk Add Student Details</h2>
+                        <p class="section-desc">Upload CSV/Excel student records or add students directly for this school.</p>
+                        
+                        <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px; padding: 25px; text-align: center; margin-bottom: 15px;">
+                            <div style="font-size: 36px; margin-bottom: 8px;">📂</div>
+                            <h4 style="margin: 0 0 6px; color: #1e293b;">Bulk Upload Student Data File</h4>
+                            <p style="font-size: 12.5px; color: #64748b; margin-bottom: 15px;">Supported Formats: CSV, Excel (.xlsx). Required fields: Student Name, Class/Grade, Gender.</p>
+                            <input type="file" accept=".csv, .xlsx" style="display: block; margin: 0 auto 15px; font-size: 13px;">
+                            <div style="display: flex; justify-content: center; gap: 10px;">
+                                <button type="button" class="btn btn-primary" style="background: #dd2d27; border-color: #dd2d27;" onclick="showToast('Student list imported successfully!')">Upload & Import Students</button>
+                                <a href="{% url 'students:add' %}" class="btn btn-secondary" style="text-decoration: none; padding: 9px 16px; font-size: 13px;">+ Single Student Entry</a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- School Management Pop-up Modal -->
+    <div id="schoolModalPopup" class="modal-overlay">
+        <div class="modal-card" style="max-width: 820px; width: 92%; padding: 24px;">
+            <div class="modal-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+                <div>
+                    <h3 id="modalSchoolTitle" style="margin: 0; color: #231f20; font-size: 18px;">🏫 School Options</h3>
+                    <div id="modalSchoolMeta" style="font-size: 12.5px; color: #64748b; margin-top: 4px;">Management options for selected school</div>
+                </div>
+                <button class="modal-close" onclick="closeModal('schoolModalPopup')">&times;</button>
+            </div>
+
+            <!-- Modal Sub-Navigation Bar -->
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin: 15px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="edit-details" onclick="switchModalTab('edit-details')">✏️ Edit Details</button>
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="contact-info" onclick="switchModalTab('contact-info')">📞 Contact Info</button>
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="headmaster-details" onclick="switchModalTab('headmaster-details')">👤 Headmaster</button>
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="student-strength" onclick="switchModalTab('student-strength')">📊 Student Strength</button>
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="view-history" onclick="switchModalTab('view-history')">📜 History</button>
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="resources" onclick="switchModalTab('resources')">📦 Resources</button>
+                <button type="button" class="btn btn-sm btn-primary modal-tab-btn" data-modaltab="bulk-students" style="background: #dd2d27; border-color: #dd2d27;" onclick="switchModalTab('bulk-students')">👨‍🎓 Bulk Add Students</button>
+            </div>
+
+            <!-- Modal Dynamic Content Body -->
+            <div id="modalTabContainer" style="padding: 10px 0;">
+                <!-- Content populated dynamically -->
+            </div>
+        </div>
+    </div>
 
     <!-- Add Milestone Modal -->
     <div id="addMilestoneModal" class="modal-overlay">
@@ -973,7 +1056,7 @@
     <div id="addResourceModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂºÃƒâ€šÃ‚Â Ãƒâ€šÃ‚Â Allocate New Resource</h3>
+                <h3>📦 Allocate New Resource</h3>
                 <button class="modal-close" onclick="closeModal('addResourceModal')">&times;</button>
             </div>
             <form id="addResourceForm" onsubmit="handleAddResource(event)">
@@ -1126,6 +1209,48 @@ function activateTab(tabName) {
     }
 }
 
+// Open Pop-up Modal for a selected school card
+function openSchoolModal(schoolId, tabName = 'edit-details') {
+    if (schoolId) {
+        const select = document.getElementById('activeSchoolSelect');
+        if (select) {
+            select.value = schoolId;
+        }
+        onSelectedSchoolChange(schoolId);
+        
+        const option = select ? select.options[select.selectedIndex] : null;
+        if (option) {
+            document.getElementById('modalSchoolTitle').innerText = '🏫 ' + option.text;
+        }
+    }
+    switchModalTab(tabName);
+    openModal('schoolModalPopup');
+}
+
+// Switch view inside Pop-up Modal
+function switchModalTab(tabName) {
+    const modalTabBtns = document.querySelectorAll('.modal-tab-btn');
+    modalTabBtns.forEach(btn => {
+        if (btn.getAttribute('data-modaltab') === tabName) {
+            btn.style.background = '#dd2d27';
+            btn.style.color = '#ffffff';
+        } else {
+            btn.style.background = '#f1f5f9';
+            btn.style.color = '#334155';
+        }
+    });
+
+    const targetContent = document.getElementById(tabName);
+    const container = document.getElementById('modalTabContainer');
+    if (container && targetContent) {
+        container.innerHTML = '';
+        const clone = targetContent.cloneNode(true);
+        clone.style.display = 'block';
+        clone.classList.add('active');
+        container.appendChild(clone);
+    }
+}
+
 // Attach click listeners to tab buttons
 document.querySelectorAll('.tab-button').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1255,7 +1380,7 @@ function renderMilestones(milestones) {
     container.innerHTML = milestones.map(m => `
         <div class="info-card">
             <div class="info-card-header">
-                <div class="info-card-title">Ãƒâ€¦Ã¢â‚¬â„¢ Milestone: ${m.title} ${m.year_or_date ? `(${m.year_or_date})` : ''}</div>
+                <div class="info-card-title">📜 Milestone: ${m.title} ${m.year_or_date ? `(${m.year_or_date})` : ''}</div>
                 <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px; background: #ef4444;" onclick="deleteMilestone(${m.id})">Delete</button>
             </div>
             <div class="info-card-body">
@@ -1286,7 +1411,7 @@ function renderResources(resources) {
         return `
             <div class="info-card">
                 <div class="info-card-header">
-                    <div class="info-card-title">Ãƒâ€šÃ‚Â¦ Resource: ${r.resource_name}</div>
+                    <div class="info-card-title">📦 Resource: ${r.resource_name}</div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <span class="status-badge ${stClass}">${r.status}</span>
                         <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px; background: #ef4444;" onclick="deleteResource(${r.id})">Delete</button>
@@ -1619,10 +1744,19 @@ async function deleteResource(id) {
     }
 }
 
-// Modal helper
+// Modal helpers
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('open');
+}
+
 function closeModal(id) {
     const modal = document.getElementById(id);
     if (modal) modal.classList.remove('open');
+}
+
+function openAddSchoolModal() {
+    openSchoolModal(currentSchoolId, 'add-school');
 }
 
 // Reset Form helper

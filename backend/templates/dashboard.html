@@ -1,6 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduTrack Dashboard</title>
@@ -15,9 +17,9 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: #f8fafc;
-            color: #0f172a;
+            color: #231f20;
             min-height: 100vh;
         }
 
@@ -42,9 +44,10 @@
         }
 
         .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
             font-size: 18px;
             font-weight: 700;
-            color: #0f172a;
+            color: #231f20;
             letter-spacing: -0.02em;
             display: flex;
             align-items: center;
@@ -54,11 +57,11 @@
         .topbar-badge {
             font-size: 11px;
             font-weight: 600;
-            background: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #dbeafe;
+            background: #fef2f2;
+            color: #dd2d27;
+            border: 1px solid #fee2e2;
             padding: 3px 8px;
-            border-radius: 12px;
+            border-radius: 4px;
         }
 
         .content {
@@ -72,11 +75,13 @@
            SHADCN-STYLE HERO / WELCOME BANNER
            ========================================================= */
         .welcome-card {
-            background: #ffffff;
+            background: linear-gradient(110deg, rgba(255, 255, 255, 0.95) 45%, rgba(255, 255, 255, 0.85) 100%), url('https://www.aequs.com/wp-content/uploads/2025/10/Aequs-SEZ-Gate-1024x683.jpg');
+            background-size: cover;
+            background-position: center right;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 22px 24px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            border-radius: 4px;
+            padding: 24px 28px;
+            box-shadow: 0 2px 8px rgba(35, 31, 32, 0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -93,13 +98,14 @@
             top: 0;
             bottom: 0;
             width: 4px;
-            background: #2563eb;
+            background: #dd2d27;
         }
 
         .welcome-info h2 {
+            font-family: 'Montserrat', sans-serif;
             font-size: 18px;
             font-weight: 700;
-            color: #0f172a;
+            color: #231f20;
             letter-spacing: -0.01em;
             margin-bottom: 4px;
         }
@@ -124,22 +130,22 @@
             padding: 7px 12px;
             font-size: 12.5px;
             font-weight: 500;
-            border-radius: 6px;
+            border-radius: 2px;
             text-decoration: none;
             transition: all 0.15s ease;
             cursor: pointer;
         }
 
         .btn-shadcn-primary {
-            background-color: #2563eb;
+            background-color: #dd2d27;
             color: #ffffff;
-            border: 1px solid #2563eb;
-            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15);
+            border: 1px solid #dd2d27;
+            box-shadow: 0 1px 2px rgba(221, 45, 39, 0.15);
         }
 
         .btn-shadcn-primary:hover {
-            background-color: #1d4ed8;
-            border-color: #1d4ed8;
+            background-color: #b91c1c;
+            border-color: #b91c1c;
             color: #ffffff;
         }
 
@@ -153,7 +159,7 @@
         .btn-shadcn-outline:hover {
             background-color: #f8fafc;
             border-color: #cbd5e1;
-            color: #0f172a;
+            color: #231f20;
         }
 
         /* =========================================================
@@ -167,9 +173,10 @@
         }
 
         .section-heading {
+            font-family: 'Montserrat', sans-serif;
             font-size: 14px;
             font-weight: 700;
-            color: #0f172a;
+            color: #231f20;
             letter-spacing: -0.01em;
         }
 
@@ -182,7 +189,7 @@
         .stat-card {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 4px;
             padding: 14px 16px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
             display: flex;
@@ -216,7 +223,7 @@
         .stat-icon-wrapper {
             width: 28px;
             height: 28px;
-            border-radius: 6px;
+            border-radius: 2px;
             background-color: #f8fafc;
             border: 1px solid #f1f5f9;
             display: flex;
@@ -226,9 +233,9 @@
         }
 
         .stat-card:hover .stat-icon-wrapper {
-            background-color: #eff6ff;
-            color: #2563eb;
-            border-color: #dbeafe;
+            background-color: #fef2f2;
+            color: #dd2d27;
+            border-color: #fee2e2;
         }
 
         .stat-icon-wrapper i {
@@ -238,9 +245,10 @@
         }
 
         .stat-value {
+            font-family: 'Montserrat', sans-serif;
             font-size: 22px;
             font-weight: 700;
-            color: #0f172a;
+            color: #231f20;
             letter-spacing: -0.02em;
             line-height: 1.15;
         }
@@ -262,8 +270,8 @@
         }
 
         .badge-blue {
-            background-color: #eff6ff;
-            color: #2563eb;
+            background-color: #fef2f2;
+            color: #dd2d27;
         }
 
         .badge-emerald {
@@ -293,7 +301,7 @@
         .table-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 4px;
             padding: 16px 18px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
             display: flex;
@@ -312,7 +320,7 @@
         .table-card-title {
             font-size: 14px;
             font-weight: 600;
-            color: #0f172a;
+            color: #231f20;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -321,7 +329,7 @@
         .table-card-title i {
             width: 16px;
             height: 16px;
-            color: #2563eb;
+            color: #dd2d27;
         }
 
         .table-card-count {
@@ -330,7 +338,7 @@
             background: #f1f5f9;
             color: #475569;
             padding: 2px 8px;
-            border-radius: 12px;
+            border-radius: 4px;
         }
 
         .shadcn-table {
@@ -367,16 +375,16 @@
             align-items: center;
             gap: 8px;
             font-weight: 600;
-            color: #0f172a;
+            color: #231f20;
         }
 
         .student-avatar-mini {
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background-color: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #dbeafe;
+            background-color: #fef2f2;
+            color: #dd2d27;
+            border: 1px solid #fee2e2;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1146,7 +1154,7 @@ a {
         <!-- TOP BAR -->
         <header class="topbar">
             <h1>
-                <i data-lucide="layout-dashboard" style="width: 18px; height: 18px; color: #2563eb;"></i>
+                <i data-lucide="layout-dashboard" style="width: 18px; height: 18px; color: #dd2d27;"></i>
                 EduTrack Dashboard
             </h1>
             <span class="topbar-badge">Live System Overview</span>
@@ -1346,7 +1354,7 @@ a {
                                 </td>
                                 <td>
                                     <span class="item-badge">
-                                        <i data-lucide="hard-drive" style="width: 12px; height: 12px; color: #2563eb;"></i>
+                                        <i data-lucide="hard-drive" style="width: 12px; height: 12px; color: #dd2d27;"></i>
                                         {{ assignment.laptop }}
                                     </span>
                                 </td>
