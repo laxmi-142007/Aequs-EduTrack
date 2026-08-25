@@ -11,7 +11,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
 from .forms import AcademicRecordForm
-from .models import AcademicRecord
+from .models import AcademicRecord, CourseMaster
 from students.models import Student
 from schools.models import School
 
@@ -379,6 +379,41 @@ def api_academic_records(request):
 
 
 # ============================================================================
+
+# ============================================================================
+# JSON API - COURSE MASTER
+# ============================================================================
+
+def api_course_master(request):
+
+    courses = (
+        CourseMaster.objects
+        .filter(is_active=True)
+        .order_by(
+            "category",
+            "display_order",
+            "name",
+        )
+    )
+
+    data = [
+        {
+            "id": course.id,
+            "name": course.name,
+            "category": course.category,
+            "category_label": course.get_category_display(),
+            "display_order": course.display_order,
+        }
+        for course in courses
+    ]
+
+    return JsonResponse(
+        {
+            "success": True,
+            "courses": data,
+            "count": len(data),
+        }
+    )
 # JSON API - CREATE
 # ============================================================================
 
@@ -1329,3 +1364,4 @@ def academic_bulk_upload(request):
     return redirect(
         "academics:bulk_upload"
     )
+

@@ -1,4 +1,4 @@
-﻿from django.urls import path
+from django.urls import path
 from . import views
 
 app_name = "academics"
@@ -37,9 +37,15 @@ urlpatterns = [
         views.api_get_students,
         name="api_students",
     ),
+    path(
+        "api/courses/",
+        views.api_course_master,
+        name="api_courses",
+    ),
 
     path("list/", views.academic_list, name="list"),
     path("add/", views.academic_create, name="create"),
     path("edit/<int:pk>/", views.academic_update, name="update"),
     path("delete/<int:pk>/", views.academic_delete, name="delete"),
 ]
+
