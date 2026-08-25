@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Academic Record</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .buttons {
+            margin-top: 25px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .cancel {
+            margin-left: 10px;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .error {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 10px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        {% if record %}
+            Edit Academic Record
+        {% else %}
+            Add Academic Record
+        {% endif %}
+    </h1>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="error">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.student.id_for_label }}">
+                Student
+            </label>
+
+            {{ form.student }}
+
+            {% if form.student.errors %}
+                <div class="error">
+                    {{ form.student.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <!-- ACADEMIC YEAR -->
+
+        <div class="form-group">
+
+            <label for="{{ form.academic_year.id_for_label }}">
+                Academic Year
+            </label>
+
+            {{ form.academic_year }}
+
+            {% if form.academic_year.errors %}
+                <div class="error">
+                    {{ form.academic_year.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.class_or_course.id_for_label }}">
+                Class / Course
+            </label>
+
+            {{ form.class_or_course }}
+
+            {% if form.class_or_course.errors %}
+                <div class="error">
+                    {{ form.class_or_course.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.marks_obtained.id_for_label }}">
+                Marks Obtained
+            </label>
+
+            {{ form.marks_obtained }}
+
+            {% if form.marks_obtained.errors %}
+                <div class="error">
+                    {{ form.marks_obtained.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.total_marks.id_for_label }}">
+                Total Marks
+            </label>
+
+            {{ form.total_marks }}
+
+            {% if form.total_marks.errors %}
+                <div class="error">
+                    {{ form.total_marks.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.percentage.id_for_label }}">
+                Percentage
+            </label>
+
+            {{ form.percentage }}
+
+            {% if form.percentage.errors %}
+                <div class="error">
+                    {{ form.percentage.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.rank.id_for_label }}">
+                Rank
+            </label>
+
+            {{ form.rank }}
+
+            {% if form.rank.errors %}
+                <div class="error">
+                    {{ form.rank.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.previous_class.id_for_label }}">
+                Previous Class
+            </label>
+
+            {{ form.previous_class }}
+
+            {% if form.previous_class.errors %}
+                <div class="error">
+                    {{ form.previous_class.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.promotion_status.id_for_label }}">
+                Promotion Status
+            </label>
+
+            {{ form.promotion_status }}
+
+            {% if form.promotion_status.errors %}
+                <div class="error">
+                    {{ form.promotion_status.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.transfer_school.id_for_label }}">
+                Transfer School
+            </label>
+
+            {{ form.transfer_school }}
+
+            {% if form.transfer_school.errors %}
+                <div class="error">
+                    {{ form.transfer_school.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="{{ form.remarks.id_for_label }}">
+                Remarks
+            </label>
+
+            {{ form.remarks }}
+
+            {% if form.remarks.errors %}
+                <div class="error">
+                    {{ form.remarks.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button type="submit">
+                {% if record %}
+                    Update Academic Record
+                {% else %}
+                    Save Academic Record
+                {% endif %}
+            </button>
+
+            <a href="{% url 'academics:list' %}" class="cancel">
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>
