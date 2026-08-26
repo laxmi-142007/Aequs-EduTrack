@@ -3,9 +3,12 @@
 <head>
     <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>EduTrack Dashboard</title>
+
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -74,19 +77,32 @@
         /* =========================================================
            SHADCN-STYLE HERO / WELCOME BANNER
            ========================================================= */
+
         .welcome-card {
-            background: linear-gradient(110deg, rgba(255, 255, 255, 0.95) 45%, rgba(255, 255, 255, 0.85) 100%), url('https://www.aequs.com/wp-content/uploads/2025/10/Aequs-SEZ-Gate-1024x683.jpg');
+            background:
+                linear-gradient(
+                    110deg,
+                    rgba(255, 255, 255, 0.95) 45%,
+                    rgba(255, 255, 255, 0.85) 100%
+                ),
+                url('https://www.aequs.com/wp-content/uploads/2025/10/Aequs-SEZ-Gate-1024x683.jpg');
+
             background-size: cover;
             background-position: center right;
+
             border: 1px solid #e2e8f0;
             border-radius: 4px;
+
             padding: 24px 28px;
+
             box-shadow: 0 2px 8px rgba(35, 31, 32, 0.05);
+
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 16px;
+
             position: relative;
             overflow: hidden;
         }
@@ -165,6 +181,7 @@
         /* =========================================================
            SHADCN-STYLE STATS GRID & CARDS
            ========================================================= */
+
         .section-header {
             display: flex;
             align-items: center;
@@ -192,12 +209,18 @@
             border-radius: 4px;
             padding: 14px 16px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+
             text-decoration: none;
             color: inherit;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+
+            transition:
+                border-color 0.15s ease,
+                box-shadow 0.15s ease,
+                transform 0.15s ease;
         }
 
         .stat-card:hover {
@@ -226,9 +249,11 @@
             border-radius: 2px;
             background-color: #f8fafc;
             border: 1px solid #f1f5f9;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             color: #64748b;
         }
 
@@ -257,6 +282,7 @@
             font-size: 11.5px;
             color: #64748b;
             margin-top: 5px;
+
             display: flex;
             align-items: center;
             gap: 4px;
@@ -292,6 +318,7 @@
         /* =========================================================
            SHADCN-STYLE TABLE CARDS
            ========================================================= */
+
         .tables-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -303,7 +330,9 @@
             border: 1px solid #e2e8f0;
             border-radius: 4px;
             padding: 16px 18px;
+
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
             display: flex;
             flex-direction: column;
         }
@@ -312,6 +341,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+
             padding-bottom: 12px;
             border-bottom: 1px solid #f1f5f9;
             margin-bottom: 12px;
@@ -321,6 +351,7 @@
             font-size: 14px;
             font-weight: 600;
             color: #231f20;
+
             display: flex;
             align-items: center;
             gap: 8px;
@@ -350,11 +381,14 @@
         .shadcn-table th {
             text-align: left;
             padding: 8px 10px;
+
             color: #64748b;
             font-size: 11px;
             font-weight: 600;
+
             text-transform: uppercase;
             letter-spacing: 0.05em;
+
             background-color: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
         }
@@ -374,6 +408,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+
             font-weight: 600;
             color: #231f20;
         }
@@ -382,12 +417,16 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
+
             background-color: #fef2f2;
             color: #dd2d27;
+
             border: 1px solid #fee2e2;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             font-size: 10.5px;
             font-weight: 700;
         }
@@ -396,10 +435,13 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+
             padding: 2px 8px;
+
             background: #f1f5f9;
             border: 1px solid #e2e8f0;
             border-radius: 4px;
+
             font-size: 11.5px;
             font-weight: 500;
             color: #334155;
@@ -410,6 +452,7 @@
             text-align: center;
             color: #94a3b8;
             font-size: 12.5px;
+
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -426,6 +469,7 @@
         /* =========================================================
            RESPONSIVE
            ========================================================= */
+
         @media (max-width: 1280px) {
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -436,6 +480,7 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
             .tables-grid {
                 grid-template-columns: 1fr;
             }
@@ -445,700 +490,445 @@
             .content {
                 padding: 16px;
             }
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
         }
-    
-/* =========================================================
-   AEQUS FOUNDATION - DASHBOARD BRAND THEME
-   Visual-only changes. Features/icons/URLs unchanged.
-   ========================================================= */
-
-:root {
-    --aequs-red: #ed1c24;
-    --aequs-red-dark: #c9141b;
-    --aequs-red-light: #fff1f1;
-    --aequs-black: #111111;
-    --aequs-text: #252525;
-    --aequs-muted: #6b7280;
-    --aequs-border: #e5e7eb;
-    --aequs-bg: #f7f7f7;
-    --aequs-white: #ffffff;
-}
-
-/* Dashboard page */
-body {
-    font-family: "Segoe UI", Arial, sans-serif !important;
-    background: var(--aequs-bg) !important;
-    color: var(--aequs-text) !important;
-}
-
-/* Main dashboard area */
-.main,
-.dashboard,
-.dashboard-container,
-.content {
-    background: var(--aequs-bg) !important;
-}
-
-/* =========================================================
-   TOP DASHBOARD HEADER
-   ========================================================= */
-
-.topbar,
-.dashboard-header,
-.page-header {
-    background: var(--aequs-white) !important;
-    border-bottom: 1px solid var(--aequs-border) !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-}
-
-/* Dashboard title */
-.topbar h1,
-.dashboard-header h1,
-.page-header h1 {
-    color: var(--aequs-black) !important;
-    font-size: 21px !important;
-    font-weight: 800 !important;
-    letter-spacing: -0.02em !important;
-}
-
-/* Red accent before dashboard title */
-.topbar h1::before,
-.dashboard-header h1::before,
-.page-header h1::before {
-    content: "" !important;
-    display: inline-block !important;
-    width: 4px !important;
-    height: 22px !important;
-    background: var(--aequs-red) !important;
-    border-radius: 3px !important;
-    margin-right: 10px !important;
-}
-
-/* =========================================================
-   BRANDED WELCOME SECTION
-   ========================================================= */
-
-.welcome-section,
-.welcome-card,
-.hero,
-.dashboard-welcome {
-    background:
-        linear-gradient(
-            135deg,
-            #ffffff 0%,
-            #fff8f8 65%,
-            #fff1f1 100%
-        ) !important;
-
-    border: 1px solid #f3d0d0 !important;
-    border-left: 5px solid var(--aequs-red) !important;
-
-    border-radius: 12px !important;
-
-    padding: 24px 28px !important;
-
-    box-shadow:
-        0 4px 14px rgba(0,0,0,0.05) !important;
-
-    margin-bottom: 22px !important;
-}
-
-/* Welcome heading */
-.welcome-section h2,
-.welcome-card h2,
-.hero h2,
-.dashboard-welcome h2 {
-    color: var(--aequs-black) !important;
-    font-size: 23px !important;
-    font-weight: 800 !important;
-    line-height: 1.25 !important;
-    margin-bottom: 7px !important;
-}
-
-/* Welcome paragraph */
-.welcome-section p,
-.welcome-card p,
-.hero p,
-.dashboard-welcome p {
-    color: var(--aequs-muted) !important;
-    font-size: 13.5px !important;
-    line-height: 1.6 !important;
-}
-
-/* Highlight AEQUS */
-.welcome-section strong,
-.welcome-card strong,
-.hero strong,
-.dashboard-welcome strong {
-    color: var(--aequs-red) !important;
-    font-weight: 800 !important;
-}
-
-/* =========================================================
-   ACTION BUTTONS
-   ========================================================= */
-
-.btn-primary,
-.add-button,
-.btn-add,
-.action-button,
-.primary-action {
-    background: var(--aequs-red) !important;
-    border: 1px solid var(--aequs-red) !important;
-    color: #ffffff !important;
-
-    border-radius: 7px !important;
-
-    font-size: 12.5px !important;
-    font-weight: 700 !important;
-
-    padding: 8px 14px !important;
-
-    box-shadow:
-        0 2px 5px rgba(237, 28, 36, 0.18) !important;
-
-    transition:
-        background-color .15s ease,
-        transform .15s ease,
-        box-shadow .15s ease !important;
-}
-
-.btn-primary:hover,
-.add-button:hover,
-.btn-add:hover,
-.action-button:hover,
-.primary-action:hover {
-    background: var(--aequs-red-dark) !important;
-    border-color: var(--aequs-red-dark) !important;
-
-    transform: translateY(-1px) !important;
-
-    box-shadow:
-        0 4px 9px rgba(237, 28, 36, 0.22) !important;
-}
-
-/* Secondary actions */
-.btn-secondary,
-.secondary-action,
-.back-button {
-    background: #ffffff !important;
-    color: var(--aequs-black) !important;
-
-    border: 1px solid #d1d5db !important;
-    border-radius: 7px !important;
-
-    font-weight: 600 !important;
-}
-
-.btn-secondary:hover,
-.secondary-action:hover,
-.back-button:hover {
-    background: var(--aequs-red-light) !important;
-    color: var(--aequs-red-dark) !important;
-    border-color: #efb2b2 !important;
-}
-
-/* =========================================================
-   DASHBOARD CARDS
-   ========================================================= */
-
-.card,
-.stat-card,
-.dashboard-card,
-.summary-card {
-    background: #ffffff !important;
-    border: 1px solid var(--aequs-border) !important;
-    border-radius: 10px !important;
-
-    box-shadow:
-        0 2px 7px rgba(0,0,0,0.04) !important;
-
-    transition:
-        transform .15s ease,
-        box-shadow .15s ease !important;
-}
-
-.card:hover,
-.stat-card:hover,
-.dashboard-card:hover,
-.summary-card:hover {
-    transform: translateY(-2px) !important;
-
-    box-shadow:
-        0 5px 15px rgba(0,0,0,0.07) !important;
-}
-
-/* Numbers */
-.stat-value,
-.card-value,
-.number {
-    color: var(--aequs-black) !important;
-    font-weight: 800 !important;
-}
-
-/* Card headings */
-.card-title,
-.card-label,
-.stat-label,
-.stat-info h4 {
-    color: #4b5563 !important;
-    font-weight: 650 !important;
-}
-
-/* =========================================================
-   RED ACCENT FOR STAT ICONS
-   ========================================================= */
-
-.stat-icon,
-.card-icon {
-    background: var(--aequs-red-light) !important;
-    color: var(--aequs-red) !important;
-
-    border: 1px solid #ffd5d5 !important;
-}
-
-/* =========================================================
-   DASHBOARD SECTION HEADINGS
-   ========================================================= */
-
-.dashboard h2,
-.dashboard h3,
-.content h2,
-.content h3 {
-    color: var(--aequs-black) !important;
-    font-weight: 750 !important;
-}
-
-/* =========================================================
-   LINKS
-   ========================================================= */
-
-.dashboard a:not(.btn-primary):not(.add-button):not(.btn-add) {
-    color: var(--aequs-red) !important;
-}
-
-.dashboard a:not(.btn-primary):not(.add-button):not(.btn-add):hover {
-    color: var(--aequs-red-dark) !important;
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 850px) {
-    .welcome-section,
-    .welcome-card,
-    .hero,
-    .dashboard-welcome {
-        padding: 20px !important;
-    }
-
-    .welcome-section h2,
-    .welcome-card h2,
-    .hero h2,
-    .dashboard-welcome h2 {
-        font-size: 20px !important;
-    }
-}
-
-
-/* =========================================================
-   AEQUS FOUNDATION - COLOR ONLY
-   Do not change layout, typography, icons or features.
-   ========================================================= */
-
-:root {
-    --aequs-red: #ED1C24;
-    --aequs-red-dark: #C9141B;
-    --aequs-red-light: #FFF1F1;
-    --aequs-black: #111111;
-    --aequs-white: #FFFFFF;
-    --aequs-gray: #F5F5F5;
-    --aequs-border: #E5E5E5;
-}
-
-/* Page background */
-body {
-    background-color: var(--aequs-gray) !important;
-    color: var(--aequs-black) !important;
-}
-
-/* Main white areas */
-.main,
-.content,
-.container {
-    background-color: var(--aequs-gray) !important;
-}
-
-/* Headers */
-.topbar,
-.dashboard-header,
-.page-header {
-    background-color: var(--aequs-white) !important;
-    color: var(--aequs-black) !important;
-    border-color: var(--aequs-border) !important;
-}
-
-/* Headings */
-h1, h2, h3, h4, h5, h6 {
-    color: var(--aequs-black) !important;
-}
-
-/* Links */
-a {
-    color: var(--aequs-red) !important;
-}
-
-/* Primary buttons */
-button,
-.btn-primary,
-.add-button,
-.btn-add,
-.add-btn,
-.btn.save,
-.save-button,
-.btn-save {
-    background-color: var(--aequs-red) !important;
-    border-color: var(--aequs-red) !important;
-    color: #FFFFFF !important;
-}
-
-/* Button hover */
-button:hover,
-.btn-primary:hover,
-.add-button:hover,
-.btn-add:hover,
-.add-btn:hover,
-.btn.save:hover,
-.save-button:hover,
-.btn-save:hover {
-    background-color: var(--aequs-red-dark) !important;
-    border-color: var(--aequs-red-dark) !important;
-    color: #FFFFFF !important;
-}
-
-/* Cards */
-.card,
-.stat-card,
-.dashboard-card,
-.summary-card,
-.table-card,
-.form-card {
-    background-color: var(--aequs-white) !important;
-    border-color: var(--aequs-border) !important;
-}
-
-/* Small red accents */
-.stat-icon,
-.card-icon {
-    background-color: var(--aequs-red-light) !important;
-    color: var(--aequs-red) !important;
-}
-
-/* Active/highlight elements */
-.active,
-.selected,
-.nav-active {
-    background-color: var(--aequs-red) !important;
-    color: #FFFFFF !important;
-}
-
-/* AEQUS FOUNDATION - COLOR ONLY */
-
-:root {
-    --aequs-red: #ED1C24;
-    --aequs-red-dark: #C9141B;
-    --aequs-red-light: #FFF1F1;
-    --aequs-black: #111111;
-    --aequs-white: #FFFFFF;
-    --aequs-gray: #F5F5F5;
-    --aequs-border: #E5E5E5;
-}
-
-body {
-    background-color: #F5F5F5 !important;
-    color: #111111 !important;
-}
-
-.main,
-.content,
-.container {
-    background-color: #F5F5F5 !important;
-}
-
-.topbar,
-.dashboard-header,
-.page-header {
-    background-color: #FFFFFF !important;
-    color: #111111 !important;
-    border-color: #E5E5E5 !important;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    color: #111111 !important;
-}
-
-a {
-    color: #ED1C24 !important;
-}
-
-.btn-primary,
-.add-button,
-.btn-add,
-.add-btn,
-.btn.save,
-.save-button,
-.btn-save {
-    background-color: #ED1C24 !important;
-    border-color: #ED1C24 !important;
-    color: #FFFFFF !important;
-}
-
-.btn-primary:hover,
-.add-button:hover,
-.btn-add:hover,
-.add-btn:hover,
-.btn.save:hover,
-.save-button:hover,
-.btn-save:hover {
-    background-color: #C9141B !important;
-    border-color: #C9141B !important;
-    color: #FFFFFF !important;
-}
-
-.card,
-.stat-card,
-.dashboard-card,
-.summary-card,
-.table-card,
-.form-card {
-    background-color: #FFFFFF !important;
-    border-color: #E5E5E5 !important;
-}
-
-.stat-icon,
-.card-icon {
-    background-color: #FFF1F1 !important;
-    color: #ED1C24 !important;
-}
-/* AEQUS FOUNDATION COLORS ONLY */
-
-:root {
-    --aequs-red: #ED1C24;
-    --aequs-red-dark: #C9141B;
-    --aequs-red-light: #FFF1F1;
-    --aequs-black: #111111;
-    --aequs-white: #FFFFFF;
-    --aequs-gray: #F5F5F5;
-    --aequs-border: #E5E5E5;
-}
-
-body {
-    background-color: #F5F5F5 !important;
-    color: #111111 !important;
-}
-
-.main,
-.content,
-.container {
-    background-color: #F5F5F5 !important;
-}
-
-.topbar,
-.dashboard-header,
-.page-header {
-    background-color: #FFFFFF !important;
-    color: #111111 !important;
-    border-color: #E5E5E5 !important;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    color: #111111 !important;
-}
-
-a {
-    color: #ED1C24 !important;
-}
-
-.btn-primary,
-.add-button,
-.btn-add,
-.add-btn,
-.btn.save,
-.save-button,
-.btn-save {
-    background-color: #ED1C24 !important;
-    border-color: #ED1C24 !important;
-    color: #FFFFFF !important;
-}
-
-.btn-primary:hover,
-.add-button:hover,
-.btn-add:hover,
-.add-btn:hover,
-.btn.save:hover,
-.save-button:hover,
-.btn-save:hover {
-    background-color: #C9141B !important;
-    border-color: #C9141B !important;
-    color: #FFFFFF !important;
-}
-
-.card,
-.stat-card,
-.dashboard-card,
-.summary-card,
-.table-card,
-.form-card {
-    background-color: #FFFFFF !important;
-    border-color: #E5E5E5 !important;
-}
-
-.stat-icon,
-.card-icon {
-    background-color: #FFF1F1 !important;
-    color: #ED1C24 !important;
-}
-<style>
-/* =========================================================
-   AEQUS FOUNDATION — DASHBOARD HERO
-   Visual styling only
-   ========================================================= */
-
-.dashboard-hero,
-.hero,
-.welcome-section,
-.welcome-card {
-    background: #ffffff !important;
-    border: 1px solid #e5e7eb !important;
-    border-left: none !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
-    padding: 24px 28px !important;
-    margin-bottom: 20px !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-.dashboard-hero::before,
-.hero::before,
-.welcome-section::before,
-.welcome-card::before {
-    display: none !important;
-}
-
-.dashboard-hero h1,
-.hero h1,
-.welcome-section h1,
-.welcome-card h1 {
-    color: #171717 !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em !important;
-    margin-bottom: 6px !important;
-}
-
-.dashboard-hero p,
-.hero p,
-.welcome-section p,
-.welcome-card p {
-    color: #6b7280 !important;
-    font-weight: 400 !important;
-    line-height: 1.6 !important;
-}
-
-.dashboard-hero strong,
-.hero strong,
-.welcome-section strong,
-.welcome-card strong {
-    color: #ed1c24 !important;
-}
-
-/* AEQUS RED PRIMARY BUTTONS */
-.dashboard-hero .btn-primary,
-.hero .btn-primary,
-.welcome-section .btn-primary,
-.welcome-card .btn-primary,
-.dashboard-hero .action-btn,
-.hero .action-btn {
-    background: #ed1c24 !important;
-    border: 1px solid #ed1c24 !important;
-    color: #ffffff !important;
-    border-radius: 7px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 5px rgba(237, 28, 36, 0.18) !important;
-}
-
-.dashboard-hero .btn-primary:hover,
-.hero .btn-primary:hover,
-.welcome-section .btn-primary:hover,
-.welcome-card .btn-primary:hover,
-.dashboard-hero .action-btn:hover,
-.hero .action-btn:hover {
-    background: #c9141b !important;
-    border-color: #c9141b !important;
-}
-
-/* SECONDARY BUTTONS */
-.dashboard-hero .btn-secondary,
-.hero .btn-secondary,
-.welcome-section .btn-secondary,
-.welcome-card .btn-secondary {
-    background: #ffffff !important;
-    color: #374151 !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 7px !important;
-    font-weight: 600 !important;
-}
-
-.dashboard-hero .btn-secondary:hover,
-.hero .btn-secondary:hover,
-.welcome-section .btn-secondary:hover,
-.welcome-card .btn-secondary:hover {
-    background: #fff5f5 !important;
-    color: #ed1c24 !important;
-    border-color: #ed1c24 !important;
-}
-
-/* LOGO */
-.dashboard-hero img,
-.hero img,
-.welcome-section img,
-.welcome-card img {
-    max-height: 48px !important;
-    width: auto !important;
-}
-
-/* ACTION AREA */
-.dashboard-hero .actions,
-.hero .actions,
-.welcome-section .actions,
-.welcome-card .actions {
-    display: flex !important;
-    gap: 10px !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-}
-
-@media (max-width: 700px) {
-    .dashboard-hero,
-    .hero,
-    .welcome-section,
-    .welcome-card {
-        padding: 20px !important;
-    }
-
-    .dashboard-hero .actions,
-    .hero .actions,
-    .welcome-section .actions,
-    .welcome-card .actions {
-        width: 100% !important;
-    }
-}
-</style>
-</style>
+
+        /* =========================================================
+           AEQUS FOUNDATION - DASHBOARD BRAND THEME
+           ========================================================= */
+
+        :root {
+            --aequs-red: #ED1C24;
+            --aequs-red-dark: #C9141B;
+            --aequs-red-light: #FFF1F1;
+            --aequs-black: #111111;
+            --aequs-white: #FFFFFF;
+            --aequs-gray: #F5F5F5;
+            --aequs-border: #E5E5E5;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif !important;
+            background-color: #F5F5F5 !important;
+            color: #111111 !important;
+        }
+
+        .main,
+        .content,
+        .container {
+            background-color: #F5F5F5 !important;
+        }
+
+        .topbar,
+        .dashboard-header,
+        .page-header {
+            background-color: #FFFFFF !important;
+            color: #111111 !important;
+            border-color: #E5E5E5 !important;
+        }
+
+        .topbar h1,
+        .dashboard-header h1,
+        .page-header h1 {
+            color: #111111 !important;
+        }
+
+        .topbar h1::before,
+        .dashboard-header h1::before,
+        .page-header h1::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 22px;
+            background: var(--aequs-red);
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+
+        .welcome-section,
+        .welcome-card,
+        .hero,
+        .dashboard-welcome {
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff 0%,
+                    #fff8f8 65%,
+                    #fff1f1 100%
+                ) !important;
+
+            border: 1px solid #f3d0d0 !important;
+            border-left: 5px solid var(--aequs-red) !important;
+
+            border-radius: 12px !important;
+
+            padding: 24px 28px !important;
+
+            box-shadow:
+                0 4px 14px rgba(0,0,0,0.05) !important;
+
+            margin-bottom: 22px !important;
+        }
+
+        .welcome-section h2,
+        .welcome-card h2,
+        .hero h2,
+        .dashboard-welcome h2 {
+            color: var(--aequs-black) !important;
+            font-size: 23px !important;
+            font-weight: 800 !important;
+            line-height: 1.25 !important;
+            margin-bottom: 7px !important;
+        }
+
+        .welcome-section p,
+        .welcome-card p,
+        .hero p,
+        .dashboard-welcome p {
+            color: var(--aequs-muted) !important;
+            font-size: 13.5px !important;
+            line-height: 1.6 !important;
+        }
+
+        .welcome-section strong,
+        .welcome-card strong,
+        .hero strong,
+        .dashboard-welcome strong {
+            color: var(--aequs-red) !important;
+            font-weight: 800 !important;
+        }
+
+        /* =========================================================
+           ACTION BUTTONS
+           ========================================================= */
+
+        .btn-primary,
+        .add-button,
+        .btn-add,
+        .action-button,
+        .primary-action {
+            background: var(--aequs-red) !important;
+            border: 1px solid var(--aequs-red) !important;
+            color: #ffffff !important;
+
+            border-radius: 7px !important;
+
+            font-size: 12.5px !important;
+            font-weight: 700 !important;
+
+            padding: 8px 14px !important;
+
+            box-shadow:
+                0 2px 5px rgba(237, 28, 36, 0.18) !important;
+
+            transition:
+                background-color .15s ease,
+                transform .15s ease,
+                box-shadow .15s ease !important;
+        }
+
+        .btn-primary:hover,
+        .add-button:hover,
+        .btn-add:hover,
+        .action-button:hover,
+        .primary-action:hover {
+            background: var(--aequs-red-dark) !important;
+            border-color: var(--aequs-red-dark) !important;
+
+            transform: translateY(-1px) !important;
+
+            box-shadow:
+                0 4px 9px rgba(237, 28, 36, 0.22) !important;
+        }
+
+        .btn-secondary,
+        .secondary-action,
+        .back-button {
+            background: #ffffff !important;
+            color: var(--aequs-black) !important;
+
+            border: 1px solid #d1d5db !important;
+            border-radius: 7px !important;
+
+            font-weight: 600 !important;
+        }
+
+        .btn-secondary:hover,
+        .secondary-action:hover,
+        .back-button:hover {
+            background: var(--aequs-red-light) !important;
+            color: var(--aequs-red-dark) !important;
+            border-color: #efb2b2 !important;
+        }
+
+        /* =========================================================
+           DASHBOARD CARDS
+           ========================================================= */
+
+        .card,
+        .stat-card,
+        .dashboard-card,
+        .summary-card {
+            background: #ffffff !important;
+            border: 1px solid var(--aequs-border) !important;
+            border-radius: 10px !important;
+
+            box-shadow:
+                0 2px 7px rgba(0,0,0,0.04) !important;
+
+            transition:
+                transform .15s ease,
+                box-shadow .15s ease !important;
+        }
+
+        .card:hover,
+        .stat-card:hover,
+        .dashboard-card:hover,
+        .summary-card:hover {
+            transform: translateY(-2px) !important;
+
+            box-shadow:
+                0 5px 15px rgba(0,0,0,0.07) !important;
+        }
+
+        .stat-value,
+        .card-value,
+        .number {
+            color: var(--aequs-black) !important;
+            font-weight: 800 !important;
+        }
+
+        .card-title,
+        .card-label,
+        .stat-label,
+        .stat-info h4 {
+            color: #4b5563 !important;
+            font-weight: 650 !important;
+        }
+
+        .stat-icon,
+        .card-icon {
+            background: var(--aequs-red-light) !important;
+            color: var(--aequs-red) !important;
+
+            border: 1px solid #ffd5d5 !important;
+        }
+
+        .dashboard h2,
+        .dashboard h3,
+        .content h2,
+        .content h3 {
+            color: var(--aequs-black) !important;
+            font-weight: 750 !important;
+        }
+
+        /* =========================================================
+           GLOBAL LINKS
+           ========================================================= */
+
+        .dashboard a:not(.btn-primary):not(.add-button):not(.btn-add) {
+            color: var(--aequs-red) !important;
+        }
+
+        .dashboard a:not(.btn-primary):not(.add-button):not(.btn-add):hover {
+            color: var(--aequs-red-dark) !important;
+        }
+
+        /* =========================================================
+           COLOR ONLY BUTTON RULES
+           ========================================================= */
+
+        button,
+        .btn-primary,
+        .add-button,
+        .btn-add,
+        .add-btn,
+        .btn.save,
+        .save-button,
+        .btn-save {
+            background-color: var(--aequs-red) !important;
+            border-color: var(--aequs-red) !important;
+            color: #FFFFFF !important;
+        }
+
+        button:hover,
+        .btn-primary:hover,
+        .add-button:hover,
+        .btn-add:hover,
+        .add-btn:hover,
+        .btn.save:hover,
+        .save-button:hover,
+        .btn-save:hover {
+            background-color: var(--aequs-red-dark) !important;
+            border-color: var(--aequs-red-dark) !important;
+            color: #FFFFFF !important;
+        }
+
+        .card,
+        .stat-card,
+        .dashboard-card,
+        .summary-card,
+        .table-card,
+        .form-card {
+            background-color: #FFFFFF !important;
+            border-color: #E5E5E5 !important;
+        }
+
+        .stat-icon,
+        .card-icon {
+            background-color: #FFF1F1 !important;
+            color: #ED1C24 !important;
+        }
+
+        /* =========================================================
+           AEQUS FOUNDATION HERO
+           ========================================================= */
+
+        .dashboard-hero,
+        .hero,
+        .welcome-section,
+        .welcome-card {
+            background: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+            border-left: none !important;
+            border-radius: 12px !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+            padding: 24px 28px !important;
+            margin-bottom: 20px !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .dashboard-hero::before,
+        .hero::before,
+        .welcome-section::before,
+        .welcome-card::before {
+            display: none !important;
+        }
+
+        .dashboard-hero h1,
+        .hero h1,
+        .welcome-section h1,
+        .welcome-card h1 {
+            color: #171717 !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.02em !important;
+            margin-bottom: 6px !important;
+        }
+
+        .dashboard-hero p,
+        .hero p,
+        .welcome-section p,
+        .welcome-card p {
+            color: #6b7280 !important;
+            font-weight: 400 !important;
+            line-height: 1.6 !important;
+        }
+
+        .dashboard-hero strong,
+        .hero strong,
+        .welcome-section strong,
+        .welcome-card strong {
+            color: #ed1c24 !important;
+        }
+
+        /* =========================================================
+           PRIMARY HERO BUTTONS
+           ========================================================= */
+
+        .dashboard-hero .btn-primary,
+        .hero .btn-primary,
+        .welcome-section .btn-primary,
+        .welcome-card .btn-primary,
+        .dashboard-hero .action-btn,
+        .hero .action-btn {
+            background: #ed1c24 !important;
+            border: 1px solid #ed1c24 !important;
+            color: #ffffff !important;
+            border-radius: 7px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 5px rgba(237, 28, 36, 0.18) !important;
+        }
+
+        .dashboard-hero .btn-primary:hover,
+        .hero .btn-primary:hover,
+        .welcome-section .btn-primary:hover,
+        .welcome-card .btn-primary:hover,
+        .dashboard-hero .action-btn:hover,
+        .hero .action-btn:hover {
+            background: #c9141b !important;
+            border-color: #c9141b !important;
+        }
+
+        .dashboard-hero .btn-secondary,
+        .hero .btn-secondary,
+        .welcome-section .btn-secondary,
+        .welcome-card .btn-secondary {
+            background: #ffffff !important;
+            color: #374151 !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 7px !important;
+            font-weight: 600 !important;
+        }
+
+        .dashboard-hero .btn-secondary:hover,
+        .hero .btn-secondary:hover,
+        .welcome-section .btn-secondary:hover,
+        .welcome-card .btn-secondary:hover {
+            background: #fff5f5 !important;
+            color: #ed1c24 !important;
+            border-color: #ed1c24 !important;
+        }
+
+        .dashboard-hero img,
+        .hero img,
+        .welcome-section img,
+        .welcome-card img {
+            max-height: 48px !important;
+            width: auto !important;
+        }
+
+        .dashboard-hero .actions,
+        .hero .actions,
+        .welcome-section .actions,
+        .welcome-card .actions {
+            display: flex !important;
+            gap: 10px !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+        }
+
+        /* =========================================================
+           FIX: ISSUE BENEFITS BUTTON TEXT
+           ========================================================= */
+
+        .welcome-card .btn-shadcn-primary {
+            color: #ffffff !important;
+        }
+
+        .welcome-card .btn-shadcn-primary:hover {
+            color: #ffffff !important;
+        }
+
+        @media (max-width: 850px) {
+            .welcome-section,
+            .welcome-card,
+            .hero,
+            .dashboard-welcome {
+                padding: 20px !important;
+            }
+
+            .welcome-section h2,
+            .welcome-card h2,
+            .hero h2,
+            .dashboard-welcome h2 {
+                font-size: 20px !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -1149,270 +939,584 @@ a {
     <!-- =========================================================
          MAIN CONTENT AREA
     ========================================================== -->
+
     <main class="main">
 
         <!-- TOP BAR -->
+
         <header class="topbar">
             <h1>
-                <i data-lucide="layout-dashboard" style="width: 18px; height: 18px; color: #dd2d27;"></i>
+                <i data-lucide="layout-dashboard"
+                   style="width: 18px; height: 18px; color: #dd2d27;"></i>
+
                 EduTrack Dashboard
             </h1>
-            <span class="topbar-badge">Live System Overview</span>
+
+            <span class="topbar-badge">
+                Live System Overview
+            </span>
         </header>
 
         <section class="content">
 
-            <!-- WELCOME & QUICK ACTIONS -->
+            <!-- =====================================================
+                 WELCOME & QUICK ACTIONS
+            ====================================================== -->
+
             <div class="welcome-card">
+
                 <div class="welcome-info">
-                    <h2>Welcome to EduTrack</h2>
-                    <p>Education management, corporate social responsibility impact & benefits tracking system.</p>
+
+                    <h2>
+                        Welcome to EduTrack
+                    </h2>
+
+                    <p>
+                        Education management, corporate social responsibility
+                        impact & benefits tracking system.
+                    </p>
+
                 </div>
+
                 <div class="quick-actions">
-                    <a href="{% url 'schools:portal' %}" class="btn-shadcn btn-shadcn-outline">
-                        <i data-lucide="building-2" style="width: 14px; height: 14px;"></i>
+
+                    <a href="{% url 'schools:portal' %}"
+                       class="btn-shadcn btn-shadcn-outline">
+
+                        <i data-lucide="building-2"
+                           style="width: 14px; height: 14px;"></i>
+
                         Schools Portal
                     </a>
-                    <a href="{% url 'students:add' %}" class="btn-shadcn btn-shadcn-outline">
-                        <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i>
+
+                    <a href="{% url 'students:add' %}"
+                       class="btn-shadcn btn-shadcn-outline">
+
+                        <i data-lucide="user-plus"
+                           style="width: 14px; height: 14px;"></i>
+
                         Add Student
                     </a>
-                    <a href="{% url 'distributions:add' %}" class="btn-shadcn btn-shadcn-primary">
-                        <i data-lucide="gift" style="width: 14px; height: 14px;"></i>
+
+                    <!-- ISSUE BENEFITS BUTTON -->
+
+                    <a href="{% url 'distributions:add' %}"
+                       class="btn-shadcn btn-shadcn-primary"
+                       style="color: #ffffff;">
+
+                        <i data-lucide="gift"
+                           style="width: 14px; height: 14px;"></i>
+
                         Issue Benefits
                     </a>
+
                 </div>
             </div>
 
-            <!-- CORE SYSTEM METRICS (SHADCN CARDS) -->
+            <!-- =====================================================
+                 CORE SYSTEM METRICS
+            ====================================================== -->
+
             <div>
+
                 <div class="section-header">
-                    <span class="section-heading">Core Institutions & Students</span>
+                    <span class="section-heading">
+                        Core Institutions & Students
+                    </span>
                 </div>
+
                 <div class="stats-grid">
+
                     <!-- Schools -->
-                    <a href="{% url 'schools:portal' %}" class="stat-card">
+
+                    <a href="{% url 'schools:portal' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Total Schools</span>
+
+                            <span class="stat-title">
+                                Total Schools
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="building-2"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ school_count }}</div>
+
+                        <div class="stat-value">
+                            {{ school_count }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-blue">Verified</span>
-                            <span>institutions covered</span>
+
+                            <span class="stat-badge badge-blue">
+                                Verified
+                            </span>
+
+                            <span>
+                                institutions covered
+                            </span>
+
                         </div>
+
                     </a>
 
                     <!-- Students -->
-                    <a href="{% url 'students:list' %}" class="stat-card">
+
+                    <a href="{% url 'students:list' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Total Students</span>
+
+                            <span class="stat-title">
+                                Total Students
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="graduation-cap"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ student_count }}</div>
+
+                        <div class="stat-value">
+                            {{ student_count }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-emerald">{{ active_student_count }} Active</span>
-                            <span>enrolled profiles</span>
+
+                            <span class="stat-badge badge-emerald">
+                                {{ active_student_count }} Active
+                            </span>
+
+                            <span>
+                                enrolled profiles
+                            </span>
+
                         </div>
+
                     </a>
 
                     <!-- Academic Records -->
-                    <a href="{% url 'academics:portal' %}" class="stat-card">
+
+                    <a href="{% url 'academics:portal' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Academic Records</span>
+
+                            <span class="stat-title">
+                                Academic Records
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="book-open"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ academic_record_count }}</div>
+
+                        <div class="stat-value">
+                            {{ academic_record_count }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-blue">Evaluated</span>
-                            <span>marks & grade logs</span>
+
+                            <span class="stat-badge badge-blue">
+                                Evaluated
+                            </span>
+
+                            <span>
+                                marks & grade logs
+                            </span>
+
                         </div>
+
                     </a>
 
                     <!-- Benefit Eligible -->
-                    <a href="{% url 'eligibility:portal' %}" class="stat-card">
+
+                    <a href="{% url 'eligibility:portal' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Eligible Students</span>
+
+                            <span class="stat-title">
+                                Eligible Students
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="check-circle-2"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ eligible_student_count }}</div>
+
+                        <div class="stat-value">
+                            {{ eligible_student_count }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-emerald">Qualified</span>
-                            <span>for CSR assistance</span>
+
+                            <span class="stat-badge badge-emerald">
+                                Qualified
+                            </span>
+
+                            <span>
+                                for CSR assistance
+                            </span>
+
                         </div>
+
                     </a>
+
                 </div>
             </div>
 
-            <!-- CSR BENEFITS & HARDWARE TRACKING -->
+            <!-- =====================================================
+                 CSR BENEFITS & HARDWARE TRACKING
+            ====================================================== -->
+
             <div>
+
                 <div class="section-header">
-                    <span class="section-heading">CSR Benefits, Distributions & Hardware</span>
+
+                    <span class="section-heading">
+                        CSR Benefits, Distributions & Hardware
+                    </span>
+
                 </div>
+
                 <div class="stats-grid">
+
                     <!-- Distributions -->
-                    <a href="{% url 'inventory:portal' %}" class="stat-card">
+
+                    <a href="{% url 'inventory:portal' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Distributions</span>
+
+                            <span class="stat-title">
+                                Distributions
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="package"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ distribution_count }}</div>
+
+                        <div class="stat-value">
+                            {{ distribution_count }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-purple">Issued</span>
-                            <span>kits & supplies</span>
+
+                            <span class="stat-badge badge-purple">
+                                Issued
+                            </span>
+
+                            <span>
+                                kits & supplies
+                            </span>
+
                         </div>
+
                     </a>
 
                     <!-- Students Benefited -->
-                    <a href="{% url 'distributions:list' %}" class="stat-card">
+
+                    <a href="{% url 'distributions:list' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Students Benefited</span>
+
+                            <span class="stat-title">
+                                Students Benefited
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="sparkles"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ students_benefited_count }}</div>
+
+                        <div class="stat-value">
+                            {{ students_benefited_count }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-emerald">Impact</span>
-                            <span>direct beneficiaries</span>
+
+                            <span class="stat-badge badge-emerald">
+                                Impact
+                            </span>
+
+                            <span>
+                                direct beneficiaries
+                            </span>
+
                         </div>
+
                     </a>
 
                     <!-- Corporate Internships -->
-                    <a href="{% url 'internships:portal' %}" class="stat-card">
+
+                    <a href="{% url 'internships:portal' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Corporate Internships</span>
+
+                            <span class="stat-title">
+                                Corporate Internships
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="briefcase"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ internship_count|default:"0" }}</div>
+
+                        <div class="stat-value">
+                            {{ internship_count|default:"0" }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-blue">{{ internship_eligible_count }} Eligible</span>
-                            <span>career placements</span>
+
+                            <span class="stat-badge badge-blue">
+                                {{ internship_eligible_count }} Eligible
+                            </span>
+
+                            <span>
+                                career placements
+                            </span>
+
                         </div>
+
                     </a>
 
                     <!-- Available Laptops -->
-                    <a href="{% url 'inventory:portal' %}" class="stat-card">
+
+                    <a href="{% url 'inventory:portal' %}"
+                       class="stat-card">
+
                         <div class="stat-header">
-                            <span class="stat-title">Available Laptops</span>
+
+                            <span class="stat-title">
+                                Available Laptops
+                            </span>
+
                             <div class="stat-icon-wrapper">
                                 <i data-lucide="laptop"></i>
                             </div>
+
                         </div>
-                        <div class="stat-value">{{ available_laptop_count }}</div>
+
+                        <div class="stat-value">
+                            {{ available_laptop_count }}
+                        </div>
+
                         <div class="stat-desc">
-                            <span class="stat-badge badge-amber">{{ issued_laptop_count }} in field</span>
-                            <span>ready for issue</span>
+
+                            <span class="stat-badge badge-amber">
+                                {{ issued_laptop_count }} in field
+                            </span>
+
+                            <span>
+                                ready for issue
+                            </span>
+
                         </div>
+
                     </a>
+
                 </div>
             </div>
 
-            <!-- =========================================================
+            <!-- =====================================================
                  TABLES & EVENT LOGS
-                 ========================================================= -->
+            ====================================================== -->
+
             <div class="tables-grid">
 
                 <!-- RECENT LAPTOP ASSIGNMENTS -->
+
                 <div class="table-card">
+
                     <div class="table-card-header">
+
                         <div class="table-card-title">
+
                             <i data-lucide="laptop"></i>
+
                             Recent Laptop Assignments
+
                         </div>
-                        <span class="table-card-count">{{ recent_assignments|length }} logs</span>
+
+                        <span class="table-card-count">
+                            {{ recent_assignments|length }} logs
+                        </span>
+
                     </div>
 
                     {% if recent_assignments %}
+
                     <table class="shadcn-table">
+
                         <thead>
+
                             <tr>
                                 <th>Student</th>
                                 <th>Assigned Device</th>
                             </tr>
+
                         </thead>
+
                         <tbody>
+
                             {% for assignment in recent_assignments %}
+
                             <tr>
+
                                 <td>
+
                                     <div class="cell-student">
-                                        <div class="student-avatar-mini">{{ assignment.student|make_list|first|upper }}</div>
-                                        <span>{{ assignment.student }}</span>
+
+                                        <div class="student-avatar-mini">
+                                            {{ assignment.student|make_list|first|upper }}
+                                        </div>
+
+                                        <span>
+                                            {{ assignment.student }}
+                                        </span>
+
                                     </div>
+
                                 </td>
+
                                 <td>
+
                                     <span class="item-badge">
-                                        <i data-lucide="hard-drive" style="width: 12px; height: 12px; color: #dd2d27;"></i>
+
+                                        <i data-lucide="hard-drive"
+                                           style="width: 12px; height: 12px; color: #dd2d27;"></i>
+
                                         {{ assignment.laptop }}
+
                                     </span>
+
                                 </td>
+
                             </tr>
+
                             {% endfor %}
+
                         </tbody>
+
                     </table>
+
                     {% else %}
+
                     <div class="empty-state">
+
                         <i data-lucide="laptop-2"></i>
-                        <span>No recent laptop assignments found.</span>
+
+                        <span>
+                            No recent laptop assignments found.
+                        </span>
+
                     </div>
+
                     {% endif %}
+
                 </div>
 
                 <!-- RECENT ELIGIBILITY -->
+
                 <div class="table-card">
+
                     <div class="table-card-header">
+
                         <div class="table-card-title">
+
                             <i data-lucide="clipboard-check"></i>
+
                             Recent Benefit Eligibility
+
                         </div>
-                        <span class="table-card-count">{{ recent_eligibility|length }} records</span>
+
+                        <span class="table-card-count">
+                            {{ recent_eligibility|length }} records
+                        </span>
+
                     </div>
 
                     {% if recent_eligibility %}
+
                     <table class="shadcn-table">
+
                         <thead>
+
                             <tr>
                                 <th>Student</th>
                                 <th>Evaluation Status</th>
                             </tr>
+
                         </thead>
+
                         <tbody>
+
                             {% for record in recent_eligibility %}
+
                             <tr>
+
                                 <td>
+
                                     <div class="cell-student">
-                                        <div class="student-avatar-mini">{{ record.student|make_list|first|upper }}</div>
-                                        <span>{{ record.student }}</span>
+
+                                        <div class="student-avatar-mini">
+                                            {{ record.student|make_list|first|upper }}
+                                        </div>
+
+                                        <span>
+                                            {{ record.student }}
+                                        </span>
+
                                     </div>
+
                                 </td>
+
                                 <td>
+
                                     <span class="item-badge">
-                                        <i data-lucide="check-circle-2" style="width: 12px; height: 12px; color: #059669;"></i>
+
+                                        <i data-lucide="check-circle-2"
+                                           style="width: 12px; height: 12px; color: #059669;"></i>
+
                                         {{ record }}
+
                                     </span>
+
                                 </td>
+
                             </tr>
+
                             {% endfor %}
+
                         </tbody>
+
                     </table>
+
                     {% else %}
+
                     <div class="empty-state">
+
                         <i data-lucide="file-question"></i>
-                        <span>No recent eligibility records found.</span>
+
+                        <span>
+                            No recent eligibility records found.
+                        </span>
+
                     </div>
+
                     {% endif %}
+
                 </div>
 
             </div>
@@ -1428,11 +1532,6 @@ a {
             }
         });
     </script>
+
 </body>
 </html>
-
-
-
-
-
-
