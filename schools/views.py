@@ -283,6 +283,45 @@ def api_clear_all_schools(request):
 
 
 @require_http_methods(["POST"])
+def api_clear_all_schools(request):
+    """Clear/delete all schools and their associated records from the database"""
+    try:
+        from students.models import Student
+        from eligibility.models import EligibilityRecord
+        from distributions.models import Distribution
+        from academics.models import AcademicRecord
+        from inventory.models import LaptopAssignment
+        from internships.models import InternshipPlacement
+
+        with transaction.atomic():
+            InternshipPlacement.objects.all().delete()
+            LaptopAssignment.objects.all().delete()
+            Distribution.objects.all().delete()
+            EligibilityRecord.objects.all().delete()
+            AcademicRecord.objects.all().delete()
+            Student.objects.all().delete()
+            SchoolMilestone.objects.all().delete()
+            SchoolResource.objects.all().delete()
+            GradeStrength.objects.all().delete()
+            deleted_count, _ = School.objects.all().delete()
+
+        try:
+            from reports.models import log_activity
+            log_activity(request, f"Cleared all schools from database ({deleted_count} schools deleted)", category="SCHOOL")
+        except Exception:
+            pass
+
+        return JsonResponse({
+            "success": True,
+            "message": f"Successfully deleted {deleted_count} school(s) and associated data.",
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@require_http_methods(["POST"])
 def api_edit_school(request, school_id):
     """Edit school details from Modal or Tab 2"""
     try:

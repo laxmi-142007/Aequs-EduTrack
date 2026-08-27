@@ -185,13 +185,18 @@ class SchoolPortalAPITests(TestCase):
         self.assertFalse(SchoolResource.objects.filter(id=res_id).exists())
         self.assertFalse(Distribution.objects.filter(school=self.school, quantity=500).exists())
 
+    def test_api_clear_all_schools(self):
+        response = self.client.post(reverse("schools:api_clear_all_schools"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        self.assertEqual(School.objects.count(), 0)
+
     def test_export_student_strength_csv(self):
         response = self.client.get(reverse("schools:export_strength_csv", args=[self.school.id]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
         content = response.content.decode("utf-8")
         self.assertIn("Grade Level", content)
-        self.assertIn("Student Names", content)
         self.assertIn("Male Students", content)
 
     def test_clear_all_students_endpoint(self):

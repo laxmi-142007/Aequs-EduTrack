@@ -744,9 +744,11 @@ def clear_all_students(request):
         from eligibility.models import EligibilityRecord
         from distributions.models import Distribution
         from academics.models import AcademicRecord
+        from inventory.models import LaptopAssignment
         from schools.models import GradeStrength, School
 
         with transaction.atomic():
+            LaptopAssignment.objects.all().delete()
             Distribution.objects.all().delete()
             EligibilityRecord.objects.all().delete()
             AcademicRecord.objects.all().delete()
