@@ -588,35 +588,102 @@ def api_delete_milestone(request, milestone_id):
 
 @require_http_methods(["POST"])
 def api_add_resource(request, school_id):
-    """Add a resource allocation record from Tab 7"""
+    """Add a resource allocation record from Tab 7, deduct inventory stock, and create Distribution record"""
     try:
+        from distributions.models import Distribution, BenefitType, RecipientType, SchoolEssentialType
+        from inventory.models import InventoryItem, StockTransaction
+
         school = get_object_or_404(School, id=school_id)
         if request.content_type == "application/json":
             data = json.loads(request.body)
         else:
             data = request.POST
 
+        item_id = data.get("item_id")
         resource_name = data.get("resource_name", "").strip()
         status = data.get("status", "Active").strip()
         quantity = int(data.get("quantity", 1))
         last_updated_note = data.get("last_updated_note", "").strip()
         details = data.get("details", "").strip()
 
-        if not resource_name:
-            return JsonResponse({"success": False, "error": "Resource name is required."}, status=400)
+        inventory_item = None
+        if item_id:
+            inventory_item = InventoryItem.objects.filter(id=item_id).first()
 
-        resource = SchoolResource.objects.create(
-            school=school,
-            resource_name=resource_name,
-            status=status,
-            quantity=quantity,
-            last_updated_note=last_updated_note or timezone.now().strftime("%B %Y"),
-            details=details,
-        )
+        if not inventory_item and resource_name:
+            inventory_item = InventoryItem.objects.filter(item_name__iexact=resource_name).first()
+
+        if not inventory_item:
+            return JsonResponse({"success": False, "error": "Selected item is not listed in Inventory. Please select an inventory item."}, status=400)
+
+        if inventory_item.current_stock < quantity:
+            return JsonResponse({
+                "success": False,
+                "error": f"Insufficient stock for '{inventory_item.item_name}'. Available: {inventory_item.current_stock} {inventory_item.unit}, requested: {quantity}."
+            }, status=400)
+
+        issued_by = request.user.username if request.user.is_authenticated else "Admin"
+
+        with transaction.atomic():
+            prev_stock = inventory_item.current_stock
+            inventory_item.current_stock -= quantity
+            inventory_item.save(update_fields=["current_stock", "updated_at"])
+
+            StockTransaction.objects.create(
+                item=inventory_item,
+                transaction_type=StockTransaction.TransactionType.STOCK_OUT,
+                quantity=quantity,
+                previous_stock=prev_stock,
+                new_stock=inventory_item.current_stock,
+                source_destination=f"Govt School: {school.name} (UDISE: {school.udise_code})",
+                reference_number=f"DIST-SCH-{school.udise_code}",
+                performed_by=issued_by,
+                notes=f"Allocated via School Portal: {details}".strip(),
+            )
+
+            resource = SchoolResource.objects.create(
+                school=school,
+                resource_name=inventory_item.item_name,
+                status=status,
+                quantity=quantity,
+                last_updated_note=last_updated_note or f"Stock deducted ({inventory_item.current_stock} remaining)",
+                details=details,
+            )
+
+            essential_type_map = {
+                "BENCHES": SchoolEssentialType.BENCHES,
+                "DESKS": SchoolEssentialType.DESKS,
+                "CHAIRS": SchoolEssentialType.CHAIRS,
+                "WHITE BOARDS": SchoolEssentialType.WHITE_BOARDS,
+                "WHITEBOARDS": SchoolEssentialType.WHITE_BOARDS,
+                "LIBRARY BOOKS": SchoolEssentialType.LIBRARY_BOOKS,
+                "LAB EQUIPMENT": SchoolEssentialType.LAB_EQUIPMENT,
+                "LABORATORY EQUIPMENT": SchoolEssentialType.LAB_EQUIPMENT,
+                "WATER FILTERS": SchoolEssentialType.WATER_FILTERS,
+                "FANS": SchoolEssentialType.FANS,
+                "SPORTS KITS": SchoolEssentialType.SPORTS_KITS,
+                "PROJECTORS": SchoolEssentialType.PROJECTORS,
+            }
+
+            norm_name = inventory_item.item_name.upper()
+            matched_essential = essential_type_map.get(norm_name, SchoolEssentialType.OTHER)
+
+            distribution = Distribution.objects.create(
+                school=school,
+                inventory_item=inventory_item,
+                benefit_type=BenefitType.SCHOOL_ESSENTIAL,
+                recipient_type=RecipientType.SCHOOL,
+                essential_item_type=matched_essential,
+                quantity=quantity,
+                academic_year="2026-27",
+                issued_by=issued_by,
+                remarks=f"School Resource Allocation: {inventory_item.item_name}. {details}".strip(),
+                distribution_date=timezone.localdate(),
+            )
 
         return JsonResponse({
             "success": True,
-            "message": "Resource allocated successfully!",
+            "message": f"Successfully allocated {quantity} {inventory_item.unit} of '{inventory_item.item_name}' to {school.name}. Stock remaining: {inventory_item.current_stock}.",
             "resource": {
                 "id": resource.id,
                 "resource_name": resource.resource_name,
@@ -624,7 +691,9 @@ def api_add_resource(request, school_id):
                 "quantity": resource.quantity,
                 "last_updated_note": resource.last_updated_note,
                 "details": resource.details,
-            }
+            },
+            "remaining_stock": inventory_item.current_stock,
+            "distribution_id": distribution.id,
         })
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
@@ -632,9 +701,21 @@ def api_add_resource(request, school_id):
 
 @require_http_methods(["POST"])
 def api_delete_resource(request, resource_id):
-    """Delete an allocated resource"""
+    """Delete an allocated resource and associated distribution record"""
     try:
+        from distributions.models import Distribution
+
         resource = get_object_or_404(SchoolResource, id=resource_id)
+        school = resource.school
+        res_name = resource.resource_name
+
+        # Delete associated distribution record for this school resource
+        Distribution.objects.filter(
+            school=school,
+            remarks__icontains=res_name,
+            quantity=resource.quantity
+        ).delete()
+
         resource.delete()
         return JsonResponse({"success": True, "message": "Resource deleted successfully."})
     except Exception as e:

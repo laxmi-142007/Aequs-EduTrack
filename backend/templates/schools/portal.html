@@ -966,16 +966,16 @@
                         </div>
                     </div>
                     
-                    <!-- 7. Resources Provided Content -->
+                    <!-- 7. Resources & Distributions Provided Content -->
                     <div id="resources" class="tab-content data-view">
                         <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <div class="section-header-action">
                             <div>
-                                <h2>📦 Resources Provided</h2>
-                                <p class="section-desc">Track resources, equipment, meals, and educational materials allocated to this school.</p>
+                                <h2>📦 Resources & Distributions Provided</h2>
+                                <p class="section-desc">Track resources, equipment, essentials, and benefit distributions allocated to this school.</p>
                             </div>
                             <div>
-                                <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">Allocate Resource</button>
+                                <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">+ Allocate Distribution / Resource</button>
                             </div>
                         </div>
 
@@ -1023,7 +1023,7 @@
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="headmaster-details" onclick="switchModalTab('headmaster-details')">👤 Headmaster</button>
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="student-strength" onclick="switchModalTab('student-strength')">📊 Student Strength</button>
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="view-history" onclick="switchModalTab('view-history')">📜 History</button>
-                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="resources" onclick="switchModalTab('resources')">📦 Resources</button>
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="resources" onclick="switchModalTab('resources')">📦 Resources & Distributions</button>
                 <button type="button" class="btn btn-sm btn-primary modal-tab-btn" data-modaltab="bulk-students" style="background: #dd2d27; border-color: #dd2d27;" onclick="switchModalTab('bulk-students')">👨‍🎓 Bulk Add Students</button>
             </div>
 
@@ -1068,39 +1068,58 @@
 
     <!-- Add Resource Modal -->
     <div id="addResourceModal" class="modal-overlay">
-        <div class="modal-card">
+        <div class="modal-card" style="max-width: 540px; width: 92%;">
             <div class="modal-header">
-                <h3>📦 Allocate New Resource</h3>
+                <h3>📦 Create Distribution / Allocate Resource</h3>
                 <button class="modal-close" onclick="closeModal('addResourceModal')">&times;</button>
             </div>
             <form id="addResourceForm" onsubmit="handleAddResource(event)">
+                
+                <!-- Search Box for Inventory Items -->
                 <div class="form-group">
-                    <label for="resourceName">Resource Name *</label>
-                    <input type="text" id="resourceName" required placeholder="e.g., Digital Smart Classroom Kits">
+                    <label for="inventorySearchInput">🔍 Search Inventory Items</label>
+                    <input type="text" id="inventorySearchInput" placeholder="Type to search/filter inventory items by name, SKU..." oninput="filterInventoryItems()">
                 </div>
+
+                <!-- Dropdown Select for Listed Inventory Items -->
+                <div class="form-group">
+                    <label for="inventoryItemSelect">Select Inventory Item *</label>
+                    <select id="inventoryItemSelect" required onchange="onInventoryItemChange()">
+                        <option value="">-- Loading Listed Inventory Items... --</option>
+                    </select>
+                </div>
+
+                <!-- Remaining Pieces Left Indicator -->
+                <div id="stockBadgeContainer" style="margin-top: 6px; margin-bottom: 15px;">
+                    <div style="background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <span>📦</span>
+                        <span id="remainingStockText">Select an inventory item above to view remaining pieces left</span>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="resourceStatus">Status</label>
                     <select id="resourceStatus">
-                        <option value="Active">Active</option>
+                        <option value="Active" selected>Active</option>
                         <option value="Delivered">Delivered</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Pending">Pending</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="resourceQuantity">Quantity</label>
-                    <input type="number" id="resourceQuantity" min="1" value="1">
+                    <label for="resourceQuantity">Quantity *</label>
+                    <input type="number" id="resourceQuantity" min="1" value="1" required oninput="validateQuantityAgainstStock()">
                 </div>
                 <div class="form-group">
                     <label for="resourceLastUpdated">Date / Period Note</label>
-                    <input type="text" id="resourceLastUpdated" placeholder="e.g., August 2024">
+                    <input type="text" id="resourceLastUpdated" placeholder="e.g., August 2026">
                 </div>
                 <div class="form-group">
                     <label for="resourceDetails">Details / Description</label>
-                    <textarea id="resourceDetails" rows="2" placeholder="Specifications, vendor or allocation details..."></textarea>
+                    <textarea id="resourceDetails" rows="2" placeholder="Specifications, distribution notes, or allocation details..."></textarea>
                 </div>
                 <div class="form-actions" style="margin-top: 15px;">
-                    <button type="submit" class="btn btn-primary">Allocate Resource</button>
+                    <button type="submit" class="btn btn-primary" id="addResourceSubmitBtn">Create Distribution</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addResourceModal')">Cancel</button>
                 </div>
             </form>
@@ -1706,24 +1725,155 @@ async function deleteMilestone(id) {
 }
 
 // 7. Resource Modals and Handlers
+let globalInventoryItems = [];
+
+async function loadInventoryItemsForSchoolModal() {
+    try {
+        const res = await fetch('/inventory/api/items/');
+        const data = await res.json();
+        if (data && data.items) {
+            globalInventoryItems = data.items;
+        } else if (Array.isArray(data)) {
+            globalInventoryItems = data;
+        }
+        renderInventoryDropdown(globalInventoryItems);
+    } catch (err) {
+        console.error("Error loading inventory items:", err);
+    }
+}
+
+function renderInventoryDropdown(items) {
+    const select = document.getElementById('inventoryItemSelect');
+    if (!select) return;
+
+    if (!items || items.length === 0) {
+        select.innerHTML = '<option value="">No matching inventory items found</option>';
+        updateStockIndicator(null);
+        return;
+    }
+
+    let html = '<option value="" data-stock="0" data-unit="Pieces">-- Select Listed Inventory Item --</option>';
+    items.forEach(item => {
+        const stock = item.current_stock !== undefined ? item.current_stock : 0;
+        const unit = item.unit || 'Pieces';
+        const name = item.item_name || item.name;
+        const sku = item.sku || '';
+        html += `<option value="${item.id}" data-stock="${stock}" data-unit="${unit}" data-name="${name}">
+            ${name} ${sku ? `(${sku})` : ''} - Stock: ${stock} ${unit}
+        </option>`;
+    });
+    select.innerHTML = html;
+}
+
+function filterInventoryItems() {
+    const query = document.getElementById('inventorySearchInput').value.trim().toLowerCase();
+    if (!query) {
+        renderInventoryDropdown(globalInventoryItems);
+        return;
+    }
+    const filtered = globalInventoryItems.filter(item => {
+        const name = (item.item_name || item.name || '').toLowerCase();
+        const sku = (item.sku || '').toLowerCase();
+        const cat = (item.category_display || item.category || '').toLowerCase();
+        return name.includes(query) || sku.includes(query) || cat.includes(query);
+    });
+    renderInventoryDropdown(filtered);
+}
+
+function onInventoryItemChange() {
+    const select = document.getElementById('inventoryItemSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    if (!selectedOption || !select.value) {
+        updateStockIndicator(null);
+        return;
+    }
+    const stock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
+    const unit = selectedOption.getAttribute('data-unit') || 'Pieces';
+    const name = selectedOption.getAttribute('data-name') || '';
+    updateStockIndicator({ name, stock, unit });
+    validateQuantityAgainstStock();
+}
+
+function updateStockIndicator(itemData) {
+    const badge = document.getElementById('stockBadgeContainer');
+    if (!badge) return;
+
+    if (!itemData) {
+        badge.innerHTML = `
+            <div style="background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>📦</span>
+                <span>Select an inventory item above to view remaining pieces left</span>
+            </div>`;
+        return;
+    }
+
+    if (itemData.stock > 0) {
+        badge.innerHTML = `
+            <div style="background: #ecfdf5; color: #047857; padding: 8px 12px; border-radius: 6px; border: 1px solid #a7f3d0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">✅</span>
+                <span><strong>Remaining Stock Left:</strong> <span style="font-size: 14px; font-weight: 800;">${itemData.stock} ${itemData.unit}</span> available in inventory</span>
+            </div>`;
+    } else {
+        badge.innerHTML = `
+            <div style="background: #fef2f2; color: #b91c1c; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">⚠️</span>
+                <span><strong>Out of Stock:</strong> 0 ${itemData.unit} remaining! Please restock inventory before allocating.</span>
+            </div>`;
+    }
+}
+
+function validateQuantityAgainstStock() {
+    const select = document.getElementById('inventoryItemSelect');
+    const selectedOption = select ? select.options[select.selectedIndex] : null;
+    const qtyInput = document.getElementById('resourceQuantity');
+    const submitBtn = document.getElementById('addResourceSubmitBtn');
+    if (!selectedOption || !select.value) return;
+
+    const availableStock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
+    const enteredQty = parseInt(qtyInput.value || '1', 10);
+
+    if (enteredQty > availableStock) {
+        if (submitBtn) submitBtn.disabled = true;
+        showToast(`Requested quantity (${enteredQty}) exceeds available stock (${availableStock})!`, 'error');
+    } else {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+}
+
 function openAddResourceModal() {
     if (!currentSchoolId) {
         showToast('Please select a school first', 'error');
         return;
     }
     document.getElementById('addResourceForm').reset();
+    updateStockIndicator(null);
+    loadInventoryItemsForSchoolModal();
     document.getElementById('addResourceModal').classList.add('open');
 }
 
 async function handleAddResource(e) {
     e.preventDefault();
+    const select = document.getElementById('inventoryItemSelect');
+    const selectedOpt = select ? select.options[select.selectedIndex] : null;
+    const itemId = select ? select.value : null;
+    const resourceName = selectedOpt ? selectedOpt.getAttribute('data-name') : '';
+
+    if (!itemId) {
+        showToast('Please select a valid inventory item.', 'error');
+        return;
+    }
+
     const payload = {
-        resource_name: document.getElementById('resourceName').value.trim(),
+        item_id: itemId,
+        resource_name: resourceName,
         status: document.getElementById('resourceStatus').value,
         quantity: document.getElementById('resourceQuantity').value,
         last_updated_note: document.getElementById('resourceLastUpdated').value.trim(),
         details: document.getElementById('resourceDetails').value.trim()
     };
+
+    const btn = document.getElementById('addResourceSubmitBtn');
+    btn.disabled = true;
 
     try {
         const res = await fetch(`/schools/api/schools/${currentSchoolId}/resources/add/`, {
@@ -1739,11 +1889,14 @@ async function handleAddResource(e) {
             showToast(data.message || 'Resource allocated!');
             closeModal('addResourceModal');
             fetchAndPopulateSchoolData(currentSchoolId);
+            loadInventoryItemsForSchoolModal();
         } else {
             showToast(data.error || 'Failed to allocate resource', 'error');
         }
     } catch (err) {
         showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
     }
 }
 
@@ -1758,6 +1911,7 @@ async function deleteResource(id) {
         if (data.success) {
             showToast(data.message || 'Resource removed.');
             fetchAndPopulateSchoolData(currentSchoolId);
+            loadInventoryItemsForSchoolModal();
         }
     } catch (err) {
         showToast('Error: ' + err.message, 'error');
