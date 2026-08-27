@@ -91,3 +91,20 @@ class AcademicSectionTests(TestCase):
         data = response.json()
         self.assertTrue(data["success"])
         self.assertGreaterEqual(len(data["students"]), 1)
+
+    def test_academic_bulk_upload(self):
+        import io
+        csv_data = (
+            "Student Name,Academic Year,Class,Percentage,Rank,Promotion Status\n"
+            "Aarav Sharma,2023-2024,Class 5,95.5,1,Promoted\n"
+        )
+        csv_file = io.BytesIO(csv_data.encode("utf-8"))
+        csv_file.name = "test_academics.csv"
+        response = self.client.post(
+            reverse("academics:bulk_upload"),
+            data={"academic_file": csv_file}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.record.refresh_from_db()
+        self.assertEqual(self.record.percentage, Decimal("95.5"))
+

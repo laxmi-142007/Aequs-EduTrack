@@ -836,76 +836,81 @@ def api_get_students(request):
 # BULK UPLOAD
 # ============================================================================
 
+def _normalize_academic_header(name):
+    if not name:
+        return ""
+    cleaned = str(name).strip().lower().replace(" ", "_").replace("-", "_")
+    alias_map = {
+        "admission_no": "admission_number",
+        "adm_no": "admission_number",
+        "admission_num": "admission_number",
+        "adm_number": "admission_number",
+        "student_name": "student_name",
+        "name": "student_name",
+        "full_name": "student_name",
+        "student": "student_name",
+        "year": "academic_year",
+        "academic_year": "academic_year",
+        "year_or_date": "academic_year",
+        "class": "class_or_course",
+        "grade": "class_or_course",
+        "current_class": "class_or_course",
+        "class_or_course": "class_or_course",
+        "course": "class_or_course",
+        "marks": "marks_obtained",
+        "marks_obtained": "marks_obtained",
+        "obtained_marks": "marks_obtained",
+        "total_marks": "total_marks",
+        "max_marks": "total_marks",
+        "out_of": "total_marks",
+        "percentage": "percentage",
+        "percent": "percentage",
+        "pct": "percentage",
+        "status": "promotion_status",
+        "promotion_status": "promotion_status",
+        "result": "promotion_status",
+        "previous_class": "previous_class",
+        "prev_class": "previous_class",
+        "transfer_school": "transfer_school",
+        "remarks": "remarks",
+    }
+    return alias_map.get(cleaned, cleaned)
+
+
 def academic_bulk_upload(request):
     """
-    Bulk upload academic records from CSV.
-
-    Required columns:
-        admission_number
-        academic_year
-        class_or_course
-
-    Optional columns:
-        marks_obtained
-        total_marks
-        percentage
-        previous_class
-        promotion_status
-        transfer_school
-        remarks
+    Bulk upload academic records from CSV or Excel (.xlsx).
     """
 
-    # ------------------------------------------------------------------------
-    # GET = display upload page / download template
-    # ------------------------------------------------------------------------
-
     if request.method == "GET":
-
         if request.GET.get("download") == "template":
-
-            response = HttpResponse(
-                content_type="text/csv"
-            )
-
-            response[
-                "Content-Disposition"
-            ] = (
-                'attachment; '
-                'filename="academic_bulk_upload_template.csv"'
-            )
-
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="academic_bulk_upload_template.csv"'
             writer = csv.writer(response)
-
-            writer.writerow(
-                [
-                    "admission_number",
-                    "academic_year",
-                    "class_or_course",
-                    "marks_obtained",
-                    "total_marks",
-                    "percentage",
-                    "previous_class",
-                    "promotion_status",
-                    "transfer_school",
-                    "remarks",
-                ]
-            )
-
-            writer.writerow(
-                [
-                    "ADM-2023-001",
-                    "2025-2026",
-                    "Class 6",
-                    "450",
-                    "500",
-                    "",
-                    "",
-                    "Promoted",
-                    "",
-                    "",
-                ]
-            )
-
+            writer.writerow([
+                "Student Name",
+                "Academic Year",
+                "Class",
+                "Percentage",
+                "Rank",
+                "Promotion Status",
+            ])
+            writer.writerow([
+                "Kavish Goel",
+                "2025-26",
+                "10",
+                "92.5",
+                "1",
+                "Promoted",
+            ])
+            writer.writerow([
+                "Rhea Kapoor",
+                "2025-26",
+                "10",
+                "88.0",
+                "2",
+                "Promoted",
+            ])
             return response
 
         return render(
@@ -913,455 +918,188 @@ def academic_bulk_upload(request):
             "academics/bulk_upload.html",
         )
 
-    # ------------------------------------------------------------------------
-    # POST = process uploaded CSV
-    # ------------------------------------------------------------------------
-
-    uploaded_file = request.FILES.get(
-        "academic_file"
+    uploaded_file = (
+        request.FILES.get("academic_file")
+        or request.FILES.get("csv_file")
+        or request.FILES.get("file")
     )
 
     if not uploaded_file:
+        messages.error(request, "Please select a CSV or Excel file to upload.")
+        return redirect("academics:bulk_upload")
 
-        messages.error(
-            request,
-            "Please select a CSV file.",
-        )
-
-        return redirect(
-            "academics:bulk_upload"
-        )
-
-    if not uploaded_file.name.lower().endswith(
-        ".csv"
-    ):
-
-        messages.error(
-            request,
-            "Only CSV files are supported.",
-        )
-
-        return redirect(
-            "academics:bulk_upload"
-        )
+    filename = uploaded_file.name.lower()
+    if not (filename.endswith(".csv") or filename.endswith(".xlsx")):
+        messages.error(request, "Only CSV (.csv) and Excel (.xlsx) files are supported.")
+        return redirect("academics:bulk_upload")
 
     try:
+        rows_data = []
 
-        raw_data = uploaded_file.read()
+        if filename.endswith(".csv"):
+            raw_data = uploaded_file.read()
+            text = raw_data.decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(text))
+            if not reader.fieldnames:
+                messages.error(request, "The CSV file is empty.")
+                return redirect("academics:bulk_upload")
 
-        text = raw_data.decode(
-            "utf-8-sig"
-        )
+            for row in reader:
+                normalized_row = {}
+                for original_key, val in row.items():
+                    norm_key = _normalize_academic_header(original_key)
+                    if norm_key:
+                        normalized_row[norm_key] = val
+                rows_data.append(normalized_row)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(uploaded_file, data_only=True)
+            sheet = wb.active
+            all_rows = list(sheet.iter_rows(values_only=True))
+            if not all_rows or len(all_rows) < 2:
+                messages.error(request, "The Excel file is empty.")
+                return redirect("academics:bulk_upload")
 
-        reader = csv.DictReader(
-            io.StringIO(text)
-        )
+            headers = [_normalize_academic_header(h) for h in all_rows[0]]
+            for row_vals in all_rows[1:]:
+                if not any(row_vals):
+                    continue
+                row_dict = {}
+                for idx, val in enumerate(row_vals):
+                    if idx < len(headers) and headers[idx]:
+                        row_dict[headers[idx]] = str(val) if val is not None else ""
+                rows_data.append(row_dict)
 
-        if not reader.fieldnames:
-
-            messages.error(
-                request,
-                "The CSV file is empty.",
-            )
-
-            return redirect(
-                "academics:bulk_upload"
-            )
-
-        # Normalize column names.
-        reader.fieldnames = [
-            field.strip().lower().replace(
-                " ",
-                "_",
-            )
-            if field
-            else ""
-            for field in reader.fieldnames
-        ]
-
-        required_columns = {
-            "admission_number",
-            "academic_year",
-            "class_or_course",
-        }
-
-        missing = (
-            required_columns
-            - set(reader.fieldnames)
-        )
-
-        if missing:
-
-            messages.error(
-                request,
-                "Missing required columns: "
-                + ", ".join(
-                    sorted(missing)
-                ),
-            )
-
-            return redirect(
-                "academics:bulk_upload"
-            )
+        if not rows_data:
+            messages.error(request, "No rows found in the uploaded file.")
+            return redirect("academics:bulk_upload")
 
         created_count = 0
         updated_count = 0
         errors = []
 
-        rows = list(reader)
-
-        # --------------------------------------------------------------------
-        # Validate/process entire file as one transaction.
-        # --------------------------------------------------------------------
-
         with transaction.atomic():
-
-            for row_number, row in enumerate(
-                rows,
-                start=2,
-            ):
-
+            for row_number, row in enumerate(rows_data, start=2):
                 try:
+                    admission_number = str(row.get("admission_number") or "").strip()
+                    student_name = str(row.get("student_name") or "").strip()
+                    academic_year = str(row.get("academic_year") or "2025-26").strip()
+                    class_or_course = str(row.get("class_or_course") or "").strip()
 
-                    admission_number = (
-                        row.get(
-                            "admission_number"
-                        )
-                        or ""
-                    ).strip()
-
-                    academic_year = (
-                        row.get(
-                            "academic_year"
-                        )
-                        or ""
-                    ).strip()
-
-                    class_or_course = (
-                        row.get(
-                            "class_or_course"
-                        )
-                        or ""
-                    ).strip()
-
-                    if not admission_number:
-                        raise ValueError(
-                            "Admission number is required."
-                        )
-
-                    if not academic_year:
-                        raise ValueError(
-                            "Academic year is required."
-                        )
-
-                    if not class_or_course:
-                        raise ValueError(
-                            "Class/course is required."
-                        )
-
-                    # --------------------------------------------------------
-                    # Find student.
-                    # --------------------------------------------------------
-
-                    student = (
-                        Student.objects
-                        .select_related("school")
-                        .filter(
-                            admission_number__iexact=(
-                                admission_number
-                            )
-                        )
-                        .first()
-                    )
+                    # Find student by student_name or admission_number
+                    student = None
+                    if student_name:
+                        student = Student.objects.select_related("school").filter(student_name__iexact=student_name).first()
+                    if not student and admission_number:
+                        student = Student.objects.select_related("school").filter(admission_number__iexact=admission_number).first()
+                    if not student and student_name:
+                        student = Student.objects.select_related("school").filter(student_name__icontains=student_name).first()
 
                     if not student:
+                        ident = student_name or admission_number or f"Row {row_number}"
+                        raise ValueError(f"No student found for '{ident}'. Please ensure student is registered.")
 
-                        raise ValueError(
-                            "No student found with "
-                            f"admission number "
-                            f"'{admission_number}'."
-                        )
+                    if not class_or_course:
+                        class_or_course = student.current_class or "General"
 
-                    # --------------------------------------------------------
-                    # Decimal helper.
-                    # --------------------------------------------------------
-
-                    def clean_decimal(
-                        field_name
-                    ):
-
-                        value = (
-                            row.get(field_name)
-                            or ""
-                        ).strip()
-
-                        if value == "":
+                    def clean_decimal(field_name):
+                        val = str(row.get(field_name) or "").strip()
+                        if not val or val == "-":
                             return None
-
                         try:
+                            return Decimal(val)
+                        except (InvalidOperation, ValueError):
+                            raise ValueError(f"Invalid {field_name}: '{val}'.")
 
-                            return Decimal(
-                                value
-                            )
+                    marks_obtained = clean_decimal("marks_obtained")
+                    total_marks = clean_decimal("total_marks")
+                    percentage = clean_decimal("percentage")
 
-                        except (
-                            InvalidOperation,
-                            ValueError,
-                        ):
+                    rank_int = None
+                    rank_str = str(row.get("rank") or "").strip()
+                    if rank_str and rank_str != "-":
+                        try:
+                            rank_int = int(Decimal(rank_str))
+                        except Exception:
+                            pass
 
-                            raise ValueError(
-                                f"Invalid "
-                                f"{field_name}: "
-                                f"'{value}'."
-                            )
+                    promotion_status = str(row.get("promotion_status") or "Promoted").strip()
+                    previous_class = str(row.get("previous_class") or "").strip()
+                    transfer_school = str(row.get("transfer_school") or "").strip()
+                    remarks = str(row.get("remarks") or "").strip()
 
-                    marks_obtained = (
-                        clean_decimal(
-                            "marks_obtained"
-                        )
-                    )
+                    # Find existing AcademicRecord to update, or create new
+                    record = AcademicRecord.objects.filter(
+                        student=student,
+                        academic_year=academic_year,
+                        class_or_course=class_or_course,
+                    ).first()
 
-                    total_marks = (
-                        clean_decimal(
-                            "total_marks"
-                        )
-                    )
-
-                    percentage = (
-                        clean_decimal(
-                            "percentage"
-                        )
-                    )
-
-                    # --------------------------------------------------------
-                    # Validate marks.
-                    # --------------------------------------------------------
-
-                    if marks_obtained is not None:
-
-                        if marks_obtained < 0:
-                            raise ValueError(
-                                "Marks obtained "
-                                "cannot be negative."
-                            )
-
-                    if total_marks is not None:
-
-                        if total_marks <= 0:
-                            raise ValueError(
-                                "Total marks must "
-                                "be greater than zero."
-                            )
-
-                    if (
-                        marks_obtained is not None
-                        and total_marks is not None
-                        and marks_obtained > total_marks
-                    ):
-
-                        raise ValueError(
-                            "Marks obtained cannot "
-                            "be greater than total marks."
-                        )
-
-                    if percentage is not None:
-
-                        if (
-                            percentage < 0
-                            or percentage > 100
-                        ):
-
-                            raise ValueError(
-                                "Percentage must "
-                                "be between 0 and 100."
-                            )
-
-                    # --------------------------------------------------------
-                    # Rank is normally calculated by model.save().
-                    # Do not force an uploaded rank because the model
-                    # automatically recalculates ranks.
-                    # --------------------------------------------------------
-
-                    promotion_status = (
-                        row.get(
-                            "promotion_status"
-                        )
-                        or ""
-                    ).strip()
-
-                    previous_class = (
-                        row.get(
-                            "previous_class"
-                        )
-                        or ""
-                    ).strip()
-
-                    transfer_school = (
-                        row.get(
-                            "transfer_school"
-                        )
-                        or ""
-                    ).strip()
-
-                    remarks = (
-                        row.get(
-                            "remarks"
-                        )
-                        or ""
-                    ).strip()
-
-                    # --------------------------------------------------------
-                    # Find existing record using the model's unique key.
-                    # --------------------------------------------------------
-
-                    record = (
-                        AcademicRecord.objects
-                        .filter(
+                    if not record:
+                        record = AcademicRecord.objects.filter(
                             student=student,
                             academic_year=academic_year,
-                            class_or_course=class_or_course,
-                        )
-                        .first()
-                    )
+                        ).first()
 
                     if record:
-
-                        record.marks_obtained = (
-                            marks_obtained
-                        )
-
-                        record.total_marks = (
-                            total_marks
-                        )
-
-                        # If marks are supplied, the model will calculate
-                        # percentage automatically.
-                        #
-                        # If marks are not supplied, preserve the uploaded
-                        # percentage.
-                        if (
-                            marks_obtained is not None
-                            and total_marks is not None
-                        ):
+                        record.class_or_course = class_or_course
+                        if marks_obtained is not None:
+                            record.marks_obtained = marks_obtained
+                        if total_marks is not None:
+                            record.total_marks = total_marks
+                        if marks_obtained is not None and total_marks is not None:
                             record.percentage = None
                         elif percentage is not None:
                             record.percentage = percentage
-
+                        if rank_int is not None:
+                            record.rank = rank_int
                         if previous_class:
-                            record.previous_class = (
-                                previous_class
-                            )
-
-                        record.promotion_status = (
-                            promotion_status
-                        )
-
-                        record.transfer_school = (
-                            transfer_school
-                        )
-
-                        record.remarks = remarks
-
+                            record.previous_class = previous_class
+                        if promotion_status:
+                            record.promotion_status = promotion_status
+                        if transfer_school:
+                            record.transfer_school = transfer_school
+                        if remarks:
+                            record.remarks = remarks
                         record.save()
-
                         updated_count += 1
-
                     else:
-
                         record = AcademicRecord(
                             student=student,
                             academic_year=academic_year,
                             class_or_course=class_or_course,
-                            marks_obtained=(
-                                marks_obtained
-                            ),
-                            total_marks=(
-                                total_marks
-                            ),
-                            promotion_status=(
-                                promotion_status
-                            ),
-                            transfer_school=(
-                                transfer_school
-                            ),
+                            marks_obtained=marks_obtained,
+                            total_marks=total_marks,
+                            promotion_status=promotion_status,
+                            transfer_school=transfer_school,
                             remarks=remarks,
                         )
-
-                        if (
-                            marks_obtained is None
-                            or total_marks is None
-                        ):
-                            record.percentage = (
-                                percentage
-                            )
-
+                        if marks_obtained is None or total_marks is None:
+                            record.percentage = percentage
+                        if rank_int is not None:
+                            record.rank = rank_int
                         if previous_class:
-                            record.previous_class = (
-                                previous_class
-                            )
-
+                            record.previous_class = previous_class
                         record.save()
-
                         created_count += 1
 
                 except Exception as exc:
-
-                    errors.append(
-                        f"Row {row_number}: {exc}"
-                    )
-
-            # ---------------------------------------------------------------
-            # If any row fails, roll back the entire upload.
-            # ---------------------------------------------------------------
+                    errors.append(f"Row {row_number}: {exc}")
 
             if errors:
-
-                error_message = (
-                    "Upload failed. No records were "
-                    "saved because the following "
-                    "rows contain errors:\n\n"
-                    + "\n".join(errors)
-                )
-
-                raise ValueError(
-                    error_message
-                )
+                error_msg = "Upload failed. The following rows contain errors:\n\n" + "\n".join(errors)
+                raise ValueError(error_msg)
 
         messages.success(
             request,
-            (
-                "Upload completed successfully. "
-                f"Created: {created_count}, "
-                f"Updated: {updated_count}."
-            ),
+            f"Academic bulk upload completed successfully! Created: {created_count}, Updated: {updated_count} record(s)."
         )
-
-    except UnicodeDecodeError:
-
-        messages.error(
-            request,
-            (
-                "The CSV file is not UTF-8 encoded. "
-                "Please save the CSV as UTF-8 and "
-                "upload again."
-            ),
-        )
+        return redirect("academics:portal")
 
     except ValueError as exc:
-
-        messages.error(
-            request,
-            str(exc),
-        )
-
+        messages.error(request, str(exc))
     except Exception as exc:
+        messages.error(request, f"Bulk upload failed: {exc}")
 
-        messages.error(
-            request,
-            f"Upload failed: {exc}",
-        )
-
-    return redirect(
-        "academics:bulk_upload"
-    )
+    return redirect("academics:bulk_upload")
 

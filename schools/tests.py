@@ -173,7 +173,22 @@ class SchoolPortalAPITests(TestCase):
         self.assertEqual(response["Content-Type"], "text/csv")
         content = response.content.decode("utf-8")
         self.assertIn("Grade Level", content)
+        self.assertIn("Student Names", content)
         self.assertIn("Male Students", content)
+
+    def test_clear_all_students_endpoint(self):
+        from students.models import Student
+        Student.objects.create(
+            admission_number="ST-9999",
+            student_name="Test Student Clear",
+            gender="MALE",
+            school=self.school,
+            current_class="10"
+        )
+        self.assertTrue(Student.objects.filter(admission_number="ST-9999").exists())
+        response = self.client.post(reverse("students:clear_all"))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Student.objects.filter(admission_number="ST-9999").exists())
 
     def test_api_auth_login(self):
         response = self.client.post(

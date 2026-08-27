@@ -15,12 +15,9 @@ from django.utils import timezone
 from openpyxl import load_workbook
 from .models import School, SchoolMilestone, SchoolResource, GradeStrength
 from django.shortcuts import render, redirect
-
 from .models import School
 from .forms import SchoolForm
-
 User = get_user_model()
-
 DEFAULT_GRADES = [
     {"grade_level": "Nursery", "male": 120, "female": 135, "change": "+15", "order": 1},
     {"grade_level": "Class 1", "male": 250, "female": 245, "change": "+5", "order": 2},
@@ -31,27 +28,46 @@ DEFAULT_GRADES = [
     {"grade_level": "Class 6 - 12", "male": 350, "female": 320, "change": "+20", "order": 7},
 ]
 
-
 def _ensure_default_grades(school):
-    if not school.grade_strengths.exists():
-        total_sum = 0
-        for item in DEFAULT_GRADES:
-            total = int(item["male"]) + int(item["female"])
-            total_sum += total
+    actual_students = school.students.all()
+    actual_count = actual_students.count()
+
+    if actual_count > 0:
+        from django.db.models import Count, Q
+        class_counts = actual_students.values("current_class").annotate(
+            males=Count("id", filter=Q(gender="MALE")),
+            females=Count("id", filter=Q(gender="FEMALE")),
+            total=Count("id")
+        )
+        school.grade_strengths.all().delete()
+        for idx, item in enumerate(class_counts, 1):
+            c_name_val = item["current_class"]
+            c_name = c_name_val or "General"
+            class_student_names = list(actual_students.filter(current_class=c_name_val).values_list("student_name", flat=True))
+            names_str = ", ".join([n for n in class_student_names if n])
             GradeStrength.objects.create(
                 school=school,
-                grade_level=item["grade_level"],
-                male_students=item["male"],
-                female_students=item["female"],
-                total_students=total,
-                change_vs_last_year=item["change"],
-                order=item["order"],
+                grade_level=c_name,
+                male_students=item["males"],
+                female_students=item["females"],
+                total_students=item["total"],
+                change_vs_last_year="0",
+                order=idx,
+                student_names=names_str,
             )
-        school.student_strength = total_sum
-        school.save(update_fields=["student_strength"])
+        if school.student_strength != actual_count:
+            school.student_strength = actual_count
+            school.save(update_fields=["student_strength"])
+    else:
+        # No students added to this school yet -> student strength stays at 0
+        school.grade_strengths.all().delete()
+        if school.student_strength != 0:
+            school.student_strength = 0
+            school.save(update_fields=["student_strength"])
 
 
 def _school_to_dict(school):
+    actual_count = school.students.count() if hasattr(school, "students") else 0
     return {
         "id": school.id,
         "name": school.name,
@@ -70,7 +86,7 @@ def _school_to_dict(school):
         "headmaster_experience": school.headmaster_experience,
         "headmaster_photo_url": school.headmaster_photo.url if school.headmaster_photo else "",
         "affiliation": school.affiliation,
-        "student_strength": school.student_strength,
+        "student_strength": actual_count,
         "established_date": school.established_date.strftime("%Y-%m-%d") if school.established_date else "",
         "established_year": school.established_year or "",
         "status": school.status,
@@ -83,64 +99,6 @@ def portal_view(request):
     Main Government School Management Portal view.
     """
     schools = School.objects.all().order_by("name")
-    
-    # If no schools exist, let's create a default one for a great first experience
-    if not schools.exists():
-        default_school = School.objects.create(
-            name="Govt. Model High School",
-            udise_code="29010200301",
-            district="Bangalore Urban",
-            taluk="South",
-            village="Jayanagar",
-            pincode="560041",
-            address="7th Main, 4th Block, Jayanagar, Bangalore",
-            phone="+91 98765 43210",
-            email="info@govtmodelhigh.edu.in",
-            website="https://govtmodelhigh.edu.in",
-            headmaster_name="Dr. Ramesh Kumar",
-            headmaster_phone="+91 98450 12345",
-            headmaster_qualification="M.Sc., M.Ed., Ph.D.",
-            headmaster_experience=18,
-            affiliation="State",
-            status=School.Status.ACTIVE,
-            established_year=1985,
-        )
-        _ensure_default_grades(default_school)
-        
-        # Default milestones
-        SchoolMilestone.objects.create(
-            school=default_school,
-            title="Completion of New Wing",
-            year_or_date="2020",
-            details="Increased capacity from 500 to 800 students.",
-            impact="Improved infrastructure and learning environment.",
-        )
-        SchoolMilestone.objects.create(
-            school=default_school,
-            title="Sworn-in Ceremony of New Principal",
-            year_or_date="2023",
-            details="Introduction of modern pedagogical tools and curriculum updates.",
-            impact="Elevated teaching standards and community engagement.",
-        )
-        
-        # Default resources
-        SchoolResource.objects.create(
-            school=default_school,
-            resource_name="Mid-Day Meal Provisions",
-            status="Active",
-            quantity=1,
-            last_updated_note="October 2023",
-            details="Nutritious meals provided daily for all enrolled primary & secondary students.",
-        )
-        SchoolResource.objects.create(
-            school=default_school,
-            resource_name="Digital Smart Classroom Kits (x3)",
-            status="Delivered",
-            quantity=3,
-            last_updated_note="August 2023",
-            details="Interactive smart boards, projectors, and educational tablets for STEM classes.",
-        )
-        schools = School.objects.all().order_by("name")
 
     for s in schools:
         _ensure_default_grades(s)
@@ -194,7 +152,7 @@ def api_school_detail(request, school_id):
     _ensure_default_grades(school)
     
     strengths = list(school.grade_strengths.values(
-        "id", "grade_level", "male_students", "female_students", "total_students", "change_vs_last_year", "order"
+        "id", "grade_level", "student_names", "male_students", "female_students", "total_students", "change_vs_last_year", "order"
     ))
     
     milestones = list(school.milestones.values(
@@ -286,6 +244,42 @@ def api_add_school(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@require_http_methods(["POST"])
+def api_clear_all_schools(request):
+    """Clear/delete all schools and their associated records from the database"""
+    try:
+        from students.models import Student
+        from eligibility.models import EligibilityRecord
+        from distributions.models import Distribution
+        from academics.models import AcademicRecord
+
+        with transaction.atomic():
+            Distribution.objects.all().delete()
+            EligibilityRecord.objects.all().delete()
+            AcademicRecord.objects.all().delete()
+            Student.objects.all().delete()
+            SchoolMilestone.objects.all().delete()
+            SchoolResource.objects.all().delete()
+            GradeStrength.objects.all().delete()
+            deleted_count, _ = School.objects.all().delete()
+
+        try:
+            from reports.models import log_activity
+            log_activity(request, f"Cleared all schools from database ({deleted_count} schools deleted)", category="SCHOOL")
+        except Exception:
+            pass
+
+        return JsonResponse({
+            "success": True,
+            "message": f"Successfully deleted {deleted_count} school(s) and associated data.",
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
 
 
 @require_http_methods(["POST"])
@@ -425,7 +419,7 @@ def api_get_strength(request, school_id):
     school = get_object_or_404(School, id=school_id)
     _ensure_default_grades(school)
     strengths = list(school.grade_strengths.values(
-        "id", "grade_level", "male_students", "female_students", "total_students", "change_vs_last_year", "order"
+        "id", "grade_level", "student_names", "male_students", "female_students", "total_students", "change_vs_last_year", "order"
     ))
     return JsonResponse({
         "success": True,
@@ -452,12 +446,16 @@ def api_update_strength(request, school_id):
         female = int(data.get("female_students", 0))
         change = data.get("change_vs_last_year", "0")
 
+        student_names = data.get("student_names", "")
+
         if grade_id:
             grade_obj = get_object_or_404(GradeStrength, id=grade_id, school=school)
             grade_obj.male_students = male
             grade_obj.female_students = female
             grade_obj.total_students = male + female
             grade_obj.change_vs_last_year = change
+            if "student_names" in data:
+                grade_obj.student_names = student_names
             grade_obj.save()
         elif grade_level:
             grade_obj, _ = GradeStrength.objects.update_or_create(
@@ -468,6 +466,7 @@ def api_update_strength(request, school_id):
                     "female_students": female,
                     "total_students": male + female,
                     "change_vs_last_year": change,
+                    "student_names": student_names,
                 }
             )
 
@@ -499,11 +498,12 @@ def export_student_strength_csv(request, school_id=None):
         writer.writerow(["School Name", school.name])
         writer.writerow(["UDISE Code", school.udise_code])
         writer.writerow([])
-        writer.writerow(["Grade Level", "Male Students", "Female Students", "Total Students", "Change (vs. Last Year)"])
+        writer.writerow(["Grade Level", "Student Names", "Male Students", "Female Students", "Total Students", "Change (vs. Last Year)"])
         
         for g in school.grade_strengths.all():
             writer.writerow([
                 g.grade_level,
+                g.student_names or "-",
                 g.male_students,
                 g.female_students,
                 g.total_students,
@@ -512,11 +512,11 @@ def export_student_strength_csv(request, school_id=None):
             
         total_m = sum(g.male_students for g in school.grade_strengths.all())
         total_f = sum(g.female_students for g in school.grade_strengths.all())
-        writer.writerow(["Total", total_m, total_f, school.student_strength, ""])
+        writer.writerow(["Total", "-", total_m, total_f, school.student_strength, ""])
     else:
         response["Content-Disposition"] = 'attachment; filename="All_Schools_Student_Strength.csv"'
         writer = csv.writer(response)
-        writer.writerow(["School Name", "UDISE Code", "Grade Level", "Male Students", "Female Students", "Total Students", "Change"])
+        writer.writerow(["School Name", "UDISE Code", "Grade Level", "Student Names", "Male Students", "Female Students", "Total Students", "Change"])
         for s in School.objects.all():
             _ensure_default_grades(s)
             for g in s.grade_strengths.all():
@@ -524,6 +524,7 @@ def export_student_strength_csv(request, school_id=None):
                     s.name,
                     s.udise_code,
                     g.grade_level,
+                    g.student_names or "-",
                     g.male_students,
                     g.female_students,
                     g.total_students,
@@ -703,7 +704,12 @@ def bulk_upload_schools(request):
             "schools/bulk_upload.html",
         )
 
-    uploaded_file = request.FILES.get("school_file")
+    uploaded_file = (
+        request.FILES.get("school_file")
+        or request.FILES.get("student_file")
+        or request.FILES.get("csv_file")
+        or request.FILES.get("file")
+    )
 
     if not uploaded_file:
         messages.error(
