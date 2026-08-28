@@ -973,11 +973,9 @@
                             <div>
                                 <h2>📦 Resources & Distributions Provided</h2>
                                 <p class="section-desc">Track resources, equipment, essentials, and benefit distributions allocated to this school.</p>
-                                <h2>📦 Resources & Distributions Provided</h2>
-                                <p class="section-desc">Track resources, equipment, essentials, and benefit distributions allocated to this school.</p>
                             </div>
                             <div>
-                                <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">+ + + Allocate Distribution / Distribution / Distribution / Resource</button>
+                                <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">Allocate Resource</button>
                             </div>
                         </div>
 
@@ -1247,16 +1245,31 @@ function activateTab(tabName) {
 // Open Pop-up Modal for a selected school card
 function openSchoolModal(schoolId, tabName = 'edit-details') {
     if (schoolId) {
+        currentSchoolId = schoolId;
         const select = document.getElementById('activeSchoolSelect');
         if (select) {
             select.value = schoolId;
         }
-        onSelectedSchoolChange(schoolId);
-        
-        const option = select ? select.options[select.selectedIndex] : null;
-        if (option) {
-            document.getElementById('modalSchoolTitle').innerText = '🏫 ' + option.text;
+        if (typeof onSelectedSchoolChange === 'function') {
+            onSelectedSchoolChange(schoolId);
         }
+        const option = select ? select.options[select.selectedIndex] : null;
+        const titleElem = document.getElementById('modalSchoolTitle');
+        if (titleElem) {
+            if (option) {
+                titleElem.innerText = '🏫 ' + option.text;
+            } else if (currentSchoolData && currentSchoolData.school) {
+                titleElem.innerText = '🏫 ' + currentSchoolData.school.name;
+            }
+        }
+    }
+    if (tabName === 'bulk-students') {
+        window.location.href = "{% url 'students:bulk_upload' %}";
+        return;
+    }
+    if (tabName === 'add-school') {
+        activateTab('add-school');
+        return;
     }
     switchModalTab(tabName);
     openModal('schoolModalPopup');
@@ -1278,11 +1291,21 @@ function switchModalTab(tabName) {
     const targetContent = document.getElementById(tabName);
     const container = document.getElementById('modalTabContainer');
     if (container && targetContent) {
-        container.innerHTML = '';
-        const clone = targetContent.cloneNode(true);
-        clone.style.display = 'block';
-        clone.classList.add('active');
-        container.appendChild(clone);
+        // Return any currently attached modal children back to main container
+        const mainContainer = document.querySelector('.container');
+        if (mainContainer) {
+            Array.from(container.children).forEach(child => {
+                child.style.display = 'none';
+                mainContainer.appendChild(child);
+            });
+        }
+        targetContent.style.display = 'block';
+        targetContent.classList.add('active');
+        container.appendChild(targetContent);
+        
+        if (currentSchoolId) {
+            fetchAndPopulateSchoolData(currentSchoolId);
+        }
     }
 }
 
@@ -1841,237 +1864,6 @@ function validateQuantityAgainstStock() {
         if (submitBtn) submitBtn.disabled = false;
     }
 }
-
-let globalInventoryItems = [];
-
-async function loadInventoryItemsForSchoolModal() {
-    try {
-        const res = await fetch('/inventory/api/items/');
-        const data = await res.json();
-        if (data && data.items) {
-            globalInventoryItems = data.items;
-        } else if (Array.isArray(data)) {
-            globalInventoryItems = data;
-        }
-        renderInventoryDropdown(globalInventoryItems);
-    } catch (err) {
-        console.error("Error loading inventory items:", err);
-    }
-}
-
-function renderInventoryDropdown(items) {
-    const select = document.getElementById('inventoryItemSelect');
-    if (!select) return;
-
-    if (!items || items.length === 0) {
-        select.innerHTML = '<option value="">No matching inventory items found</option>';
-        updateStockIndicator(null);
-        return;
-    }
-
-    let html = '<option value="" data-stock="0" data-unit="Pieces">-- Select Listed Inventory Item --</option>';
-    items.forEach(item => {
-        const stock = item.current_stock !== undefined ? item.current_stock : 0;
-        const unit = item.unit || 'Pieces';
-        const name = item.item_name || item.name;
-        const sku = item.sku || '';
-        html += `<option value="${item.id}" data-stock="${stock}" data-unit="${unit}" data-name="${name}">
-            ${name} ${sku ? `(${sku})` : ''} - Stock: ${stock} ${unit}
-        </option>`;
-    });
-    select.innerHTML = html;
-}
-
-function filterInventoryItems() {
-    const query = document.getElementById('inventorySearchInput').value.trim().toLowerCase();
-    if (!query) {
-        renderInventoryDropdown(globalInventoryItems);
-        return;
-    }
-    const filtered = globalInventoryItems.filter(item => {
-        const name = (item.item_name || item.name || '').toLowerCase();
-        const sku = (item.sku || '').toLowerCase();
-        const cat = (item.category_display || item.category || '').toLowerCase();
-        return name.includes(query) || sku.includes(query) || cat.includes(query);
-    });
-    renderInventoryDropdown(filtered);
-}
-
-function onInventoryItemChange() {
-    const select = document.getElementById('inventoryItemSelect');
-    const selectedOption = select ? select.options[select.selectedIndex] : null;
-    if (!selectedOption || !select.value) {
-        updateStockIndicator(null);
-        return;
-    }
-    const stock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
-    const unit = selectedOption.getAttribute('data-unit') || 'Pieces';
-    const name = selectedOption.getAttribute('data-name') || '';
-    updateStockIndicator({ name, stock, unit });
-    validateQuantityAgainstStock();
-}
-
-function updateStockIndicator(itemData) {
-    const badge = document.getElementById('stockBadgeContainer');
-    if (!badge) return;
-
-    if (!itemData) {
-        badge.innerHTML = `
-            <div style="background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span>📦</span>
-                <span>Select an inventory item above to view remaining pieces left</span>
-            </div>`;
-        return;
-    }
-
-    if (itemData.stock > 0) {
-        badge.innerHTML = `
-            <div style="background: #ecfdf5; color: #047857; padding: 8px 12px; border-radius: 6px; border: 1px solid #a7f3d0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px;">✅</span>
-                <span><strong>Remaining Stock Left:</strong> <span style="font-size: 14px; font-weight: 800;">${itemData.stock} ${itemData.unit}</span> available in inventory</span>
-            </div>`;
-    } else {
-        badge.innerHTML = `
-            <div style="background: #fef2f2; color: #b91c1c; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px;">⚠️</span>
-                <span><strong>Out of Stock:</strong> 0 ${itemData.unit} remaining! Please restock inventory before allocating.</span>
-            </div>`;
-    }
-}
-
-function validateQuantityAgainstStock() {
-    const select = document.getElementById('inventoryItemSelect');
-    const selectedOption = select ? select.options[select.selectedIndex] : null;
-    const qtyInput = document.getElementById('resourceQuantity');
-    const submitBtn = document.getElementById('addResourceSubmitBtn');
-    if (!selectedOption || !select.value) return;
-
-    const availableStock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
-    const enteredQty = parseInt(qtyInput.value || '1', 10);
-
-    if (enteredQty > availableStock) {
-        if (submitBtn) submitBtn.disabled = true;
-        showToast(`Requested quantity (${enteredQty}) exceeds available stock (${availableStock})!`, 'error');
-    } else {
-        if (submitBtn) submitBtn.disabled = false;
-    }
-}
-
-let globalInventoryItems = [];
-
-async function loadInventoryItemsForSchoolModal() {
-    try {
-        const res = await fetch('/inventory/api/items/');
-        const data = await res.json();
-        if (data && data.items) {
-            globalInventoryItems = data.items;
-        } else if (Array.isArray(data)) {
-            globalInventoryItems = data;
-        }
-        renderInventoryDropdown(globalInventoryItems);
-    } catch (err) {
-        console.error("Error loading inventory items:", err);
-    }
-}
-
-function renderInventoryDropdown(items) {
-    const select = document.getElementById('inventoryItemSelect');
-    if (!select) return;
-
-    if (!items || items.length === 0) {
-        select.innerHTML = '<option value="">No matching inventory items found</option>';
-        updateStockIndicator(null);
-        return;
-    }
-
-    let html = '<option value="" data-stock="0" data-unit="Pieces">-- Select Listed Inventory Item --</option>';
-    items.forEach(item => {
-        const stock = item.current_stock !== undefined ? item.current_stock : 0;
-        const unit = item.unit || 'Pieces';
-        const name = item.item_name || item.name;
-        const sku = item.sku || '';
-        html += `<option value="${item.id}" data-stock="${stock}" data-unit="${unit}" data-name="${name}">
-            ${name} ${sku ? `(${sku})` : ''} - Stock: ${stock} ${unit}
-        </option>`;
-    });
-    select.innerHTML = html;
-}
-
-function filterInventoryItems() {
-    const query = document.getElementById('inventorySearchInput').value.trim().toLowerCase();
-    if (!query) {
-        renderInventoryDropdown(globalInventoryItems);
-        return;
-    }
-    const filtered = globalInventoryItems.filter(item => {
-        const name = (item.item_name || item.name || '').toLowerCase();
-        const sku = (item.sku || '').toLowerCase();
-        const cat = (item.category_display || item.category || '').toLowerCase();
-        return name.includes(query) || sku.includes(query) || cat.includes(query);
-    });
-    renderInventoryDropdown(filtered);
-}
-
-function onInventoryItemChange() {
-    const select = document.getElementById('inventoryItemSelect');
-    const selectedOption = select ? select.options[select.selectedIndex] : null;
-    if (!selectedOption || !select.value) {
-        updateStockIndicator(null);
-        return;
-    }
-    const stock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
-    const unit = selectedOption.getAttribute('data-unit') || 'Pieces';
-    const name = selectedOption.getAttribute('data-name') || '';
-    updateStockIndicator({ name, stock, unit });
-    validateQuantityAgainstStock();
-}
-
-function updateStockIndicator(itemData) {
-    const badge = document.getElementById('stockBadgeContainer');
-    if (!badge) return;
-
-    if (!itemData) {
-        badge.innerHTML = `
-            <div style="background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span>📦</span>
-                <span>Select an inventory item above to view remaining pieces left</span>
-            </div>`;
-        return;
-    }
-
-    if (itemData.stock > 0) {
-        badge.innerHTML = `
-            <div style="background: #ecfdf5; color: #047857; padding: 8px 12px; border-radius: 6px; border: 1px solid #a7f3d0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px;">✅</span>
-                <span><strong>Remaining Stock Left:</strong> <span style="font-size: 14px; font-weight: 800;">${itemData.stock} ${itemData.unit}</span> available in inventory</span>
-            </div>`;
-    } else {
-        badge.innerHTML = `
-            <div style="background: #fef2f2; color: #b91c1c; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px;">⚠️</span>
-                <span><strong>Out of Stock:</strong> 0 ${itemData.unit} remaining! Please restock inventory before allocating.</span>
-            </div>`;
-    }
-}
-
-function validateQuantityAgainstStock() {
-    const select = document.getElementById('inventoryItemSelect');
-    const selectedOption = select ? select.options[select.selectedIndex] : null;
-    const qtyInput = document.getElementById('resourceQuantity');
-    const submitBtn = document.getElementById('addResourceSubmitBtn');
-    if (!selectedOption || !select.value) return;
-
-    const availableStock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
-    const enteredQty = parseInt(qtyInput.value || '1', 10);
-
-    if (enteredQty > availableStock) {
-        if (submitBtn) submitBtn.disabled = true;
-        showToast(`Requested quantity (${enteredQty}) exceeds available stock (${availableStock})!`, 'error');
-    } else {
-        if (submitBtn) submitBtn.disabled = false;
-    }
-}
-
 function openAddResourceModal() {
     if (!currentSchoolId) {
         showToast('Please select a school first', 'error');
@@ -2158,7 +1950,19 @@ function openModal(id) {
 
 function closeModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.remove('open');
+    if (modal) {
+        modal.classList.remove('open');
+        if (id === 'schoolModalPopup') {
+            const container = document.getElementById('modalTabContainer');
+            const mainContainer = document.querySelector('.container');
+            if (container && mainContainer) {
+                Array.from(container.children).forEach(child => {
+                    child.style.display = 'none';
+                    mainContainer.appendChild(child);
+                });
+            }
+        }
+    }
 }
 
 async function clearAllSchools() {
@@ -2187,7 +1991,7 @@ async function clearAllSchools() {
 }
 
 function openAddSchoolModal() {
-    openSchoolModal(currentSchoolId, 'add-school');
+    activateTab('add-school');
 }
 
 // Reset Form helper

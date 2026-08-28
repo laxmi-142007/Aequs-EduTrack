@@ -155,18 +155,6 @@ class SchoolPortalAPITests(TestCase):
             status="ACTIVE",
         )
 
-        from distributions.models import Distribution
-        from inventory.models import InventoryItem, InventoryCategory
-
-        inv_item = InventoryItem.objects.create(
-            item_name="Library Books Set",
-            sku="BK-LIB-SET-01",
-            category=InventoryCategory.BOOKS,
-            unit="Sets",
-            current_stock=1000,
-            status="ACTIVE",
-        )
-
         # Add resource / distribution / distribution
         payload = {
             "item_id": inv_item.id,
@@ -198,6 +186,7 @@ class SchoolPortalAPITests(TestCase):
         self.assertFalse(Distribution.objects.filter(school=self.school, quantity=500).exists())
 
     def test_api_clear_all_schools(self):
+        from distributions.models import Distribution
         response = self.client.post(reverse("schools:api_clear_all_schools"))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
