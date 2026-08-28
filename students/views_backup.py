@@ -146,7 +146,7 @@ def add_student(request):
 
     if request.method == "POST":
 
-        form = StudentForm(request.POST, request.FILES)
+        form = StudentForm(request.POST)
 
         if form.is_valid():
 
@@ -942,22 +942,3 @@ def bulk_upload_students(request):
         return redirect(
             "students:bulk_upload"
         )
-# =============================================================
-# STUDENT DETAIL
-# =============================================================
-
-def student_detail(request, pk):
-    student = (
-        Student.objects
-        .select_related("school")
-        .get(pk=pk)
-    )
-
-    return render(
-        request,
-        "students/student_detail.html",
-        {
-            "student": student,
-        },
-    )
-
