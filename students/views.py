@@ -8,7 +8,7 @@ import openpyxl
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Student
@@ -183,7 +183,7 @@ def add_student(request):
 
     if request.method == "POST":
 
-        form = StudentForm(request.POST)
+        form = StudentForm(request.POST, request.FILES)
 
         if form.is_valid():
 
@@ -786,3 +786,22 @@ def clear_all_students(request):
             return JsonResponse({"success": False, "error": str(e)}, status=500)
         messages.error(request, f"Failed to clear students: {e}")
         return redirect("students:list")
+
+
+# =============================================================
+# STUDENT DETAIL
+# =============================================================
+
+def student_detail(request, pk):
+    student = get_object_or_404(
+        Student.objects.select_related("school"),
+        pk=pk
+    )
+
+    return render(
+        request,
+        "students/student_detail.html",
+        {
+            "student": student,
+        },
+    )

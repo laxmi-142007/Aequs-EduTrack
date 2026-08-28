@@ -914,6 +914,9 @@
                                 <th>
                                     Status
                                 </th>
+                                <th>
+                                    Action
+                                </th>
 
                             </tr>
 
@@ -1010,12 +1013,14 @@
                                                 {{ student.get_status_display }}
                                             </span>
 
-                                        {% endif %}
-
+                                        {% endif %}</td>
+                                    <td>
+                                        <a href="{% url 'students:detail' student.id %}" class="view-details-button">
+                                            <i data-lucide="eye" style="width:14px;height:14px;"></i>
+                                            View Details
+                                        </a>
                                     </td>
-
                                 </tr>
-
                             {% endfor %}
 
                         </tbody>
