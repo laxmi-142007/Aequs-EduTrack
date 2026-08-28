@@ -627,7 +627,7 @@ def api_delete_milestone(request, milestone_id):
 
 @require_http_methods(["POST"])
 def api_add_resource(request, school_id):
-    """Add a resource allocation record from Tab 7, deduct inventory stock, and create Distribution record"""
+    """Add a resource allocation record from Tab 7, deduct inventory stock, and create Distribution record, deduct inventory stock, and create Distribution record"""
     try:
         from distributions.models import Distribution, BenefitType, RecipientType, SchoolEssentialType
         from inventory.models import InventoryItem, StockTransaction
@@ -688,6 +688,45 @@ def api_add_resource(request, school_id):
                 last_updated_note=last_updated_note or f"Stock deducted ({inventory_item.current_stock} remaining)",
                 details=details,
             )
+            resource = SchoolResource.objects.create(
+                school=school,
+                resource_name=inventory_item.item_name,
+                status=status,
+                quantity=quantity,
+                last_updated_note=last_updated_note or f"Stock deducted ({inventory_item.current_stock} remaining)",
+                details=details,
+            )
+
+            essential_type_map = {
+                "BENCHES": SchoolEssentialType.BENCHES,
+                "DESKS": SchoolEssentialType.DESKS,
+                "CHAIRS": SchoolEssentialType.CHAIRS,
+                "WHITE BOARDS": SchoolEssentialType.WHITE_BOARDS,
+                "WHITEBOARDS": SchoolEssentialType.WHITE_BOARDS,
+                "LIBRARY BOOKS": SchoolEssentialType.LIBRARY_BOOKS,
+                "LAB EQUIPMENT": SchoolEssentialType.LAB_EQUIPMENT,
+                "LABORATORY EQUIPMENT": SchoolEssentialType.LAB_EQUIPMENT,
+                "WATER FILTERS": SchoolEssentialType.WATER_FILTERS,
+                "FANS": SchoolEssentialType.FANS,
+                "SPORTS KITS": SchoolEssentialType.SPORTS_KITS,
+                "PROJECTORS": SchoolEssentialType.PROJECTORS,
+            }
+
+            norm_name = inventory_item.item_name.upper()
+            matched_essential = essential_type_map.get(norm_name, SchoolEssentialType.OTHER)
+
+            distribution = Distribution.objects.create(
+                school=school,
+                inventory_item=inventory_item,
+                benefit_type=BenefitType.SCHOOL_ESSENTIAL,
+                recipient_type=RecipientType.SCHOOL,
+                essential_item_type=matched_essential,
+                quantity=quantity,
+                academic_year="2026-27",
+                issued_by=issued_by,
+                remarks=f"School Resource Allocation: {inventory_item.item_name}. {details}".strip(),
+                distribution_date=timezone.localdate(),
+            )
 
             essential_type_map = {
                 "BENCHES": SchoolEssentialType.BENCHES,
@@ -741,7 +780,10 @@ def api_add_resource(request, school_id):
 @require_http_methods(["POST"])
 def api_delete_resource(request, resource_id):
     """Delete an allocated resource and associated distribution record"""
+    """Delete an allocated resource and associated distribution record"""
     try:
+        from distributions.models import Distribution
+
         from distributions.models import Distribution
 
         resource = get_object_or_404(SchoolResource, id=resource_id)

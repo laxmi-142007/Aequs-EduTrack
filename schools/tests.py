@@ -155,7 +155,19 @@ class SchoolPortalAPITests(TestCase):
             status="ACTIVE",
         )
 
-        # Add resource / distribution
+        from distributions.models import Distribution
+        from inventory.models import InventoryItem, InventoryCategory
+
+        inv_item = InventoryItem.objects.create(
+            item_name="Library Books Set",
+            sku="BK-LIB-SET-01",
+            category=InventoryCategory.BOOKS,
+            unit="Sets",
+            current_stock=1000,
+            status="ACTIVE",
+        )
+
+        # Add resource / distribution / distribution
         payload = {
             "item_id": inv_item.id,
             "resource_name": inv_item.item_name,
@@ -190,6 +202,7 @@ class SchoolPortalAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
         self.assertEqual(School.objects.count(), 0)
+        self.assertFalse(Distribution.objects.filter(school=self.school, quantity=500).exists())
 
     def test_export_student_strength_csv(self):
         response = self.client.get(reverse("schools:export_strength_csv", args=[self.school.id]))
