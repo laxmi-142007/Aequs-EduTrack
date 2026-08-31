@@ -15,7 +15,61 @@ from schools.models import School
 from academics.models import AcademicRecord
 
 
+# =============================================================
+# CLASS NORMALIZATION / EQUIVALENTS
+# =============================================================
+
+CLASS_EQUIVALENTS = {
+    "1": ["1", "1st"],
+    "2": ["2", "2nd"],
+    "3": ["3", "3rd"],
+    "4": ["4", "4th"],
+    "5": ["5", "5th"],
+    "6": ["6", "6th"],
+    "7": ["7", "7th"],
+    "8": ["8", "8th"],
+    "9": ["9", "9th"],
+    "10": ["10", "10th"],
+
+    "1st PU": ["1st PU", "1st PUC"],
+    "2nd PU": ["2nd PU", "2nd PUC"],
+}
+
+
+def get_class_equivalents(class_value):
+    """
+    Return all database values that should be treated
+    as the same class.
+    """
+    value = str(class_value or "").strip()
+
+    for canonical, equivalents in CLASS_EQUIVALENTS.items():
+        if value.lower() in [item.lower() for item in equivalents]:
+            return equivalents
+
+    return [value]
+
+
+def get_canonical_class(class_value):
+    """
+    Convert different representations into one canonical
+    class value for displaying in the dropdown.
+    """
+    value = str(class_value or "").strip()
+
+    for canonical, equivalents in CLASS_EQUIVALENTS.items():
+        if value.lower() in [item.lower() for item in equivalents]:
+            return canonical
+
+    return value
+
+
+# =============================================================
+# STUDENT LIST
+# =============================================================
+
 def student_list(request):
+
     queryset = (
         Student.objects
         .select_related("school")
@@ -26,6 +80,7 @@ def student_list(request):
     # ---------------------------------------------------------
     # FILTER PARAMETERS
     # ---------------------------------------------------------
+
     search_query = request.GET.get("q", "").strip()
     school_id = request.GET.get("school", "").strip()
     class_filter = request.GET.get("class", "").strip()
@@ -35,6 +90,7 @@ def student_list(request):
     # ---------------------------------------------------------
     # SEARCH
     # ---------------------------------------------------------
+
     if search_query:
         queryset = queryset.filter(
             Q(student_name__icontains=search_query)
@@ -45,6 +101,7 @@ def student_list(request):
     # ---------------------------------------------------------
     # SCHOOL FILTER
     # ---------------------------------------------------------
+
     if school_id:
         queryset = queryset.filter(
             school_id=school_id
@@ -53,14 +110,24 @@ def student_list(request):
     # ---------------------------------------------------------
     # CLASS FILTER
     # ---------------------------------------------------------
+
     if class_filter:
-        queryset = queryset.filter(
-            current_class=class_filter
-        )
+
+        class_values = get_class_equivalents(class_filter)
+
+        class_query = Q()
+
+        for value in class_values:
+            class_query |= Q(
+                current_class__iexact=value
+            )
+
+        queryset = queryset.filter(class_query)
 
     # ---------------------------------------------------------
     # GENDER FILTER
     # ---------------------------------------------------------
+
     if gender_filter:
         queryset = queryset.filter(
             gender=gender_filter
@@ -69,31 +136,41 @@ def student_list(request):
     # ---------------------------------------------------------
     # STATUS FILTER
     # ---------------------------------------------------------
+
     if status_filter:
         queryset = queryset.filter(
             status=status_filter
         )
 
     # ---------------------------------------------------------
-    # DISTINCT CLASSES
+    # DISTINCT / NORMALIZED CLASSES
     # ---------------------------------------------------------
+
+    raw_classes = (
+        Student.objects
+        .values_list(
+            "current_class",
+            flat=True
+        )
+        .distinct()
+    )
+
     distinct_classes = sorted(
-        list(
-            filter(
-                None,
-                Student.objects
-                .values_list(
-                    "current_class",
-                    flat=True
-                )
-                .distinct()
-            )
+        {
+            get_canonical_class(class_value)
+            for class_value in raw_classes
+            if class_value
+        },
+        key=lambda value: (
+            int(value) if value.isdigit() else 999,
+            value.lower()
         )
     )
 
     # ---------------------------------------------------------
     # SCHOOLS
     # ---------------------------------------------------------
+
     schools = (
         School.objects
         .all()
@@ -103,6 +180,7 @@ def student_list(request):
     # ---------------------------------------------------------
     # COUNTS
     # ---------------------------------------------------------
+
     total_count = Student.objects.count()
 
     filtered_count = queryset.count()
@@ -114,6 +192,7 @@ def student_list(request):
     # ---------------------------------------------------------
     # RENDER
     # ---------------------------------------------------------
+
     return render(
         request,
         "students/student_list.html",
@@ -146,7 +225,10 @@ def add_student(request):
 
     if request.method == "POST":
 
-        form = StudentForm(request.POST, request.FILES)
+        form = StudentForm(
+            request.POST,
+            request.FILES
+        )
 
         if form.is_valid():
 
@@ -190,6 +272,7 @@ def bulk_upload_students(request):
     # ---------------------------------------------------------
     # SHOW UPLOAD PAGE
     # ---------------------------------------------------------
+
     if request.method != "POST":
 
         return render(
@@ -200,6 +283,7 @@ def bulk_upload_students(request):
     # ---------------------------------------------------------
     # GET FILE
     # ---------------------------------------------------------
+
     uploaded_file = request.FILES.get(
         "csv_file"
     )
@@ -220,6 +304,7 @@ def bulk_upload_students(request):
     # ---------------------------------------------------------
     # VALIDATE FILE TYPE
     # ---------------------------------------------------------
+
     if not (
         file_name.endswith(".csv")
         or file_name.endswith(".xlsx")
@@ -942,11 +1027,14 @@ def bulk_upload_students(request):
         return redirect(
             "students:bulk_upload"
         )
+
+
 # =============================================================
 # STUDENT DETAIL
 # =============================================================
 
 def student_detail(request, pk):
+
     student = (
         Student.objects
         .select_related("school")
@@ -960,4 +1048,3 @@ def student_detail(request, pk):
             "student": student,
         },
     )
-

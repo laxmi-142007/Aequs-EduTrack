@@ -23,10 +23,20 @@ from academics.models import AcademicRecord
 def _record_to_dict(rec):
     student = rec.student
     school = student.school if student else None
-    
-    # Get academic record for this student and academic year if available
+
+    # Get academic record for this student and THIS record's academic year
     acad_rec = get_latest_academic_record(student, rec.academic_year) if student else None
     pct = float(get_percentage(acad_rec)) if acad_rec else None
+
+    # FIX: show the class/course as of THIS eligibility record's academic
+    # year, not the student's current (possibly much later) class. Without
+    # this, a valid historical "Class 10" record can display next to a
+    # student's *current* label (e.g. "BE 2nd year"), making a correct old
+    # record look wrong.
+    if acad_rec and acad_rec.class_or_course:
+        display_class = acad_rec.class_or_course
+    else:
+        display_class = student.current_class if student else ""
 
     return {
         "id": rec.id,
@@ -36,7 +46,7 @@ def _record_to_dict(rec):
         "school_id": school.id if school else None,
         "school_name": school.name if school else "General",
         "school_district": school.district if school else "",
-        "current_class": student.current_class if student else "",
+        "current_class": display_class,
         "gender": student.gender if student else "",
         "benefit_type": rec.benefit_type,
         "benefit_type_display": rec.get_benefit_type_display(),
@@ -53,12 +63,12 @@ def _ensure_initial_eligibility_data():
     """Ensure sample eligibility records exist for initial preview if none present"""
     if EligibilityRecord.objects.exists():
         return
-    
+
     # Auto-run for current academic years
     years = list(AcademicRecord.objects.values_list("academic_year", flat=True).distinct())
     if not years:
         years = ["2026-27", "2025-26", "2024-25"]
-    
+
     for y in years:
         generate_all_eligibility(y)
 
@@ -438,6 +448,16 @@ def export_eligibility_csv(request):
     for rec in qs:
         st = rec.student
         sch = st.school if st else None
+
+        # Use the class/course as of THIS record's academic year, matching
+        # the same fix applied in _record_to_dict(), so the CSV export and
+        # the portal table stay consistent with each other.
+        acad_rec = get_latest_academic_record(st, rec.academic_year) if st else None
+        if acad_rec and acad_rec.class_or_course:
+            class_display = acad_rec.class_or_course
+        else:
+            class_display = st.current_class if st else ""
+
         writer.writerow([
             rec.id,
             st.student_name if st else "",
@@ -445,7 +465,7 @@ def export_eligibility_csv(request):
             st.get_gender_display() if st else "",
             sch.name if sch else "",
             sch.district if sch else "",
-            st.current_class if st else "",
+            class_display,
             rec.academic_year,
             rec.get_benefit_type_display(),
             "Eligible" if rec.eligible else "Not Eligible",
@@ -455,9 +475,11 @@ def export_eligibility_csv(request):
         ])
 
     return response
-from django.shortcuts import render
-from .models import EligibilityRecord, BenefitType
 
+
+# =========================================================================
+# SIMPLE SERVER-RENDERED LIST VIEW (eligibility/list.html)
+# =========================================================================
 
 def eligibility_list(request):
 
