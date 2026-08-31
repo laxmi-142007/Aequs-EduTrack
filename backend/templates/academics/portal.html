@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -1074,7 +1074,13 @@
                     </div>
 
 
-                    <div style="padding: 10px 0;">
+                    <div style="padding: 10px 0; display: flex; gap: 8px; align-items: center;">
+
+                        <a href="{% url 'academics:bulk_upload' %}"
+                           class="btn btn-secondary btn-sm"
+                           style="background: #2563eb; color: #ffffff; border: 1px solid #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; padding: 7px 12px; border-radius: 4px;">
+                            📥 Bulk Upload Records
+                        </a>
 
                         <button
                             class="btn btn-primary btn-sm"

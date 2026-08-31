@@ -570,9 +570,27 @@
             </div>
         </div>
 
-        <a href="{% url 'students:list' %}" class="back-btn">
-            Students
-        </a>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <form
+                method="POST"
+                action="{% url 'students:clear_all' %}"
+                style="display:inline;"
+                onsubmit="return confirm('⚠️ ARE YOU SURE?\nThis will permanently delete ALL student records from the database. This action cannot be undone.');"
+            >
+                {% csrf_token %}
+                <button
+                    type="submit"
+                    class="back-btn"
+                    style="background:#dc2626; border-color:#dc2626; color:white; font-weight:600; cursor:pointer;"
+                >
+                    🗑️ Clear All Students
+                </button>
+            </form>
+
+            <a href="{% url 'students:list' %}" class="back-btn">
+                Students
+            </a>
+        </div>
     </div>
 
     {% if messages %}
@@ -634,7 +652,7 @@
 
                     <input
                         type="file"
-                        name="csv_file"
+                        name="student_file"
                         accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         class="file-input"
                         required

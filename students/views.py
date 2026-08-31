@@ -1,5 +1,6 @@
-﻿import csv
+import csv
 import io
+import random
 from datetime import datetime
 
 import openpyxl
@@ -8,11 +9,47 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, redirect
-
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from .models import Student
 from .forms import StudentForm
 from schools.models import School
 from academics.models import AcademicRecord
+
+
+def _normalize_header_name(name):
+    if not name:
+        return ""
+    cleaned = str(name).strip().lower().replace(" ", "_").replace("-", "_")
+    alias_map = {
+        "admission_no": "admission_number",
+        "adm_no": "admission_number",
+        "admission_num": "admission_number",
+        "student_name": "student_name",
+        "name": "student_name",
+        "full_name": "student_name",
+        "class": "current_class",
+        "grade": "current_class",
+        "current_class": "current_class",
+        "school_name": "school",
+        "school": "school",
+        "udise": "school",
+        "udise_code": "school",
+        "father_name": "parent_name",
+        "parent_name": "parent_name",
+        "guardian_name": "parent_name",
+        "parent": "parent_name",
+        "dob": "date_of_birth",
+        "date_of_birth": "date_of_birth",
+        "sex": "gender",
+        "gender": "gender",
+        "admission_date": "admission_date",
+        "date_of_admission": "admission_date",
+        "doj": "admission_date",
+        "date_of_joining": "admission_date",
+        "admission_dt": "admission_date",
+    }
+    return alias_map.get(cleaned, cleaned)
 
 
 def student_list(request):
@@ -152,16 +189,16 @@ def add_student(request):
 
             student = form.save()
 
-            AcademicRecord.objects.get_or_create(
-                student=student,
-                academic_year="2025-26",
-                class_or_course=student.current_class,
-            )
+            try:
+                from schools.views import _ensure_default_grades
+                if student.school:
+                    _ensure_default_grades(student.school)
+            except Exception:
+                pass
 
             messages.success(
                 request,
-                f"Student '{student.student_name}' "
-                "was added successfully."
+                f"Student '{student.student_name}' added successfully."
             )
 
             return redirect(
@@ -174,9 +211,11 @@ def add_student(request):
 
     return render(
         request,
-        "students/add_student.html",
+        "students/student_form.html",
         {
-            "form": form
+            "form": form,
+
+            "is_edit": False,
         },
     )
 
@@ -187,9 +226,6 @@ def add_student(request):
 
 def bulk_upload_students(request):
 
-    # ---------------------------------------------------------
-    # SHOW UPLOAD PAGE
-    # ---------------------------------------------------------
     if request.method != "POST":
 
         return render(
@@ -197,18 +233,17 @@ def bulk_upload_students(request):
             "students/bulk_upload.html",
         )
 
-    # ---------------------------------------------------------
-    # GET FILE
-    # ---------------------------------------------------------
-    uploaded_file = request.FILES.get(
-        "csv_file"
+    uploaded_file = (
+        request.FILES.get("student_file")
+        or request.FILES.get("csv_file")
+        or request.FILES.get("file")
     )
 
     if not uploaded_file:
 
         messages.error(
             request,
-            "Please select a CSV or Excel (.xlsx) file."
+            "Please select a file to upload."
         )
 
         return redirect(
@@ -217,13 +252,7 @@ def bulk_upload_students(request):
 
     file_name = uploaded_file.name.lower()
 
-    # ---------------------------------------------------------
-    # VALIDATE FILE TYPE
-    # ---------------------------------------------------------
-    if not (
-        file_name.endswith(".csv")
-        or file_name.endswith(".xlsx")
-    ):
+    if not file_name.endswith((".csv", ".xlsx")):
 
         messages.error(
             request,
@@ -235,10 +264,6 @@ def bulk_upload_students(request):
         )
 
     try:
-
-        # =====================================================
-        # READ CSV
-        # =====================================================
 
         if file_name.endswith(".csv"):
 
@@ -265,23 +290,13 @@ def bulk_upload_students(request):
                     "students:bulk_upload"
                 )
 
-            # Normalize CSV column names
             reader.fieldnames = [
-                str(field).strip().lower()
-                if field
-                else ""
+                _normalize_header_name(field)
                 for field in reader.fieldnames
             ]
 
             rows = list(reader)
-
-            available_columns = set(
-                reader.fieldnames
-            )
-
-        # =====================================================
-        # READ EXCEL
-        # =====================================================
+            available_columns = set(reader.fieldnames)
 
         else:
 
@@ -312,39 +327,19 @@ def bulk_upload_students(request):
                     "students:bulk_upload"
                 )
 
-            # -------------------------------------------------
-            # HEADER ROW
-            # -------------------------------------------------
-
-            headers = []
-
-            for cell in excel_rows[0]:
-
-                if cell is None:
-
-                    headers.append("")
-
-                else:
-
-                    headers.append(
-                        str(cell)
-                        .strip()
-                        .lower()
-                    )
+            headers = [
+                _normalize_header_name(cell) if cell is not None else ""
+                for cell in excel_rows[0]
+            ]
 
             available_columns = set(
                 headers
             )
 
-            # -------------------------------------------------
-            # CONVERT EXCEL TO DICTIONARIES
-            # -------------------------------------------------
-
             rows = []
 
             for excel_row in excel_rows[1:]:
 
-                # Ignore completely empty rows
                 if not any(
                     cell is not None
                     and str(cell).strip() != ""
@@ -364,26 +359,21 @@ def bulk_upload_students(request):
                     value = (
                         excel_row[index]
                         if index < len(excel_row)
-                        else None
+                        else ""
                     )
 
-                    row_data[header] = value
+                    row_data[header] = (
+                        ""
+                        if value is None
+                        else value
+                    )
 
                 rows.append(
                     row_data
                 )
 
-        # =====================================================
-        # REQUIRED COLUMNS
-        # =====================================================
-
         required_columns = {
-            "admission_number",
             "student_name",
-            "gender",
-            "school",
-            "current_class",
-            "parent_name",
         }
 
         missing_columns = (
@@ -395,19 +385,12 @@ def bulk_upload_students(request):
 
             messages.error(
                 request,
-                "Missing columns: "
-                + ", ".join(
-                    sorted(missing_columns)
-                )
+                "Missing required column: 'student_name' (or 'Student Name')."
             )
 
             return redirect(
                 "students:bulk_upload"
             )
-
-        # =====================================================
-        # CHECK EMPTY RECORDS
-        # =====================================================
 
         if not rows:
 
@@ -420,317 +403,127 @@ def bulk_upload_students(request):
                 "students:bulk_upload"
             )
 
-        # =====================================================
-        # VALIDATION
-        # =====================================================
-
         errors = []
-
         prepared_students = []
-
-        # Track admission numbers inside uploaded file
         uploaded_admission_numbers = set()
 
-        # =====================================================
-        # PROCESS EVERY ROW
-        # =====================================================
+        target_school_id = request.GET.get("school") or request.POST.get("school_id")
+        default_target_school = None
+        if target_school_id:
+            default_target_school = School.objects.filter(id=target_school_id).first()
+        if not default_target_school and School.objects.count() == 1:
+            default_target_school = School.objects.first()
 
         for row_number, row in enumerate(
             rows,
             start=2
         ):
 
-            # -------------------------------------------------
-            # REQUIRED VALUES
-            # -------------------------------------------------
-
             admission_number = str(
-                row.get(
-                    "admission_number"
-                )
-                or ""
+                row.get("admission_number") or ""
             ).strip()
 
             student_name = str(
-                row.get(
-                    "student_name"
-                )
-                or ""
+                row.get("student_name") or ""
             ).strip()
 
             gender = str(
-                row.get(
-                    "gender"
-                )
-                or ""
+                row.get("gender") or ""
             ).strip().upper()
 
             school_name = str(
-                row.get(
-                    "school"
-                )
-                or ""
+                row.get("school") or ""
             ).strip()
 
             current_class = str(
-                row.get(
-                    "current_class"
-                )
-                or ""
-            ).strip()
+                row.get("current_class") or ""
+            ).strip() or "General"
 
             parent_name = str(
-                row.get(
-                    "parent_name"
-                )
-                or ""
-            ).strip()
-
-            # -------------------------------------------------
-            # REQUIRED FIELD VALIDATION
-            # -------------------------------------------------
-
-            if not admission_number:
-
-                errors.append(
-                    f"Row {row_number}: "
-                    "admission_number is required."
-                )
+                row.get("parent_name") or ""
+            ).strip() or "Guardian"
 
             if not student_name:
-
                 errors.append(
-                    f"Row {row_number}: "
-                    "student_name is required."
+                    f"Row {row_number}: student_name is required."
                 )
 
             if not gender:
+                gender = "MALE"
+            elif gender not in dict(Student.Gender.choices):
+                if "FEMALE" in gender or "GIRL" in gender or "F" == gender:
+                    gender = "FEMALE"
+                elif "OTHER" in gender:
+                    gender = "OTHER"
+                else:
+                    gender = "MALE"
 
-                errors.append(
-                    f"Row {row_number}: "
-                    "gender is required."
-                )
-
-            elif gender not in dict(
-                Student.Gender.choices
-            ):
-
-                errors.append(
-                    f"Row {row_number}: "
-                    f"invalid gender '{gender}'. "
-                    "Use MALE, FEMALE or OTHER."
-                )
-
-            if not school_name:
-
-                errors.append(
-                    f"Row {row_number}: "
-                    "school is required."
-                )
-
-            if not current_class:
-
-                errors.append(
-                    f"Row {row_number}: "
-                    "current_class is required."
-                )
-
-            if not parent_name:
-
-                errors.append(
-                    f"Row {row_number}: "
-                    "parent_name is required."
-                )
-
-            # -------------------------------------------------
-            # FIND SCHOOL
-            # -------------------------------------------------
+            if not admission_number:
+                while True:
+                    candidate = f"ADM{random.randint(100000, 999999)}"
+                    if (
+                        candidate not in uploaded_admission_numbers
+                        and not Student.objects.filter(admission_number=candidate).exists()
+                    ):
+                        admission_number = candidate
+                        uploaded_admission_numbers.add(candidate)
+                        break
 
             school = None
-
             if school_name:
-
                 school = (
-                    School.objects
-                    .filter(
-                        name__iexact=school_name
-                    )
-                    .first()
+                    School.objects.filter(name__iexact=school_name).first()
+                    or School.objects.filter(udise_code__iexact=school_name).first()
+                    or School.objects.filter(name__icontains=school_name).first()
                 )
-
-                if not school:
-
-                    errors.append(
-                        f"Row {row_number}: "
-                        f"school '{school_name}' "
-                        "was not found."
-                    )
-
-            # -------------------------------------------------
-            # DUPLICATE ADMISSION NUMBER
-            # -------------------------------------------------
+            if not school and default_target_school:
+                school = default_target_school
+            if not school:
+                school = School.objects.first()
 
             if admission_number:
-
                 if admission_number in uploaded_admission_numbers:
-
                     errors.append(
-                        f"Row {row_number}: "
-                        f"admission number "
-                        f"'{admission_number}' "
-                        "is duplicated in the uploaded file."
+                        f"Row {row_number}: admission number '{admission_number}' is duplicated in the uploaded file."
                     )
-
                 else:
+                    uploaded_admission_numbers.add(admission_number)
 
-                    uploaded_admission_numbers.add(
-                        admission_number
-                    )
-
-                if Student.objects.filter(
-                    admission_number=admission_number
-                ).exists():
-
+                if Student.objects.filter(admission_number=admission_number).exists():
                     errors.append(
-                        f"Row {row_number}: "
-                        "admission number "
-                        f"'{admission_number}' "
-                        "already exists."
+                        f"Row {row_number}: admission number '{admission_number}' already exists in database."
                     )
-
-            # -------------------------------------------------
-            # DATE OF BIRTH
-            # -------------------------------------------------
 
             date_of_birth = None
-
-            dob_value = row.get(
-                "date_of_birth"
-            )
-
+            dob_value = row.get("date_of_birth", "")
             if dob_value:
-
-                if isinstance(
-                    dob_value,
-                    datetime
-                ):
-
-                    date_of_birth = (
-                        dob_value.date()
-                    )
-
-                elif hasattr(
-                    dob_value,
-                    "year"
-                ) and hasattr(
-                    dob_value,
-                    "month"
-                ):
-
-                    try:
-
-                        date_of_birth = (
-                            dob_value.date()
-                            if hasattr(
-                                dob_value,
-                                "date"
-                            )
-                            else dob_value
-                        )
-
-                    except Exception:
-
-                        date_of_birth = None
-
+                if isinstance(dob_value, datetime):
+                    date_of_birth = dob_value.date()
+                elif hasattr(dob_value, "date"):
+                    date_of_birth = dob_value.date()
                 else:
-
-                    dob_string = str(
-                        dob_value
-                    ).strip()
-
-                    try:
-
-                        date_of_birth = (
-                            datetime.strptime(
-                                dob_string,
-                                "%Y-%m-%d"
-                            ).date()
-                        )
-
-                    except ValueError:
-
-                        errors.append(
-                            f"Row {row_number}: "
-                            "date_of_birth must "
-                            "be YYYY-MM-DD."
-                        )
-
-            # -------------------------------------------------
-            # ADMISSION DATE
-            # -------------------------------------------------
-
+                    dob_str = str(dob_value).strip()
+                    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y"):
+                        try:
+                            date_of_birth = datetime.strptime(dob_str, fmt).date()
+                            break
+                        except ValueError:
+                            pass
             admission_date = None
-
-            admission_date_value = row.get(
-                "admission_date"
-            )
-
-            if admission_date_value:
-
-                if isinstance(
-                    admission_date_value,
-                    datetime
-                ):
-
-                    admission_date = (
-                        admission_date_value.date()
-                    )
-
-                elif hasattr(
-                    admission_date_value,
-                    "year"
-                ) and hasattr(
-                    admission_date_value,
-                    "month"
-                ):
-
-                    try:
-
-                        admission_date = (
-                            admission_date_value.date()
-                            if hasattr(
-                                admission_date_value,
-                                "date"
-                            )
-                            else admission_date_value
-                        )
-
-                    except Exception:
-
-                        admission_date = None
-
+            adm_date_val = row.get("admission_date", "")
+            if adm_date_val:
+                if isinstance(adm_date_val, datetime):
+                    admission_date = adm_date_val.date()
+                elif hasattr(adm_date_val, "date"):
+                    admission_date = adm_date_val.date()
                 else:
-
-                    admission_date_string = str(
-                        admission_date_value
-                    ).strip()
-
-                    try:
-
-                        admission_date = (
-                            datetime.strptime(
-                                admission_date_string,
-                                "%Y-%m-%d"
-                            ).date()
-                        )
-
-                    except ValueError:
-
-                        errors.append(
-                            f"Row {row_number}: "
-                            "admission_date must "
-                            "be YYYY-MM-DD."
-                        )
+                    adm_date_str = str(adm_date_val).strip()
+                    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y"):
+                        try:
+                            admission_date = datetime.strptime(adm_date_str, fmt).date()
+                            break
+                        except ValueError:
+                            pass
 
             # -------------------------------------------------
             # STATUS
@@ -942,3 +735,54 @@ def bulk_upload_students(request):
         return redirect(
             "students:bulk_upload"
         )
+
+
+@require_http_methods(["POST"])
+def clear_all_students(request):
+    """Clear/delete all student records and recalculate school strengths."""
+    try:
+        from eligibility.models import EligibilityRecord
+        from distributions.models import Distribution
+        from academics.models import AcademicRecord
+        from inventory.models import LaptopAssignment
+        from schools.models import GradeStrength, School
+
+        with transaction.atomic():
+            LaptopAssignment.objects.all().delete()
+            Distribution.objects.all().delete()
+            EligibilityRecord.objects.all().delete()
+            AcademicRecord.objects.all().delete()
+            deleted_count, _ = Student.objects.all().delete()
+
+            # Recalculate school student strength and grade strengths for all schools
+            for school in School.objects.all():
+                school.grade_strengths.all().delete()
+                if school.student_strength != 0:
+                    school.student_strength = 0
+                    school.save(update_fields=["student_strength"])
+
+        try:
+            from reports.models import log_activity
+            log_activity(request, f"Cleared all students from database ({deleted_count} students deleted)", category="STUDENT")
+        except Exception:
+            pass
+
+        if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.content_type == "application/json":
+            return JsonResponse({
+                "success": True,
+                "message": f"Successfully deleted {deleted_count} student record(s)."
+            })
+
+        messages.success(
+            request,
+            f"Successfully deleted {deleted_count} student record(s)."
+        )
+        return redirect("students:list")
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.content_type == "application/json":
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+        messages.error(request, f"Failed to clear students: {e}")
+        return redirect("students:list")

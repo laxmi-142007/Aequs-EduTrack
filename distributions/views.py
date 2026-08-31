@@ -282,6 +282,7 @@ def distribution_list(request):
         Distribution.objects
         .select_related(
             "student",
+            "student__school",
             "school",
             "inventory_item",
             "study_kit",
