@@ -1,4 +1,4 @@
-﻿from django.urls import path
+from django.urls import path
 from . import views
 
 app_name = "schools"
@@ -14,6 +14,7 @@ urlpatterns = [
     path("api/schools/", views.api_schools_list, name="api_schools_list"),
     path("api/schools/<int:school_id>/", views.api_school_detail, name="api_school_detail"),
     path("api/schools/create/", views.api_add_school, name="api_add_school"),
+    path("api/schools/clear-all/", views.api_clear_all_schools, name="api_clear_all_schools"),
     path("api/schools/<int:school_id>/edit/", views.api_edit_school, name="api_edit_school"),
     path("api/schools/<int:school_id>/contact/", views.api_update_contact, name="api_update_contact"),
     path("api/schools/<int:school_id>/headmaster/", views.api_update_headmaster, name="api_update_headmaster"),

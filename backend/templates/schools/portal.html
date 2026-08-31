@@ -702,23 +702,25 @@
             <div id="dashboard-content" class="{% if not user_authenticated %}hidden{% endif %}">
                 
                 <!-- School Selector Ribbon -->
+                {% if selected_school %}
                 <div class="school-selector-banner" id="schoolSelectorBanner">
                     <div class="selector-group">
-<label for="activeSchoolSelect">Selected School:</label>
+                        <label for="activeSchoolSelect">Selected School:</label>
                         <select id="activeSchoolSelect" class="school-select" onchange="onSelectedSchoolChange(this.value)">
                             {% for s in schools %}
-                                <option value="{{ s.id }}" {% if selected_school and s.id == selected_school.id %}selected{% endif %}>
+                                <option value="{{ s.id }}" {% if s.id == selected_school.id %}selected{% endif %}>
                                     {{ s.name }} (UDISE: {{ s.udise_code }})
                                 </option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="selector-group">
-                        <span class="school-meta-pill" id="bannerSchoolLocation">{{ selected_school.village|default:selected_school.district }}</span>
+                        <span class="school-meta-pill" id="bannerSchoolLocation">{{ selected_school.village|default:selected_school.district|default:"" }}</span>
                         <span class="school-meta-pill" id="bannerSchoolAffiliation">{{ selected_school.affiliation|default:"State Board" }}</span>
-                        <span class="school-meta-pill" id="bannerSchoolStudents">{{ selected_school.student_strength }} Students</span>
+                        <span class="school-meta-pill" id="bannerSchoolStudents">{{ selected_school.student_strength|default:0 }} Students</span>
                     </div>
                 </div>
+                {% endif %}
 
                 <!-- Cards Grid Container (No bar) -->
                 <div class="container">
@@ -728,9 +730,12 @@
                                 <h2 style="margin: 0;">Partner Government Schools</h2>
                                 <p class="section-desc" style="margin: 4px 0 0;">Click on any school card below to view pop-up management options or bulk upload student details.</p>
                             </div>
-                            <div style="display: flex; gap: 10px;">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <button type="button" class="btn btn-primary" style="background:#231f20; border-color:#231f20; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 13px;" onclick="openAddSchoolModal()">➕ Add New School</button>
                                 <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#dd2d27; border-color:#dd2d27; text-decoration:none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px;">↑ Bulk Upload Schools</a>
+                                {% if schools %}
+                                <button type="button" class="btn btn-danger" style="background:#dc2626; border-color:#dc2626; color:white; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor:pointer;" onclick="clearAllSchools()">🗑️ Clear All Schools</button>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -759,7 +764,15 @@
                                 </div>
                             </div>
                             {% empty %}
-                            <p style="color: #64748b;">No schools registered yet.</p>
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background: #ffffff; border-radius: 12px; border: 2px dashed #cbd5e1; margin-top: 10px;">
+                                <div style="font-size: 40px; margin-bottom: 12px;">🏫</div>
+                                <h3 style="margin: 0 0 6px; color: #1e293b; font-size: 18px; font-weight: 700;">No Schools Found</h3>
+                                <p style="margin: 0 0 20px; color: #64748b; font-size: 13px;">There are currently no partner government schools in the database.</p>
+                                <div style="display: flex; gap: 12px; justify-content: center;">
+                                    <button type="button" class="btn btn-primary" style="background:#231f20; border-color:#231f20; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px;" onclick="openAddSchoolModal()">➕ Add First School</button>
+                                    <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#dd2d27; border-color:#dd2d27; text-decoration:none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px;">↑ Bulk Upload Schools</a>
+                                </div>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
@@ -918,6 +931,7 @@
                                 <thead>
                                     <tr>
                                         <th>Grade Level</th>
+                                        <th>Student Name(s)</th>
                                         <th>Male Students</th>
                                         <th>Female Students</th>
                                         <th>Total Students</th>
@@ -925,7 +939,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="studentStrengthTableBody">
-                                    <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading Student Strength data...</td></tr>
+                                    <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading Student Strength data...</td></tr>
                                 </tbody>
                                 <tfoot id="studentStrengthTableFoot">
                                     <!-- Calculated dynamically -->
@@ -952,13 +966,13 @@
                         </div>
                     </div>
                     
-                    <!-- 7. Resources Provided Content -->
+                    <!-- 7. Resources & Distributions & Distributions & Distributions Provided Content -->
                     <div id="resources" class="tab-content data-view">
                         <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
                         <div class="section-header-action">
                             <div>
-                                <h2>📦 Resources Provided</h2>
-                                <p class="section-desc">Track resources, equipment, meals, and educational materials allocated to this school.</p>
+                                <h2>📦 Resources & Distributions Provided</h2>
+                                <p class="section-desc">Track resources, equipment, essentials, and benefit distributions allocated to this school.</p>
                             </div>
                             <div>
                                 <button class="btn btn-primary btn-sm" onclick="openAddResourceModal()">Allocate Resource</button>
@@ -1009,7 +1023,7 @@
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="headmaster-details" onclick="switchModalTab('headmaster-details')">👤 Headmaster</button>
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="student-strength" onclick="switchModalTab('student-strength')">📊 Student Strength</button>
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="view-history" onclick="switchModalTab('view-history')">📜 History</button>
-                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="resources" onclick="switchModalTab('resources')">📦 Resources</button>
+                <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="resources" onclick="switchModalTab('resources')">📦 Resources & Distributions</button>
                 <button type="button" class="btn btn-sm btn-primary modal-tab-btn" data-modaltab="bulk-students" style="background: #dd2d27; border-color: #dd2d27;" onclick="switchModalTab('bulk-students')">👨‍🎓 Bulk Add Students</button>
             </div>
 
@@ -1054,39 +1068,58 @@
 
     <!-- Add Resource Modal -->
     <div id="addResourceModal" class="modal-overlay">
-        <div class="modal-card">
+        <div class="modal-card" style="max-width: 540px; width: 92%;">
             <div class="modal-header">
-                <h3>📦 Allocate New Resource</h3>
+                <h3>📦 Create Distribution / Allocate Resource</h3>
                 <button class="modal-close" onclick="closeModal('addResourceModal')">&times;</button>
             </div>
             <form id="addResourceForm" onsubmit="handleAddResource(event)">
+                
+                <!-- Search Box for Inventory Items -->
                 <div class="form-group">
-                    <label for="resourceName">Resource Name *</label>
-                    <input type="text" id="resourceName" required placeholder="e.g., Digital Smart Classroom Kits">
+                    <label for="inventorySearchInput">🔍 Search Inventory Items</label>
+                    <input type="text" id="inventorySearchInput" placeholder="Type to search/filter inventory items by name, SKU..." oninput="filterInventoryItems()">
                 </div>
+
+                <!-- Dropdown Select for Listed Inventory Items -->
+                <div class="form-group">
+                    <label for="inventoryItemSelect">Select Inventory Item *</label>
+                    <select id="inventoryItemSelect" required onchange="onInventoryItemChange()">
+                        <option value="">-- Loading Listed Inventory Items... --</option>
+                    </select>
+                </div>
+
+                <!-- Remaining Pieces Left Indicator -->
+                <div id="stockBadgeContainer" style="margin-top: 6px; margin-bottom: 15px;">
+                    <div style="background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <span>📦</span>
+                        <span id="remainingStockText">Select an inventory item above to view remaining pieces left</span>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="resourceStatus">Status</label>
                     <select id="resourceStatus">
-                        <option value="Active">Active</option>
+                        <option value="Active" selected>Active</option>
                         <option value="Delivered">Delivered</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Pending">Pending</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="resourceQuantity">Quantity</label>
-                    <input type="number" id="resourceQuantity" min="1" value="1">
+                    <label for="resourceQuantity">Quantity *</label>
+                    <input type="number" id="resourceQuantity" min="1" value="1" required oninput="validateQuantityAgainstStock()">
                 </div>
                 <div class="form-group">
                     <label for="resourceLastUpdated">Date / Period Note</label>
-                    <input type="text" id="resourceLastUpdated" placeholder="e.g., August 2024">
+                    <input type="text" id="resourceLastUpdated" placeholder="e.g., August 2026">
                 </div>
                 <div class="form-group">
                     <label for="resourceDetails">Details / Description</label>
-                    <textarea id="resourceDetails" rows="2" placeholder="Specifications, vendor or allocation details..."></textarea>
+                    <textarea id="resourceDetails" rows="2" placeholder="Specifications, distribution notes, or allocation details..."></textarea>
                 </div>
                 <div class="form-actions" style="margin-top: 15px;">
-                    <button type="submit" class="btn btn-primary">Allocate Resource</button>
+                    <button type="submit" class="btn btn-primary" id="addResourceSubmitBtn">Create Distribution</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addResourceModal')">Cancel</button>
                 </div>
             </form>
@@ -1212,16 +1245,31 @@ function activateTab(tabName) {
 // Open Pop-up Modal for a selected school card
 function openSchoolModal(schoolId, tabName = 'edit-details') {
     if (schoolId) {
+        currentSchoolId = schoolId;
         const select = document.getElementById('activeSchoolSelect');
         if (select) {
             select.value = schoolId;
         }
-        onSelectedSchoolChange(schoolId);
-        
-        const option = select ? select.options[select.selectedIndex] : null;
-        if (option) {
-            document.getElementById('modalSchoolTitle').innerText = '🏫 ' + option.text;
+        if (typeof onSelectedSchoolChange === 'function') {
+            onSelectedSchoolChange(schoolId);
         }
+        const option = select ? select.options[select.selectedIndex] : null;
+        const titleElem = document.getElementById('modalSchoolTitle');
+        if (titleElem) {
+            if (option) {
+                titleElem.innerText = '🏫 ' + option.text;
+            } else if (currentSchoolData && currentSchoolData.school) {
+                titleElem.innerText = '🏫 ' + currentSchoolData.school.name;
+            }
+        }
+    }
+    if (tabName === 'bulk-students') {
+        window.location.href = "{% url 'students:bulk_upload' %}";
+        return;
+    }
+    if (tabName === 'add-school') {
+        activateTab('add-school');
+        return;
     }
     switchModalTab(tabName);
     openModal('schoolModalPopup');
@@ -1243,11 +1291,21 @@ function switchModalTab(tabName) {
     const targetContent = document.getElementById(tabName);
     const container = document.getElementById('modalTabContainer');
     if (container && targetContent) {
-        container.innerHTML = '';
-        const clone = targetContent.cloneNode(true);
-        clone.style.display = 'block';
-        clone.classList.add('active');
-        container.appendChild(clone);
+        // Return any currently attached modal children back to main container
+        const mainContainer = document.querySelector('.container');
+        if (mainContainer) {
+            Array.from(container.children).forEach(child => {
+                child.style.display = 'none';
+                mainContainer.appendChild(child);
+            });
+        }
+        targetContent.style.display = 'block';
+        targetContent.classList.add('active');
+        container.appendChild(targetContent);
+        
+        if (currentSchoolId) {
+            fetchAndPopulateSchoolData(currentSchoolId);
+        }
     }
 }
 
@@ -1326,7 +1384,7 @@ function renderStudentStrengthTable(strengths, totalStrength) {
     if (!tbody) return;
 
     if (!strengths || strengths.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">No grade records available.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">No grade records available.</td></tr>`;
         tfoot.innerHTML = '';
         return;
     }
@@ -1345,9 +1403,14 @@ function renderStudentStrengthTable(strengths, totalStrength) {
         if (ch.startsWith('+')) changeClass = 'change-positive';
         else if (ch.startsWith('-')) changeClass = 'change-negative';
 
+        const studentNamesHtml = row.student_names 
+            ? `<span style="font-weight: 500; color: #334155;">${row.student_names}</span>`
+            : `<span style="color: #94a3b8; font-style: italic;">-</span>`;
+
         return `
             <tr>
                 <td><strong>${row.grade_level}</strong></td>
+                <td>${studentNamesHtml}</td>
                 <td>${row.male_students}</td>
                 <td>${row.female_students}</td>
                 <td><strong>${row.total_students}</strong></td>
@@ -1359,6 +1422,7 @@ function renderStudentStrengthTable(strengths, totalStrength) {
     tfoot.innerHTML = `
         <tr>
             <td><strong>Total Strength</strong></td>
+            <td>-</td>
             <td><strong>${maleSum}</strong></td>
             <td><strong>${femaleSum}</strong></td>
             <td><strong>${totalSum || totalStrength}</strong></td>
@@ -1686,24 +1750,154 @@ async function deleteMilestone(id) {
 }
 
 // 7. Resource Modals and Handlers
+let globalInventoryItems = [];
+
+async function loadInventoryItemsForSchoolModal() {
+    try {
+        const res = await fetch('/inventory/api/items/');
+        const data = await res.json();
+        if (data && data.items) {
+            globalInventoryItems = data.items;
+        } else if (Array.isArray(data)) {
+            globalInventoryItems = data;
+        }
+        renderInventoryDropdown(globalInventoryItems);
+    } catch (err) {
+        console.error("Error loading inventory items:", err);
+    }
+}
+
+function renderInventoryDropdown(items) {
+    const select = document.getElementById('inventoryItemSelect');
+    if (!select) return;
+
+    if (!items || items.length === 0) {
+        select.innerHTML = '<option value="">No matching inventory items found</option>';
+        updateStockIndicator(null);
+        return;
+    }
+
+    let html = '<option value="" data-stock="0" data-unit="Pieces">-- Select Listed Inventory Item --</option>';
+    items.forEach(item => {
+        const stock = item.current_stock !== undefined ? item.current_stock : 0;
+        const unit = item.unit || 'Pieces';
+        const name = item.item_name || item.name;
+        const sku = item.sku || '';
+        html += `<option value="${item.id}" data-stock="${stock}" data-unit="${unit}" data-name="${name}">
+            ${name} ${sku ? `(${sku})` : ''} - Stock: ${stock} ${unit}
+        </option>`;
+    });
+    select.innerHTML = html;
+}
+
+function filterInventoryItems() {
+    const query = document.getElementById('inventorySearchInput').value.trim().toLowerCase();
+    if (!query) {
+        renderInventoryDropdown(globalInventoryItems);
+        return;
+    }
+    const filtered = globalInventoryItems.filter(item => {
+        const name = (item.item_name || item.name || '').toLowerCase();
+        const sku = (item.sku || '').toLowerCase();
+        const cat = (item.category_display || item.category || '').toLowerCase();
+        return name.includes(query) || sku.includes(query) || cat.includes(query);
+    });
+    renderInventoryDropdown(filtered);
+}
+
+function onInventoryItemChange() {
+    const select = document.getElementById('inventoryItemSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    if (!selectedOption || !select.value) {
+        updateStockIndicator(null);
+        return;
+    }
+    const stock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
+    const unit = selectedOption.getAttribute('data-unit') || 'Pieces';
+    const name = selectedOption.getAttribute('data-name') || '';
+    updateStockIndicator({ name, stock, unit });
+    validateQuantityAgainstStock();
+}
+
+function updateStockIndicator(itemData) {
+    const badge = document.getElementById('stockBadgeContainer');
+    if (!badge) return;
+
+    if (!itemData) {
+        badge.innerHTML = `
+            <div style="background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>📦</span>
+                <span>Select an inventory item above to view remaining pieces left</span>
+            </div>`;
+        return;
+    }
+
+    if (itemData.stock > 0) {
+        badge.innerHTML = `
+            <div style="background: #ecfdf5; color: #047857; padding: 8px 12px; border-radius: 6px; border: 1px solid #a7f3d0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">✅</span>
+                <span><strong>Remaining Stock Left:</strong> <span style="font-size: 14px; font-weight: 800;">${itemData.stock} ${itemData.unit}</span> available in inventory</span>
+            </div>`;
+    } else {
+        badge.innerHTML = `
+            <div style="background: #fef2f2; color: #b91c1c; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">⚠️</span>
+                <span><strong>Out of Stock:</strong> 0 ${itemData.unit} remaining! Please restock inventory before allocating.</span>
+            </div>`;
+    }
+}
+
+function validateQuantityAgainstStock() {
+    const select = document.getElementById('inventoryItemSelect');
+    const selectedOption = select ? select.options[select.selectedIndex] : null;
+    const qtyInput = document.getElementById('resourceQuantity');
+    const submitBtn = document.getElementById('addResourceSubmitBtn');
+    if (!selectedOption || !select.value) return;
+
+    const availableStock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
+    const enteredQty = parseInt(qtyInput.value || '1', 10);
+
+    if (enteredQty > availableStock) {
+        if (submitBtn) submitBtn.disabled = true;
+        showToast(`Requested quantity (${enteredQty}) exceeds available stock (${availableStock})!`, 'error');
+    } else {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+}
 function openAddResourceModal() {
     if (!currentSchoolId) {
         showToast('Please select a school first', 'error');
         return;
     }
     document.getElementById('addResourceForm').reset();
+    updateStockIndicator(null);
+    loadInventoryItemsForSchoolModal();
     document.getElementById('addResourceModal').classList.add('open');
 }
 
 async function handleAddResource(e) {
     e.preventDefault();
+    const select = document.getElementById('inventoryItemSelect');
+    const selectedOpt = select ? select.options[select.selectedIndex] : null;
+    const itemId = select ? select.value : null;
+    const resourceName = selectedOpt ? selectedOpt.getAttribute('data-name') : '';
+
+    if (!itemId) {
+        showToast('Please select a valid inventory item.', 'error');
+        return;
+    }
+
     const payload = {
-        resource_name: document.getElementById('resourceName').value.trim(),
+        item_id: itemId,
+        resource_name: resourceName,
         status: document.getElementById('resourceStatus').value,
         quantity: document.getElementById('resourceQuantity').value,
         last_updated_note: document.getElementById('resourceLastUpdated').value.trim(),
         details: document.getElementById('resourceDetails').value.trim()
     };
+
+    const btn = document.getElementById('addResourceSubmitBtn');
+    btn.disabled = true;
 
     try {
         const res = await fetch(`/schools/api/schools/${currentSchoolId}/resources/add/`, {
@@ -1719,11 +1913,14 @@ async function handleAddResource(e) {
             showToast(data.message || 'Resource allocated!');
             closeModal('addResourceModal');
             fetchAndPopulateSchoolData(currentSchoolId);
+            loadInventoryItemsForSchoolModal();
         } else {
             showToast(data.error || 'Failed to allocate resource', 'error');
         }
     } catch (err) {
         showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
     }
 }
 
@@ -1738,6 +1935,7 @@ async function deleteResource(id) {
         if (data.success) {
             showToast(data.message || 'Resource removed.');
             fetchAndPopulateSchoolData(currentSchoolId);
+            loadInventoryItemsForSchoolModal();
         }
     } catch (err) {
         showToast('Error: ' + err.message, 'error');
@@ -1752,11 +1950,48 @@ function openModal(id) {
 
 function closeModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.remove('open');
+    if (modal) {
+        modal.classList.remove('open');
+        if (id === 'schoolModalPopup') {
+            const container = document.getElementById('modalTabContainer');
+            const mainContainer = document.querySelector('.container');
+            if (container && mainContainer) {
+                Array.from(container.children).forEach(child => {
+                    child.style.display = 'none';
+                    mainContainer.appendChild(child);
+                });
+            }
+        }
+    }
+}
+
+async function clearAllSchools() {
+    if (!confirm("⚠️ Are you sure you want to ERASE ALL SCHOOLS and all associated student data? This action cannot be undone.")) {
+        return;
+    }
+    try {
+        const csrfToken = typeof getCSRFToken === 'function' ? getCSRFToken() : (document.querySelector('[name=csrfmiddlewaretoken]')?.value || '');
+        const response = await fetch("{% url 'schools:api_clear_all_schools' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert("✅ " + data.message);
+            window.location.reload();
+        } else {
+            alert("❌ Error: " + (data.error || "Failed to clear schools"));
+        }
+    } catch (err) {
+        alert("❌ Network Error: " + err.message);
+    }
 }
 
 function openAddSchoolModal() {
-    openSchoolModal(currentSchoolId, 'add-school');
+    activateTab('add-school');
 }
 
 // Reset Form helper

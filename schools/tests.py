@@ -143,9 +143,22 @@ class SchoolPortalAPITests(TestCase):
         self.assertFalse(SchoolMilestone.objects.filter(id=milestone_id).exists())
 
     def test_api_resource_crud(self):
-        # Add resource
+        from distributions.models import Distribution
+        from inventory.models import InventoryItem, InventoryCategory
+
+        inv_item = InventoryItem.objects.create(
+            item_name="Library Books Set",
+            sku="BK-LIB-SET-01",
+            category=InventoryCategory.BOOKS,
+            unit="Sets",
+            current_stock=1000,
+            status="ACTIVE",
+        )
+
+        # Add resource / distribution / distribution
         payload = {
-            "resource_name": "Library Books Set",
+            "item_id": inv_item.id,
+            "resource_name": inv_item.item_name,
             "status": "Delivered",
             "quantity": 500,
             "last_updated_note": "May 2024",
@@ -159,13 +172,26 @@ class SchoolPortalAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         res_id = response.json()["resource"]["id"]
         self.assertTrue(SchoolResource.objects.filter(id=res_id).exists())
+        self.assertTrue(Distribution.objects.filter(school=self.school, quantity=500).exists())
 
-        # Delete resource
+        inv_item.refresh_from_db()
+        self.assertEqual(inv_item.current_stock, 500)
+
+        # Delete resource / distribution
         del_response = self.client.post(
             reverse("schools:api_delete_resource", args=[res_id])
         )
         self.assertEqual(del_response.status_code, 200)
         self.assertFalse(SchoolResource.objects.filter(id=res_id).exists())
+        self.assertFalse(Distribution.objects.filter(school=self.school, quantity=500).exists())
+
+    def test_api_clear_all_schools(self):
+        from distributions.models import Distribution
+        response = self.client.post(reverse("schools:api_clear_all_schools"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        self.assertEqual(School.objects.count(), 0)
+        self.assertFalse(Distribution.objects.filter(school=self.school, quantity=500).exists())
 
     def test_export_student_strength_csv(self):
         response = self.client.get(reverse("schools:export_strength_csv", args=[self.school.id]))
@@ -174,6 +200,20 @@ class SchoolPortalAPITests(TestCase):
         content = response.content.decode("utf-8")
         self.assertIn("Grade Level", content)
         self.assertIn("Male Students", content)
+
+    def test_clear_all_students_endpoint(self):
+        from students.models import Student
+        Student.objects.create(
+            admission_number="ST-9999",
+            student_name="Test Student Clear",
+            gender="MALE",
+            school=self.school,
+            current_class="10"
+        )
+        self.assertTrue(Student.objects.filter(admission_number="ST-9999").exists())
+        response = self.client.post(reverse("students:clear_all"))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Student.objects.filter(admission_number="ST-9999").exists())
 
     def test_api_auth_login(self):
         response = self.client.post(

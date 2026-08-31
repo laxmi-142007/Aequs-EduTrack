@@ -63,5 +63,5 @@ class SchoolResourceAdmin(admin.ModelAdmin):
 
 @admin.register(GradeStrength)
 class GradeStrengthAdmin(admin.ModelAdmin):
-    list_display = ("school", "grade_level", "male_students", "female_students", "total_students", "change_vs_last_year")
+    list_display = ("school", "grade_level", "student_names", "male_students", "female_students", "total_students", "change_vs_last_year")
     list_filter = ("school", "grade_level")

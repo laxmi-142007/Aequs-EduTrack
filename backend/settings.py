@@ -101,10 +101,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "mssql",
-        "NAME": "Aequs_EduTrack",
-        "HOST": r".\SQLEXPRESS",
-        "USER": "",
-        "PASSWORD": "",
+        "NAME": os.environ.get('DB_NAME', 'Aequs_EduTrack'),
+        "HOST": os.environ.get('DB_HOST', 'localhost'),
+        "USER": os.environ.get('DB_USER', ''),
+        "PASSWORD": os.environ.get('DB_PASSWORD', ''),
         "OPTIONS": {
             "driver": "ODBC Driver 18 for SQL Server",
             "extra_params": "TrustServerCertificate=yes;",
@@ -148,8 +148,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'backend' / 'static',

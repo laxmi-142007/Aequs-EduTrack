@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -658,6 +658,33 @@
                         Add Student
 
                     </a>
+
+                    <!-- =================================================
+                         CLEAR ALL STUDENTS BUTTON
+                    ================================================== -->
+
+                    <form
+                        method="POST"
+                        action="{% url 'students:clear_all' %}"
+                        style="display:inline;"
+                        onsubmit="return confirm('⚠️ ARE YOU SURE?\nThis will permanently delete ALL student records from the database. This action cannot be undone.');"
+                    >
+                        {% csrf_token %}
+                        <button
+                            type="submit"
+                            class="add-button"
+                            style="background: #dc2626; border-color: #dc2626; color: #ffffff;"
+                        >
+
+                            <i
+                                data-lucide="trash-2"
+                                style="width:14px;height:14px;"
+                            ></i>
+
+                            Clear All Students
+
+                        </button>
+                    </form>
 
                 </div>
 

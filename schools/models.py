@@ -193,6 +193,7 @@ class GradeStrength(models.Model):
     total_students = models.PositiveIntegerField(default=0)
     change_vs_last_year = models.CharField(max_length=20, default="0")
     order = models.PositiveIntegerField(default=0)
+    student_names = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["order", "id"]

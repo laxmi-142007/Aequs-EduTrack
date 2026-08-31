@@ -378,9 +378,9 @@
 
                         <th>#</th>
 
-                        <th>Student</th>
+                        <th>Student / School Recipient</th>
 
-                        <th>Admission Number</th>
+                        <th>Admission No. / UDISE Code</th>
 
                         <th>Benefit Type</th>
 
@@ -414,21 +414,41 @@
                         </td>
 
 
-                        <!-- Student -->
+                        <!-- Student / Recipient -->
 
                         <td>
 
-                            <span class="student-name">
-                                {{ distribution.student.student_name }}
-                            </span>
+                            {% if distribution.student %}
+                                <span class="student-name">
+                                    {{ distribution.student.student_name }}
+                                </span>
+                                {% if distribution.student.school %}
+                                    <small style="display:block; color:#6b7280; font-size:11px; margin-top:2px;">🏫 {{ distribution.student.school.name }}</small>
+                                {% endif %}
+                            {% elif distribution.school %}
+                                <span class="student-name" style="color:#2563eb;">
+                                    🏫 {{ distribution.school.name }}
+                                </span>
+                                <small style="display:block; color:#059669; font-size:11px; font-weight:600; margin-top:2px;">(School Distribution)</small>
+                            {% else %}
+                                <span class="student-name">
+                                    General
+                                </span>
+                            {% endif %}
 
                         </td>
 
 
-                        <!-- Admission Number -->
+                        <!-- Admission Number / UDISE Code -->
 
                         <td>
-                            {{ distribution.student.admission_number }}
+                            {% if distribution.student %}
+                                {{ distribution.student.admission_number|default:"-" }}
+                            {% elif distribution.school %}
+                                <strong>UDISE:</strong> {{ distribution.school.udise_code }}
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
 
 
