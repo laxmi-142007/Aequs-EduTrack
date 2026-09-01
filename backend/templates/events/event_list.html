@@ -382,6 +382,13 @@
                             </div>
                         {% endif %}
 
+                        {% if event.requested_item %}
+                            <div class="event-info" style="color: #059669;">
+                                <strong>&#128230; Resource Requested:</strong>
+                                {{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}
+                            </div>
+                        {% endif %}
+
                         <!-- Event Actions -->
                         <div class="event-actions">
 

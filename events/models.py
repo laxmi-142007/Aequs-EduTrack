@@ -31,6 +31,18 @@ class Event(models.Model):
         auto_now=True
     )
 
+    requested_item = models.ForeignKey(
+        "inventory.InventoryItem",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="event_requests",
+    )
+
+    requested_quantity = models.PositiveIntegerField(
+        default=0,
+    )
+
     class Meta:
         ordering = ["-event_date"]
 

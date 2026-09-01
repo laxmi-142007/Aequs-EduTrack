@@ -116,7 +116,8 @@ class EligibilityServiceTests(TestCase):
             record,
         )
 
-        self.assertIsNone(result)
+        self.assertIsNotNone(result)
+        self.assertFalse(result.eligible)
 
     def test_workbook_eligibility_only_class_10(self):
         record = self.create_academic_record("Class 10")
@@ -137,7 +138,8 @@ class EligibilityServiceTests(TestCase):
             record,
         )
 
-        self.assertIsNone(result)
+        self.assertIsNotNone(result)
+        self.assertFalse(result.eligible)
 
     def test_second_puc_student_can_get_laptop(self):
         record = self.create_academic_record(
