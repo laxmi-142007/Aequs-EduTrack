@@ -304,6 +304,26 @@
 
                     </div>
 
+                    {% if not is_edit %}
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                        <h3 style="margin-top:0; font-size: 16px; color: #1e293b;">&#12445; Request Inventory Resource (Optional)</h3>
+                        <div class="form-group">
+                            <label for="inventory_item">Inventory Item</label>
+                            <select id="inventory_item" name="inventory_item" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 15px;">
+                                <option value="">-- None (No resource requested) --</option>
+                                {% for item in inventory_items %}
+                                    <option value="{{ item.pk }}">{{ item.item_name }} (In Stock: {{ item.current_stock }} {{ item.unit }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inventory_quantity">Quantity Needed</label>
+                            <input type="number" id="inventory_quantity" name="inventory_quantity" min="1" placeholder="e.g. 5">
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <div class="actions">
 
                         <button

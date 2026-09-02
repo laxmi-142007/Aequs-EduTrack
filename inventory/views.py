@@ -1076,6 +1076,7 @@ def inventory_csv_template(request):
         "item_name",
         "sku",
         "category",
+        "current_stock",
         "unit",
         "current_stock",
         "low_stock_threshold",

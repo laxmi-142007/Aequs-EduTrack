@@ -304,10 +304,7 @@
 
         </div>
 
-        <a
-            href="{% url 'inventory:portal' %}"
-            class="back-btn"
-        >
+        <a href="{% url 'inventory:portal' %}" class="back-btn">
             Inventory
         </a>
 
@@ -395,7 +392,6 @@
                         <input
                             type="file"
                             name="file"
-                            id="inventoryFile"
                             accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                             class="file-input"
                             required
@@ -463,6 +459,8 @@
                         <code>item_name</code>
                         <code>sku</code>
                         <code>category</code>
+                        <code>unit</code>
+                        <code>current_stock</code>
 
                     </div>
 
@@ -475,8 +473,6 @@
                             Optional / Inventory Columns
                         </h4>
 
-                        <code>unit</code>
-                        <code>current_stock</code>
                         <code>low_stock_threshold</code>
                         <code>unit_cost</code>
                         <code>location</code>
@@ -511,48 +507,35 @@
 
                     <p>
                         <strong>Item Name:</strong>
-                        Must contain the name of the inventory item.
+                        Required. Example: Laptop Charger.
                     </p>
 
                     <p>
                         <strong>SKU:</strong>
-                        Must be unique for each inventory item.
+                        Required and must be unique. Example: CHR-LEN-001.
                     </p>
 
                     <p>
                         <strong>Category:</strong>
-                        Must be one of BOOKS, WORKBOOKS, STUDY_KITS,
-                        LAPTOPS, SCHOOL_ESSENTIALS or EVENT_MATERIALS.
+                        Must be one of the allowed values:
+                        BOOKS, WORKBOOKS, STUDY_KITS, LAPTOPS,
+                        SCHOOL_ESSENTIALS or EVENT_MATERIALS.
                     </p>
 
                     <p>
                         <strong>Current Stock:</strong>
-                        Opening/current quantity. Defaults to 0 if omitted.
-                    </p>
-
-                    <p>
-                        <strong>Low Stock Threshold:</strong>
-                        Quantity at which a low-stock alert is triggered.
-                    </p>
-
-                    <p>
-                        <strong>Unit Cost:</strong>
-                        Cost of one inventory unit.
-                    </p>
-
-                    <p>
-                        <strong>Location:</strong>
-                        Warehouse, room, rack, shelf, or other storage location.
+                        Opening quantity for the item.
+                        If greater than zero it is recorded as a stock-in entry.
                     </p>
 
                     <p>
                         <strong>Status:</strong>
-                        Must be either ACTIVE or INACTIVE.
+                        Allowed values: ACTIVE or INACTIVE.
                     </p>
 
                     <p>
-                        Existing inventory items can be updated using
-                        their existing SKU.
+                        Duplicate SKUs within the file
+                        or already present in the database are rejected.
                     </p>
 
                 </div>
