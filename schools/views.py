@@ -615,6 +615,43 @@ def api_add_milestone(request, school_id):
 
 
 @require_http_methods(["POST"])
+def api_clear_all_schools(request):
+    """Clear/delete all school records and associated student/resource data."""
+    try:
+        from distributions.models import Distribution
+        from inventory.models import LaptopAssignment
+        from eligibility.models import EligibilityRecord
+        from academics.models import AcademicRecord
+        from students.models import Student
+
+        with transaction.atomic():
+            LaptopAssignment.objects.all().delete()
+            Distribution.objects.all().delete()
+            EligibilityRecord.objects.all().delete()
+            AcademicRecord.objects.all().delete()
+            Student.objects.all().delete()
+            SchoolResource.objects.all().delete()
+            GradeStrength.objects.all().delete()
+            SchoolMilestone.objects.all().delete()
+            deleted_count, _ = School.objects.all().delete()
+
+        try:
+            from reports.models import log_activity
+            log_activity(request, f"Cleared all partner schools ({deleted_count} schools deleted)", category="SCHOOL")
+        except Exception:
+            pass
+
+        return JsonResponse({
+            "success": True,
+            "message": f"Successfully deleted {deleted_count} school(s) and all associated data."
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@require_http_methods(["POST"])
 def api_delete_milestone(request, milestone_id):
     """Delete a school milestone"""
     try:
@@ -627,7 +664,7 @@ def api_delete_milestone(request, milestone_id):
 
 @require_http_methods(["POST"])
 def api_add_resource(request, school_id):
-    """Add a resource allocation record from Tab 7, deduct inventory stock, and create Distribution record"""
+    """Add a resource allocation record from Tab 7, deduct inventory stock, and create Distribution record, deduct inventory stock, and create Distribution record"""
     try:
         from distributions.models import Distribution, BenefitType, RecipientType, SchoolEssentialType
         from inventory.models import InventoryItem, StockTransaction

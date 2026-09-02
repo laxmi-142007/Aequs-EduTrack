@@ -1,9 +1,9 @@
-from django import forms
-
+﻿from django import forms
 from .models import Student
 
 
 class StudentForm(forms.ModelForm):
+
     class Meta:
         model = Student
         fields = [
@@ -34,7 +34,9 @@ class StudentForm(forms.ModelForm):
             "admission_date": forms.DateInput(
                 attrs={"type": "date"}
             ),
-            "address": forms.Textarea(
-                attrs={"rows": 3}
+            "photo": forms.ClearableFileInput(
+                attrs={
+                    "accept": "image/*"
+                }
             ),
         }

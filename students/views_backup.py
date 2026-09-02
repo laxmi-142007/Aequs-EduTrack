@@ -1,6 +1,5 @@
 ﻿import csv
 import io
-import random
 from datetime import datetime
 
 import openpyxl
@@ -8,132 +7,15 @@ import openpyxl
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
+from django.shortcuts import render, redirect
 
 from .models import Student
 from .forms import StudentForm
-
 from schools.models import School
 from academics.models import AcademicRecord
 
 
-# =============================================================
-# CLASS NORMALIZATION / EQUIVALENTS
-# =============================================================
-
-CLASS_EQUIVALENTS = {
-    "1": ["1", "1st"],
-    "2": ["2", "2nd"],
-    "3": ["3", "3rd"],
-    "4": ["4", "4th"],
-    "5": ["5", "5th"],
-    "6": ["6", "6th"],
-    "7": ["7", "7th"],
-    "8": ["8", "8th"],
-    "9": ["9", "9th"],
-    "10": ["10", "10th"],
-    "1st PU": ["1st PU", "1st PUC"],
-    "2nd PU": ["2nd PU", "2nd PUC"],
-}
-
-
-def get_class_equivalents(class_value):
-    """
-    Return all database values that should be treated
-    as the same class.
-    """
-
-    value = str(class_value or "").strip()
-
-    for canonical, equivalents in CLASS_EQUIVALENTS.items():
-        if value.lower() in [item.lower() for item in equivalents]:
-            return equivalents
-
-    return [value]
-
-
-def get_canonical_class(class_value):
-    """
-    Convert different representations into one canonical
-    class value for displaying in the dropdown.
-    """
-
-    value = str(class_value or "").strip()
-
-    for canonical, equivalents in CLASS_EQUIVALENTS.items():
-        if value.lower() in [item.lower() for item in equivalents]:
-            return canonical
-
-    return value
-
-
-# =============================================================
-# BULK UPLOAD HEADER NORMALIZATION
-# =============================================================
-
-def _normalize_header_name(name):
-    """
-    Normalize CSV/Excel column names and support common aliases.
-    """
-
-    if not name:
-        return ""
-
-    cleaned = (
-        str(name)
-        .strip()
-        .lower()
-        .replace(" ", "_")
-        .replace("-", "_")
-    )
-
-    alias_map = {
-        "admission_no": "admission_number",
-        "adm_no": "admission_number",
-        "admission_num": "admission_number",
-
-        "student_name": "student_name",
-        "name": "student_name",
-        "full_name": "student_name",
-
-        "class": "current_class",
-        "grade": "current_class",
-        "current_class": "current_class",
-
-        "school_name": "school",
-        "school": "school",
-        "udise": "school",
-        "udise_code": "school",
-
-        "father_name": "parent_name",
-        "parent_name": "parent_name",
-        "guardian_name": "parent_name",
-        "parent": "parent_name",
-
-        "dob": "date_of_birth",
-        "date_of_birth": "date_of_birth",
-
-        "sex": "gender",
-        "gender": "gender",
-
-        "admission_date": "admission_date",
-        "date_of_admission": "admission_date",
-        "doj": "admission_date",
-        "date_of_joining": "admission_date",
-        "admission_dt": "admission_date",
-    }
-
-    return alias_map.get(cleaned, cleaned)
-
-
-# =============================================================
-# STUDENT LIST
-# =============================================================
-
 def student_list(request):
-
     queryset = (
         Student.objects
         .select_related("school")
@@ -144,7 +26,6 @@ def student_list(request):
     # ---------------------------------------------------------
     # FILTER PARAMETERS
     # ---------------------------------------------------------
-
     search_query = request.GET.get("q", "").strip()
     school_id = request.GET.get("school", "").strip()
     class_filter = request.GET.get("class", "").strip()
@@ -154,7 +35,6 @@ def student_list(request):
     # ---------------------------------------------------------
     # SEARCH
     # ---------------------------------------------------------
-
     if search_query:
         queryset = queryset.filter(
             Q(student_name__icontains=search_query)
@@ -165,7 +45,6 @@ def student_list(request):
     # ---------------------------------------------------------
     # SCHOOL FILTER
     # ---------------------------------------------------------
-
     if school_id:
         queryset = queryset.filter(
             school_id=school_id
@@ -174,28 +53,14 @@ def student_list(request):
     # ---------------------------------------------------------
     # CLASS FILTER
     # ---------------------------------------------------------
-
     if class_filter:
-
-        class_values = get_class_equivalents(
-            class_filter
-        )
-
-        class_query = Q()
-
-        for value in class_values:
-            class_query |= Q(
-                current_class__iexact=value
-            )
-
         queryset = queryset.filter(
-            class_query
+            current_class=class_filter
         )
 
     # ---------------------------------------------------------
     # GENDER FILTER
     # ---------------------------------------------------------
-
     if gender_filter:
         queryset = queryset.filter(
             gender=gender_filter
@@ -204,41 +69,31 @@ def student_list(request):
     # ---------------------------------------------------------
     # STATUS FILTER
     # ---------------------------------------------------------
-
     if status_filter:
         queryset = queryset.filter(
             status=status_filter
         )
 
     # ---------------------------------------------------------
-    # DISTINCT / NORMALIZED CLASSES
+    # DISTINCT CLASSES
     # ---------------------------------------------------------
-
-    raw_classes = (
-        Student.objects
-        .values_list(
-            "current_class",
-            flat=True
-        )
-        .distinct()
-    )
-
     distinct_classes = sorted(
-        {
-            get_canonical_class(class_value)
-            for class_value in raw_classes
-            if class_value
-        },
-        key=lambda value: (
-            int(value) if value.isdigit() else 999,
-            value.lower()
+        list(
+            filter(
+                None,
+                Student.objects
+                .values_list(
+                    "current_class",
+                    flat=True
+                )
+                .distinct()
+            )
         )
     )
 
     # ---------------------------------------------------------
     # SCHOOLS
     # ---------------------------------------------------------
-
     schools = (
         School.objects
         .all()
@@ -248,7 +103,6 @@ def student_list(request):
     # ---------------------------------------------------------
     # COUNTS
     # ---------------------------------------------------------
-
     total_count = Student.objects.count()
 
     filtered_count = queryset.count()
@@ -260,7 +114,6 @@ def student_list(request):
     # ---------------------------------------------------------
     # RENDER
     # ---------------------------------------------------------
-
     return render(
         request,
         "students/student_list.html",
@@ -293,28 +146,12 @@ def add_student(request):
 
     if request.method == "POST":
 
-        form = StudentForm(
-            request.POST,
-            request.FILES
-        )
+        form = StudentForm(request.POST)
 
         if form.is_valid():
 
             student = form.save()
 
-            # Make sure default grades exist for the school
-            try:
-                from schools.views import _ensure_default_grades
-
-                if student.school:
-                    _ensure_default_grades(
-                        student.school
-                    )
-
-            except Exception:
-                pass
-
-            # Automatically create academic record
             AcademicRecord.objects.get_or_create(
                 student=student,
                 academic_year="2025-26",
@@ -337,10 +174,9 @@ def add_student(request):
 
     return render(
         request,
-        "students/student_form.html",
+        "students/add_student.html",
         {
-            "form": form,
-            "is_edit": False,
+            "form": form
         },
     )
 
@@ -354,7 +190,6 @@ def bulk_upload_students(request):
     # ---------------------------------------------------------
     # SHOW UPLOAD PAGE
     # ---------------------------------------------------------
-
     if request.method != "POST":
 
         return render(
@@ -365,11 +200,8 @@ def bulk_upload_students(request):
     # ---------------------------------------------------------
     # GET FILE
     # ---------------------------------------------------------
-
-    uploaded_file = (
-        request.FILES.get("student_file")
-        or request.FILES.get("csv_file")
-        or request.FILES.get("file")
+    uploaded_file = request.FILES.get(
+        "csv_file"
     )
 
     if not uploaded_file:
@@ -388,8 +220,10 @@ def bulk_upload_students(request):
     # ---------------------------------------------------------
     # VALIDATE FILE TYPE
     # ---------------------------------------------------------
-
-    if not file_name.endswith((".csv", ".xlsx")):
+    if not (
+        file_name.endswith(".csv")
+        or file_name.endswith(".xlsx")
+    ):
 
         messages.error(
             request,
@@ -431,9 +265,11 @@ def bulk_upload_students(request):
                     "students:bulk_upload"
                 )
 
-            # Normalize CSV headers
+            # Normalize CSV column names
             reader.fieldnames = [
-                _normalize_header_name(field)
+                str(field).strip().lower()
+                if field
+                else ""
                 for field in reader.fieldnames
             ]
 
@@ -480,12 +316,21 @@ def bulk_upload_students(request):
             # HEADER ROW
             # -------------------------------------------------
 
-            headers = [
-                _normalize_header_name(cell)
-                if cell is not None
-                else ""
-                for cell in excel_rows[0]
-            ]
+            headers = []
+
+            for cell in excel_rows[0]:
+
+                if cell is None:
+
+                    headers.append("")
+
+                else:
+
+                    headers.append(
+                        str(cell)
+                        .strip()
+                        .lower()
+                    )
 
             available_columns = set(
                 headers
@@ -509,7 +354,9 @@ def bulk_upload_students(request):
 
                 row_data = {}
 
-                for index, header in enumerate(headers):
+                for index, header in enumerate(
+                    headers
+                ):
 
                     if not header:
                         continue
@@ -517,14 +364,10 @@ def bulk_upload_students(request):
                     value = (
                         excel_row[index]
                         if index < len(excel_row)
-                        else ""
+                        else None
                     )
 
-                    row_data[header] = (
-                        ""
-                        if value is None
-                        else value
-                    )
+                    row_data[header] = value
 
                 rows.append(
                     row_data
@@ -535,7 +378,12 @@ def bulk_upload_students(request):
         # =====================================================
 
         required_columns = {
+            "admission_number",
             "student_name",
+            "gender",
+            "school",
+            "current_class",
+            "parent_name",
         }
 
         missing_columns = (
@@ -547,9 +395,10 @@ def bulk_upload_students(request):
 
             messages.error(
                 request,
-                "Missing required column: "
-                "'student_name' "
-                "(or 'Student Name')."
+                "Missing columns: "
+                + ", ".join(
+                    sorted(missing_columns)
+                )
             )
 
             return redirect(
@@ -579,35 +428,8 @@ def bulk_upload_students(request):
 
         prepared_students = []
 
+        # Track admission numbers inside uploaded file
         uploaded_admission_numbers = set()
-
-        # -----------------------------------------------------
-        # TARGET SCHOOL
-        # -----------------------------------------------------
-
-        target_school_id = (
-            request.GET.get("school")
-            or request.POST.get("school_id")
-        )
-
-        default_target_school = None
-
-        if target_school_id:
-
-            default_target_school = (
-                School.objects
-                .filter(id=target_school_id)
-                .first()
-            )
-
-        if (
-            not default_target_school
-            and School.objects.count() == 1
-        ):
-
-            default_target_school = (
-                School.objects.first()
-            )
 
         # =====================================================
         # PROCESS EVERY ROW
@@ -623,38 +445,57 @@ def bulk_upload_students(request):
             # -------------------------------------------------
 
             admission_number = str(
-                row.get("admission_number")
+                row.get(
+                    "admission_number"
+                )
                 or ""
             ).strip()
 
             student_name = str(
-                row.get("student_name")
+                row.get(
+                    "student_name"
+                )
                 or ""
             ).strip()
 
             gender = str(
-                row.get("gender")
+                row.get(
+                    "gender"
+                )
                 or ""
             ).strip().upper()
 
             school_name = str(
-                row.get("school")
+                row.get(
+                    "school"
+                )
                 or ""
             ).strip()
 
             current_class = str(
-                row.get("current_class")
+                row.get(
+                    "current_class"
+                )
                 or ""
-            ).strip() or "General"
+            ).strip()
 
             parent_name = str(
-                row.get("parent_name")
+                row.get(
+                    "parent_name"
+                )
                 or ""
-            ).strip() or "Guardian"
+            ).strip()
 
             # -------------------------------------------------
-            # STUDENT NAME VALIDATION
+            # REQUIRED FIELD VALIDATION
             # -------------------------------------------------
+
+            if not admission_number:
+
+                errors.append(
+                    f"Row {row_number}: "
+                    "admission_number is required."
+                )
 
             if not student_name:
 
@@ -663,61 +504,43 @@ def bulk_upload_students(request):
                     "student_name is required."
                 )
 
-            # -------------------------------------------------
-            # GENDER
-            # -------------------------------------------------
-
             if not gender:
 
-                gender = "MALE"
+                errors.append(
+                    f"Row {row_number}: "
+                    "gender is required."
+                )
 
             elif gender not in dict(
                 Student.Gender.choices
             ):
 
-                if (
-                    "FEMALE" in gender
-                    or "GIRL" in gender
-                    or gender == "F"
-                ):
+                errors.append(
+                    f"Row {row_number}: "
+                    f"invalid gender '{gender}'. "
+                    "Use MALE, FEMALE or OTHER."
+                )
 
-                    gender = "FEMALE"
+            if not school_name:
 
-                elif "OTHER" in gender:
+                errors.append(
+                    f"Row {row_number}: "
+                    "school is required."
+                )
 
-                    gender = "OTHER"
+            if not current_class:
 
-                else:
+                errors.append(
+                    f"Row {row_number}: "
+                    "current_class is required."
+                )
 
-                    gender = "MALE"
+            if not parent_name:
 
-            # -------------------------------------------------
-            # ADMISSION NUMBER
-            # -------------------------------------------------
-
-            if not admission_number:
-
-                while True:
-
-                    candidate = (
-                        f"ADM{random.randint(100000, 999999)}"
-                    )
-
-                    if (
-                        candidate
-                        not in uploaded_admission_numbers
-                        and not Student.objects.filter(
-                            admission_number=candidate
-                        ).exists()
-                    ):
-
-                        admission_number = candidate
-
-                        uploaded_admission_numbers.add(
-                            candidate
-                        )
-
-                        break
+                errors.append(
+                    f"Row {row_number}: "
+                    "parent_name is required."
+                )
 
             # -------------------------------------------------
             # FIND SCHOOL
@@ -733,37 +556,15 @@ def bulk_upload_students(request):
                         name__iexact=school_name
                     )
                     .first()
-                    or
-                    School.objects
-                    .filter(
-                        udise_code__iexact=school_name
-                    )
-                    .first()
-                    or
-                    School.objects
-                    .filter(
-                        name__icontains=school_name
-                    )
-                    .first()
                 )
 
-            if (
-                not school
-                and default_target_school
-            ):
+                if not school:
 
-                school = default_target_school
-
-            if not school:
-
-                school = School.objects.first()
-
-            if not school:
-
-                errors.append(
-                    f"Row {row_number}: "
-                    "No school could be found."
-                )
+                    errors.append(
+                        f"Row {row_number}: "
+                        f"school '{school_name}' "
+                        "was not found."
+                    )
 
             # -------------------------------------------------
             # DUPLICATE ADMISSION NUMBER
@@ -771,28 +572,14 @@ def bulk_upload_students(request):
 
             if admission_number:
 
-                if (
-                    admission_number
-                    in uploaded_admission_numbers
-                ):
+                if admission_number in uploaded_admission_numbers:
 
-                    # Only report duplicates that were
-                    # actually already seen.
-                    existing_count = sum(
-                        1
-                        for item in prepared_students
-                        if item.get("admission_number")
-                        == admission_number
+                    errors.append(
+                        f"Row {row_number}: "
+                        f"admission number "
+                        f"'{admission_number}' "
+                        "is duplicated in the uploaded file."
                     )
-
-                    if existing_count > 0:
-
-                        errors.append(
-                            f"Row {row_number}: "
-                            f"admission number "
-                            f"'{admission_number}' "
-                            "is duplicated in the uploaded file."
-                        )
 
                 else:
 
@@ -806,9 +593,9 @@ def bulk_upload_students(request):
 
                     errors.append(
                         f"Row {row_number}: "
-                        f"admission number "
+                        "admission number "
                         f"'{admission_number}' "
-                        "already exists in database."
+                        "already exists."
                     )
 
             # -------------------------------------------------
@@ -818,8 +605,7 @@ def bulk_upload_students(request):
             date_of_birth = None
 
             dob_value = row.get(
-                "date_of_birth",
-                ""
+                "date_of_birth"
             )
 
             if dob_value:
@@ -835,12 +621,26 @@ def bulk_upload_students(request):
 
                 elif hasattr(
                     dob_value,
-                    "date"
+                    "year"
+                ) and hasattr(
+                    dob_value,
+                    "month"
                 ):
 
-                    date_of_birth = (
-                        dob_value.date()
-                    )
+                    try:
+
+                        date_of_birth = (
+                            dob_value.date()
+                            if hasattr(
+                                dob_value,
+                                "date"
+                            )
+                            else dob_value
+                        )
+
+                    except Exception:
+
+                        date_of_birth = None
 
                 else:
 
@@ -848,33 +648,21 @@ def bulk_upload_students(request):
                         dob_value
                     ).strip()
 
-                    for fmt in (
-                        "%Y-%m-%d",
-                        "%d/%m/%Y",
-                        "%m/%d/%Y",
-                        "%d-%m-%Y",
-                    ):
+                    try:
 
-                        try:
+                        date_of_birth = (
+                            datetime.strptime(
+                                dob_string,
+                                "%Y-%m-%d"
+                            ).date()
+                        )
 
-                            date_of_birth = (
-                                datetime.strptime(
-                                    dob_string,
-                                    fmt
-                                ).date()
-                            )
-
-                            break
-
-                        except ValueError:
-
-                            pass
-
-                    if date_of_birth is None:
+                    except ValueError:
 
                         errors.append(
                             f"Row {row_number}: "
-                            "Invalid date_of_birth format."
+                            "date_of_birth must "
+                            "be YYYY-MM-DD."
                         )
 
             # -------------------------------------------------
@@ -884,8 +672,7 @@ def bulk_upload_students(request):
             admission_date = None
 
             admission_date_value = row.get(
-                "admission_date",
-                ""
+                "admission_date"
             )
 
             if admission_date_value:
@@ -901,12 +688,26 @@ def bulk_upload_students(request):
 
                 elif hasattr(
                     admission_date_value,
-                    "date"
+                    "year"
+                ) and hasattr(
+                    admission_date_value,
+                    "month"
                 ):
 
-                    admission_date = (
-                        admission_date_value.date()
-                    )
+                    try:
+
+                        admission_date = (
+                            admission_date_value.date()
+                            if hasattr(
+                                admission_date_value,
+                                "date"
+                            )
+                            else admission_date_value
+                        )
+
+                    except Exception:
+
+                        admission_date = None
 
                 else:
 
@@ -914,33 +715,21 @@ def bulk_upload_students(request):
                         admission_date_value
                     ).strip()
 
-                    for fmt in (
-                        "%Y-%m-%d",
-                        "%d/%m/%Y",
-                        "%m/%d/%Y",
-                        "%d-%m-%Y",
-                    ):
+                    try:
 
-                        try:
+                        admission_date = (
+                            datetime.strptime(
+                                admission_date_string,
+                                "%Y-%m-%d"
+                            ).date()
+                        )
 
-                            admission_date = (
-                                datetime.strptime(
-                                    admission_date_string,
-                                    fmt
-                                ).date()
-                            )
-
-                            break
-
-                        except ValueError:
-
-                            pass
-
-                    if admission_date is None:
+                    except ValueError:
 
                         errors.append(
                             f"Row {row_number}: "
-                            "Invalid admission_date format."
+                            "admission_date must "
+                            "be YYYY-MM-DD."
                         )
 
             # -------------------------------------------------
@@ -948,7 +737,9 @@ def bulk_upload_students(request):
             # -------------------------------------------------
 
             status = str(
-                row.get("status")
+                row.get(
+                    "status"
+                )
                 or Student.Status.ACTIVE
             ).strip().upper()
 
@@ -1151,160 +942,3 @@ def bulk_upload_students(request):
         return redirect(
             "students:bulk_upload"
         )
-
-
-# =============================================================
-# CLEAR ALL STUDENTS
-# =============================================================
-
-@require_http_methods(["POST"])
-def clear_all_students(request):
-    """
-    Clear/delete all student records and recalculate
-    school strengths.
-    """
-
-    try:
-
-        from eligibility.models import EligibilityRecord
-        from distributions.models import Distribution
-        from inventory.models import LaptopAssignment
-        from schools.models import GradeStrength, School
-
-        with transaction.atomic():
-
-            # Delete dependent records first
-            LaptopAssignment.objects.all().delete()
-
-            Distribution.objects.all().delete()
-
-            EligibilityRecord.objects.all().delete()
-
-            AcademicRecord.objects.all().delete()
-
-            # Delete all students
-            deleted_count, _ = (
-                Student.objects.all().delete()
-            )
-
-            # Recalculate school strengths
-            for school in School.objects.all():
-
-                school.grade_strengths.all().delete()
-
-                if school.student_strength != 0:
-
-                    school.student_strength = 0
-
-                    school.save(
-                        update_fields=[
-                            "student_strength"
-                        ]
-                    )
-
-        # -----------------------------------------------------
-        # ACTIVITY LOG
-        # -----------------------------------------------------
-
-        try:
-
-            from reports.models import log_activity
-
-            log_activity(
-                request,
-                f"Cleared all students from database "
-                f"({deleted_count} students deleted)",
-                category="STUDENT"
-            )
-
-        except Exception:
-
-            pass
-
-        # -----------------------------------------------------
-        # AJAX / JSON RESPONSE
-        # -----------------------------------------------------
-
-        if (
-            request.headers.get(
-                "x-requested-with"
-            ) == "XMLHttpRequest"
-            or
-            request.content_type
-            == "application/json"
-        ):
-
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message":
-                        f"Successfully deleted "
-                        f"{deleted_count} student record(s)."
-                }
-            )
-
-        # -----------------------------------------------------
-        # NORMAL RESPONSE
-        # -----------------------------------------------------
-
-        messages.success(
-            request,
-            f"Successfully deleted "
-            f"{deleted_count} student record(s)."
-        )
-
-        return redirect(
-            "students:list"
-        )
-
-    except Exception as e:
-
-        import traceback
-
-        traceback.print_exc()
-
-        if (
-            request.headers.get(
-                "x-requested-with"
-            ) == "XMLHttpRequest"
-            or
-            request.content_type
-            == "application/json"
-        ):
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "error": str(e)
-                },
-                status=500
-            )
-
-        messages.error(
-            request,
-            f"Failed to clear students: {e}"
-        )
-
-        return redirect(
-            "students:list"
-        )
-
-
-# =============================================================
-# STUDENT DETAIL
-# =============================================================
-
-def student_detail(request, pk):
-
-    student = get_object_or_404(
-        Student.objects.select_related("school"),
-        pk=pk
-    )
-
-    return render(
-        request,
-        "students/student_detail.html",
-        {
-            "student": student,
-        },
-    )

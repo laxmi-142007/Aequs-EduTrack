@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Bulk Inventory Upload - EduTrack</title>
 
     <style>
@@ -77,6 +78,11 @@
             text-decoration: none;
             font-size: 11px;
             font-weight: 600;
+        }
+
+        .back-btn:hover,
+        .download-btn:hover {
+            background: #f8fafc;
         }
 
         .container {
@@ -180,6 +186,10 @@
             color: white;
         }
 
+        .btn-upload:hover {
+            background: #dc1628;
+        }
+
         .columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -235,6 +245,16 @@
             color: #991b1b;
         }
 
+        .warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
         @media (max-width: 900px) {
             .main {
                 margin-left: 0;
@@ -242,6 +262,14 @@
 
             .columns {
                 grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 15px 18px;
+            }
+
+            .title-area h1 {
+                font-size: 17px;
             }
         }
     </style>
@@ -253,15 +281,27 @@
 
 <main class="main">
 
+    <!-- TOP BAR -->
     <header class="topbar">
 
         <div class="brand">
-            <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs Foundation" class="logo">
+
+            <img
+                src="{% static 'images/Aequs-logo.png' %}"
+                alt="Aequs Foundation"
+                class="logo"
+            >
 
             <div class="title-area">
+
                 <h1>Bulk Inventory Upload</h1>
-                <p>Aequs Foundation - EduTrack</p>
+
+                <p>
+                    Aequs Foundation - EduTrack
+                </p>
+
             </div>
+
         </div>
 
         <a href="{% url 'inventory:portal' %}" class="back-btn">
@@ -270,21 +310,43 @@
 
     </header>
 
+
     <div class="container">
 
+        <!-- DJANGO MESSAGES -->
+
         {% if messages %}
+
             {% for message in messages %}
-                <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+
+                <div class="message
+                    {% if message.tags == 'success' %}
+                        success
+                    {% elif message.tags == 'warning' %}
+                        warning
+                    {% elif message.tags == 'info' %}
+                        info
+                    {% else %}
+                        error
+                    {% endif %}
+                ">
                     {{ message }}
                 </div>
+
             {% endfor %}
+
         {% endif %}
+
+
+        <!-- UPLOAD CARD -->
 
         <div class="card">
 
             <div class="card-header">
 
-                <h2>Upload Inventory Records</h2>
+                <h2>
+                    Upload Inventory Records
+                </h2>
 
                 <a
                     href="{% url 'inventory:csv_template' %}"
@@ -294,25 +356,37 @@
                 </a>
 
                 <p>
-                    Upload a CSV or Excel (.xlsx) file containing multiple Inventory Records.
+                    Upload a CSV or Excel (.xlsx) file containing
+                    multiple inventory items.
                 </p>
 
             </div>
 
+
             <div class="card-body">
 
-                <form method="post" enctype="multipart/form-data" action="{% url 'inventory:bulk_upload' %}">
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                    action="{% url 'inventory:bulk_upload' %}"
+                    id="inventoryBulkUploadForm"
+                >
 
                     {% csrf_token %}
 
                     <div class="upload-box">
 
-                        <div class="upload-icon">&#8593;</div>
+                        <div class="upload-icon">
+                            &#8593;
+                        </div>
 
-                        <h3>Select CSV or Excel File</h3>
+                        <h3>
+                            Select CSV or Excel File
+                        </h3>
 
                         <p>
-                            Choose the Inventory Records file from your computer.
+                            Choose the inventory records file from
+                            your computer.
                         </p>
 
                         <input
@@ -325,6 +399,7 @@
 
                     </div>
 
+
                     <div class="button-row">
 
                         <a
@@ -334,7 +409,11 @@
                             Cancel
                         </a>
 
-                        <button type="submit" class="btn btn-upload">
+                        <button
+                            type="submit"
+                            class="btn btn-upload"
+                            id="uploadButton"
+                        >
                             Upload Inventory Records
                         </button>
 
@@ -346,20 +425,36 @@
 
         </div>
 
+
+        <!-- FILE FORMAT -->
+
         <div class="card">
 
             <div class="card-header">
-                <h2>File Format</h2>
-                <p>Make sure your file uses these column names.</p>
+
+                <h2>
+                    File Format
+                </h2>
+
+                <p>
+                    Make sure your file uses these column names
+                    (CSV or Excel .xlsx).
+                </p>
+
             </div>
+
 
             <div class="card-body">
 
                 <div class="columns">
 
+                    <!-- REQUIRED -->
+
                     <div class="column-box">
 
-                        <h4>Required columns</h4>
+                        <h4>
+                            Required Columns
+                        </h4>
 
                         <code>item_name</code>
                         <code>sku</code>
@@ -369,9 +464,14 @@
 
                     </div>
 
+
+                    <!-- OPTIONAL -->
+
                     <div class="column-box">
 
-                        <h4>Optional columns</h4>
+                        <h4>
+                            Optional / Inventory Columns
+                        </h4>
 
                         <code>low_stock_threshold</code>
                         <code>unit_cost</code>
@@ -387,11 +487,19 @@
 
         </div>
 
+
+        <!-- IMPORTANT -->
+
         <div class="card">
 
             <div class="card-header">
-                <h2>Important</h2>
+
+                <h2>
+                    Important
+                </h2>
+
             </div>
+
 
             <div class="card-body">
 
@@ -440,6 +548,44 @@
 
 </main>
 
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form =
+        document.getElementById("inventoryBulkUploadForm");
+
+    const fileInput =
+        document.getElementById("inventoryFile");
+
+    const uploadButton =
+        document.getElementById("uploadButton");
+
+
+    if (form && fileInput && uploadButton) {
+
+        form.addEventListener("submit", function () {
+
+            if (
+                fileInput.files &&
+                fileInput.files.length > 0
+            ) {
+
+                uploadButton.disabled = true;
+
+                uploadButton.textContent =
+                    "Uploading Inventory...";
+
+            }
+
+        });
+
+    }
+
+});
+
+</script>
+
 </body>
 </html>
-
