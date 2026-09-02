@@ -249,7 +249,7 @@
 
 <body>
 
-{% include 'includes/sidebar.html' with active_page='academics' %}
+{% include 'includes/sidebar.html' with active_page='inventory' %}
 
 <main class="main">
 
@@ -265,7 +265,7 @@
         </div>
 
         <a href="{% url 'inventory:portal' %}" class="back-btn">
-            Academics
+            Inventory
         </a>
 
     </header>
@@ -317,7 +317,7 @@
 
                         <input
                             type="file"
-                            name="academic_file"
+                            name="file"
                             accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                             class="file-input"
                             required
@@ -361,9 +361,11 @@
 
                         <h4>Required columns</h4>
 
-                        <code>admission_number</code>
-                        <code>academic_year</code>
-                        <code>class_or_course</code>
+                        <code>item_name</code>
+                        <code>sku</code>
+                        <code>category</code>
+                        <code>unit</code>
+                        <code>current_stock</code>
 
                     </div>
 
@@ -371,13 +373,11 @@
 
                         <h4>Optional columns</h4>
 
-                        <code>marks_obtained</code>
-                        <code>total_marks</code>
-                        <code>percentage</code>
-                        <code>rank</code>
-                        <code>promotion_status</code>
-                        <code>transfer_school</code>
-                        <code>remarks</code>
+                        <code>low_stock_threshold</code>
+                        <code>unit_cost</code>
+                        <code>location</code>
+                        <code>description</code>
+                        <code>status</code>
 
                     </div>
 
@@ -398,32 +398,36 @@
                 <div class="important">
 
                     <p>
-                        <strong>Admission Number:</strong>
-                        Must match an existing student.
+                        <strong>Item Name:</strong>
+                        Required. Example: Laptop Charger.
                     </p>
 
                     <p>
-                        <strong>Academic Year:</strong>
-                        Example: 2025-2026.
+                        <strong>SKU:</strong>
+                        Required and must be unique. Example: CHR-LEN-001.
                     </p>
 
                     <p>
-                        <strong>Class:</strong>
-                        Example: Class 10 or 2nd PUC.
+                        <strong>Category:</strong>
+                        Must be one of the allowed values:
+                        BOOKS, WORKBOOKS, STUDY_KITS, LAPTOPS,
+                        SCHOOL_ESSENTIALS or EVENT_MATERIALS.
                     </p>
 
                     <p>
-                        <strong>Percentage:</strong>
-                        Can be supplied directly or calculated from marks.
+                        <strong>Current Stock:</strong>
+                        Opening quantity for the item.
+                        If greater than zero it is recorded as a stock-in entry.
                     </p>
 
                     <p>
-                        <strong>Rank:</strong>
-                        Rank is recalculated when records are saved.
+                        <strong>Status:</strong>
+                        Allowed values: ACTIVE or INACTIVE.
                     </p>
 
                     <p>
-                        Existing records for the same student, year and class are updated.
+                        Duplicate SKUs within the file
+                        or already present in the database are rejected.
                     </p>
 
                 </div>

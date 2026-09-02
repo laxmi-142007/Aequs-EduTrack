@@ -1085,12 +1085,13 @@ def inventory_csv_template(request):
         "item_name",
         "sku",
         "category",
-        "quantity",
+        "current_stock",
         "unit",
         "low_stock_threshold",
         "unit_cost",
         "location",
         "description",
+        "status",
     ])
 
     return response
