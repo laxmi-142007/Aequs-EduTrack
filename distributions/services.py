@@ -131,15 +131,29 @@ def get_eligible_students_for_benefit(benefit_type, academic_year=None):
         ).order_by("student_name")
     )
 
+
 def get_top_puc_students(academic_year=None, limit=10):
     """
-    Fetch Top 10 PUC students ranked by academic performance (percentage & rank)
-    for merit-based Laptop scholarship distribution.
+    Fetch Top N students (combined across 2nd PUC, 2nd year Diploma, and
+    2nd year ITI) ranked by academic performance (percentage) for merit-based
+    Laptop scholarship distribution.
+
+    Uses exact class matching (not icontains), so "1st PUC" is never
+    confused with "2nd PUC". All three eligible classes are pooled together
+    and ranked as a single combined list -- this is NOT top 10 per class.
     """
-    records = AcademicRecord.objects.select_related("student", "student__school").filter(
-        Q(class_or_course__icontains="PUC") |
-        Q(class_or_course__icontains="12") |
-        Q(student__current_class__icontains="PUC")
+
+    ELIGIBLE_CLASSES = [
+        "2nd PUC",
+        "2nd year Diploma",
+        "2nd year ITI",
+    ]
+
+    records = AcademicRecord.objects.select_related(
+        "student", "student__school"
+    ).filter(
+        Q(class_or_course__in=ELIGIBLE_CLASSES) |
+        Q(student__current_class__in=ELIGIBLE_CLASSES)
     )
 
     if academic_year:
@@ -191,7 +205,7 @@ def get_top_puc_students(academic_year=None, limit=10):
 @transaction.atomic
 def distribute_books(student, item, quantity=1, academic_year="2026-27", issued_by="", remarks=""):
     """
-    Distribute Books to an eligible student (Class 1â€“10).
+    Distribute Books to an eligible student (Class 1-10).
     Automatically deducts Inventory stock and logs immutable distribution and stock records.
     """
     if quantity <= 0:
