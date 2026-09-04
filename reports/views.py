@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import JsonResponse
 from students.models import Student
 from eligibility.models import EligibilityRecord, BenefitType
 from reports.models import ActivityLog, log_activity
