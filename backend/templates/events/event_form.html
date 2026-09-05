@@ -5,256 +5,354 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if is_edit %}Edit Event{% else %}Schedule New Event{% endif %} - Aequs EduTrack</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <title>{{ page_title }} | Aequs EduTrack</title>
 
     <style>
-        :root {
-            --aequs-red: #dd2d27;
-            --aequs-red-dark: #b91c1c;
-            --aequs-red-light: #fff1f1;
-            --slate-900: #0f172a;
-            --slate-800: #1e293b;
-            --slate-700: #334155;
-            --slate-600: #475569;
-            --slate-500: #64748b;
-            --slate-400: #94a3b8;
-            --slate-200: #e2e8f0;
-            --slate-100: #f1f5f9;
-            --slate-50: #f8fafc;
+        * {
+            box-sizing: border-box;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
-        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f8fafc;
+            color: #231f20;
+        }
 
-        .topbar {
-            background: #ffffff;
-            padding: 16px 28px;
-            border-bottom: 1px solid var(--slate-200);
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #dd2d27;
+            color: #ffffff;
+            padding: 22px 32px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
-        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
-        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
-        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
-        .breadcrumb a:hover { color: var(--aequs-red); }
-        .topbar h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 19px;
-            font-weight: 700;
-            color: var(--slate-900);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.20);
         }
 
-        .content { padding: 24px 28px; max-width: 800px; display: flex; flex-direction: column; gap: 20px; }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .back-button {
+            background: #ffffff;
+            color: #dd2d27;
+            padding: 11px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .back-button:hover {
+            background: #eff6ff;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
 
         .card {
             background: #ffffff;
-            border: 1px solid var(--slate-200);
-            border-radius: 10px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
         }
-        .card-header-flex {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--slate-100);
-        }
-        .card-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--slate-900);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .card-subtitle { font-size: 12px; color: var(--slate-500); }
 
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 12.5px; font-weight: 600; color: var(--slate-700); }
-        .form-control {
-            width: 100%;
-            padding: 9px 12px;
-            border: 1px solid var(--slate-200);
-            border-radius: 6px;
-            font-size: 13px;
-            color: var(--slate-800);
-            background: #ffffff;
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
+        .card h2 {
+            margin-top: 0;
+            color: #1e40af;
+            font-size: 22px;
         }
-        .form-control:focus {
-            border-color: var(--aequs-red);
-            box-shadow: 0 0 0 3px rgba(221,45,39,0.1);
-        }
-        .help-text { font-size: 11.5px; color: var(--slate-400); }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 18px;
-            border-radius: 6px;
-            font-size: 13px;
+        .card-subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
             font-weight: 600;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.15s;
+            color: #334155;
         }
-        .btn-primary { background: var(--aequs-red); color: #ffffff; }
-        .btn-primary:hover { background: var(--aequs-red-dark); }
-        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
-        .btn-secondary:hover { background: var(--slate-200); }
-        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
-        .btn-outline:hover { background: var(--slate-50); }
 
-        .form-footer { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+            font-family: inherit;
+        }
 
-        @media (max-width: 768px) {
-            .main { margin-left: 0; }
-            .form-row { grid-template-columns: 1fr; }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #dd2d27;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .save-button {
+            background: #dd2d27;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .save-button:hover {
+            background: #b91c1c;
+        }
+
+        .cancel-button {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .cancel-button:hover {
+            background: #cbd5e1;
+        }
+
+        @media (max-width: 850px) {
+            .main {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .header {
+                padding: 18px 20px;
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .back-button {
+                text-align: center;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .save-button,
+            .cancel-button {
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 </head>
+
 <body>
-{% include "includes/sidebar.html" with active_page="events" %}
 
-<div class="main">
-    <div class="topbar">
-        <div class="topbar-left">
-            <div class="breadcrumb">
-                <a href="{% url 'dashboard' %}">EduTrack</a>
-                <span>/</span>
-                <a href="{% url 'events:list' %}">Events</a>
-                <span>/</span>
-                <span>{% if is_edit %}Edit Event{% else %}Schedule Event{% endif %}</span>
-            </div>
+    {% include 'includes/sidebar.html' with active_page='events' %}
+
+    <div class="main">
+
+        <div class="header">
+
             <h1>
-                <i data-lucide="{% if is_edit %}edit-2{% else %}calendar-plus{% endif %}" style="width:20px;height:20px;color:var(--aequs-red);"></i>
-                {% if is_edit %}Edit Event: {{ event.title }}{% else %}Schedule New Event{% endif %}
+                &#128197; {{ page_title }}
             </h1>
-        </div>
-        <div>
-            <a href="{% if is_edit %}{% url 'events:detail' event.id %}{% else %}{% url 'events:list' %}{% endif %}" class="btn btn-outline">
-                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Cancel
+
+            <a
+                href="{% url 'events:list' %}"
+                class="back-button"
+            >
+                &#8592; Back to Events
             </a>
+
         </div>
-    </div>
 
-    <div class="content">
-        <form method="post">
-            {% csrf_token %}
-            <!-- Card 1: Event Details -->
+        <div class="container">
+
             <div class="card">
-                <div class="card-header-flex">
-                    <div>
-                        <div class="card-title">Event Specifications</div>
-                        <div class="card-subtitle">General program details, schedule, and venue</div>
-                    </div>
-                </div>
 
-                <div class="form-row" style="grid-template-columns: 2fr 1fr;">
-                    <div class="form-group">
-                        <label for="id_title">Event Title <span style="color:var(--aequs-red);">*</span></label>
-                        <input type="text" name="title" id="id_title" class="form-control" value="{{ event.title|default:'' }}" placeholder="e.g. Belagavi STEM Kit Distribution Drive" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_status">Status <span style="color:var(--aequs-red);">*</span></label>
-                        <select name="status" id="id_status" class="form-control" required>
-                            {% for s_val, s_lbl in status_choices %}
-                            <option value="{{ s_val }}" {% if event.status == s_val %}selected{% elif not event and s_val == 'PLANNED' %}selected{% endif %}>{{ s_lbl }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+                <h2>
+                    {{ form_title }}
+                </h2>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="id_event_date">Event Date <span style="color:var(--aequs-red);">*</span></label>
-                        <input type="date" name="event_date" id="id_event_date" class="form-control" value="{{ event.event_date|date:'Y-m-d'|default:'' }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_organizer">Event Organizer / Lead</label>
-                        <input type="text" name="organizer" id="id_organizer" class="form-control" value="{{ event.organizer|default:'' }}" placeholder="e.g. Ramesh Patil (Foundation Lead)">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_location">Event Location / Venue</label>
-                    <input type="text" name="location" id="id_location" class="form-control" value="{{ event.location|default:'' }}" placeholder="e.g. Govt High School Auditorium, Belagavi">
-                </div>
-
-                <div class="form-group">
-                    <label for="id_description">Description / Agenda</label>
-                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="Overview of the event agenda, objectives, or beneficiary schools...">{{ event.description|default:'' }}</textarea>
-                </div>
-            </div>
-
-            <!-- Card 2: Resource / Inventory Request -->
-            <div class="card">
-                <div class="card-header-flex">
-                    <div>
-                        <div class="card-title">
-                            <i data-lucide="package" style="width:16px;height:16px;color:var(--aequs-red);"></i>
-                            Inventory Resource Requisition (Optional)
-                        </div>
-                        <div class="card-subtitle">Request kits or supplies directly from warehouse inventory</div>
-                    </div>
-                    {% if event.requested_item %}
-                    <span style="font-size:11.5px;font-weight:700;color:#15803d;background:#dcfce7;padding:3px 9px;border-radius:12px;border:1px solid #bbf7d0;">
-                        Allocated: {{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}
-                    </span>
+                <p class="card-subtitle">
+                    {% if event %}
+                        Update the details of this foundation event.
+                    {% else %}
+                        Add a new foundation event to Aequs EduTrack.
                     {% endif %}
-                </div>
+                </p>
 
-                <div class="form-row" style="grid-template-columns: 2fr 1fr;">
+                <form method="post">
+
+                    {% csrf_token %}
+
                     <div class="form-group">
-                        <label for="id_inventory_item">Select Inventory Item</label>
-                        <select name="inventory_item" id="id_inventory_item" class="form-control">
-                            <option value="">-- {% if event.requested_item %}Keep current / No additional{% else %}No inventory required{% endif %} --</option>
-                            {% for item in inventory_items %}
-                            <option value="{{ item.id }}" {% if event.requested_item_id == item.id %}selected{% endif %}>
-                                {{ item.item_name }} (Available: {{ item.current_stock }})
-                            </option>
-                            {% endfor %}
-                        </select>
+
+                        <label for="title">
+                            Event Title *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            maxlength="200"
+                            value="{{ event.title|default:'' }}"
+                            required
+                        >
+
                     </div>
+
                     <div class="form-group">
-                        <label for="id_inventory_quantity">Quantity Needed</label>
-                        <input type="number" name="inventory_quantity" id="id_inventory_quantity" class="form-control" min="0" value="{{ event.requested_quantity|default:'' }}" placeholder="e.g. 50">
+
+                        <label for="description">
+                            Description
+                        </label>
+
+                        <textarea
+                            id="description"
+                            name="description"
+                        >{{ event.description|default:'' }}</textarea>
+
                     </div>
-                </div>
+
+                    <div class="form-group">
+
+                        <label for="event_date">
+                            Event Date *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="event_date"
+                            name="event_date"
+                            value="{{ event.event_date|date:'Y-m-d' }}"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="location">
+                            Location
+                        </label>
+
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            maxlength="200"
+                            value="{{ event.location|default:'' }}"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="organizer">
+                            Organizer
+                        </label>
+
+                        <input
+                            type="text"
+                            id="organizer"
+                            name="organizer"
+                            maxlength="150"
+                            value="{{ event.organizer|default:'' }}"
+                        >
+
+                    </div>
+
+                    {% if not is_edit %}
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                        <h3 style="margin-top:0; font-size: 16px; color: #1e293b;">&#12445; Request Inventory Resource (Optional)</h3>
+                        <div class="form-group">
+                            <label for="inventory_item">Inventory Item</label>
+                            <select id="inventory_item" name="inventory_item" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 15px;">
+                                <option value="">-- None (No resource requested) --</option>
+                                {% for item in inventory_items %}
+                                    <option value="{{ item.pk }}">{{ item.item_name }} (In Stock: {{ item.current_stock }} {{ item.unit }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inventory_quantity">Quantity Needed</label>
+                            <input type="number" id="inventory_quantity" name="inventory_quantity" min="1" placeholder="e.g. 5">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="actions">
+
+                        <button
+                            type="submit"
+                            class="save-button"
+                        >
+                            {% if event %}
+                                Save Changes
+                            {% else %}
+                                Create Event
+                            {% endif %}
+                        </button>
+
+                        <a
+                            href="{% url 'events:list' %}"
+                            class="cancel-button"
+                        >
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </form>
+
             </div>
 
-            <div class="form-footer">
-                <button type="submit" class="btn btn-primary">
-                    <i data-lucide="save" style="width:15px;height:15px;"></i>
-                    {% if is_edit %}Save Changes{% else %}Schedule Event{% endif %}
-                </button>
-                <a href="{% if is_edit %}{% url 'events:detail' event.id %}{% else %}{% url 'events:list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
+        </div>
+
     </div>
-</div>
 
-<script>
-    if (window.lucide) lucide.createIcons();
-</script>
 </body>
 </html>
