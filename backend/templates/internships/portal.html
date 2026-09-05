@@ -1169,6 +1169,9 @@
 <body>
     <!-- Modern Sleek Sidebar -->
     {% include 'includes/sidebar.html' with active_page='internships' %}
+
+
+
     <!-- =====================================================
          MAIN WORKSPACE
     ====================================================== -->
@@ -2007,17 +2010,54 @@
                                 </div>
                             </div>
 
-                            <div style="display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9; align-items: center;">
-                                <button type="button" class="action-btn action-primary" style="flex: 1; padding: 7px 10px; font-size: 12.5px;" onclick='openFastEvalModal(${JSON.stringify(p)})'>
-                                    📄 Grade & Certify
-                                </button>
-                                <button type="button" class="action-btn action-secondary" style="padding: 7px 12px; font-size: 12.5px;" onclick='editPlacement(${JSON.stringify(p)})' title="Edit Placement">
-                                    ✏️ Edit
-                                </button>
-                                <button type="button" class="action-btn action-danger" style="padding: 7px 12px; font-size: 12.5px;" onclick="deletePlacement(${p.id})" title="Delete Placement">
-                                    🗑️ Delete
-                                </button>
-                            </div>
+                            <div style="display: flex; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f1f5f9; align-items: center;">
+
+    <!-- Documents -->
+    <a
+        href="/internships/documents/${p.id}/"
+        class="action-btn action-secondary"
+        style="padding: 5px 8px; font-size: 11px; text-decoration: none; display: inline-flex; align-items: center; gap: 3px;"
+        title="Internship Documents"
+    >
+        📁 Docs
+    </a>
+
+    <!-- Grade & Certify -->
+    <button
+        type="button"
+        class="action-btn action-primary"
+        style="flex: 1; padding: 5px 8px; font-size: 11px;"
+        onclick='openFastEvalModal(${JSON.stringify(p)})'
+    >
+        📄 Grade
+    </button>
+
+    <!-- Edit -->
+    <button
+        type="button"
+        class="action-btn action-secondary"
+        style="padding: 5px 8px; font-size: 11px;"
+        onclick='editPlacement(${JSON.stringify(p)})'
+        title="Edit Placement"
+    >
+        ✏️ Edit
+    </button>
+
+    <!-- Delete -->
+    <button
+        type="button"
+        class="action-btn action-danger"
+        style="padding: 5px 8px; font-size: 11px;"
+        onclick="deletePlacement(${p.id})"
+        title="Delete Placement"
+    >
+        🗑️ Delete
+    </button>
+
+</div>
+
+
+   
                         </div>
                     `;
                 }).join('');
