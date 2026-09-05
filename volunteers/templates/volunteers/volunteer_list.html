@@ -1,568 +1,400 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Volunteers | Aequs EduTrack</title>
+    <title>Volunteers Roster - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-
-        * {
-            box-sizing: border-box;
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
         }
 
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
 
-        .main {
-            margin-left: 256px;
-            min-height: 100vh;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #123c73, #1d5fa7);
-            color: white;
-            padding: 22px 40px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            margin-top: 5px;
-            font-size: 13px;
-            opacity: 0.85;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
-
-        .page-header {
+        .topbar {
+            background: #ffffff;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
-
-        .page-title h1 {
-            margin: 0 0 6px;
-            font-size: 28px;
-            color: #173b6c;
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
 
-        .page-title p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 22px; }
 
+        /* Buttons */
         .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            border-radius: 7px;
-            text-decoration: none;
-            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: 600;
+            text-decoration: none;
             border: none;
             cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1.3;
         }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-sm { padding: 5px 10px; font-size: 11.5px; }
 
-        .btn-primary {
-            background: #1769aa;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #12588f;
-        }
-
-        .stats {
+        /* KPI Cards */
+        .cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
         }
-
-        .stat-card {
-            background: white;
-            padding: 22px;
+        .card {
+            background: #ffffff;
+            padding: 16px 20px;
             border-radius: 10px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-            border-left: 4px solid #1769aa;
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #173b6c;
-        }
-
-        .table-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.07);
-            overflow: hidden;
-        }
-
-        .table-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            border: 1px solid var(--slate-200);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 4px;
         }
-
-        .table-header h2 {
+        .card h3 {
             margin: 0;
-            font-size: 18px;
-            color: #173b6c;
-        }
-
-        .search-box {
-            padding: 9px 12px;
-            width: 260px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            font-size: 13px;
-            outline: none;
-        }
-
-        .search-box:focus {
-            border-color: #1769aa;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background: #f8fafc;
-            color: #4b5563;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            padding: 14px 18px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        td {
-            padding: 15px 18px;
-            border-bottom: 1px solid #eef0f3;
-            font-size: 13px;
-        }
-
-        tbody tr:hover {
-            background: #f8fbff;
-        }
-
-        .volunteer-name {
-            font-weight: 600;
-            color: #173b6c;
-        }
-
-        .email {
-            color: #1769aa;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
+            color: var(--slate-500);
             font-size: 11px;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
-        .status-active {
-            background: #dcfce7;
-            color: #166534;
+        .number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--slate-900);
         }
+        .sub-text { font-size: 11.5px; color: var(--slate-400); }
 
-        .status-inactive {
-            background: #fee2e2;
-            color: #991b1b;
+        /* Controls Section */
+        .controls-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
         }
-
-        .action-link {
-            color: #1769aa;
-            text-decoration: none;
-            font-weight: 600;
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            padding: 6px 12px;
+            gap: 8px;
+            width: 320px;
+            max-width: 100%;
+        }
+        .search-wrap input {
+            border: none;
+            outline: none;
             font-size: 13px;
+            width: 100%;
+            color: var(--slate-800);
+        }
+        .filter-pills { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .pill {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: var(--slate-600);
+            background: var(--slate-100);
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+        }
+        .pill:hover { background: var(--slate-200); }
+        .pill.active { background: var(--slate-900); color: #ffffff; }
+
+        /* Table Card */
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .table-wrap { overflow-x: auto; margin-top: 10px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12.5px;
+        }
+        .data-table th {
+            background: #f8fafc;
+            color: var(--slate-600);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .data-table tr:hover td { background: #fafbfc; }
+
+        .status-badge {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-inactive { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+
+        .skill-chip {
+            font-size: 11px;
+            background: #f1f5f9;
+            color: var(--slate-700);
+            padding: 2px 7px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 1px;
         }
 
-        .action-link:hover {
-            text-decoration: underline;
+        @media (max-width: 768px) {
+            .main { margin-left: 0; }
+            .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .topbar-actions { width: 100%; justify-content: flex-start; }
+            .controls-card { flex-direction: column; align-items: stretch; }
+            .search-wrap { width: 100%; }
         }
-
-        .empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-        }
-
-        .empty h3 {
-            color: #374151;
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 800px) {
-
-            .header {
-                padding: 18px 20px;
-            }
-
-            .container {
-                margin: 25px auto;
-            }
-
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
-            }
-
-            .table-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .search-box {
-                width: 100%;
-            }
-
-        }
-
     </style>
-
 </head>
-
-
 <body>
+{% include "includes/sidebar.html" with active_page="volunteers" %}
 
-    <!-- Modern Sleek Sidebar -->
-    {% include 'includes/sidebar.html' with active_page='volunteers' %}
-
-    <div class="main">
-
-        <header class="topbar">
-            <h1>👥 Volunteer Management</h1>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <a href="{% url 'volunteers:create' %}" class="btn-primary">+ Add Volunteer</a>
-                <a href="{% url 'dashboard' %}" class="btn-secondary">← Back to Dashboard</a>
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'dashboard' %}">EduTrack</a>
+                <span>/</span>
+                <span>Foundation Programs</span>
+                <span>/</span>
+                <span>Volunteers</span>
             </div>
-        </header>
+            <h1><i data-lucide="users" style="width:20px;height:20px;color:var(--aequs-red);"></i> Volunteers Directory & Community Roster</h1>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'volunteers:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-outline" style="color:#15803d;border-color:#bbf7d0;background:#f0fdf4;">
+                <i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#16a34a;"></i> Export Excel
+            </a>
+            <a href="{% url 'volunteers:export_csv' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary">
+                <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
+            </a>
+            <a href="{% url 'volunteers:create' %}" class="btn btn-primary">
+                <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Enroll Volunteer
+            </a>
+        </div>
+    </header>
 
-        <div class="content">
+    <main class="content">
+        <!-- Messages -->
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div style="padding:10px 14px;border-radius:6px;font-size:12.5px;font-weight:500;margin-bottom:8px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="check-circle" style="width:16px;height:16px;"></i> {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-                <div class="page-title">
-                    <h2 style="margin: 0; font-size: 20px; color: #111827;">Registered Community Volunteers</h2>
-                    <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Manage registered volunteers and their foundation activities.</p>
+        <!-- KPI Metrics -->
+        <div class="cards">
+            <div class="card">
+                <h3>Total Volunteers</h3>
+                <div class="number">{{ total_volunteers }}</div>
+                <div class="sub-text">Registered community members</div>
+            </div>
+            <div class="card">
+                <h3>Active Volunteers</h3>
+                <div class="number" style="color:#16a34a;">{{ active_count }}</div>
+                <div class="sub-text">Available for assignments</div>
+            </div>
+            <div class="card">
+                <h3>Total Hours Contributed</h3>
+                <div class="number" style="color:var(--aequs-red);">{{ total_hours }} hrs</div>
+                <div class="sub-text">Community service recorded</div>
+            </div>
+            <div class="card">
+                <h3>Event Participations</h3>
+                <div class="number" style="color:#2563eb;">{{ total_participations }}</div>
+                <div class="sub-text">Completed event mobilizations</div>
+            </div>
+        </div>
+
+        <!-- Controls: Search & Filters -->
+        <div class="controls-card">
+            <form method="get" style="display:flex;align-items:center;gap:10px;flex:1;max-width:460px;">
+                <div class="search-wrap" style="width:100%;">
+                    <i data-lucide="search" style="width:15px;height:15px;color:var(--slate-400);"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search by name, email, skills, occupation, city...">
+                    {% if q %}
+                    <a href="{% url 'volunteers:list' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" style="color:var(--slate-400);text-decoration:none;">&times;</a>
+                    {% endif %}
                 </div>
+                {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                {% endif %}
+                <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+            </form>
+
+            <div class="filter-pills">
+                <span style="font-size:11.5px;font-weight:700;color:var(--slate-400);margin-right:2px;">STATUS:</span>
+                <a href="{% url 'volunteers:list' %}{% if q %}?q={{ q }}{% endif %}" class="pill {% if not status_filter %}active{% endif %}">All</a>
+                <a href="{% url 'volunteers:list' %}?status=ACTIVE{% if q %}&q={{ q }}{% endif %}" class="pill {% if status_filter == 'ACTIVE' %}active{% endif %}">Active</a>
+                <a href="{% url 'volunteers:list' %}?status=INACTIVE{% if q %}&q={{ q }}{% endif %}" class="pill {% if status_filter == 'INACTIVE' %}active{% endif %}">Inactive</a>
             </div>
-
-
-    <!-- STATISTICS -->
-
-    <div class="stats">
-
-        <div class="stat-card">
-
-            <div class="stat-label">
-                Total Volunteers
-            </div>
-
-            <div class="stat-value">
-                {{ volunteers|length }}
-            </div>
-
         </div>
 
-
-        <div class="stat-card">
-
-            <div class="stat-label">
-                Active Volunteers
+        <!-- Volunteers Table Card -->
+        <div class="table-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div>
+                    <h3 style="font-family:'Montserrat',sans-serif;font-size:15px;color:var(--slate-900);">Volunteer Members</h3>
+                    <p style="font-size:12px;color:var(--slate-500);margin-top:2px;">Showing live active community volunteers</p>
+                </div>
+                <span style="font-size:12px;font-weight:600;color:var(--slate-500);">{{ volunteers|length }} volunteers found</span>
             </div>
 
-            <div class="stat-value">
-                {{ active_count }}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Volunteer Name</th>
+                            <th>Contact Information</th>
+                            <th>Status</th>
+                            <th>Skills / Occupation</th>
+                            <th>City</th>
+                            <th>Events</th>
+                            <th>Contributed Hours</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in volunteers %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'volunteers:detail' v.id %}" style="font-weight:700;color:var(--slate-900);text-decoration:none;display:flex;align-items:center;gap:8px;">
+                                    <div style="width:28px;height:28px;border-radius:50%;background:#fee2e2;color:var(--aequs-red);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">
+                                        {{ v.first_name|first }}
+                                    </div>
+                                    <div>
+                                        {{ v.first_name }} {{ v.last_name }}
+                                        <div style="font-size:11px;font-weight:400;color:var(--slate-400);">Joined {{ v.registration_date|date:"M Y" }}</div>
+                                    </div>
+                                </a>
+                            </td>
+                            <td style="color:var(--slate-600);font-size:12px;">
+                                <div><i data-lucide="phone" style="width:11px;height:11px;display:inline-block;vertical-align:middle;color:var(--slate-400);"></i> {{ v.phone }}</div>
+                                <div><i data-lucide="mail" style="width:11px;height:11px;display:inline-block;vertical-align:middle;color:var(--slate-400);"></i> {{ v.email }}</div>
+                            </td>
+                            <td>
+                                {% if v.status == 'ACTIVE' %}
+                                <span class="status-badge status-active"><i data-lucide="check" style="width:10px;height:10px;"></i> Active</span>
+                                {% else %}
+                                <span class="status-badge status-inactive"><i data-lucide="moon" style="width:10px;height:10px;"></i> Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="font-weight:600;color:var(--slate-800);font-size:12px;">{{ v.occupation|default:"Volunteer" }}</div>
+                                {% if v.skills %}
+                                <div style="margin-top:2px;">
+                                    {% for sk in v.skills.split|slice:":2" %}
+                                    <span class="skill-chip">{{ sk|cut:"," }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td style="color:var(--slate-600);">{{ v.city|default:"—" }}</td>
+                            <td style="font-weight:600;color:var(--slate-800);">{{ v.event_count }}</td>
+                            <td style="font-weight:700;color:var(--aequs-red);">
+                                {{ v.total_hours|default:0 }} hrs
+                            </td>
+                            <td style="text-align:right;">
+                                <div style="display:inline-flex;gap:6px;">
+                                    <a href="{% url 'volunteers:detail' v.id %}" class="btn btn-secondary btn-sm" title="View Profile">
+                                        <i data-lucide="eye" style="width:12px;height:12px;"></i> View
+                                    </a>
+                                    <a href="{% url 'volunteers:edit' v.id %}" class="btn btn-outline btn-sm" title="Edit Volunteer">
+                                        <i data-lucide="edit-2" style="width:12px;height:12px;"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:40px;color:var(--slate-400);">
+                                <i data-lucide="users" style="width:36px;height:36px;margin-bottom:8px;opacity:0.5;"></i>
+                                <div style="font-size:14px;font-weight:600;">No volunteers found</div>
+                                <p style="font-size:12px;margin-top:4px;">Try modifying your search or filter parameters.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-
         </div>
-
-
-        <div class="stat-card">
-
-            <div class="stat-label">
-                Inactive Volunteers
-            </div>
-
-            <div class="stat-value">
-                {{ inactive_count }}
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- VOLUNTEER TABLE -->
-
-    <div class="table-card">
-
-        <div class="table-header">
-
-            <h2>
-                Registered Volunteers
-            </h2>
-
-            <input
-                type="text"
-                id="searchInput"
-                class="search-box"
-                placeholder="Search volunteers..."
-                onkeyup="searchVolunteers()"
-            >
-
-        </div>
-
-
-        <div class="table-wrapper">
-
-            {% if volunteers %}
-
-            <table id="volunteerTable">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Name
-                        </th>
-
-                        <th>
-                            Email
-                        </th>
-
-                        <th>
-                            Phone
-                        </th>
-
-                        <th>
-                            Occupation
-                        </th>
-
-                        <th>
-                            Skills
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Action
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                {% for volunteer in volunteers %}
-
-                    <tr>
-
-                        <td>
-
-                            <div class="volunteer-name">
-                                {{ volunteer.first_name }}
-                                {{ volunteer.last_name }}
-                            </div>
-
-                        </td>
-
-
-                        <td>
-
-                            <span class="email">
-                                {{ volunteer.email }}
-                            </span>
-
-                        </td>
-
-
-                        <td>
-                            {{ volunteer.phone }}
-                        </td>
-
-
-                        <td>
-
-                            {% if volunteer.occupation %}
-                                {{ volunteer.occupation }}
-                            {% else %}
-                                -
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            {% if volunteer.skills %}
-                                {{ volunteer.skills|truncatechars:35 }}
-                            {% else %}
-                                -
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            {% if volunteer.status == "ACTIVE" %}
-
-                                <span class="status status-active">
-                                    Active
-                                </span>
-
-                            {% else %}
-
-                                <span class="status status-inactive">
-                                    Inactive
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            <a
-                                href="{% url 'volunteers:detail' volunteer.pk %}"
-                                class="action-link"
-                            >
-                                View Details
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                {% endfor %}
-
-                </tbody>
-
-            </table>
-
-
-            {% else %}
-
-            <div class="empty">
-
-                <h3>
-                    No volunteers registered
-                </h3>
-
-                <p>
-                    Start by adding your first volunteer.
-                </p>
-
-                <a
-                    href="{% url 'volunteers:create' %}"
-                    class="btn btn-primary"
-                >
-                    Add Volunteer
-                </a>
-
-            </div>
-
-            {% endif %}
-
-        </div>
-
-    </div>
-
-
-</main>
-
+    </main>
+</div>
 
 <script>
-
-function searchVolunteers() {
-
-    const input =
-        document.getElementById("searchInput").value.toLowerCase();
-
-    const rows =
-        document.querySelectorAll("#volunteerTable tbody tr");
-
-    rows.forEach(function(row) {
-
-        const text =
-            row.textContent.toLowerCase();
-
-        if (text.includes(input)) {
-
-            row.style.display = "";
-
-        } else {
-
-            row.style.display = "none";
-
-        }
-
-    });
-
-}
-
+    if (window.lucide) lucide.createIcons();
 </script>
-
-
-</div>
-
-</div>
-
 </body>
-
 </html>

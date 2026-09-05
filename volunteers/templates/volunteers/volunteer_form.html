@@ -1,663 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Register Volunteer | Aequs EduTrack</title>
+    <title>{% if is_edit %}Edit {{ volunteer.first_name }} {{ volunteer.last_name }}{% else %}Register Volunteer{% endif %} | Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-
-        * {
-            box-sizing: border-box;
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
         }
 
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
 
-        .main {
-            margin-left: 256px;
-            min-height: 100vh;
-        }
-
-        .header {
+        .topbar {
             background: #ffffff;
-            color: #0f172a;
-            padding: 12px 24px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            margin-top: 5px;
-            font-size: 13px;
-            opacity: 0.85;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
-
-        .page-header {
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .page-title h1 {
-            margin: 0 0 6px;
-            font-size: 28px;
-            color: #173b6c;
-        }
-
-        .page-title p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; max-width: 960px; }
 
         .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            border-radius: 7px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-back {
-            background: white;
-            color: #374151;
-            border: 1px solid #d1d5db;
-        }
-
-        .btn-primary {
-            background: #1769aa;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #12588f;
-        }
-
-        .info-box {
-            margin-bottom: 25px;
-            background: #eef6ff;
-            border: 1px solid #cfe5ff;
-            border-radius: 9px;
-            padding: 15px 18px;
-            color: #24527a;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 6px;
             font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1.3;
         }
-
-        .info-box strong {
-            display: block;
-            margin-bottom: 4px;
-        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
 
         .form-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
             overflow: hidden;
         }
-
         .form-section {
-            padding: 28px 32px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--slate-100);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
-
+        .section-header { display: flex; flex-direction: column; gap: 3px; }
         .section-title {
-            margin-bottom: 22px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-
-        .section-title h2 {
-            margin: 0 0 5px;
-            font-size: 18px;
-            color: #173b6c;
-        }
-
-        .section-title p {
-            margin: 0;
-            font-size: 13px;
-            color: #6b7280;
-        }
+        .section-subtitle { font-size: 12px; color: var(--slate-500); }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px 25px;
+            gap: 16px 20px;
         }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: 1 / -1; }
 
         label {
-            margin-bottom: 7px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: #374151;
+            color: var(--slate-700);
         }
+        .required { color: var(--aequs-red); margin-left: 2px; }
 
-        .required {
-            color: #dc2626;
-        }
-
-        input,
-        select,
-        textarea {
+        input, select, textarea {
             width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            background: white;
-            color: #1f2937;
+            padding: 9px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 13px;
             font-family: inherit;
-            font-size: 14px;
+            color: var(--slate-800);
+            background: #ffffff;
             outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: #1769aa;
-            box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.10);
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--aequs-red);
+            box-shadow: 0 0 0 2px rgba(221,45,39,0.1);
         }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .help-text {
-            margin-top: 5px;
-            font-size: 11px;
-            color: #9ca3af;
-        }
+        textarea { resize: vertical; min-height: 80px; }
+        .help-text { font-size: 11.5px; color: var(--slate-400); margin-top: 2px; }
 
         .form-footer {
-            padding: 20px 32px;
-            background: #f9fafb;
+            padding: 18px 28px;
+            background: var(--slate-50);
             display: flex;
             justify-content: flex-end;
-            gap: 12px;
+            gap: 10px;
         }
 
-        @media (max-width: 768px) {
-
-            .header {
-                padding: 18px 20px;
-            }
-
-            .container {
-                margin: 25px auto;
-            }
-
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-group.full {
-                grid-column: auto;
-            }
-
-            .form-section {
-                padding: 22px 20px;
-            }
-
-            .form-footer {
-                padding: 18px 20px;
-            }
+        @media (max-width: 850px) {
+            .main { margin-left: 0; }
+            .topbar { padding: 14px 18px; }
+            .content { padding: 18px 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-section { padding: 20px 18px; }
+            .form-footer { padding: 16px 18px; }
         }
-
     </style>
 </head>
-
 <body>
 
-    <!-- Modern Sleek Sidebar -->
     {% include 'includes/sidebar.html' with active_page='volunteers' %}
 
     <div class="main">
-
+        <!-- Topbar -->
         <header class="topbar">
-            <h1>👥 Register Volunteer</h1>
-            <a href="{% url 'volunteers:list' %}" class="btn-secondary">
-                ← Back to Volunteers
-            </a>
+            <div class="topbar-left">
+                <nav class="breadcrumb">
+                    <a href="{% url 'volunteers:list' %}">Volunteers</a>
+                    <span>/</span>
+                    <span>{% if is_edit %}Edit Volunteer{% else %}New Registration{% endif %}</span>
+                </nav>
+                <h1>
+                    <i data-lucide="user-plus" style="width: 20px; height: 20px; color: var(--aequs-red);"></i>
+                    {% if is_edit %}Edit Volunteer: {{ volunteer.first_name }} {{ volunteer.last_name }}{% else %}Register New Volunteer{% endif %}
+                </h1>
+            </div>
+            <div>
+                <a href="{% if is_edit %}{% url 'volunteers:detail' volunteer.pk %}{% else %}{% url 'volunteers:list' %}{% endif %}" class="btn btn-secondary">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Back
+                </a>
+            </div>
         </header>
 
+        <div class="content">
 
-<main class="container">
+            <form method="post" class="form-card">
+                {% csrf_token %}
 
-    <div class="page-header">
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i data-lucide="user" style="width: 16px; height: 16px; color: var(--aequs-red);"></i>
+                            Personal Information
+                        </h2>
+                        <p class="section-subtitle">Basic identity and demographics of the volunteer.</p>
+                    </div>
 
-        <div class="page-title">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>First Name <span class="required">*</span></label>
+                            <input type="text" name="first_name" value="{{ volunteer.first_name|default:'' }}" required placeholder="e.g. Ramesh">
+                        </div>
 
-            <h1>Register Volunteer</h1>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" name="last_name" value="{{ volunteer.last_name|default:'' }}" placeholder="e.g. Kulkarni">
+                        </div>
 
-            <p>
-                Add a new volunteer to the foundation management system.
-            </p>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select name="gender">
+                                <option value="">-- Select Gender --</option>
+                                {% for code, label in gender_choices %}
+                                    <option value="{{ code }}" {% if volunteer.gender == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Date of Birth</label>
+                            <input type="date" name="date_of_birth" value="{{ volunteer.date_of_birth|date:'Y-m-d'|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i data-lucide="mail" style="width: 16px; height: 16px; color: var(--aequs-red);"></i>
+                            Contact & Address
+                        </h2>
+                        <p class="section-subtitle">Communication channels and residential location.</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Email Address <span class="required">*</span></label>
+                            <input type="email" name="email" value="{{ volunteer.email|default:'' }}" required placeholder="volunteer@example.org">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone Number <span class="required">*</span></label>
+                            <input type="text" name="phone" value="{{ volunteer.phone|default:'' }}" required placeholder="+91 98765 43210">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Street Address</label>
+                            <textarea name="address" rows="2" placeholder="House/Flat number, street, landmark...">{{ volunteer.address|default:'' }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>City / Town</label>
+                            <input type="text" name="city" value="{{ volunteer.city|default:'' }}" placeholder="e.g. Belagavi">
+                        </div>
+
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" name="state" value="{{ volunteer.state|default:'' }}" placeholder="e.g. Karnataka">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Pincode</label>
+                            <input type="text" name="pincode" value="{{ volunteer.pincode|default:'' }}" placeholder="e.g. 590001">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional & Skills -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--aequs-red);"></i>
+                            Professional Background & Skills
+                        </h2>
+                        <p class="section-subtitle">Qualifications, occupation, and areas of expertise.</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Qualification / Degree</label>
+                            <input type="text" name="qualification" value="{{ volunteer.qualification|default:'' }}" placeholder="e.g. B.Tech, M.Ed, B.Sc">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Current Occupation</label>
+                            <input type="text" name="occupation" value="{{ volunteer.occupation|default:'' }}" placeholder="e.g. Software Engineer, Educator">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Core Skills & Interests</label>
+                            <textarea name="skills" rows="2" placeholder="e.g. STEM Teaching, Robotics, Public Speaking, Photography">{{ volunteer.skills|default:'' }}</textarea>
+                            <span class="help-text">Enter key competencies separated by commas or spaces.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Administrative Notes -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i data-lucide="shield-check" style="width: 16px; height: 16px; color: var(--aequs-red);"></i>
+                            Roster Status & Administrative Notes
+                        </h2>
+                        <p class="section-subtitle">Set availability and add foundation coordination notes.</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="status">
+                                {% for code, label in status_choices %}
+                                    <option value="{{ code }}" {% if volunteer.status == code or not volunteer and code == 'ACTIVE' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Remarks & Internal Notes</label>
+                            <textarea name="remarks" rows="2" placeholder="Availability timings, special interests, or foundation observations...">{{ volunteer.remarks|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Footer -->
+                <div class="form-footer">
+                    <a href="{% if is_edit %}{% url 'volunteers:detail' volunteer.pk %}{% else %}{% url 'volunteers:list' %}{% endif %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save" style="width: 14px; height: 14px;"></i>
+                        {% if is_edit %}Save Changes{% else %}Register Volunteer{% endif %}
+                    </button>
+                </div>
+            </form>
 
         </div>
-
-        <a
-            href="{% url 'volunteers:list' %}"
-            class="btn btn-back"
-        >
-            Back to Volunteers
-        </a>
-
     </div>
 
-
-    <div class="info-box">
-
-        <strong>Volunteer Registration</strong>
-
-        Please enter the volunteer's personal, contact and professional
-        information carefully. Fields marked with
-        <span class="required">*</span> are required.
-
-    </div>
-
-
-    <form method="post">
-
-        {% csrf_token %}
-
-        <!-- PERSONAL INFORMATION -->
-
-        <section class="form-card form-section">
-
-            <div class="section-title">
-
-                <h2>Personal Information</h2>
-
-                <p>
-                    Basic information about the volunteer
-                </p>
-
-            </div>
-
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>
-                        First Name
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="text"
-                        name="first_name"
-                        placeholder="Enter first name"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Last Name
-                    </label>
-
-                    <input
-                        type="text"
-                        name="last_name"
-                        placeholder="Enter last name"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Gender
-                    </label>
-
-                    <select name="gender">
-
-                        <option value="">
-                            Select gender
-                        </option>
-
-                        <option value="MALE">
-                            Male
-                        </option>
-
-                        <option value="FEMALE">
-                            Female
-                        </option>
-
-                        <option value="OTHER">
-                            Other
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Date of Birth
-                    </label>
-
-                    <input
-                        type="date"
-                        name="date_of_birth"
-                    >
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- CONTACT INFORMATION -->
-
-        <section class="form-card form-section">
-
-            <div class="section-title">
-
-                <h2>Contact Information</h2>
-
-                <p>
-                    Volunteer communication and address details
-                </p>
-
-            </div>
-
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>
-                        Email Address
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="example@email.com"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Phone Number
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="text"
-                        name="phone"
-                        placeholder="Enter phone number"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group full">
-
-                    <label>
-                        Address
-                    </label>
-
-                    <textarea
-                        name="address"
-                        placeholder="Enter complete address"
-                    ></textarea>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        City
-                    </label>
-
-                    <input
-                        type="text"
-                        name="city"
-                        placeholder="Enter city"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        State
-                    </label>
-
-                    <input
-                        type="text"
-                        name="state"
-                        placeholder="Enter state"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Pincode
-                    </label>
-
-                    <input
-                        type="text"
-                        name="pincode"
-                        placeholder="Enter pincode"
-                    >
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- PROFESSIONAL INFORMATION -->
-
-        <section class="form-card form-section">
-
-            <div class="section-title">
-
-                <h2>Professional Information</h2>
-
-                <p>
-                    Education, occupation and volunteer skills
-                </p>
-
-            </div>
-
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>
-                        Qualification
-                    </label>
-
-                    <input
-                        type="text"
-                        name="qualification"
-                        placeholder="Example: B.Tech, MBA, B.Com"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Occupation
-                    </label>
-
-                    <input
-                        type="text"
-                        name="occupation"
-                        placeholder="Example: Teacher, Engineer, Student"
-                    >
-
-                </div>
-
-
-                <div class="form-group full">
-
-                    <label>
-                        Skills
-                    </label>
-
-                    <textarea
-                        name="skills"
-                        placeholder="Example: Teaching, Event Management, Communication, Computer Skills"
-                    ></textarea>
-
-                    <span class="help-text">
-                        Enter multiple skills separated by commas.
-                    </span>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- STATUS -->
-
-        <section class="form-card form-section">
-
-            <div class="section-title">
-
-                <h2>Volunteer Status</h2>
-
-                <p>
-                    Manage the current status of the volunteer
-                </p>
-
-            </div>
-
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>
-                        Status
-                    </label>
-
-                    <select name="status">
-
-                        <option value="ACTIVE">
-                            Active
-                        </option>
-
-                        <option value="INACTIVE">
-                            Inactive
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group full">
-
-                    <label>
-                        Remarks
-                    </label>
-
-                    <textarea
-                        name="remarks"
-                        placeholder="Add any additional notes about the volunteer"
-                    ></textarea>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ACTIONS -->
-
-        <div class="form-footer">
-
-            <a
-                href="{% url 'volunteers:list' %}"
-                class="btn btn-back"
-            >
-                Cancel
-            </a>
-
-            <button
-                type="submit"
-                class="btn btn-primary"
-            >
-                Register Volunteer
-            </button>
-
-        </div>
-
-    </form>
-
-</main>
-
-</div>
-
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>

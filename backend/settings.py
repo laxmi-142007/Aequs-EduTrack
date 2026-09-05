@@ -71,6 +71,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'accounts.middleware.ForcePasswordChangeMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -84,6 +85,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.csrf',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -188,15 +190,17 @@ STATICFILES_DIRS = [
     BASE_DIR / "backend" / "static",
 ]
 
+WHITENOISE_MANIFEST_STRICT = False
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
-
     "staticfiles": {
         "BACKEND": (
-            "whitenoise.storage."
-            "CompressedManifestStaticFilesStorage"
+            "whitenoise.storage.CompressedStaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
         ),
     },
 }
@@ -216,3 +220,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ============================================================
 
 AUTH_USER_MODEL = "accounts.User"
+
+# Auth redirect URLs
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "accounts:dashboard_redirect"
+LOGOUT_REDIRECT_URL = "login"

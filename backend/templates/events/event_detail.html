@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.title }} - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1.3;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-sm { padding: 5px 10px; font-size: 11.5px; }
+
+        /* Cards */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 22px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .card-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-subtitle { font-size: 12px; color: var(--slate-500); }
+
+        /* Badges */
+        .status-badge {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-planned { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .status-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-cancelled { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .part-status {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+        .part-REQUESTED { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .part-ASSIGNED { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .part-ATTENDED { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .part-ABSENT { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .part-CANCELLED { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; }
+
+        /* Meta Grid */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 16px;
+            background: #fafbfc;
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+        }
+        .meta-item { display: flex; flex-direction: column; gap: 3px; }
+        .meta-label { font-size: 11px; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.4px; }
+        .meta-value { font-size: 13.5px; font-weight: 600; color: var(--slate-900); }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; margin-top: 10px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td {
+            padding: 11px 14px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12.5px;
+        }
+        .data-table th {
+            background: #f8fafc;
+            color: var(--slate-600);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .data-table tr:hover td { background: #fafbfc; }
+
+        /* Modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 520px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; color: var(--slate-900); }
+        .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--slate-400); }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .modal-footer { padding: 14px 20px; background: #fafbfc; border-top: 1px solid var(--slate-200); display: flex; justify-content: flex-end; gap: 10px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 12px; font-weight: 600; color: var(--slate-700); }
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--slate-800);
+            outline: none;
+        }
+        .form-control:focus { border-color: var(--aequs-red); box-shadow: 0 0 0 2px rgba(221,45,39,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        @media print {
+            .sidebar, .topbar-actions, .btn, .modal-backdrop { display: none !important; }
+            .main { margin-left: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" with active_page="events" %}
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'dashboard' %}">EduTrack</a>
+                <span>/</span>
+                <a href="{% url 'events:list' %}">Events</a>
+                <span>/</span>
+                <span>{{ event.title|truncatechars:35 }}</span>
+            </div>
+            <h1><i data-lucide="calendar" style="width:20px;height:20px;color:var(--aequs-red);"></i> {{ event.title }}</h1>
+        </div>
+        <div class="topbar-actions">
+            {% if can_edit_event %}
+            <a href="{% url 'events:edit' event.id %}" class="btn btn-outline">
+                <i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit Event
+            </a>
+            {% endif %}
+            <button type="button" onclick="window.print()" class="btn btn-outline">
+                <i data-lucide="printer" style="width:14px;height:14px;"></i> Print
+            </button>
+            {% if can_delete_event %}
+            <form action="{% url 'events:delete' event.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'events:list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to Events
+            </a>
+        </div>
+    </header>
+
+    <main class="content">
+        <!-- Messages -->
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div style="padding:10px 14px;border-radius:6px;font-size:12.5px;font-weight:500;margin-bottom:8px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="check-circle" style="width:16px;height:16px;"></i> {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Volunteer Self-Service Choice Banner -->
+        {% if current_volunteer and event.status == 'PLANNED' %}
+        <div class="card" style="border-left: 4px solid {% if user_participation.participation_status == 'ASSIGNED' %}#16a34a{% elif user_participation.participation_status == 'REQUESTED' %}#d97706{% elif user_participation.participation_status == 'CANCELLED' %}#94a3b8{% else %}var(--aequs-red){% endif %}; background: #ffffff;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+                        {% if user_participation.participation_status == 'ASSIGNED' %}background:#dcfce7;color:#15803d;
+                        {% elif user_participation.participation_status == 'REQUESTED' %}background:#fef3c7;color:#b45309;
+                        {% elif user_participation.participation_status == 'CANCELLED' %}background:#f1f5f9;color:#64748b;
+                        {% else %}background:#eff6ff;color:#2563eb;{% endif %}">
+                        <i data-lucide="{% if user_participation.participation_status == 'ASSIGNED' %}check-circle{% elif user_participation.participation_status == 'REQUESTED' %}clock{% elif user_participation.participation_status == 'CANCELLED' %}user-x{% else %}hand{% endif %}" style="width:20px;height:20px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;font-size:14.5px;color:var(--slate-900);">
+                            {% if user_participation.participation_status == 'ASSIGNED' %}
+                                You are confirmed as a volunteer for this event!
+                            {% elif user_participation.participation_status == 'REQUESTED' %}
+                                Volunteer Registration Submitted (Pending Approval)
+                            {% elif user_participation.participation_status == 'CANCELLED' %}
+                                You previously withdrew from this event.
+                            {% else %}
+                                Choose to Volunteer for this Event
+                            {% endif %}
+                        </div>
+                        <div style="font-size:12.5px;color:var(--slate-500);margin-top:2px;">
+                            {% if user_participation.participation_status == 'ASSIGNED' %}
+                                Assigned Role: <strong>{{ user_participation.role|default:"Event Volunteer" }}</strong> &bull; Scheduled for {{ event.event_date|date:"l, F d, Y" }}
+                            {% elif user_participation.participation_status == 'REQUESTED' %}
+                                Your request is waiting for coordinator approval. You can withdraw if your availability changes.
+                            {% elif user_participation.participation_status == 'CANCELLED' %}
+                                You can sign up again if you are available to volunteer.
+                            {% else %}
+                                Join this foundation outreach initiative to mentor students and support the community.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    {% if not user_participation or user_participation.participation_status == 'CANCELLED' %}
+                    <form method="post" action="{% url 'events:volunteer_signup' event.id %}" style="display:flex;align-items:center;gap:8px;">
+                        {% csrf_token %}
+                        <input type="text" name="role" placeholder="Preferred role (e.g. Mentor)" style="padding:7px 10px;font-size:12px;border:1px solid var(--slate-200);border-radius:6px;outline:none;">
+                        <button type="submit" class="btn btn-primary" style="background:#16a34a;">
+                            <i data-lucide="hand" style="width:14px;height:14px;"></i> Sign Up to Volunteer
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'events:volunteer_withdraw' event.id %}" onsubmit="return confirm('Are you sure you want to withdraw from this event?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline" style="color:#b91c1c;border-color:#fecaca;">
+                            <i data-lucide="user-x" style="width:14px;height:14px;"></i> Withdraw Registration
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Event Overview Card -->
+        <div class="card">
+            <div class="card-header-flex">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    {% if event.status == 'PLANNED' %}
+                    <span class="status-badge status-planned"><i data-lucide="calendar-clock" style="width:12px;height:12px;"></i> Upcoming / Planned</span>
+                    {% elif event.status == 'COMPLETED' %}
+                    <span class="status-badge status-completed"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Completed</span>
+                    {% else %}
+                    <span class="status-badge status-cancelled"><i data-lucide="x-circle" style="width:12px;height:12px;"></i> Cancelled</span>
+                    {% endif %}
+
+                    <span style="font-size:12px;color:var(--slate-500);">Event ID: <strong>#EVT-{{ event.id }}</strong></span>
+                </div>
+                <div style="font-size:12px;color:var(--slate-500);">
+                    Scheduled on: <strong>{{ event.event_date|date:"l, F d, Y" }}</strong>
+                </div>
+            </div>
+
+            {% if event.description %}
+            <div style="font-size:13.5px;color:var(--slate-700);line-height:1.6;padding-top:4px;">
+                {{ event.description }}
+            </div>
+            {% endif %}
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Location / Venue</span>
+                    <span class="meta-value">{{ event.location|default:"Not specified" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Event Organizer / Lead</span>
+                    <span class="meta-value">{{ event.organizer|default:"Aequs Community Team" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Assigned Volunteers</span>
+                    <span class="meta-value">{{ event.volunteer_count }} Volunteers</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Total Hours Contributed</span>
+                    <span class="meta-value" style="color:var(--aequs-red);">{{ event.total_volunteer_hours }} Hours</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory / Resource Allocation Card -->
+        <div class="card" style="border-left:4px solid var(--aequs-red);">
+            <div class="card-header-flex">
+                <div class="card-title">
+                    <i data-lucide="package-check" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                    Allocated Inventory & Distribution Resources
+                    {% if event_resources %}
+                    <span style="font-size:11.5px;font-weight:700;color:#15803d;background:#dcfce7;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;margin-left:6px;">
+                        {{ event_resources|length }} Item{{ event_resources|length|pluralize }} Allocated ({{ event.total_resource_units }} Units Total)
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    {% if event_resources %}
+                    <span style="font-size:12px;font-weight:600;color:var(--slate-600);background:#f1f5f9;padding:3px 8px;border-radius:6px;">
+                        Stock Record #EVT-{{ event.id }}
+                    </span>
+                    {% endif %}
+                    {% if can_manage_resources %}
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openResourceModal()">
+                        <i data-lucide="plus" style="width:13px;height:13px;"></i>
+                        {% if event_resources %}Add Another Item{% else %}Allocate Resource{% endif %}
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if event_resources %}
+            <div class="table-wrap" style="margin-top: 6px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Resource Item</th>
+                            <th>Category & SKU</th>
+                            <th style="text-align:center;">Allocated Qty</th>
+                            <th style="text-align:center;">Warehouse Stock</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in event_resources %}
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:32px;height:32px;border-radius:6px;background:#fee2e2;color:var(--aequs-red);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">
+                                        <i data-lucide="box" style="width:16px;height:16px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:700;color:var(--slate-900);">{{ r.item.item_name }}</div>
+                                        {% if r.item.description %}
+                                        <div style="font-size:11px;color:var(--slate-400);">{{ r.item.description|truncatechars:45 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="font-size:12px;color:var(--slate-700);font-weight:600;">{{ r.item.get_category_display|default:r.item.category }}</span>
+                                <div style="font-size:11px;color:var(--slate-400);font-family:monospace;">SKU: {{ r.item.sku|default:"—" }}</div>
+                            </td>
+                            <td style="text-align:center;">
+                                <span style="display:inline-block;padding:3px 10px;background:#fee2e2;color:var(--aequs-red);border-radius:12px;font-weight:700;font-size:12.5px;">
+                                    {{ r.quantity }} {{ r.item.unit|default:"units" }}
+                                </span>
+                            </td>
+                            <td style="text-align:center;font-size:12px;color:var(--slate-600);">
+                                <strong>{{ r.item.current_stock }}</strong> {{ r.item.unit|default:"in warehouse" }}
+                            </td>
+                            <td style="text-align:right;">
+                                {% if can_manage_resources %}
+                                <form action="{% url 'events:remove_resource' event.id r.id %}" method="post" style="display:inline;" onsubmit="return confirm('Remove {{ r.item.item_name }} from this event and return {{ r.quantity }} units to warehouse?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline btn-sm" title="Remove & Return Stock" style="color:#b91c1c;border-color:#fecaca;padding:3px 8px;font-size:11.5px;">
+                                        <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Remove
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span style="font-size:11.5px;color:var(--slate-400);">Allocated</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fafbfc;border:1px dashed var(--slate-200);border-radius:8px;">
+                <div style="display:flex;align-items:center;gap:10px;color:var(--slate-500);font-size:13px;">
+                    <i data-lucide="package" style="width:20px;height:20px;color:var(--slate-400);"></i>
+                    <span>No inventory supplies allocated to this event yet. The assigned organizer or coordinators can allocate materials.</span>
+                </div>
+                {% if can_manage_resources %}
+                <button type="button" class="btn btn-primary btn-sm" onclick="openResourceModal()">
+                    <i data-lucide="plus" style="width:13px;height:13px;"></i> Allocate Resource
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Volunteers & Attendance Card -->
+        <div class="card">
+            <div class="card-header-flex">
+                <div>
+                    <div class="card-title">
+                        <i data-lucide="users" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                        Volunteer Participation & Attendance Roster
+                        <span style="font-size:11px;background:var(--slate-100);color:var(--slate-700);padding:2px 8px;border-radius:12px;margin-left:6px;">
+                            {{ participations|length }} Assigned
+                        </span>
+                    </div>
+                    <div class="card-subtitle">Manage roles, track volunteer attendance, and record contributed hours</div>
+                </div>
+                {% if is_coordinator_or_admin and available_volunteers %}
+                <button type="button" class="btn btn-primary btn-sm" onclick="openAssignModal()">
+                    <i data-lucide="user-plus" style="width:13px;height:13px;"></i> Assign Volunteer
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Volunteer Name</th>
+                            <th>Contact / Email</th>
+                            <th>Assigned Role</th>
+                            <th>Attendance Status</th>
+                            <th>Contributed Hours</th>
+                            <th>Remarks</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in participations %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'volunteers:detail' p.volunteer.id %}" style="font-weight:700;color:var(--slate-900);text-decoration:none;display:flex;align-items:center;gap:6px;">
+                                    <div style="width:24px;height:24px;border-radius:50%;background:#fee2e2;color:var(--aequs-red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">
+                                        {{ p.volunteer.first_name|first }}
+                                    </div>
+                                    {{ p.volunteer.first_name }} {{ p.volunteer.last_name }}
+                                </a>
+                            </td>
+                            <td style="color:var(--slate-500);font-size:12px;">
+                                {{ p.volunteer.phone }}<br>{{ p.volunteer.email }}
+                            </td>
+                            <td>{{ p.role|default:"Event Volunteer" }}</td>
+                            <td>
+                                <span class="part-status part-{{ p.participation_status }}">{{ p.get_participation_status_display }}</span>
+                            </td>
+                            <td style="font-weight:700;color:var(--slate-900);">
+                                {{ p.hours_contributed }} hrs
+                            </td>
+                            <td style="color:var(--slate-500);font-size:11.5px;">{{ p.remarks|default:"—" }}</td>
+                            <td style="text-align:right;white-space:nowrap;">
+                                {% if p.participation_status == 'REQUESTED' and is_coordinator_or_admin %}
+                                <form action="{% url 'events:approve_volunteer' event.id p.id %}" method="post" style="display:inline;margin-right:4px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm" style="background:#16a34a;color:#ffffff;padding:4px 8px;" title="Approve volunteer request">
+                                        <i data-lucide="check" style="width:12px;height:12px;"></i> Approve
+                                    </button>
+                                </form>
+                                <form action="{% url 'events:decline_volunteer' event.id p.id %}" method="post" style="display:inline;margin-right:4px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline btn-sm" style="color:#b91c1c;border-color:#fecaca;padding:4px 8px;" title="Decline volunteer request">
+                                        <i data-lucide="x" style="width:12px;height:12px;"></i> Decline
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if is_coordinator_or_admin %}
+                                <form action="{% url 'events:remove_volunteer' event.id p.id %}" method="post" style="display:inline;" onsubmit="return confirm('Remove this volunteer from this event?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Remove Volunteer">
+                                        <i data-lucide="user-minus" style="width:12px;height:12px;"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span style="font-size:11.5px;color:var(--slate-400);">Registered</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align:center;padding:35px;color:var(--slate-400);">
+                                <i data-lucide="users" style="width:28px;height:28px;margin-bottom:6px;opacity:0.6;"></i>
+                                <div>No volunteers assigned to this event yet.</div>
+                                {% if is_coordinator_or_admin and available_volunteers %}
+                                <button type="button" class="btn btn-primary btn-sm" onclick="openAssignModal()" style="margin-top:10px;">
+                                    <i data-lucide="user-plus" style="width:13px;height:13px;"></i> Assign First Volunteer
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+{% if is_coordinator_or_admin and available_volunteers %}
+<!-- Assign Volunteer Modal -->
+<div class="modal-backdrop" id="assignModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <span class="modal-title">Assign Volunteer to Event</span>
+            <button type="button" class="modal-close" onclick="closeAssignModal()">&times;</button>
+        </div>
+        <form action="{% url 'events:assign_volunteer' event.id %}" method="post">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="id_volunteer">Select Volunteer <span style="color:var(--aequs-red);">*</span></label>
+                    <select name="volunteer" id="id_volunteer" class="form-control" required>
+                        <option value="">-- Choose an active volunteer --</option>
+                        {% for v in available_volunteers %}
+                        <option value="{{ v.id }}">{{ v.first_name }} {{ v.last_name }} ({{ v.city|default:"No City" }} &bull; {{ v.skills|default:"Volunteer"|truncatechars:25 }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_role">Assigned Role</label>
+                        <input type="text" name="role" id="id_role" class="form-control" placeholder="e.g. Coordinator, Kit Distributor, Mentor">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_part_status">Participation Status</label>
+                        <select name="participation_status" id="id_part_status" class="form-control">
+                            {% for s_val, s_lbl in participation_status_choices %}
+                            <option value="{{ s_val }}">{{ s_lbl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_hours">Contributed Hours</label>
+                    <input type="number" step="0.5" name="hours_contributed" id="id_hours" class="form-control" placeholder="e.g. 4.0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="id_remarks">Remarks / Notes</label>
+                    <textarea name="remarks" id="id_remarks" class="form-control" rows="2" placeholder="Special assignment details..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAssignModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="check" style="width:14px;height:14px;"></i> Save Assignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Allocate Resource Modal -->
+{% if can_manage_resources %}
+<div class="modal-backdrop" id="resourceModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <span class="modal-title">
+                <i data-lucide="package-plus" style="width:16px;height:16px;color:var(--aequs-red);display:inline-block;vertical-align:middle;margin-right:4px;"></i>
+                Allocate Inventory Resources to Event
+            </span>
+            <button type="button" class="modal-close" onclick="closeResourceModal()">&times;</button>
+        </div>
+        <form action="{% url 'events:add_resource' event.id %}" method="post">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="id_modal_inventory_item">Select Inventory Item <span style="color:var(--aequs-red);">*</span></label>
+                    <select name="inventory_item" id="id_modal_inventory_item" class="form-control" required>
+                        <option value="">-- Choose an item from warehouse --</option>
+                        {% for item in inventory_items %}
+                        <option value="{{ item.id }}">
+                            {{ item.item_name }} (Available: {{ item.current_stock }} {{ item.unit|default:"Pieces" }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_modal_inventory_quantity">Quantity Needed <span style="color:var(--aequs-red);">*</span></label>
+                    <input type="number" name="inventory_quantity" id="id_modal_inventory_quantity" class="form-control" min="1" placeholder="e.g. 25" required>
+                    <span style="font-size:11.5px;color:var(--slate-400);margin-top:2px;">
+                        This quantity will be deducted from warehouse inventory and assigned to this event.
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeResourceModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="package-check" style="width:14px;height:14px;"></i> Allocate to Event
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    if (window.lucide) lucide.createIcons();
+
+    function openAssignModal() {
+        const m = document.getElementById('assignModal');
+        if (m) m.classList.add('open');
+    }
+    function closeAssignModal() {
+        const m = document.getElementById('assignModal');
+        if (m) m.classList.remove('open');
+    }
+
+    function openResourceModal() {
+        const m = document.getElementById('resourceModal');
+        if (m) m.classList.add('open');
+    }
+    function closeResourceModal() {
+        const m = document.getElementById('resourceModal');
+        if (m) m.classList.remove('open');
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList && event.target.classList.contains('modal-backdrop')) {
+            event.target.classList.remove('open');
+        }
+    };
+</script>
+</body>
+</html>

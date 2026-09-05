@@ -1,459 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Events | Aequs EduTrack</title>
+    <title>Events Directory - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        * {
-            box-sizing: border-box;
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
         }
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7fb;
-            margin: 0;
-            color: #1f2937;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
 
-        .main {
-            margin-left: 256px;
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .events-header {
-            background: #2563eb;
-            color: #ffffff;
-            width: 100%;
-            padding: 22px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.20);
-        }
-
-        .events-header h1 {
-            margin: 0;
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            min-height: 42px;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 700;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s ease;
-            white-space: nowrap;
-        }
-
-        .btn-add {
+        .topbar {
             background: #ffffff;
-            color: #2563eb;
-        }
-
-        .btn-add:hover {
-            background: #eff6ff;
-            color: #1d4ed8;
-        }
-
-        .btn-dashboard {
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .btn-dashboard:hover {
-            background: #ffffff;
-            color: #2563eb;
-        }
-
-        /* Content */
-        .container {
-            max-width: 1200px;
-            margin: 35px auto;
-            padding: 0 25px;
-        }
-
-        .top {
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
-
-        .top h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #1e293b;
-        }
-
-        .top p {
-            margin: 6px 0 0;
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        /* Event Grid */
-        .event-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 22px;
-        }
-
-        .event-card {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 24px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            min-height: 330px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .event-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
-        }
-
-        .event-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            background: #eef2ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin-bottom: 16px;
-        }
-
-        .event-title {
-            font-size: 20px;
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
             font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 12px;
-        }
-
-        .event-description {
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.55;
-            margin: 0 0 15px;
-        }
-
-        .event-info {
-            color: #64748b;
-            margin: 7px 0;
-            font-size: 14px;
-        }
-
-        .event-info strong {
-            color: #334155;
-        }
-
-        /* Action area */
-        .event-actions {
-            margin-top: auto;
-            padding-top: 18px;
-            border-top: 1px solid #eef2f7;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .event-actions-left {
+            color: var(--slate-900);
             display: flex;
             align-items: center;
             gap: 8px;
         }
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
 
-        .action-btn {
-            min-height: 38px;
-            padding: 9px 14px;
-            border-radius: 7px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 22px; }
+
+        /* Buttons */
+        .btn {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 6px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1.3;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-sm { padding: 5px 10px; font-size: 11.5px; }
+
+        /* KPI Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .card {
+            background: #ffffff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            border: 1px solid var(--slate-200);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .card h3 {
+            margin: 0;
+            color: var(--slate-500);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--slate-900);
+        }
+        .sub-text { font-size: 11.5px; color: var(--slate-400); }
+
+        /* Controls Section */
+        .controls-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            padding: 6px 12px;
+            gap: 8px;
+            width: 320px;
+            max-width: 100%;
+        }
+        .search-wrap input {
+            border: none;
+            outline: none;
+            font-size: 13px;
+            width: 100%;
+            color: var(--slate-800);
+        }
+        .filter-pills { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .pill {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: var(--slate-600);
+            background: var(--slate-100);
+            text-decoration: none;
             border: 1px solid transparent;
+            transition: all 0.15s;
+        }
+        .pill:hover { background: var(--slate-200); }
+        .pill.active { background: var(--slate-900); color: #ffffff; }
+
+        /* Event Grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 18px;
+        }
+        .event-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        .event-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            transform: translateY(-2px);
+        }
+        .event-card-top { padding: 20px 20px 14px; display: flex; flex-direction: column; gap: 10px; }
+        .event-badges { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+        .status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-planned { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .status-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-cancelled { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .event-date-chip {
+            font-size: 11.5px;
+            color: var(--slate-500);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .event-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15.5px;
+            font-weight: 700;
+            color: var(--slate-900);
+            line-height: 1.35;
+        }
+        .event-desc {
+            font-size: 12.5px;
+            color: var(--slate-600);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .event-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--slate-500);
+            padding-top: 8px;
+            border-top: 1px solid var(--slate-100);
+        }
+        .event-meta-row { display: flex; align-items: center; gap: 6px; }
+
+        .event-card-footer {
+            padding: 12px 20px;
+            background: #fafbfc;
+            border-top: 1px solid var(--slate-100);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .volunteer-tag {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--slate-700);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        /* Primary action */
-        .edit-btn {
-            background: #2563eb;
-            color: #ffffff;
-        }
-
-        .edit-btn:hover {
-            background: #1d4ed8;
-        }
-
-        /* Secondary action */
-        .delete-btn {
+        .empty-state {
             background: #ffffff;
-            color: #dc2626;
-            border-color: #fecaca;
-        }
-
-        .delete-btn:hover {
-            background: #fef2f2;
-            border-color: #fca5a5;
-        }
-
-        /* Empty state */
-        .empty {
-            background: #ffffff;
-            padding: 55px 30px;
+            border: 1px dashed var(--slate-200);
+            border-radius: 10px;
+            padding: 45px 20px;
             text-align: center;
-            border-radius: 14px;
-            color: #64748b;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
 
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .empty h3 {
-            margin: 0 0 8px;
-            color: #334155;
-        }
-
-        .empty p {
-            margin: 0 0 20px;
-        }
-
-        /* Mobile */
-        @media (max-width: 850px) {
-            .main {
-                margin-left: 0;
-            }
-
-            .events-header {
-                padding: 18px 20px;
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .events-header h1 {
-                font-size: 24px;
-            }
-
-            .header-actions {
-                width: 100%;
-            }
-
-            .header-actions .btn {
-                flex: 1;
-            }
-
-            .container {
-                margin-top: 25px;
-                padding: 0 18px;
-            }
-        }
-
-        @media (max-width: 520px) {
-            .event-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .event-actions {
-                align-items: stretch;
-                flex-direction: column;
-            }
-
-            .event-actions-left {
-                width: 100%;
-            }
-
-            .action-btn {
-                flex: 1;
-            }
+        @media (max-width: 768px) {
+            .main { margin-left: 0; }
+            .events-grid { grid-template-columns: 1fr; }
+            .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .topbar-actions { width: 100%; justify-content: flex-start; }
+            .controls-card { flex-direction: column; align-items: stretch; }
+            .search-wrap { width: 100%; }
         }
     </style>
 </head>
-
 <body>
+{% include "includes/sidebar.html" with active_page="events" %}
 
-    {% include 'includes/sidebar.html' with active_page='events' %}
-
-    <div class="main">
-
-        <!-- Events Header -->
-        <header class="events-header">
-
-            <h1>&#128197; Foundation Events</h1>
-
-            <div class="header-actions">
-
-                <a href="{% url 'events:create' %}" class="btn btn-add">
-                    + Add Event
-                </a>
-
-                <a href="{% url 'dashboard' %}" class="btn btn-dashboard">
-                    &#8592; Dashboard
-                </a>
-
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'dashboard' %}">EduTrack</a>
+                <span>/</span>
+                <span>Foundation Programs</span>
+                <span>/</span>
+                <span>Events</span>
             </div>
+            <h1><i data-lucide="calendar" style="width:20px;height:20px;color:var(--aequs-red);"></i> Events & Outreach Management</h1>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'events:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-outline" style="color:#15803d;border-color:#bbf7d0;background:#f0fdf4;">
+                <i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#16a34a;"></i> Export Excel
+            </a>
+            <a href="{% url 'events:export_csv' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary">
+                <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
+            </a>
+            {% if can_create_event %}
+            <a href="{% url 'events:create' %}" class="btn btn-primary">
+                <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Schedule Event
+            </a>
+            {% endif %}
+        </div>
+    </header>
 
-        </header>
-
-        <div class="container">
-
-            <div class="top">
-
-                <div>
-                    <h2>Foundation Events</h2>
-                    <p>Manage upcoming and completed foundation activities.</p>
-                </div>
-
+    <main class="content">
+        <!-- Messages -->
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div style="padding:10px 14px;border-radius:6px;font-size:12.5px;font-weight:500;margin-bottom:8px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="check-circle" style="width:16px;height:16px;"></i> {{ message }}
             </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-            <div class="event-grid">
-
-                {% for event in events %}
-
-                    <div class="event-card">
-
-                        <div class="event-icon">
-                            &#128197;
-                        </div>
-
-                        <div class="event-title">
-                            {{ event.title }}
-                        </div>
-
-                        {% if event.description %}
-                            <p class="event-description">
-                                {{ event.description }}
-                            </p>
-                        {% endif %}
-
-                        <div class="event-info">
-                            <strong>&#128197; Date:</strong>
-                            {{ event.event_date|date:"d M Y" }}
-                        </div>
-
-                        {% if event.location %}
-                            <div class="event-info">
-                                <strong>&#128205; Location:</strong>
-                                {{ event.location }}
-                            </div>
-                        {% endif %}
-
-                        {% if event.organizer %}
-                            <div class="event-info">
-                                <strong>&#128100; Organizer:</strong>
-                                {{ event.organizer }}
-                            </div>
-                        {% endif %}
-
-                        {% if event.requested_item %}
-                            <div class="event-info" style="color: #059669;">
-                                <strong>&#128230; Resource Requested:</strong>
-                                {{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}
-                            </div>
-                        {% endif %}
-
-                        <!-- Event Actions -->
-                        <div class="event-actions">
-
-                            <div class="event-actions-left">
-
-                                <a
-                                    href="{% url 'events:edit' event.pk %}"
-                                    class="action-btn edit-btn"
-                                >
-                                    &#9998; Edit
-                                </a>
-
-                                <form
-                                    method="post"
-                                    action="{% url 'events:delete' event.pk %}"
-                                    onsubmit="return confirm('Are you sure you want to delete this event?');"
-                                    style="margin: 0;"
-                                >
-                                    {% csrf_token %}
-
-                                    <button
-                                        type="submit"
-                                        class="action-btn delete-btn"
-                                    >
-                                        &#128465; Delete
-                                    </button>
-
-                                </form>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                {% empty %}
-
-                    <div class="empty">
-
-                        <div class="empty-icon">
-                            &#128197;
-                        </div>
-
-                        <h3>No Events Found</h3>
-
-                        <p>
-                            No foundation events have been created yet.
-                        </p>
-
-                        <a
-                            href="{% url 'events:create' %}"
-                            class="btn edit-btn"
-                        >
-                            + Create First Event
-                        </a>
-
-                    </div>
-
-                {% endfor %}
-
+        <!-- KPI Metrics -->
+        <div class="cards">
+            <div class="card">
+                <h3>Total Events</h3>
+                <div class="number">{{ total_events }}</div>
+                <div class="sub-text">Outreach programs scheduled</div>
             </div>
-
+            <div class="card">
+                <h3>Upcoming / Planned</h3>
+                <div class="number" style="color:#2563eb;">{{ upcoming_count }}</div>
+                <div class="sub-text">Ready for execution</div>
+            </div>
+            <div class="card">
+                <h3>Completed Events</h3>
+                <div class="number" style="color:#16a34a;">{{ completed_count }}</div>
+                <div class="sub-text">Successfully executed</div>
+            </div>
+            <div class="card">
+                <h3>Volunteers Mobilized</h3>
+                <div class="number" style="color:var(--aequs-red);">{{ volunteers_mobilized }}</div>
+                <div class="sub-text">Distinct community volunteers</div>
+            </div>
         </div>
 
-    </div>
+        <!-- Controls: Search & Filters -->
+        <div class="controls-card">
+            <form method="get" style="display:flex;align-items:center;gap:10px;flex:1;max-width:460px;">
+                <div class="search-wrap" style="width:100%;">
+                    <i data-lucide="search" style="width:15px;height:15px;color:var(--slate-400);"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search events by title, location, organizer...">
+                    {% if q %}
+                    <a href="{% url 'events:list' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" style="color:var(--slate-400);text-decoration:none;">&times;</a>
+                    {% endif %}
+                </div>
+                {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                {% endif %}
+                <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+            </form>
 
+            <div class="filter-pills">
+                <span style="font-size:11.5px;font-weight:700;color:var(--slate-400);margin-right:2px;">STATUS:</span>
+                <a href="{% url 'events:list' %}{% if q %}?q={{ q }}{% endif %}" class="pill {% if not status_filter and not my_events_filter %}active{% endif %}">All</a>
+                <a href="{% url 'events:list' %}?status=PLANNED{% if q %}&q={{ q }}{% endif %}" class="pill {% if status_filter == 'PLANNED' %}active{% endif %}">Upcoming</a>
+                <a href="{% url 'events:list' %}?status=COMPLETED{% if q %}&q={{ q }}{% endif %}" class="pill {% if status_filter == 'COMPLETED' %}active{% endif %}">Completed</a>
+                <a href="{% url 'events:list' %}?status=CANCELLED{% if q %}&q={{ q }}{% endif %}" class="pill {% if status_filter == 'CANCELLED' %}active{% endif %}">Cancelled</a>
+                {% if current_volunteer %}
+                <span style="font-size:11.5px;font-weight:700;color:var(--slate-400);margin-left:8px;margin-right:2px;">MY ROLE:</span>
+                <a href="{% url 'events:list' %}?my_events=1{% if q %}&q={{ q }}{% endif %}" class="pill {% if my_events_filter == '1' %}active{% endif %}" style="border-color:#bbf7d0;{% if my_events_filter == '1' %}background:#15803d;color:#ffffff;{% else %}color:#166534;background:#f0fdf4;{% endif %}">
+                    <i data-lucide="user-check" style="width:11px;height:11px;display:inline-block;vertical-align:middle;"></i> My Registrations
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Events Cards Grid -->
+        {% if events %}
+        <div class="events-grid">
+            {% for event in events %}
+            <div class="event-card">
+                <div class="event-card-top">
+                    <div class="event-badges">
+                        {% if event.status == 'PLANNED' %}
+                        <span class="status-badge status-planned"><i data-lucide="calendar-clock" style="width:11px;height:11px;"></i> Upcoming</span>
+                        {% elif event.status == 'COMPLETED' %}
+                        <span class="status-badge status-completed"><i data-lucide="check-circle-2" style="width:11px;height:11px;"></i> Completed</span>
+                        {% else %}
+                        <span class="status-badge status-cancelled"><i data-lucide="x-circle" style="width:11px;height:11px;"></i> Cancelled</span>
+                        {% endif %}
+
+                        <span class="event-date-chip">
+                            <i data-lucide="calendar" style="width:12px;height:12px;color:var(--slate-400);"></i>
+                            {{ event.event_date|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                    <a href="{% url 'events:detail' event.id %}" style="text-decoration:none;color:inherit;">
+                        <h2 class="event-title">{{ event.title }}</h2>
+                    </a>
+
+                    {% if event.description %}
+                    <p class="event-desc">{{ event.description }}</p>
+                    {% endif %}
+
+                    <div class="event-meta">
+                        {% if event.location %}
+                        <div class="event-meta-row">
+                            <i data-lucide="map-pin" style="width:13px;height:13px;color:var(--slate-400);"></i>
+                            <span>{{ event.location }}</span>
+                        </div>
+                        {% endif %}
+                        {% if event.organizer %}
+                        <div class="event-meta-row">
+                            <i data-lucide="user" style="width:13px;height:13px;color:var(--slate-400);"></i>
+                            <span>Lead: {{ event.organizer }}</span>
+                        </div>
+                        {% endif %}
+                        {% if event.total_resource_count > 1 %}
+                        <div class="event-meta-row">
+                            <i data-lucide="package" style="width:13px;height:13px;color:var(--aequs-red);"></i>
+                            <span>{{ event.total_resource_count }} resources ({{ event.total_resource_units }} units)</span>
+                        </div>
+                        {% elif event.requested_item %}
+                        <div class="event-meta-row">
+                            <i data-lucide="package" style="width:13px;height:13px;color:var(--aequs-red);"></i>
+                            <span>{{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="event-card-footer">
+                    <div class="volunteer-tag">
+                        <i data-lucide="users" style="width:13px;height:13px;color:var(--slate-500);"></i>
+                        <span>{{ event.volunteer_count }} Volunteers</span>
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+                        {% if current_volunteer and event.status == 'PLANNED' %}
+                            {% if not event.user_participation or event.user_participation.participation_status == 'CANCELLED' %}
+                            <form method="post" action="{% url 'events:volunteer_signup' event.id %}" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm" style="background:#16a34a;color:#ffffff;padding:5px 9px;" title="Choose to volunteer for this event">
+                                    <i data-lucide="hand" style="width:11px;height:11px;"></i> Volunteer
+                                </button>
+                            </form>
+                            {% elif event.user_participation.participation_status == 'REQUESTED' %}
+                            <span style="font-size:10.5px;font-weight:700;background:#fef3c7;color:#b45309;padding:2px 7px;border-radius:10px;border:1px solid #fde68a;">
+                                Pending Approval
+                            </span>
+                            <form method="post" action="{% url 'events:volunteer_withdraw' event.id %}" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline" style="color:#b91c1c;border-color:#fecaca;padding:4px 7px;" title="Withdraw volunteer application">
+                                    Withdraw
+                                </button>
+                            </form>
+                            {% elif event.user_participation.participation_status == 'ASSIGNED' %}
+                            <span style="font-size:10.5px;font-weight:700;background:#dcfce7;color:#15803d;padding:2px 7px;border-radius:10px;border:1px solid #bbf7d0;">
+                                Confirmed
+                            </span>
+                            <form method="post" action="{% url 'events:volunteer_withdraw' event.id %}" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline" style="color:#b91c1c;border-color:#fecaca;padding:4px 7px;" title="Withdraw participation">
+                                    Withdraw
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% endif %}
+
+                        <a href="{% url 'events:detail' event.id %}" class="btn btn-secondary btn-sm">
+                            <i data-lucide="eye" style="width:12px;height:12px;"></i> View
+                        </a>
+                        <a href="{% url 'events:edit' event.id %}" class="btn btn-outline btn-sm" title="Edit Event">
+                            <i data-lucide="edit-2" style="width:12px;height:12px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="calendar-x" style="width:40px;height:40px;color:var(--slate-300);"></i>
+            <h3 style="font-size:15px;color:var(--slate-700);font-weight:700;">No Events Found</h3>
+            <p style="font-size:12.5px;color:var(--slate-500);max-width:400px;">No event records matched your query or filter criteria.</p>
+            {% if can_create_event %}
+            <a href="{% url 'events:create' %}" class="btn btn-primary" style="margin-top:6px;">
+                <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Create First Event
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    if (window.lucide) lucide.createIcons();
+</script>
 </body>
 </html>

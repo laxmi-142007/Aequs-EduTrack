@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.title }} - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .btn-danger:hover { background: #fecaca; }
+
+        /* Report Header Card */
+        .header-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 22px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .header-meta-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .report-type-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: var(--slate-100);
+            color: var(--slate-700);
+            border: 1px solid var(--slate-200);
+        }
+
+        /* Access & Visibility Badges */
+        .access-badge {
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .access-public { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .access-roles { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+        .access-groups { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .access-creator { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        /* KPI Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .card {
+            background: #ffffff;
+            padding: 18px 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            border: 1px solid var(--slate-200);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .card h3 {
+            margin: 0;
+            color: var(--slate-500);
+            font-size: 11.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--slate-900);
+        }
+        .sub-text { font-size: 11.5px; color: var(--slate-400); }
+
+        /* Table Card */
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .table-wrap { overflow-x: auto; margin-top: 14px; }
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th, .report-table td {
+            padding: 11px 14px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12.5px;
+        }
+        .report-table th {
+            background: #f8fafc;
+            color: var(--slate-600);
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .report-table tr:hover td { background: #fafbfc; }
+
+        @media print {
+            .sidebar, .topbar-actions, .btn { display: none !important; }
+            .main { margin-left: 0 !important; }
+            body { background: #ffffff; }
+        }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" with active_page="reports" %}
+
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'reports:list' %}">Reports & Analytics</a>
+                <span>/</span>
+                <span>{{ report.title|truncatechars:35 }}</span>
+            </div>
+            <h1><i data-lucide="bar-chart-2" style="width:20px;height:20px;color:var(--aequs-red);"></i> {{ report.title }}</h1>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'reports:export_csv' report.id %}" class="btn btn-secondary">
+                <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
+            </a>
+            <a href="{% url 'reports:export_excel' report.id %}" class="btn btn-outline" style="color:#15803d;border-color:#bbf7d0;background:#f0fdf4;">
+                <i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#16a34a;"></i> Export Excel
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-outline">
+                <i data-lucide="printer" style="width:14px;height:14px;"></i> Print / PDF
+            </button>
+            {% if can_manage %}
+            <a href="{% url 'reports:edit' report.id %}" class="btn btn-outline">
+                <i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit
+            </a>
+            <form action="{% url 'reports:delete' report.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this report definition?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'reports:list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Messages -->
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div style="padding:10px 14px;border-radius:6px;font-size:12.5px;font-weight:500;margin-bottom:12px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="check-circle" style="width:16px;height:16px;"></i> {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Report Header Card -->
+        <div class="header-card">
+            <div class="header-meta-row">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span class="report-type-badge">{{ report.get_report_type_display }}</span>
+
+                    <!-- Status Badge -->
+                    {% if report.status == 'PUBLISHED' %}
+                    <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;display:inline-flex;align-items:center;gap:4px;">
+                        <i data-lucide="check-circle-2" style="width:11px;height:11px;"></i> Published
+                    </span>
+                    {% elif report.status == 'DRAFT' %}
+                    <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;background:#fef3c7;color:#b45309;border:1px solid #fde68a;display:inline-flex;align-items:center;gap:4px;">
+                        <i data-lucide="clock" style="width:11px;height:11px;"></i> Draft
+                    </span>
+                    {% else %}
+                    <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;display:inline-flex;align-items:center;gap:4px;">
+                        <i data-lucide="archive" style="width:11px;height:11px;"></i> Archived
+                    </span>
+                    {% endif %}
+
+                    <!-- Who Has Access Badge -->
+                    {% if report.visibility == 'PUBLIC' %}
+                    <span class="access-badge access-public" title="Visible to all users with reports access">
+                        <i data-lucide="globe" style="width:12px;height:12px;"></i> Access: All Users
+                    </span>
+                    {% elif report.visibility == 'ROLES' %}
+                    <span class="access-badge access-roles" title="{{ report.get_access_display }}">
+                        <i data-lucide="shield" style="width:12px;height:12px;"></i> Access: {{ report.get_access_display }}
+                    </span>
+                    {% elif report.visibility == 'GROUPS' %}
+                    <span class="access-badge access-groups" title="{{ report.get_access_display }}">
+                        <i data-lucide="users" style="width:12px;height:12px;"></i> Access: {{ report.get_access_display }}
+                    </span>
+                    {% else %}
+                    <span class="access-badge access-creator" title="Private to creator & super admins">
+                        <i data-lucide="lock" style="width:12px;height:12px;"></i> Access: Private (Creator Only)
+                    </span>
+                    {% endif %}
+
+                    {% if report.has_attachment %}
+                    <a href="#attachmentSection" style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:12px;background:#fff1f1;color:var(--aequs-red);border:1px solid #fecaca;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                        <i data-lucide="paperclip" style="width:11px;height:11px;"></i> {% if report.is_pdf %}PDF Attached{% else %}File Attached{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div style="font-size:12px;color:var(--slate-500);">
+                    Created by <strong>{{ report.created_by.get_full_name|default:report.created_by.username|default:"System Admin" }}</strong> on {{ report.created_at|date:"F d, Y" }}
+                </div>
+            </div>
+
+            {% if report.description %}
+            <p style="font-size:13px;color:var(--slate-600);line-height:1.5;">{{ report.description }}</p>
+            {% endif %}
+
+            <div style="display:flex;gap:16px;font-size:12px;color:var(--slate-500);border-top:1px solid var(--slate-100);padding-top:10px;flex-wrap:wrap;">
+                {% if report.academic_year %}
+                <div><strong>Academic Year:</strong> {{ report.academic_year }}</div>
+                {% endif %}
+                {% if report.category_filter %}
+                <div><strong>Category Filter:</strong> {{ report.category_filter }}</div>
+                {% endif %}
+                {% if report.date_from or report.date_to %}
+                <div><strong>Date Range:</strong> {{ report.date_from|default:"Beginning" }} to {{ report.date_to|default:"Present" }}</div>
+                {% endif %}
+                <div><strong>Record Limit:</strong> {% if report.row_limit %}{{ report.row_limit }} Max{% else %}All Records{% endif %}</div>
+                <div><strong>Matched Records:</strong> {{ data.total_records }}</div>
+            </div>
+        </div>
+
+        <!-- Executive Summary & Observations -->
+        {% if report.summary_notes %}
+        <div class="header-card" style="border-left:4px solid var(--aequs-red);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <i data-lucide="file-text" style="width:16px;height:16px;color:var(--aequs-red);"></i>
+                <h3 style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:700;color:var(--slate-900);">Executive Summary & Observations</h3>
+            </div>
+            <div style="font-size:13px;color:var(--slate-700);line-height:1.6;white-space:pre-line;">{{ report.summary_notes }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Attached Documentation / PDF Section -->
+        {% if report.has_attachment %}
+        <div class="header-card" id="attachmentSection">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:8px;background:{% if report.is_pdf %}#fee2e2{% else %}#e0f2fe{% endif %};display:flex;align-items:center;justify-content:center;">
+                        <i data-lucide="{% if report.is_pdf %}file-text{% else %}paperclip{% endif %}" style="width:20px;height:20px;color:{% if report.is_pdf %}var(--aequs-red){% else %}#0284c7{% endif %};"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:14px;font-weight:700;color:var(--slate-900);">Attached Document: {{ report.attachment_filename }}</div>
+                        <div style="font-size:12px;color:var(--slate-500);">Size: {{ report.attachment_size }} {% if report.is_pdf %}&bull; <span style="color:var(--aequs-red);font-weight:600;">PDF Document</span>{% endif %}</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <a href="{{ report.attachment.url }}" download class="btn btn-primary btn-sm">
+                        <i data-lucide="download" style="width:13px;height:13px;"></i> Download File
+                    </a>
+                    <a href="{{ report.attachment.url }}" target="_blank" class="btn btn-outline btn-sm">
+                        <i data-lucide="external-link" style="width:13px;height:13px;"></i> Open in New Tab
+                    </a>
+                </div>
+            </div>
+
+            {% if report.is_pdf %}
+            <div style="margin-top:14px;border:1px solid var(--slate-200);border-radius:8px;overflow:hidden;background:#525659;">
+                <iframe src="{{ report.attachment.url }}" width="100%" height="520px" style="border:none;display:block;"></iframe>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- KPI Aggregates -->
+        {% if data.kpis %}
+        <div class="cards">
+            {% for k in data.kpis %}
+            <div class="card">
+                <h3>{{ k.label }}</h3>
+                <div class="number">{{ k.value }}</div>
+                {% if k.sub %}<div class="sub-text">{{ k.sub }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Tabular Record Data -->
+        <div class="table-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <h3 style="font-family:'Montserrat',sans-serif;font-size:15px;color:var(--slate-900);">Detailed Records</h3>
+                    <p style="font-size:12px;color:var(--slate-500);margin-top:2px;">Showing live calculated records for this report's scope.</p>
+                </div>
+                <span style="font-size:12px;font-weight:600;color:var(--slate-500);">{{ data.rows|length }} rows</span>
+            </div>
+
+            <div class="table-wrap">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            {% for h in data.headers %}
+                            <th>{{ h }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data.rows %}
+                        <tr>
+                            {% for col in row %}
+                            <td>{{ col }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{{ data.headers|length }}" style="text-align:center;padding:30px;color:var(--slate-400);">
+                                No records currently match this report's criteria.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    if (window.lucide) lucide.createIcons();
+</script>
+</body>
+</html>

@@ -12,20 +12,33 @@ from distributions.models import Distribution
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect("dashboard")
-    
+        return redirect("accounts:dashboard_redirect")
+
     error = None
-    next_url = request.GET.get("next", "dashboard")
-    
+    next_url = request.GET.get("next", "accounts:dashboard_redirect")
+
     if request.method == "POST":
-        username = request.POST.get("username", "").strip()
+        login_input = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
-        next_url = request.POST.get("next", "dashboard") or "dashboard"
-        
-        user = authenticate(request, username=username, password=password)
+        next_url = request.POST.get("next", "accounts:dashboard_redirect") or "accounts:dashboard_redirect"
+
+        # Allow logging in with either username or email
+        user = authenticate(request, username=login_input, password=password)
+        if user is None and "@" in login_input:
+            from accounts.models import User
+            try:
+                matched_users = User.objects.filter(email__iexact=login_input)
+                if matched_users.count() == 1:
+                    user = authenticate(request, username=matched_users.first().username, password=password)
+            except Exception:
+                user = None
+
         if user is not None:
-            login(request, user)
-            return redirect(next_url)
+            if not user.is_active:
+                error = "This account has been deactivated. Please contact your administrator."
+            else:
+                login(request, user)
+                return redirect(next_url)
         else:
             error = "Invalid username or password. Please check your credentials."
 

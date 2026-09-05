@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action }} Report - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content { padding: 24px 28px; max-width: 860px; display: flex; flex-direction: column; gap: 20px; }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .card-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--slate-100);
+        }
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-subtitle { font-size: 12px; color: var(--slate-500); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-group label { font-size: 12.5px; font-weight: 600; color: var(--slate-700); }
+        .form-control, .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--slate-800);
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-control:focus, .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--aequs-red);
+            box-shadow: 0 0 0 3px rgba(221,45,39,0.1);
+        }
+        .help-text { font-size: 11.5px; color: var(--slate-400); }
+        .field-error { font-size: 11.5px; color: #dc2626; font-weight: 500; }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            padding: 12px;
+            background: #fafbfc;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--slate-700); cursor: pointer; }
+        .checkbox-item input { accent-color: var(--aequs-red); cursor: pointer; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); box-shadow: 0 2px 8px rgba(221,45,39,0.25); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); }
+
+        .form-footer { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+        @media (max-width: 768px) {
+            .main { margin-left: 0; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" with active_page="reports" %}
+
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'reports:list' %}">Reports & Analytics</a>
+                <span>/</span>
+                <span>{{ action }} Report</span>
+            </div>
+            <h1><i data-lucide="file-plus" style="width:20px;height:20px;color:var(--aequs-red);"></i> {{ action }} Report Definition</h1>
+        </div>
+        <div>
+            <a href="{% url 'reports:list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- Card 1: Definition & Data Module -->
+            <div class="card">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">Report Specifications</div>
+                        <div class="card-subtitle">Name, target module, workflow status, and calculation scope</div>
+                    </div>
+                </div>
+
+                <div class="form-row" style="grid-template-columns: 2fr 1fr;">
+                    <div class="form-group">
+                        <label for="id_title">Report Title <span style="color:var(--aequs-red);">*</span></label>
+                        {{ form.title }}
+                        <span class="help-text">Descriptive title highlighting report focus and audience</span>
+                        {% for err in form.title.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_status">Report Status <span style="color:var(--aequs-red);">*</span></label>
+                        {{ form.status }}
+                        <span class="help-text">Workflow state</span>
+                        {% for err in form.status.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="form-group">
+                        <label for="id_report_type">Target Module <span style="color:var(--aequs-red);">*</span></label>
+                        {{ form.report_type }}
+                        {% for err in form.report_type.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_academic_year">Academic Year Filter</label>
+                        {{ form.academic_year }}
+                        <span class="help-text">e.g. 2024-2025</span>
+                        {% for err in form.academic_year.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_row_limit">Records Limit</label>
+                        {{ form.row_limit }}
+                        <span class="help-text">Max records (0 = All)</span>
+                        {% for err in form.row_limit.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_description">Report Purpose / Description</label>
+                    {{ form.description }}
+                    {% for err in form.description.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_summary_notes">Executive Summary / Audit Findings / Observations</label>
+                    {{ form.summary_notes }}
+                    <span class="help-text">Detailed qualitative commentary, stakeholder notes, or recommendations to accompany data</span>
+                    {% for err in form.summary_notes.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_date_from">Date From (Optional)</label>
+                        {{ form.date_from }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_date_to">Date To (Optional)</label>
+                        {{ form.date_to }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_category_filter">Specific Category Filter (Optional)</label>
+                    {{ form.category_filter }}
+                    <span class="help-text">Optional filter keyword (e.g. LAPTOP, STUDY_KIT, Belagavi, INVENTORY)</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Attached Document & PDF -->
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">
+                            <i data-lucide="file-text" style="width:16px;height:16px;color:var(--aequs-red);"></i>
+                            Document & PDF Attachment
+                        </div>
+                        <div class="card-subtitle">Attach official signed report, scanned distribution receipts, or PDF audit pack</div>
+                    </div>
+                </div>
+
+                {% if report and report.has_attachment %}
+                <div style="background:#f8fafc;border:1px solid var(--slate-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i data-lucide="{% if report.is_pdf %}file-text{% else %}file{% endif %}" style="width:24px;height:24px;color:var(--aequs-red);"></i>
+                        <div>
+                            <div style="font-size:13px;font-weight:600;color:var(--slate-800);">{{ report.attachment_filename }}</div>
+                            <div style="font-size:11.5px;color:var(--slate-500);">Size: {{ report.attachment_size }} {% if report.is_pdf %}&bull; <strong style="color:var(--aequs-red);">PDF Document</strong>{% endif %}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <a href="{{ report.attachment.url }}" target="_blank" class="btn btn-outline btn-sm">
+                            <i data-lucide="external-link" style="width:12px;height:12px;"></i> View Current File
+                        </a>
+                        <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#dc2626;cursor:pointer;background:#fee2e2;padding:6px 10px;border-radius:6px;border:1px solid #fecaca;">
+                            <input type="checkbox" name="clear_attachment" value="1" style="accent-color:#dc2626;">
+                            <span>Remove attachment</span>
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="id_attachment">{% if report and report.has_attachment %}Upload New File to Replace Current Attachment{% else %}Upload Supporting Document / PDF{% endif %}</label>
+                    {{ form.attachment }}
+                    <span class="help-text">Accepted formats: .pdf, .docx, .xlsx, .csv, .png, .jpg (Max 25 MB)</span>
+                    {% for err in form.attachment.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <!-- Card 2: Access & Visibility Governance -->
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">
+                            <i data-lucide="shield-check" style="width:16px;height:16px;color:var(--aequs-red);"></i>
+                            Access & Visibility Governance
+                        </div>
+                        <div class="card-subtitle">Control precisely who is permitted to view this report in the system</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_visibility">Visibility Policy <span style="color:var(--aequs-red);">*</span></label>
+                    {{ form.visibility }}
+                    <span class="help-text" id="formVisibilityHelp">Select who can see this report in their Reports Hub</span>
+                    {% for err in form.visibility.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                </div>
+
+                <!-- Specific Roles Selector -->
+                <div id="rolesBox" class="form-group" style="display:none;margin-top:14px;">
+                    <label style="display:flex;align-items:center;gap:6px;">
+                        <i data-lucide="shield" style="width:14px;height:14px;color:var(--aequs-red);"></i>
+                        Permitted System Roles <span style="color:var(--aequs-red);">*</span>
+                    </label>
+                    <div class="checkbox-grid">
+                        {% for r_val, r_lbl in available_roles %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="allowed_roles" value="{{ r_val }}" {% if r_val in form.allowed_roles.value|default:'' %}checked{% endif %}>
+                            <span>{{ r_lbl }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <span class="help-text">Users assigned to any checked role will see this report</span>
+                    {% for err in form.allowed_roles.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                </div>
+
+                <!-- Specific Groups Selector -->
+                <div id="groupsBox" class="form-group" style="display:none;margin-top:14px;">
+                    <label style="display:flex;align-items:center;gap:6px;">
+                        <i data-lucide="users" style="width:14px;height:14px;color:var(--aequs-red);"></i>
+                        Permitted User Groups <span style="color:var(--aequs-red);">*</span>
+                    </label>
+                    <div class="checkbox-grid">
+                        {% for g in available_groups %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="allowed_groups" value="{{ g.id }}" {% if g.id in form.allowed_groups.value|default:'' %}checked{% endif %}>
+                            <span>{{ g.name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <span class="help-text">Members of checked functional groups will have access</span>
+                    {% for err in form.allowed_groups.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save" style="width:15px;height:15px;"></i>
+                    {{ action }} Report
+                </button>
+                <a href="{% url 'reports:list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    if (window.lucide) lucide.createIcons();
+
+    function updateVisibilityControls() {
+        const vis = document.getElementById('id_visibility')?.value;
+        const rolesBox = document.getElementById('rolesBox');
+        const groupsBox = document.getElementById('groupsBox');
+        const help = document.getElementById('formVisibilityHelp');
+
+        if (rolesBox) rolesBox.style.display = vis === 'ROLES' ? 'block' : 'none';
+        if (groupsBox) groupsBox.style.display = vis === 'GROUPS' ? 'block' : 'none';
+
+        if (help) {
+            if (vis === 'PUBLIC') help.innerText = 'Visible to all users who have access to the Reports module.';
+            else if (vis === 'ROLES') help.innerText = 'Only users assigned to the selected System Roles will see this report.';
+            else if (vis === 'GROUPS') help.innerText = 'Only members of the selected functional Groups will see this report.';
+            else if (vis === 'CREATOR') help.innerText = 'Private: Only visible to you and Super Administrators.';
+        }
+    }
+
+    document.getElementById('id_visibility')?.addEventListener('change', updateVisibilityControls);
+    document.addEventListener('DOMContentLoaded', updateVisibilityControls);
+</script>
+</body>
+</html>

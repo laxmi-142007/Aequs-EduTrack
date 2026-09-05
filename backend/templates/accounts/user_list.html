@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+        
+        /* Topbar */
+        .topbar {
+            background: #ffffff;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.05); }
+        .kpi-info { display: flex; flex-direction: column; gap: 4px; }
+        .kpi-title { font-size: 12px; font-weight: 600; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-value { font-family: 'Montserrat', sans-serif; font-size: 26px; font-weight: 700; color: var(--slate-900); }
+        .kpi-sub { font-size: 11.5px; color: var(--slate-400); }
+        .kpi-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .kpi-icon-red { background: #fee2e2; color: #dc2626; }
+        .kpi-icon-green { background: #dcfce7; color: #16a34a; }
+        .kpi-icon-amber { background: #fef3c7; color: #d97706; }
+        .kpi-icon-purple { background: #f3e8ff; color: #9333ea; }
+
+        /* Filters & Table Card */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+        .filters-toolbar {
+            padding: 16px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filters-left { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; flex: 1; min-width: 320px; }
+        .search-input-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+            max-width: 320px;
+        }
+        .search-input-wrap i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 15px;
+            height: 15px;
+            color: var(--slate-400);
+        }
+        .search-input-wrap input {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            background: #ffffff;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .search-input-wrap input:focus {
+            border-color: var(--aequs-red);
+            box-shadow: 0 0 0 3px rgba(221,45,39,0.1);
+        }
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 12.5px;
+            color: var(--slate-700);
+            background: #ffffff;
+            outline: none;
+            cursor: pointer;
+        }
+        .filter-select:focus { border-color: var(--aequs-red); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); box-shadow: 0 2px 8px rgba(221,45,39,0.25); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); color: var(--slate-900); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-sm { padding: 5px 9px; font-size: 12px; }
+        .btn-icon { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; }
+        .btn-danger-subtle { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .btn-danger-subtle:hover { background: #fecaca; }
+        .btn-success-subtle { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+        .btn-success-subtle:hover { background: #bbf7d0; }
+
+        /* Table */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th {
+            background: #fafbfc;
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--slate-500);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            border-bottom: 1px solid var(--slate-200);
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fbfcfe; }
+
+        /* Cell Styling */
+        .user-cell { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aequs-red), #b91c1c);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-names { display: flex; flex-direction: column; gap: 2px; }
+        .user-fullname { font-weight: 600; color: var(--slate-900); font-size: 13px; }
+        .user-username { font-size: 11px; color: var(--slate-400); }
+
+        /* Role Badges */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .role-super-admin { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .role-admin { background: #fff1f1; color: var(--aequs-red); border: 1px solid #fed7d7; }
+        .role-accountant { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .role-coordinator { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+        .role-volunteer { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .role-custom { background: #fdf4ff; color: #a21caf; border: 1px solid #f5d0fe; }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .status-active { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-active .status-dot { background: #16a34a; }
+        .status-inactive { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .status-inactive .status-dot { background: #dc2626; }
+        .status-warning-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+            margin-top: 3px;
+        }
+
+        /* Group Pills */
+        .group-pills { display: flex; flex-wrap: wrap; gap: 4px; max-width: 220px; }
+        .group-pill {
+            background: #f1f5f9;
+            color: var(--slate-700);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Action Buttons */
+        .actions-cell { display: flex; align-items: center; gap: 5px; }
+
+        /* Alerts & Messages */
+        .messages-container { display: flex; flex-direction: column; gap: 8px; }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* Pagination */
+        .pagination-bar {
+            padding: 14px 20px;
+            background: #ffffff;
+            border-top: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12.5px;
+            color: var(--slate-500);
+        }
+        .pagination-pages { display: flex; gap: 4px; align-items: center; }
+        .page-link {
+            padding: 5px 10px;
+            border: 1px solid var(--slate-200);
+            border-radius: 5px;
+            font-size: 12px;
+            color: var(--slate-700);
+            text-decoration: none;
+            min-width: 28px;
+            text-align: center;
+        }
+        .page-link:hover { background: var(--slate-100); }
+        .page-link.active { background: var(--aequs-red); color: #ffffff; border-color: var(--aequs-red); font-weight: 600; }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 48px 24px; color: var(--slate-400); }
+        .empty-state i { width: 44px; height: 44px; stroke-width: 1.5; color: var(--slate-300); margin-bottom: 12px; }
+        .empty-state h3 { font-size: 15px; color: var(--slate-700); margin-bottom: 6px; font-weight: 600; }
+        .empty-state p { font-size: 12.5px; margin-bottom: 16px; }
+
+        /* Modal Overlay */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 520px;
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; color: var(--slate-900); }
+        .modal-close { background: none; border: none; font-size: 18px; color: var(--slate-400); cursor: pointer; padding: 4px; line-height: 1; border-radius: 4px; }
+        .modal-close:hover { color: var(--slate-800); background: var(--slate-100); }
+        .modal-body { padding: 20px; }
+        .modal-footer {
+            padding: 14px 20px;
+            background: #fafbfc;
+            border-top: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Detail Modal specific styling */
+        .detail-avatar-banner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--slate-100);
+            margin-bottom: 16px;
+        }
+        .detail-avatar-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aequs-red), #991b1b);
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        .detail-avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .detail-item label { font-size: 11px; font-weight: 600; color: var(--slate-400); text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .detail-item span { font-size: 13px; color: var(--slate-800); font-weight: 500; }
+        .detail-pill-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+        @media (max-width: 768px) {
+            .main { margin-left: 0; }
+            .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .filters-toolbar { flex-direction: column; align-items: stretch; }
+            .search-input-wrap { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" %}
+
+<div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'accounts:admin_dashboard' %}">Admin Dashboard</a>
+                <span>/</span>
+                <span>User Directory</span>
+            </div>
+            <h1><i data-lucide="users" style="width:20px;height:20px;color:var(--aequs-red);"></i> User Management</h1>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'accounts:role_create' %}" class="btn btn-secondary" title="Create and configure a new system role">
+                <i data-lucide="shield-plus" style="width:14px;height:14px;color:var(--aequs-red);"></i> Create Role
+            </a>
+            <a href="{% url 'accounts:user_export_csv' %}?q={{ query }}&role={{ current_role }}&status={{ current_status }}&group={{ current_group }}" class="btn btn-secondary" title="Export current list to CSV">
+                <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
+            </a>
+            <a href="{% url 'accounts:user_create' %}" class="btn btn-primary">
+                <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Add New User
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check-circle{% endif %}" style="width:16px;height:16px;"></i>
+                    <span>{{ message }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-title">Total Users</span>
+                    <span class="kpi-value">{{ total_users }}</span>
+                    <span class="kpi-sub">Registered accounts</span>
+                </div>
+                <div class="kpi-icon-box kpi-icon-red">
+                    <i data-lucide="users" style="width:22px;height:22px;"></i>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-title">Active Accounts</span>
+                    <span class="kpi-value">{{ active_users }}</span>
+                    <span class="kpi-sub">{{ inactive_users }} deactivated</span>
+                </div>
+                <div class="kpi-icon-box kpi-icon-green">
+                    <i data-lucide="user-check" style="width:22px;height:22px;"></i>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-title">Password Pending</span>
+                    <span class="kpi-value">{{ pending_pw_users }}</span>
+                    <span class="kpi-sub">Awaiting first login</span>
+                </div>
+                <div class="kpi-icon-box kpi-icon-amber">
+                    <i data-lucide="key-round" style="width:22px;height:22px;"></i>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-title">Administrators</span>
+                    <span class="kpi-value">{{ admin_users }}</span>
+                    <span class="kpi-sub">Full access level</span>
+                </div>
+                <div class="kpi-icon-box kpi-icon-purple">
+                    <i data-lucide="shield-check" style="width:22px;height:22px;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main User Directory Card -->
+        <div class="card">
+            <!-- Filter Toolbar -->
+            <form method="get" class="filters-toolbar" id="filterForm">
+                <div class="filters-left">
+                    <div class="search-input-wrap">
+                        <i data-lucide="search"></i>
+                        <input type="text" name="q" value="{{ query }}" placeholder="Search by name, handle, email, phone...">
+                    </div>
+                    <select name="role" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">All Roles</option>
+                        {% for val, lbl in roles %}
+                        <option value="{{ val }}" {% if current_role == val %}selected{% endif %}>{{ lbl }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="status" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">All Statuses</option>
+                        <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active Only</option>
+                        <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>Inactive Only</option>
+                        <option value="pending_pw" {% if current_status == 'pending_pw' %}selected{% endif %}>Must Change Password</option>
+                    </select>
+                    <select name="group" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">All Groups</option>
+                        {% for g in groups %}
+                        <option value="{{ g.name }}" {% if current_group == g.name or current_group == g.id|stringformat:"s" %}selected{% endif %}>{{ g.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="filter" style="width:13px;height:13px;"></i> Apply</button>
+                    {% if query or current_role or current_status or current_group %}
+                    <a href="{% url 'accounts:user_list' %}" class="btn btn-outline btn-sm"><i data-lucide="x" style="width:13px;height:13px;"></i> Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Contact Info</th>
+                            <th>Groups</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar">
+                                        {% if u.profile_photo %}
+                                        <img src="{{ u.profile_photo.url }}" alt="{{ u.username }}">
+                                        {% else %}
+                                        {{ u.username|first|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="user-names">
+                                        <span class="user-fullname">{{ u.get_full_name|default:u.username }}</span>
+                                        <span class="user-username">@{{ u.username }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if u.role == 'SUPER_ADMIN' %}
+                                <span class="role-badge role-super-admin"><i data-lucide="shield-alert" style="width:11px;height:11px;"></i> Super Admin</span>
+                                {% elif u.role == 'ADMIN' %}
+                                <span class="role-badge role-admin"><i data-lucide="shield" style="width:11px;height:11px;"></i> Admin</span>
+                                {% elif u.role == 'ACCOUNTANT' %}
+                                <span class="role-badge role-accountant"><i data-lucide="calculator" style="width:11px;height:11px;"></i> Accountant</span>
+                                {% elif u.role == 'EVENT_COORDINATOR' %}
+                                <span class="role-badge role-coordinator"><i data-lucide="calendar" style="width:11px;height:11px;"></i> Event Coord.</span>
+                                {% elif u.role == 'VOLUNTEER' %}
+                                <span class="role-badge role-volunteer"><i data-lucide="heart" style="width:11px;height:11px;"></i> Volunteer</span>
+                                {% else %}
+                                <span class="role-badge role-custom"><i data-lucide="award" style="width:11px;height:11px;"></i> {{ u.get_role_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;">
+                                    {% if u.email %}
+                                    <a href="mailto:{{ u.email }}" style="color:var(--slate-600);text-decoration:none;display:flex;align-items:center;gap:4px;" title="Email user">
+                                        <i data-lucide="mail" style="width:12px;height:12px;color:var(--slate-400);"></i> {{ u.email }}
+                                    </a>
+                                    {% else %}
+                                    <span style="color:var(--slate-400);font-size:11px;">No email</span>
+                                    {% endif %}
+
+                                    {% if u.phone %}
+                                    <span style="color:var(--slate-500);display:flex;align-items:center;gap:4px;font-size:11px;">
+                                        <i data-lucide="phone" style="width:11px;height:11px;color:var(--slate-400);"></i> {{ u.phone }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="group-pills">
+                                    {% for grp in u.groups.all %}
+                                    <span class="group-pill">{{ grp.name }}</span>
+                                    {% empty %}
+                                    <span style="color:var(--slate-400);font-size:11px;">None</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    {% if u.is_active %}
+                                    <span class="status-badge status-active"><span class="status-dot"></span> Active</span>
+                                    {% else %}
+                                    <span class="status-badge status-inactive"><span class="status-dot"></span> Inactive</span>
+                                    {% endif %}
+                                </div>
+                                {% if u.must_change_password %}
+                                <div><span class="status-warning-pill"><i data-lucide="alert-triangle" style="width:10px;height:10px;"></i> Reset Pending</span></div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span style="font-size:12px;color:var(--slate-600);">
+                                    {% if u.last_login %}
+                                    {{ u.last_login|date:"M d, Y" }} <span style="font-size:10.5px;color:var(--slate-400);">{{ u.last_login|time:"h:i A" }}</span>
+                                    {% else %}
+                                    <span style="color:var(--slate-400);font-size:11px;">Never</span>
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="actions-cell" style="justify-content:flex-end;">
+                                    <!-- Quick View Modal Trigger -->
+                                    <button type="button" class="btn btn-outline btn-icon" onclick="openDetailModal({{ u.pk }})" title="Quick View User Details">
+                                        <i data-lucide="eye" style="width:14px;height:14px;"></i>
+                                    </button>
+                                    <!-- Edit User -->
+                                    <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-outline btn-icon" title="Edit User">
+                                        <i data-lucide="edit-3" style="width:14px;height:14px;"></i>
+                                    </a>
+                                    <!-- Reset Password Modal Trigger -->
+                                    <button type="button" class="btn btn-outline btn-icon" onclick="openResetModal({{ u.pk }}, '{{ u.username|escapejs }}')" title="Reset Password">
+                                        <i data-lucide="key" style="width:14px;height:14px;color:#d97706;"></i>
+                                    </button>
+                                    <!-- Toggle Active Modal Trigger -->
+                                    {% if u == request.user %}
+                                    <button type="button" class="btn btn-outline btn-icon" disabled style="opacity:0.4;cursor:not-allowed;" title="You cannot deactivate your own account">
+                                        <i data-lucide="lock" style="width:14px;height:14px;"></i>
+                                    </button>
+                                    {% elif u.is_active %}
+                                    <button type="button" class="btn btn-danger-subtle btn-icon" onclick="openToggleModal({{ u.pk }}, '{{ u.username|escapejs }}', true)" title="Deactivate Account">
+                                        <i data-lucide="user-x" style="width:14px;height:14px;"></i>
+                                    </button>
+                                    {% else %}
+                                    <button type="button" class="btn btn-success-subtle btn-icon" onclick="openToggleModal({{ u.pk }}, '{{ u.username|escapejs }}', false)" title="Activate Account">
+                                        <i data-lucide="user-check" style="width:14px;height:14px;"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i data-lucide="user-x"></i>
+                                    <h3>No users found</h3>
+                                    <p>No user accounts matched your current search and filter parameters.</p>
+                                    <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary btn-sm">Reset Filters</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            {% if users.paginator.count > 0 %}
+            <div class="pagination-bar">
+                <div>
+                    Showing <strong>{{ users.start_index }}</strong> to <strong>{{ users.end_index }}</strong> of <strong>{{ users.paginator.count }}</strong> accounts
+                </div>
+                {% if users.has_other_pages %}
+                <div class="pagination-pages">
+                    {% if users.has_previous %}
+                    <a href="?page={{ users.previous_page_number }}&q={{ query }}&role={{ current_role }}&status={{ current_status }}&group={{ current_group }}" class="page-link"><i data-lucide="chevron-left" style="width:13px;height:13px;"></i></a>
+                    {% endif %}
+
+                    {% for num in users.paginator.page_range %}
+                    {% if users.number == num %}
+                    <span class="page-link active">{{ num }}</span>
+                    {% elif num > users.number|add:"-3" and num < users.number|add:"3" %}
+                    <a href="?page={{ num }}&q={{ query }}&role={{ current_role }}&status={{ current_status }}&group={{ current_group }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if users.has_next %}
+                    <a href="?page={{ users.next_page_number }}&q={{ query }}&role={{ current_role }}&status={{ current_status }}&group={{ current_group }}" class="page-link"><i data-lucide="chevron-right" style="width:13px;height:13px;"></i></a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================
+     MODAL 1: QUICK VIEW USER DETAIL
+     ======================================================== -->
+<div class="modal-backdrop" id="detailModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <span class="modal-title" id="detailModalTitle">User Overview</span>
+            <button type="button" class="modal-close" onclick="closeModal('detailModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-avatar-banner">
+                <div class="detail-avatar-box" id="modalAvatar">A</div>
+                <div>
+                    <h3 style="font-family:'Montserrat',sans-serif;font-size:16px;color:var(--slate-900);" id="modalFullName">Loading...</h3>
+                    <div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;" id="modalUsername">@username</div>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <span id="modalRoleBadge" class="role-badge">Role</span>
+                        <span id="modalStatusBadge" class="status-badge">Status</span>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-meta-grid">
+                <div class="detail-item">
+                    <label>Email Address</label>
+                    <span id="modalEmail">—</span>
+                </div>
+                <div class="detail-item">
+                    <label>Phone Number</label>
+                    <span id="modalPhone">—</span>
+                </div>
+                <div class="detail-item">
+                    <label>Date Joined</label>
+                    <span id="modalDateJoined">—</span>
+                </div>
+                <div class="detail-item">
+                    <label>Last Sign In</label>
+                    <span id="modalLastLogin">—</span>
+                </div>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:11px;font-weight:600;color:var(--slate-400);text-transform:uppercase;display:block;">Group Memberships</label>
+                <div id="modalGroups" class="detail-pill-container">
+                    <span style="color:var(--slate-400);font-size:12px;">None</span>
+                </div>
+            </div>
+            <div style="margin-top:14px;">
+                <label style="font-size:11px;font-weight:600;color:var(--slate-400);text-transform:uppercase;display:block;">Assigned Direct Permissions</label>
+                <div id="modalPerms" class="detail-pill-container" style="max-height:100px;overflow-y:auto;padding-right:4px;">
+                    <span style="color:var(--slate-400);font-size:12px;">None</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a id="modalEditLink" href="#" class="btn btn-primary btn-sm"><i data-lucide="edit" style="width:13px;height:13px;"></i> Edit Full Profile</a>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('detailModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================
+     MODAL 2: RESET PASSWORD CONFIRMATION
+     ======================================================== -->
+<div class="modal-backdrop" id="resetModal">
+    <div class="modal-window">
+        <form method="post" id="resetPasswordForm">
+            {% csrf_token %}
+            <div class="modal-header">
+                <span class="modal-title">Reset User Password</span>
+                <button type="button" class="modal-close" onclick="closeModal('resetModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex;align-items:flex-start;gap:12px;background:#fffbeb;border:1px solid #fde68a;padding:12px;border-radius:8px;margin-bottom:16px;">
+                    <i data-lucide="alert-triangle" style="width:20px;height:20px;color:#d97706;flex-shrink:0;"></i>
+                    <div style="font-size:12.5px;color:#92400e;line-height:1.4;">
+                        You are about to reset the password for <strong id="resetTargetUsername">username</strong>. They will be required to set a new password on their next login.
+                    </div>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                    <label style="display:block;font-size:12.5px;font-weight:600;color:var(--slate-700);margin-bottom:6px;">Temporary Password</label>
+                    <div style="display:flex;gap:6px;">
+                        <input type="text" name="temporary_password" id="resetPasswordInput" value="Aequs@2026!" style="flex:1;padding:8px 12px;border:1px solid var(--slate-200);border-radius:6px;font-family:monospace;font-size:13px;font-weight:600;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="generateRandomPassword()" title="Generate Random Password"><i data-lucide="refresh-cw" style="width:13px;height:13px;"></i></button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="copyPasswordToClipboard()" title="Copy Password"><i data-lucide="copy" style="width:13px;height:13px;"></i></button>
+                    </div>
+                    <span style="font-size:11px;color:var(--slate-400);margin-top:4px;display:block;">You can provide this temporary password to the user.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('resetModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="key" style="width:13px;height:13px;"></i> Confirm Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================================
+     MODAL 3: TOGGLE ACTIVE / DEACTIVATE CONFIRMATION
+     ======================================================== -->
+<div class="modal-backdrop" id="toggleModal">
+    <div class="modal-window">
+        <form method="post" id="toggleActiveForm">
+            {% csrf_token %}
+            <div class="modal-header">
+                <span class="modal-title" id="toggleModalTitle">Confirm Status Change</span>
+                <button type="button" class="modal-close" onclick="closeModal('toggleModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="toggleAlertBox" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:8px;margin-bottom:14px;">
+                    <i id="toggleModalIcon" data-lucide="alert-circle" style="width:20px;height:20px;flex-shrink:0;"></i>
+                    <div style="font-size:12.5px;line-height:1.4;" id="toggleModalMessage">
+                        Are you sure you want to change the status of this user?
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('toggleModal')">Cancel</button>
+                <button type="submit" id="toggleModalSubmitBtn" class="btn btn-primary btn-sm">Confirm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Lucide Icons initialization
+    if (window.lucide) lucide.createIcons();
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('open');
+    }
+
+    // Modal 1: Quick View
+    function openDetailModal(userId) {
+        const modal = document.getElementById('detailModal');
+        modal.classList.add('open');
+        document.getElementById('modalFullName').innerText = 'Loading...';
+
+        fetch(`/portal/admin/users/${userId}/detail/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('modalFullName').innerText = data.full_name;
+            document.getElementById('modalUsername').innerText = '@' + data.username;
+            document.getElementById('modalEmail').innerText = data.email;
+            document.getElementById('modalPhone').innerText = data.phone;
+            document.getElementById('modalDateJoined').innerText = data.date_joined;
+            document.getElementById('modalLastLogin').innerText = data.last_login;
+
+            // Avatar
+            const avatarBox = document.getElementById('modalAvatar');
+            if (data.profile_photo_url) {
+                avatarBox.innerHTML = `<img src="${data.profile_photo_url}" alt="${data.username}">`;
+            } else {
+                avatarBox.innerHTML = data.username.charAt(0).toUpperCase();
+            }
+
+            // Role Badge
+            const roleBadge = document.getElementById('modalRoleBadge');
+            roleBadge.innerText = data.role_display;
+            let roleClass = 'role-custom';
+            if (data.role === 'SUPER_ADMIN') roleClass = 'role-super-admin';
+            else if (data.role === 'ADMIN') roleClass = 'role-admin';
+            else if (data.role === 'ACCOUNTANT') roleClass = 'role-accountant';
+            else if (data.role === 'EVENT_COORDINATOR') roleClass = 'role-coordinator';
+            else if (data.role === 'VOLUNTEER') roleClass = 'role-volunteer';
+            roleBadge.className = 'role-badge ' + roleClass;
+
+            // Status Badge
+            const statusBadge = document.getElementById('modalStatusBadge');
+            if (data.is_active) {
+                statusBadge.className = 'status-badge status-active';
+                statusBadge.innerHTML = '<span class="status-dot"></span> Active';
+            } else {
+                statusBadge.className = 'status-badge status-inactive';
+                statusBadge.innerHTML = '<span class="status-dot"></span> Inactive';
+            }
+
+            // Groups
+            const groupsContainer = document.getElementById('modalGroups');
+            if (data.groups && data.groups.length > 0) {
+                groupsContainer.innerHTML = data.groups.map(g => `<span class="group-pill">${g.name}</span>`).join('');
+            } else {
+                groupsContainer.innerHTML = '<span style="color:var(--slate-400);font-size:12px;">No groups assigned</span>';
+            }
+
+            // Permissions
+            const permsContainer = document.getElementById('modalPerms');
+            if (data.user_permissions && data.user_permissions.length > 0) {
+                permsContainer.innerHTML = data.user_permissions.map(p => `<span class="group-pill" style="font-family:monospace;font-size:10.5px;">${p}</span>`).join('');
+            } else {
+                permsContainer.innerHTML = '<span style="color:var(--slate-400);font-size:12px;">No direct permissions (inherited from groups)</span>';
+            }
+
+            // Edit Link
+            document.getElementById('modalEditLink').href = `/portal/admin/users/${data.id}/edit/`;
+            if (window.lucide) lucide.createIcons();
+        })
+        .catch(err => {
+            document.getElementById('modalFullName').innerText = 'Failed to load user details';
+        });
+    }
+
+    // Modal 2: Reset Password
+    function openResetModal(userId, username) {
+        document.getElementById('resetTargetUsername').innerText = '@' + username;
+        document.getElementById('resetPasswordForm').action = `/portal/admin/users/${userId}/reset-password/`;
+        document.getElementById('resetPasswordInput').value = 'Aequs@2026!';
+        document.getElementById('resetModal').classList.add('open');
+    }
+
+    function generateRandomPassword() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
+        let pwd = 'Aeq@';
+        for (let i = 0; i < 6; i++) {
+            pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('resetPasswordInput').value = pwd;
+    }
+
+    function copyPasswordToClipboard() {
+        const val = document.getElementById('resetPasswordInput').value;
+        navigator.clipboard.writeText(val).then(() => {
+            alert('Password copied to clipboard: ' + val);
+        });
+    }
+
+    // Modal 3: Toggle Active Status
+    function openToggleModal(userId, username, isActive) {
+        const form = document.getElementById('toggleActiveForm');
+        form.action = `/portal/admin/users/${userId}/toggle/`;
+
+        const title = document.getElementById('toggleModalTitle');
+        const alertBox = document.getElementById('toggleAlertBox');
+        const message = document.getElementById('toggleModalMessage');
+        const submitBtn = document.getElementById('toggleModalSubmitBtn');
+
+        if (isActive) {
+            title.innerText = 'Deactivate User Account';
+            alertBox.style.background = '#fef2f2';
+            alertBox.style.border = '1px solid #fecaca';
+            alertBox.style.color = '#991b1b';
+            message.innerHTML = `Are you sure you want to deactivate <strong>@${username}</strong>?<br>The user will immediately be locked out from signing into the portal.`;
+            submitBtn.className = 'btn btn-primary btn-sm';
+            submitBtn.innerText = 'Deactivate Account';
+        } else {
+            title.innerText = 'Activate User Account';
+            alertBox.style.background = '#f0fdf4';
+            alertBox.style.border = '1px solid #bbf7d0';
+            alertBox.style.color = '#166534';
+            message.innerHTML = `Are you sure you want to activate <strong>@${username}</strong>?<br>The user will regain access to login to the portal.`;
+            submitBtn.className = 'btn btn-primary btn-sm';
+            submitBtn.innerText = 'Activate Account';
+        }
+
+        document.getElementById('toggleModal').classList.add('open');
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // Close on backdrop click or ESC key
+    window.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-backdrop')) {
+            e.target.classList.remove('open');
+        }
+    });
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('open'));
+        }
+    });
+</script>
+</body>
+</html>

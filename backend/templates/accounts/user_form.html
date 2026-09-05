@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action }} User - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+
+        /* Topbar */
+        .topbar {
+            background: #ffffff;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content { padding: 24px 28px; max-width: 980px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Card */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .card-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--slate-100);
+        }
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-subtitle { font-size: 12px; color: var(--slate-500); }
+
+        /* Form elements */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--slate-700);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .form-group label .required { color: var(--aequs-red); }
+        .form-control, .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="password"], .form-group input[type="tel"], .form-group select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--slate-800);
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-control:focus, .form-group input:focus, .form-group select:focus {
+            border-color: var(--aequs-red);
+            box-shadow: 0 0 0 3px rgba(221,45,39,0.1);
+        }
+        .help-text { font-size: 11.5px; color: var(--slate-400); }
+        .field-error { font-size: 11.5px; color: #dc2626; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+        /* Password input with toggle */
+        .password-input-wrap { position: relative; display: flex; align-items: center; }
+        .password-input-wrap input { padding-right: 36px; }
+        .password-toggle-btn {
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--slate-400);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-toggle-btn:hover { color: var(--slate-700); }
+
+        /* Avatar Upload Section */
+        .photo-upload-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 16px;
+            background: #fafbfc;
+            border: 1px dashed var(--slate-200);
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+        .preview-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aequs-red), #991b1b);
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .preview-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-upload-controls { display: flex; flex-direction: column; gap: 6px; }
+
+        /* Toggle Switches */
+        .switches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+        .switch-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #fafbfc;
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .switch-card:hover { background: #f1f5f9; }
+        .switch-input {
+            width: 38px;
+            height: 20px;
+            position: relative;
+            appearance: none;
+            -webkit-appearance: none;
+            background: var(--slate-200);
+            outline: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .switch-input:checked { background: var(--aequs-red); }
+        .switch-input::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            background: #ffffff;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .switch-input:checked::before { transform: translateX(18px); }
+        .switch-text-title { font-size: 12.5px; font-weight: 600; color: var(--slate-800); }
+        .switch-text-desc { font-size: 11px; color: var(--slate-500); }
+
+        /* Group Cards */
+        .group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 10px; }
+        .group-card {
+            border: 1.5px solid var(--slate-200);
+            border-radius: 8px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #ffffff;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .group-card:hover { border-color: var(--slate-400); background: #fafbfc; }
+        .group-card.selected { border-color: var(--aequs-red); background: #fff8f8; }
+        .group-checkbox { width: 16px; height: 16px; accent-color: var(--aequs-red); margin-top: 2px; cursor: pointer; }
+        .group-info { display: flex; flex-direction: column; gap: 2px; }
+        .group-name { font-size: 12.5px; font-weight: 600; color: var(--slate-900); }
+        .group-count { font-size: 11px; color: var(--slate-400); }
+
+        /* Direct Permissions */
+        .perm-search-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            background: #ffffff;
+            margin-bottom: 14px;
+        }
+        .perm-search-bar input { border: none; outline: none; width: 100%; font-size: 13px; color: var(--slate-800); }
+        .perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+        .perm-module {
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            background: #fafbfc;
+            overflow: hidden;
+        }
+        .perm-module-header {
+            padding: 9px 12px;
+            background: #f1f5f9;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .perm-module-title { font-size: 12px; font-weight: 700; color: var(--slate-800); text-transform: uppercase; letter-spacing: 0.4px; }
+        .perm-module-toggle { background: none; border: none; font-size: 11px; color: var(--aequs-red); font-weight: 600; cursor: pointer; padding: 2px 4px; }
+        .perm-module-toggle:hover { text-decoration: underline; }
+        .perm-list { padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+        .perm-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--slate-700);
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 5px;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .perm-item:hover { background: #f1f5f9; color: var(--slate-900); }
+        .perm-item.from-group {
+            background: #f0fdf4 !important;
+            border-left: 3px solid #16a34a !important;
+        }
+        .perm-item.custom-added {
+            background: #eff6ff !important;
+            border-left: 3px solid #2563eb !important;
+        }
+        .perm-label { flex: 1; min-width: 0; word-break: break-word; }
+        .perm-source-tags { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .badge-group-grant {
+            font-size: 10px;
+            font-weight: 700;
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            padding: 1px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .badge-custom-grant {
+            font-size: 10px;
+            font-weight: 700;
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 1px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .perm-item input { width: 14px; height: 14px; accent-color: var(--aequs-red); cursor: pointer; flex-shrink: 0; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); box-shadow: 0 2px 8px rgba(221,45,39,0.25); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-sm { padding: 5px 10px; font-size: 11.5px; }
+
+        .form-footer { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+        /* Alerts */
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Modal Backdrop & Window for Quick Role Creation */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 540px;
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; color: var(--slate-900); }
+        .modal-close { background: none; border: none; font-size: 20px; color: var(--slate-400); cursor: pointer; padding: 4px; line-height: 1; border-radius: 4px; }
+        .modal-close:hover { color: var(--slate-800); background: var(--slate-100); }
+        .modal-body { padding: 20px; }
+        .modal-footer {
+            padding: 14px 20px;
+            background: #fafbfc;
+            border-top: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn-create-role-trigger {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--aequs-red);
+            background: var(--aequs-red-light);
+            border: 1px solid rgba(221,45,39,0.25);
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s;
+        }
+        .btn-create-role-trigger:hover {
+            background: #ffe3e3;
+            border-color: var(--aequs-red);
+        }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--slate-900);
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .main { margin-left: 0; }
+            .form-row, .switches-grid { grid-template-columns: 1fr; }
+            .group-grid, .perm-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" %}
+
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'accounts:user_list' %}">User Management</a>
+                <span>/</span>
+                <span>{{ action }} User</span>
+            </div>
+            <h1>
+                <i data-lucide="{% if action == 'Create' %}user-plus{% else %}user-check{% endif %}" style="width:20px;height:20px;color:var(--aequs-red);"></i>
+                {{ action }} User{% if target_user %}: {{ target_user.username }}{% endif %}
+            </h1>
+        </div>
+        <div>
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to Users
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Non field errors -->
+        {% if form.non_field_errors %}
+        <div class="alert-error">
+            <div style="display:flex;align-items:center;gap:6px;font-weight:700;">
+                <i data-lucide="alert-circle" style="width:16px;height:16px;"></i> Please correct the following errors:
+            </div>
+            {% for err in form.non_field_errors %}
+            <div>• {{ err }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" id="userForm">
+            {% csrf_token %}
+
+            <!-- Card 1: Account Profile & Identity -->
+            <div class="card">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">
+                            <i data-lucide="user" style="width:16px;height:16px;color:var(--aequs-red);"></i>
+                            Account Profile & Identity
+                        </div>
+                        <div class="card-subtitle">Personal details, system login handle, and access role</div>
+                    </div>
+                </div>
+
+                <!-- Profile Photo Upload -->
+                <div class="photo-upload-section">
+                    <div class="preview-avatar" id="photoPreview">
+                        {% if target_user and target_user.profile_photo %}
+                        <img src="{{ target_user.profile_photo.url }}" alt="{{ target_user.username }}">
+                        {% elif target_user %}
+                        {{ target_user.username|first|upper }}
+                        {% else %}
+                        <i data-lucide="user" style="width:28px;height:28px;"></i>
+                        {% endif %}
+                    </div>
+                    <div class="photo-upload-controls">
+                        <label style="font-size:12.5px;font-weight:600;color:var(--slate-800);">Profile Photo</label>
+                        <input type="file" name="profile_photo" id="id_profile_photo" accept="image/*" onchange="previewSelectedPhoto(this)" style="font-size:12px;color:var(--slate-500);">
+                        <span class="help-text">Upload JPG, PNG, or GIF up to 5MB</span>
+                        {% for err in form.profile_photo.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_username">Username <span class="required">*</span></label>
+                        {{ form.username }}
+                        <span class="help-text">Unique handle for signing in</span>
+                        {% for err in form.username.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+                            <label for="id_role" style="margin-bottom:0;">System Role <span class="required">*</span></label>
+                            <button type="button" class="btn-create-role-trigger" onclick="openRoleModal()" title="Create a new system role dynamically">
+                                <i data-lucide="plus-circle" style="width:13px;height:13px;"></i> New Role
+                            </button>
+                        </div>
+                        {{ form.role }}
+                        <span class="help-text">Determines base permission set & dashboard layout</span>
+                        {% for err in form.role.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_first_name">First Name</label>
+                        {{ form.first_name }}
+                        {% for err in form.first_name.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_last_name">Last Name</label>
+                        {{ form.last_name }}
+                        {% for err in form.last_name.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_email">Official Email</label>
+                        {{ form.email }}
+                        <span class="help-text">Can also be used to log in</span>
+                        {% for err in form.email.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_phone">Contact Phone</label>
+                        {{ form.phone }}
+                        <span class="help-text">Mobile or office telephone</span>
+                        {% for err in form.phone.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <!-- Active Status & Forced Password Change Switches -->
+                <div class="switches-grid">
+                    <label class="switch-card" for="id_is_active">
+                        <input type="checkbox" name="is_active" id="id_is_active" class="switch-input" {% if form.is_active.value or form.is_active.value is None and action == 'Create' %}checked{% endif %}>
+                        <div>
+                            <div class="switch-text-title">Active Account</div>
+                            <div class="switch-text-desc">User can sign into the EduTrack portal</div>
+                        </div>
+                    </label>
+
+                    <label class="switch-card" for="id_must_change_password">
+                        <input type="checkbox" name="must_change_password" id="id_must_change_password" class="switch-input" {% if form.must_change_password.value or form.must_change_password.value is None and action == 'Create' %}checked{% endif %}>
+                        <div>
+                            <div class="switch-text-title">Require Password Change</div>
+                            <div class="switch-text-desc">Force user to set a personal password on next login</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Card 2: Password / Credentials -->
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">
+                            <i data-lucide="lock" style="width:16px;height:16px;color:var(--aequs-red);"></i>
+                            {% if action == 'Create' %}Security Credentials{% else %}Change User Password (Optional){% endif %}
+                        </div>
+                        <div class="card-subtitle">
+                            {% if action == 'Create' %}Set a temporary initial password for this account{% else %}Leave blank to keep the user's current existing password{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if action == 'Create' %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_password1">Initial Password <span class="required">*</span></label>
+                        <div class="password-input-wrap">
+                            {{ form.password1 }}
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('id_password1', this)">
+                                <i data-lucide="eye" style="width:15px;height:15px;"></i>
+                            </button>
+                        </div>
+                        <span class="help-text">Minimum 6 characters</span>
+                        {% for err in form.password1.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_password2">Confirm Password <span class="required">*</span></label>
+                        <div class="password-input-wrap">
+                            {{ form.password2 }}
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('id_password2', this)">
+                                <i data-lucide="eye" style="width:15px;height:15px;"></i>
+                            </button>
+                        </div>
+                        <span class="help-text">Re-enter initial password</span>
+                        {% for err in form.password2.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_new_password">New Password</label>
+                        <div class="password-input-wrap">
+                            {{ form.new_password }}
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('id_new_password', this)">
+                                <i data-lucide="eye" style="width:15px;height:15px;"></i>
+                            </button>
+                        </div>
+                        <span class="help-text">Leave blank unless resetting</span>
+                        {% for err in form.new_password.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_confirm_new_password">Confirm New Password</label>
+                        <div class="password-input-wrap">
+                            {{ form.confirm_new_password }}
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('id_confirm_new_password', this)">
+                                <i data-lucide="eye" style="width:15px;height:15px;"></i>
+                            </button>
+                        </div>
+                        <span class="help-text">Required if entering a new password</span>
+                        {% for err in form.confirm_new_password.errors %}<div class="field-error"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> {{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Card 3: Group Memberships -->
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">
+                            <i data-lucide="users" style="width:16px;height:16px;color:var(--aequs-red);"></i>
+                            Group Memberships
+                            <span id="groupCountBadge" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--slate-100);color:var(--slate-600);margin-left:6px;">0 Selected</span>
+                        </div>
+                        <div class="card-subtitle">Groups bundle functional permissions across modules</div>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="selectAllGroups()">Select All</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="deselectAllGroups()">Clear All</button>
+                    </div>
+                </div>
+
+                <div class="group-grid">
+                    {% for group in groups %}
+                    <div class="group-card {% if group.id in form.groups.value|default:'' %}selected{% endif %}" onclick="onGroupCardClicked(this, event)">
+                        <input type="checkbox" name="groups" value="{{ group.id }}" class="group-checkbox" {% if group.id in form.groups.value|default:'' %}checked{% endif %} onclick="event.stopPropagation(); updateGroupCardState(this.closest('.group-card'));">
+                        <div class="group-info">
+                            <span class="group-name">{{ group.name }}</span>
+                            <span class="group-count">{{ group.user_count|default:"0" }} members</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="color:var(--slate-400);font-size:12.5px;padding:12px;">No groups defined in system. Run <code>python manage.py setup_groups</code>.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Card 4: Granular Direct Permissions -->
+            {% if permissions %}
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">
+                            <i data-lucide="shield-check" style="width:16px;height:16px;color:var(--aequs-red);"></i>
+                            Direct Permissions
+                            <span id="permCountBadge" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--slate-100);color:var(--slate-600);margin-left:6px;">0 Selected</span>
+                        </div>
+                        <div class="card-subtitle">Permissions from chosen groups are automatically granted below. You can also grant additional permissions on top.</div>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="selectAllPerms()">Select All</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="deselectAllPerms()">Clear All</button>
+                    </div>
+                </div>
+
+                <!-- Helper Notice -->
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:14px;font-size:12px;color:var(--slate-600);">
+                    <i data-lucide="sparkles" style="width:16px;height:16px;color:#16a34a;flex-shrink:0;"></i>
+                    <div>
+                        Selecting groups above <strong>automatically grants</strong> relevant permissions (highlighted in green with group tag). You can also manually check <strong>additional permissions</strong> on top of the chosen group (highlighted in blue).
+                    </div>
+                </div>
+
+                <!-- Permission Search Bar -->
+                <div class="perm-search-bar">
+                    <i data-lucide="search" style="width:15px;height:15px;color:var(--slate-400);"></i>
+                    <input type="text" placeholder="Filter permissions (e.g. laptop, student, school, change, delete)..." oninput="filterPermissions(this.value)">
+                </div>
+
+                <div class="perm-grid">
+                    {% regroup permissions by content_type.app_label as perm_groups %}
+                    {% for app_label, perm_list in perm_groups %}
+                    <div class="perm-module" data-app="{{ app_label|lower }}">
+                        <div class="perm-module-header">
+                            <span class="perm-module-title">{{ app_label|title }}</span>
+                            <button type="button" class="perm-module-toggle" onclick="toggleModulePerms(this)">Toggle Module</button>
+                        </div>
+                        <div class="perm-list">
+                            {% for perm in perm_list %}
+                            <label class="perm-item" data-perm-id="{{ perm.id }}" data-text="{{ perm.name|lower }} {{ perm.codename|lower }}">
+                                <input type="checkbox" name="user_permissions" value="{{ perm.id }}" id="perm_cb_{{ perm.id }}" {% if perm.id in form.user_permissions.value|default:'' %}checked{% endif %} onchange="onPermManualToggle(this)">
+                                <span class="perm-label">{{ perm.name }}</span>
+                                <span class="perm-source-tags"></span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form Action Buttons -->
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save" style="width:15px;height:15px;"></i>
+                    {{ action }} User Account
+                </button>
+                <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quick Role Creation Modal -->
+<div class="modal-backdrop" id="roleModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <span class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="shield-plus" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                Create New System Role
+            </span>
+            <button type="button" class="modal-close" onclick="closeRoleModal()">&times;</button>
+        </div>
+        <form id="createRoleModalForm" onsubmit="submitCreateRole(event)">
+            <div class="modal-body">
+                <div id="roleModalError" style="display:none;padding:10px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;color:#dc2626;font-size:12px;margin-bottom:14px;"></div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newRoleName">Role Title <span class="required">*</span></label>
+                        <input type="text" id="newRoleName" name="name" class="form-control" placeholder="e.g. School Auditor" required oninput="onNewRoleNameInput(this.value)">
+                        <span class="help-text">Display name for users</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="newRoleCode">Role Code <span class="required">*</span></label>
+                        <input type="text" id="newRoleCode" name="code" class="form-control" placeholder="e.g. SCHOOL_AUDITOR" required>
+                        <span class="help-text">Unique uppercase identifier</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label for="newRoleDesc">Description</label>
+                    <textarea id="newRoleDesc" name="description" class="form-control" rows="2" placeholder="Brief summary of duties and responsibilities..."></textarea>
+                </div>
+
+                <div class="switches-grid" style="margin-bottom:14px;">
+                    <label class="switch-card" for="newRoleIsAdmin">
+                        <input type="checkbox" id="newRoleIsAdmin" name="is_admin" class="switch-input">
+                        <div>
+                            <div class="switch-text-title">Admin Privileges</div>
+                            <div class="switch-text-desc">Executive dashboard access</div>
+                        </div>
+                    </label>
+
+                    <label class="switch-card" for="newRoleCreateGroup">
+                        <input type="checkbox" id="newRoleCreateGroup" name="create_group" class="switch-input" checked>
+                        <div>
+                            <div class="switch-text-title">Permission Group</div>
+                            <div class="switch-text-desc">Create matching group card</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="font-size:12px;color:var(--slate-500);background:#f8fafc;padding:10px 12px;border:1px solid #e2e8f0;border-radius:6px;display:flex;align-items:center;gap:8px;">
+                    <i data-lucide="info" style="width:16px;height:16px;color:var(--slate-400);flex-shrink:0;"></i>
+                    <span>Need to bundle specific module permissions into this role? Visit the <a href="{% url 'accounts:role_create' %}" target="_blank" style="color:var(--aequs-red);font-weight:600;text-decoration:none;">Full Role Designer &rarr;</a></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">Cancel</button>
+                <button type="submit" id="btnSubmitNewRole" class="btn btn-primary">
+                    <i data-lucide="check" style="width:14px;height:14px;"></i> Save & Select
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast notification container -->
+<div id="roleToast" class="toast-notification">
+    <i data-lucide="check-circle" style="width:18px;height:18px;color:#22c55e;"></i>
+    <span id="roleToastMsg">Role created successfully!</span>
+</div>
+
+<!-- Embedded Group Permissions Mapping JSON -->
+<script id="groupPermsData" type="application/json">{{ group_perms_json|default:'{}'|safe }}</script>
+
+<script>
+    if (window.lucide) lucide.createIcons();
+
+    // Password visibility toggle
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" style="width:15px;height:15px;"></i>`;
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // Live Photo Preview
+    function previewSelectedPhoto(fileInput) {
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('photoPreview');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            }
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    }
+
+    // Parse Group Permissions mapping
+    let groupPermsMap = {};
+    try {
+        const scriptEl = document.getElementById('groupPermsData');
+        if (scriptEl && scriptEl.textContent) {
+            groupPermsMap = JSON.parse(scriptEl.textContent);
+        }
+    } catch (e) {
+        console.error('Error parsing group permissions map:', e);
+    }
+
+    // Track manually checked permissions (outside of group grants)
+    const manuallySelectedPerms = new Set();
+
+    function initManuallySelectedPerms() {
+        const checkedGroupIds = Array.from(document.querySelectorAll('.group-checkbox:checked')).map(cb => String(cb.value));
+        const initialGroupPerms = new Set();
+        checkedGroupIds.forEach(gid => {
+            const grp = groupPermsMap[gid];
+            if (grp && grp.perm_ids) {
+                grp.perm_ids.forEach(pid => initialGroupPerms.add(pid));
+            }
+        });
+
+        document.querySelectorAll('.perm-item').forEach(item => {
+            const cb = item.querySelector('input[type=checkbox]');
+            const pid = parseInt(item.getAttribute('data-perm-id'));
+            if (cb && cb.checked && !initialGroupPerms.has(pid)) {
+                manuallySelectedPerms.add(pid);
+            }
+        });
+    }
+
+    // Sync group permissions with direct permission checkboxes
+    function syncGroupPermissions() {
+        const checkedGroupIds = Array.from(document.querySelectorAll('.group-checkbox:checked')).map(cb => String(cb.value));
+
+        // Build active mapping: permId -> [groupName1, ...]
+        const activeGroupPerms = {};
+        checkedGroupIds.forEach(gid => {
+            const grp = groupPermsMap[gid];
+            if (grp && grp.perm_ids) {
+                grp.perm_ids.forEach(pid => {
+                    if (!activeGroupPerms[pid]) activeGroupPerms[pid] = [];
+                    activeGroupPerms[pid].push(grp.name);
+                });
+            }
+        });
+
+        let groupCount = 0;
+        let customCount = 0;
+
+        document.querySelectorAll('.perm-item').forEach(item => {
+            const pid = parseInt(item.getAttribute('data-perm-id'));
+            const cb = item.querySelector('input[type=checkbox]');
+            const tagContainer = item.querySelector('.perm-source-tags');
+            const grpNames = activeGroupPerms[pid];
+
+            if (grpNames && grpNames.length > 0) {
+                // Auto-granted by group
+                cb.checked = true;
+                item.classList.add('from-group');
+                item.classList.remove('custom-added');
+                const label = grpNames.length === 1 ? grpNames[0] : `${grpNames[0]} +${grpNames.length - 1}`;
+                tagContainer.innerHTML = `<span class="badge-group-grant" title="Granted by ${grpNames.join(', ')}"><i data-lucide="users" style="width:10px;height:10px;"></i> ${label}</span>`;
+                groupCount++;
+            } else {
+                item.classList.remove('from-group');
+                // Check if manually checked on top
+                if (manuallySelectedPerms.has(pid)) {
+                    cb.checked = true;
+                    item.classList.add('custom-added');
+                    tagContainer.innerHTML = `<span class="badge-custom-grant"><i data-lucide="plus" style="width:10px;height:10px;"></i> Custom Extra</span>`;
+                    customCount++;
+                } else {
+                    cb.checked = false;
+                    item.classList.remove('custom-added');
+                    tagContainer.innerHTML = '';
+                }
+            }
+        });
+
+        const badge = document.getElementById('permCountBadge');
+        if (badge) {
+            const total = groupCount + customCount;
+            if (groupCount > 0 && customCount > 0) {
+                badge.innerText = `${total} Selected (${groupCount} from Groups + ${customCount} Custom)`;
+            } else if (groupCount > 0) {
+                badge.innerText = `${total} Selected (${groupCount} from Groups)`;
+            } else if (customCount > 0) {
+                badge.innerText = `${total} Selected (${customCount} Custom)`;
+            } else {
+                badge.innerText = `0 Selected`;
+            }
+        }
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // When an individual permission checkbox is clicked
+    function onPermManualToggle(cb) {
+        const item = cb.closest('.perm-item');
+        const pid = parseInt(item.getAttribute('data-perm-id'));
+
+        // Check if currently covered by any active group
+        const checkedGroupIds = Array.from(document.querySelectorAll('.group-checkbox:checked')).map(c => String(c.value));
+        let isCoveredByGroup = false;
+        for (const gid of checkedGroupIds) {
+            const grp = groupPermsMap[gid];
+            if (grp && grp.perm_ids && grp.perm_ids.includes(pid)) {
+                isCoveredByGroup = true;
+                break;
+            }
+        }
+
+        if (cb.checked) {
+            if (!isCoveredByGroup) {
+                manuallySelectedPerms.add(pid);
+            }
+        } else {
+            manuallySelectedPerms.delete(pid);
+            // If user explicitly unchecks a permission that was from a group, allow them to override it
+            if (isCoveredByGroup) {
+                item.classList.remove('from-group');
+                item.querySelector('.perm-source-tags').innerHTML = '';
+            }
+        }
+        syncGroupPermissions();
+    }
+
+    // Group Card Click Handling
+    function onGroupCardClicked(card, event) {
+        const checkbox = card.querySelector('input[type=checkbox]');
+        if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            updateGroupCardState(card);
+        }
+    }
+
+    function updateGroupCardState(card) {
+        const checkbox = card.querySelector('input[type=checkbox]');
+        card.classList.toggle('selected', checkbox.checked);
+        updateGroupCount();
+        syncGroupPermissions();
+    }
+
+    function selectAllGroups() {
+        document.querySelectorAll('.group-card').forEach(c => {
+            const cb = c.querySelector('input[type=checkbox]');
+            if (cb) cb.checked = true;
+            c.classList.add('selected');
+        });
+        updateGroupCount();
+        syncGroupPermissions();
+    }
+
+    function deselectAllGroups() {
+        document.querySelectorAll('.group-card').forEach(c => {
+            const cb = c.querySelector('input[type=checkbox]');
+            if (cb) cb.checked = false;
+            c.classList.remove('selected');
+        });
+        updateGroupCount();
+        syncGroupPermissions();
+    }
+
+    function updateGroupCount() {
+        const checked = document.querySelectorAll('.group-checkbox:checked').length;
+        const badge = document.getElementById('groupCountBadge');
+        if (badge) badge.innerText = `${checked} Selected`;
+    }
+
+    // Select All / Deselect All Permissions
+    function selectAllPerms() {
+        document.querySelectorAll('.perm-item').forEach(item => {
+            const pid = parseInt(item.getAttribute('data-perm-id'));
+            manuallySelectedPerms.add(pid);
+        });
+        syncGroupPermissions();
+    }
+
+    function deselectAllPerms() {
+        manuallySelectedPerms.clear();
+        // Also uncheck all groups
+        document.querySelectorAll('.group-card').forEach(c => {
+            const cb = c.querySelector('input[type=checkbox]');
+            if (cb) cb.checked = false;
+            c.classList.remove('selected');
+        });
+        updateGroupCount();
+        syncGroupPermissions();
+    }
+
+    function toggleModulePerms(button) {
+        const module = button.closest('.perm-module');
+        const items = module.querySelectorAll('.perm-item');
+        const anyUnchecked = Array.from(items).some(item => !item.querySelector('input[type=checkbox]').checked);
+
+        items.forEach(item => {
+            const pid = parseInt(item.getAttribute('data-perm-id'));
+            if (anyUnchecked) {
+                manuallySelectedPerms.add(pid);
+            } else {
+                manuallySelectedPerms.delete(pid);
+            }
+        });
+        syncGroupPermissions();
+    }
+
+    function filterPermissions(query) {
+        const q = query.toLowerCase().trim();
+        document.querySelectorAll('.perm-module').forEach(mod => {
+            let hasVisible = false;
+            mod.querySelectorAll('.perm-item').forEach(item => {
+                const text = item.getAttribute('data-text') || '';
+                const visible = !q || text.includes(q);
+                item.style.display = visible ? 'flex' : 'none';
+                if (visible) hasVisible = true;
+            });
+            mod.style.display = hasVisible ? 'block' : 'none';
+        });
+    }
+
+    // Initialize counts and sync on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        initManuallySelectedPerms();
+        updateGroupCount();
+        syncGroupPermissions();
+
+        const newRoleCodeInput = document.getElementById('newRoleCode');
+        if (newRoleCodeInput) {
+            newRoleCodeInput.addEventListener('input', () => {
+                codeManuallyEdited = true;
+            });
+        }
+    });
+
+    // System Role Modal Logic
+    let codeManuallyEdited = false;
+
+    function openRoleModal() {
+        codeManuallyEdited = false;
+        document.getElementById('newRoleName').value = '';
+        document.getElementById('newRoleCode').value = '';
+        document.getElementById('newRoleDesc').value = '';
+        document.getElementById('newRoleIsAdmin').checked = false;
+        document.getElementById('newRoleCreateGroup').checked = true;
+        document.getElementById('roleModalError').style.display = 'none';
+        document.getElementById('roleModal').classList.add('open');
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => document.getElementById('newRoleName').focus(), 50);
+    }
+
+    function closeRoleModal() {
+        document.getElementById('roleModal').classList.remove('open');
+    }
+
+    function onNewRoleNameInput(val) {
+        if (!codeManuallyEdited) {
+            const code = val.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+            document.getElementById('newRoleCode').value = code;
+        }
+    }
+
+    function showRoleToast(msg) {
+        const toast = document.getElementById('roleToast');
+        const toastMsg = document.getElementById('roleToastMsg');
+        if (toast && toastMsg) {
+            toastMsg.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+    }
+
+    async function submitCreateRole(event) {
+        event.preventDefault();
+        const errBox = document.getElementById('roleModalError');
+        const submitBtn = document.getElementById('btnSubmitNewRole');
+        errBox.style.display = 'none';
+        errBox.innerText = '';
+
+        const name = document.getElementById('newRoleName').value.trim();
+        const code = document.getElementById('newRoleCode').value.trim();
+        const description = document.getElementById('newRoleDesc').value.trim();
+        const isAdmin = document.getElementById('newRoleIsAdmin').checked;
+        const createGroup = document.getElementById('newRoleCreateGroup').checked;
+
+        if (!name) {
+            errBox.innerText = 'Role title is required.';
+            errBox.style.display = 'block';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('code', code);
+        formData.append('description', description);
+        if (isAdmin) formData.append('is_admin', 'on');
+        if (createGroup) formData.append('create_group', 'on');
+
+        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader-2" style="width:14px;height:14px;" class="lucide-spin"></i> Saving...';
+
+        try {
+            const response = await fetch("{% url 'accounts:role_create' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                let msg = 'Failed to create role.';
+                if (data.errors) {
+                    msg = Object.values(data.errors).flat().join(' ');
+                }
+                errBox.innerText = msg;
+                errBox.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;"></i> Save & Select';
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            // Success! Add new role to <select name="role"> and select it
+            const roleSelect = document.getElementById('id_role');
+            if (roleSelect) {
+                let optExists = false;
+                for (let i = 0; i < roleSelect.options.length; i++) {
+                    if (roleSelect.options[i].value === data.role.code) {
+                        roleSelect.options[i].selected = true;
+                        optExists = true;
+                        break;
+                    }
+                }
+                if (!optExists) {
+                    const opt = document.createElement('option');
+                    opt.value = data.role.code;
+                    opt.text = data.role.name;
+                    opt.selected = true;
+                    roleSelect.appendChild(opt);
+                }
+                roleSelect.value = data.role.code;
+            }
+
+            // If a group was created, append card to group-grid if not already present
+            if (data.role.group_id) {
+                const groupGrid = document.querySelector('.group-grid');
+                const existingCb = document.querySelector(`.group-checkbox[value="${data.role.group_id}"]`);
+                if (existingCb) {
+                    existingCb.checked = true;
+                    existingCb.closest('.group-card')?.classList.add('selected');
+                } else if (groupGrid) {
+                    const groupCard = document.createElement('div');
+                    groupCard.className = 'group-card selected';
+                    groupCard.onclick = function(e) { onGroupCardClicked(this, e); };
+                    groupCard.innerHTML = `
+                        <input type="checkbox" name="groups" value="${data.role.group_id}" class="group-checkbox" checked onclick="event.stopPropagation(); updateGroupCardState(this.closest('.group-card'));">
+                        <div class="group-info">
+                            <span class="group-name">${data.role.group_name}</span>
+                            <span class="group-count">0 members</span>
+                        </div>
+                    `;
+                    groupGrid.appendChild(groupCard);
+
+                    // Update group perms map
+                    groupPermsMap[String(data.role.group_id)] = {
+                        name: data.role.group_name,
+                        perm_ids: data.role.permission_ids || []
+                    };
+                }
+
+                updateGroupCount();
+                syncGroupPermissions();
+            }
+
+            closeRoleModal();
+            showRoleToast(`Role "${data.role.name}" created and selected!`);
+
+        } catch (err) {
+            console.error(err);
+            errBox.innerText = 'Network error. Please try again.';
+            errBox.style.display = 'block';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;"></i> Save & Select';
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+</script>
+</body>
+</html>

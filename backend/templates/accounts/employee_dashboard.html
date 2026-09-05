@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+        .topbar { background: #fff; padding: 14px 28px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+        .topbar h1 { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 24px; }
+        .employee-badge { font-size: 11px; font-weight: 600; background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; padding: 3px 10px; border-radius: 4px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; }
+        .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; }
+        .stat-title { font-size: 12px; color: #64748b; font-weight: 500; }
+        .stat-value { font-size: 26px; font-weight: 700; color: #1e293b; font-family: 'Montserrat', sans-serif; }
+        .section-title { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .welcome-banner { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: #fff; border-radius: 8px; padding: 20px 24px; }
+        .welcome-banner h2 { font-family: 'Montserrat', sans-serif; font-size: 18px; margin-bottom: 4px; }
+        .welcome-banner p { font-size: 13px; opacity: 0.85; }
+        .permissions-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .perm-tag { font-size: 11px; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-family: monospace; }
+        @media (max-width: 768px) { .main { margin-left: 0; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" %}
+<div class="main">
+    <div class="topbar">
+        <h1><i data-lucide="layout-dashboard"></i> Employee Dashboard</h1>
+        <span class="employee-badge">{{ user.get_role_display }}</span>
+    </div>
+    <div class="content">
+        <div class="welcome-banner">
+            <h2>Welcome, {{ user.get_full_name|default:user.username }}!</h2>
+            <p>Your dashboard is personalized based on your assigned permissions.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><span class="section-title">Your Permissions</span></div>
+            <div class="permissions-list">
+                {% for perm in user_permissions %}
+                <span class="perm-tag">{{ perm }}</span>
+                {% empty %}
+                <span style="color:#94a3b8;font-size:13px;">No specific permissions assigned. Contact your admin.</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if is_volunteer_user %}
+        <div class="card" style="border-left: 4px solid #dd2d27;">
+            <div class="card-header">
+                <div>
+                    <span class="section-title" style="display:flex;align-items:center;gap:6px;">
+                        <i data-lucide="hand" style="width:18px;height:18px;color:#dd2d27;"></i>
+                        Volunteer Event Participation
+                    </span>
+                    <p style="font-size:12px;color:#64748b;margin-top:2px;">Events you have chosen to volunteer for</p>
+                </div>
+                <a href="{% url 'events:list' %}" class="btn" style="background:#dd2d27;color:#fff;font-size:12px;padding:6px 12px;">
+                    <i data-lucide="calendar" style="width:13px;height:13px;"></i> Browse &amp; Volunteer for Events
+                </a>
+            </div>
+
+            {% if my_event_participations %}
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                {% for part in my_event_participations %}
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">
+                    <div>
+                        <a href="{% url 'events:detail' part.event.id %}" style="font-weight:600;font-size:13.5px;color:#0f172a;text-decoration:none;">
+                            {{ part.event.title }}
+                        </a>
+                        <div style="font-size:11.5px;color:#64748b;margin-top:2px;">
+                            {{ part.event.event_date|date:"M d, Y" }} &bull; Role: {{ part.role|default:"Event Volunteer" }}
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        {% if part.participation_status == 'REQUESTED' %}
+                        <span style="font-size:10.5px;font-weight:700;background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;border:1px solid #fde68a;">
+                            Pending Approval
+                        </span>
+                        {% elif part.participation_status == 'ASSIGNED' %}
+                        <span style="font-size:10.5px;font-weight:700;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">
+                            Confirmed
+                        </span>
+                        {% else %}
+                        <span style="font-size:10.5px;font-weight:700;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:10px;">
+                            {{ part.get_participation_status_display }}
+                        </span>
+                        {% endif %}
+                        <a href="{% url 'events:detail' part.event.id %}" style="font-size:12px;color:#2563eb;text-decoration:none;font-weight:600;">
+                            View Event &rarr;
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">
+                You haven't signed up for any events yet. <a href="{% url 'events:list' %}" style="color:#dd2d27;font-weight:600;">Browse upcoming events</a> to choose where you'd like to volunteer.
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div>
+            <div class="section-title">Modules</div>
+            <div class="stats-grid">
+                {% if school_count is not None %}
+                <a href="{% url 'schools:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Active Schools</span><i data-lucide="school" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ school_count }}</div>
+                </a>
+                {% endif %}
+                {% if student_count is not None %}
+                <a href="{% url 'students:list' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Students</span><i data-lucide="graduation-cap" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ student_count }}</div>
+                </a>
+                {% endif %}
+                {% if academic_record_count is not None %}
+                <a href="{% url 'academics:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Academic Records</span><i data-lucide="book-open" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ academic_record_count }}</div>
+                </a>
+                {% endif %}
+                {% if eligible_student_count is not None %}
+                <a href="{% url 'eligibility:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Eligible Students</span><i data-lucide="check-circle-2" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ eligible_student_count }}</div>
+                </a>
+                {% endif %}
+                {% if available_laptop_count is not None %}
+                <a href="{% url 'inventory:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Available Laptops</span><i data-lucide="laptop" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ available_laptop_count }}</div>
+                </a>
+                {% endif %}
+                {% if internship_count is not None %}
+                <a href="{% url 'internships:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Internships</span><i data-lucide="briefcase" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ internship_count }}</div>
+                </a>
+                {% endif %}
+                {% if distribution_count is not None %}
+                <a href="{% url 'distributions:list' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Distributions</span><i data-lucide="package" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ distribution_count }}</div>
+                </a>
+                {% endif %}
+                {% if volunteer_count is not None %}
+                <a href="{% url 'volunteers:list' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Volunteers</span><i data-lucide="heart" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ volunteer_count }}</div>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if user.is_admin %}
+        <div class="card" style="border-color:#dd2d27;">
+            <div class="card-header"><span class="section-title" style="color:#dd2d27;">Admin Access</span></div>
+            <a href="{% url 'accounts:admin_dashboard' %}" class="btn" style="background:#dd2d27;color:#fff;">
+                <i data-lucide="shield" style="width:14px;height:14px;"></i> Go to Admin Dashboard
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>if(window.lucide) lucide.createIcons();</script>
+</body>
+</html>

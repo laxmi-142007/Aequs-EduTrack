@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+        .topbar { background: #fff; padding: 14px 28px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+        .topbar h1 { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 24px; }
+        .admin-badge { font-size: 11px; font-weight: 600; background: #fef2f2; color: #dd2d27; border: 1px solid #fee2e2; padding: 3px 10px; border-radius: 4px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit; }
+        .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; }
+        .stat-title { font-size: 12px; color: #64748b; font-weight: 500; }
+        .stat-value { font-size: 28px; font-weight: 700; color: #1e293b; font-family: 'Montserrat', sans-serif; }
+        .stat-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+        .badge-red { background: #fef2f2; color: #dc2626; }
+        .badge-blue { background: #eff6ff; color: #2563eb; }
+        .badge-green { background: #f0fdf4; color: #16a34a; }
+        .badge-amber { background: #fffbeb; color: #d97706; }
+        .section-title { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-primary { background: #dd2d27; color: #fff; }
+        .btn-primary:hover { background: #b91c1c; }
+        .btn-outline { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+        .btn-outline:hover { background: #f9fafb; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        th { font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        tr:hover td { background: #f8fafc; }
+        .user-avatar-mini { width: 28px; height: 28px; border-radius: 50%; background: #dd2d27; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+        .cell-user { display: flex; align-items: center; gap: 10px; }
+        .status-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+        .status-active { background: #f0fdf4; color: #16a34a; }
+        .status-inactive { background: #fef2f2; color: #dc2626; }
+        .messages { margin-bottom: 16px; }
+        .message { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 8px; }
+        .message-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .message-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        @media (max-width: 768px) { .main { margin-left: 0; } .two-col { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" %}
+<div class="main">
+    <div class="topbar">
+        <h1><i data-lucide="layout-dashboard"></i> Admin Executive Dashboard</h1>
+        <span class="admin-badge">ADMIN PORTAL</span>
+    </div>
+    <div class="content">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message message-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- User Management -->
+        <div>
+            <div class="section-title">User Management</div>
+            <div class="stats-grid">
+                <a href="{% url 'accounts:user_list' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Total Users</span><i data-lucide="users" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ total_users }}</div>
+                    <span class="stat-badge badge-green">{{ active_users }} Active</span>
+                </a>
+                <a href="{% url 'accounts:user_list' %}?status=pending_pw" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Pending Password</span><i data-lucide="key-round" style="width:18px;height:18px;color:#d97706;"></i></div>
+                    <div class="stat-value">{{ users_pending_password }}</div>
+                    <span class="stat-badge badge-amber">Needs Reset</span>
+                </a>
+                <a href="{% url 'accounts:user_create' %}" class="stat-card" style="border-color:#dd2d27;">
+                    <div class="stat-header"><span class="stat-title" style="color:#dd2d27;">Create New User</span><i data-lucide="user-plus" style="width:18px;height:18px;color:#dd2d27;"></i></div>
+                    <div class="stat-value" style="font-size:14px;color:#dd2d27;margin-top:8px;">+ Add Employee</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- System Overview -->
+        <div>
+            <div class="section-title">System Overview</div>
+            <div class="stats-grid">
+                <a href="{% url 'schools:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Active Schools</span><i data-lucide="school" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ school_count }}</div>
+                </a>
+                <a href="{% url 'students:list' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Total Students</span><i data-lucide="graduation-cap" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ student_count }}</div>
+                    <span class="stat-badge badge-blue">{{ active_student_count }} Active</span>
+                </a>
+                <a href="{% url 'eligibility:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Eligible Students</span><i data-lucide="check-circle-2" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ eligible_student_count }}</div>
+                </a>
+                <a href="{% url 'internships:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Internships</span><i data-lucide="briefcase" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ internship_count }}</div>
+                    <span class="stat-badge badge-blue">{{ active_interns_count }} Active</span>
+                </a>
+                <a href="{% url 'inventory:portal' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Available Laptops</span><i data-lucide="laptop" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ available_laptop_count }}</div>
+                    <span class="stat-badge badge-amber">{{ issued_laptop_count }} in field</span>
+                </a>
+                <a href="{% url 'distributions:list' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Distributions</span><i data-lucide="package" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ distribution_count }}</div>
+                    <span class="stat-badge badge-green">{{ students_benefited_count }} Students</span>
+                </a>
+                <a href="{% url 'volunteers:list' %}" class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Active Volunteers</span><i data-lucide="heart" style="width:18px;height:18px;color:#64748b;"></i></div>
+                    <div class="stat-value">{{ volunteer_count }}</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Users & Groups -->
+        <div class="two-col">
+            <div class="card">
+                <div class="card-header"><span class="section-title">Recent Users</span><a href="{% url 'accounts:user_list' %}" class="btn btn-outline btn-sm">View All</a></div>
+                <table>
+                    <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for u in recent_users %}
+                        <tr>
+                            <td><div class="cell-user"><span class="user-avatar-mini">{{ u.username|first|upper }}</span><div><div style="font-weight:600;">{{ u.get_full_name|default:u.username }}</div><div style="font-size:11px;color:#94a3b8;">{{ u.email|default:"-" }}</div></div></div></td>
+                            <td style="font-size:12px;">{{ u.get_role_display }}</td>
+                            <td>{% if u.is_active %}<span class="status-badge status-active">Active</span>{% else %}<span class="status-badge status-inactive">Inactive</span>{% endif %}</td>
+                            <td><a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:11px;">Edit</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="section-title">Groups</span><a href="{% url 'accounts:user_list' %}" class="btn btn-outline btn-sm">View Users</a></div>
+                <table>
+                    <thead><tr><th>Group</th><th>Members</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for group in groups %}
+                        <tr>
+                            <td style="font-weight:600;"><a href="{% url 'accounts:user_list' %}?group={{ group.name }}" style="color:inherit;text-decoration:none;">{{ group.name }}</a></td>
+                            <td><span class="stat-badge badge-blue">{{ group.user_count }}</span></td>
+                            <td><a href="{% url 'accounts:user_list' %}?group={{ group.name }}" class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:11px;">Filter</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" style="color:#94a3b8;">No groups defined yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header"><span class="section-title">Quick Actions</span></div>
+            <div class="quick-actions">
+                <a href="{% url 'accounts:user_create' %}" class="btn btn-primary"><i data-lucide="user-plus" style="width:14px;height:14px;"></i> Create User</a>
+                <a href="{% url 'accounts:user_list' %}" class="btn btn-outline"><i data-lucide="users" style="width:14px;height:14px;"></i> Manage Users</a>
+                <a href="/admin/" class="btn btn-outline"><i data-lucide="settings" style="width:14px;height:14px;"></i> Django Admin</a>
+                <a href="{% url 'schools:portal' %}" class="btn btn-outline"><i data-lucide="school" style="width:14px;height:14px;"></i> Schools</a>
+                <a href="{% url 'inventory:portal' %}" class="btn btn-outline"><i data-lucide="laptop" style="width:14px;height:14px;"></i> Inventory</a>
+                <a href="{% url 'reports:list' %}" class="btn btn-outline"><i data-lucide="bar-chart-3" style="width:14px;height:14px;"></i> Reports</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>if(window.lucide) lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create System Role - Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
+
+        .topbar {
+            background: #ffffff;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content { padding: 24px 28px; max-width: 900px; display: flex; flex-direction: column; gap: 20px; }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .card-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--slate-100);
+        }
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-subtitle { font-size: 12px; color: var(--slate-500); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--slate-700);
+        }
+        .form-control, .form-group input[type="text"], .form-group textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--slate-800);
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-control:focus, .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--aequs-red);
+            box-shadow: 0 0 0 3px rgba(221,45,39,0.1);
+        }
+        .help-text { font-size: 11.5px; color: var(--slate-400); }
+        .field-error { font-size: 11.5px; color: #dc2626; font-weight: 500; }
+
+        .switch-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #fafbfc;
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+        .switch-input {
+            width: 38px;
+            height: 20px;
+            position: relative;
+            appearance: none;
+            -webkit-appearance: none;
+            background: var(--slate-200);
+            outline: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .switch-input:checked { background: var(--aequs-red); }
+        .switch-input::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            background: #ffffff;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .switch-input:checked::before { transform: translateX(18px); }
+
+        .perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 10px; }
+        .perm-module { border: 1px solid var(--slate-200); border-radius: 8px; background: #fafbfc; overflow: hidden; }
+        .perm-module-header { padding: 8px 12px; background: #f1f5f9; border-bottom: 1px solid var(--slate-200); font-size: 11.5px; font-weight: 700; color: var(--slate-800); text-transform: uppercase; }
+        .perm-list { padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; max-height: 180px; overflow-y: auto; }
+        .perm-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--slate-700); cursor: pointer; }
+        .perm-item input { width: 14px; height: 14px; accent-color: var(--aequs-red); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); box-shadow: 0 2px 8px rgba(221,45,39,0.25); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); }
+
+        .form-footer { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+{% include "includes/sidebar.html" %}
+
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'accounts:user_list' %}">User Management</a>
+                <span>/</span>
+                <span>Create Role</span>
+            </div>
+            <h1><i data-lucide="shield" style="width:20px;height:20px;color:var(--aequs-red);"></i> Create System Role</h1>
+        </div>
+        <div>
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        <form method="post">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">Role Configuration</div>
+                        <div class="card-subtitle">Define role identity, privilege level, and default permissions</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_name">Role Title <span style="color:var(--aequs-red);">*</span></label>
+                        {{ form.name }}
+                        <span class="help-text">Human-readable role name (e.g., Warehouse Manager)</span>
+                        {% for err in form.name.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_code">Role Code</label>
+                        {{ form.code }}
+                        <span class="help-text">Unique uppercase identifier (leave blank to auto-generate)</span>
+                        {% for err in form.code.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label for="id_description">Description</label>
+                    <textarea name="description" id="id_description" rows="2" placeholder="Briefly summarize the responsibilities of this role...">{{ form.description.value|default:'' }}</textarea>
+                </div>
+
+                <div class="form-row">
+                    <label class="switch-card" for="id_is_admin">
+                        <input type="checkbox" name="is_admin" id="id_is_admin" class="switch-input" {% if form.is_admin.value %}checked{% endif %}>
+                        <div>
+                            <div style="font-size:12.5px;font-weight:600;">Admin Privileges</div>
+                            <div style="font-size:11px;color:var(--slate-500);">Grants access to the Admin Executive Dashboard</div>
+                        </div>
+                    </label>
+
+                    <label class="switch-card" for="id_create_group">
+                        <input type="checkbox" name="create_group" id="id_create_group" class="switch-input" checked>
+                        <div>
+                            <div style="font-size:12.5px;font-weight:600;">Create Permission Group</div>
+                            <div style="font-size:11px;color:var(--slate-500);">Bundles selected permissions into a functional group</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            {% if permissions %}
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header-flex">
+                    <div>
+                        <div class="card-title">Bundled Permissions</div>
+                        <div class="card-subtitle">Permissions that users assigned to this role will inherit</div>
+                    </div>
+                </div>
+
+                <div class="perm-grid">
+                    {% regroup permissions by content_type.app_label as perm_groups %}
+                    {% for app_label, perm_list in perm_groups %}
+                    <div class="perm-module">
+                        <div class="perm-module-header">{{ app_label|title }}</div>
+                        <div class="perm-list">
+                            {% for perm in perm_list %}
+                            <label class="perm-item">
+                                <input type="checkbox" name="permissions" value="{{ perm.id }}">
+                                <span>{{ perm.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary"><i data-lucide="plus" style="width:14px;height:14px;"></i> Save System Role</button>
+                <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>if (window.lucide) lucide.createIcons();</script>
+</body>
+</html>

@@ -1487,97 +1487,121 @@
         </a>
       </li>
 
+      {% if perms.schools.view_school or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'schools' %}active{% endif %}">
         <a href="{% url 'schools:portal' %}">
           <i data-lucide="school"></i>
           <span class="label">Schools</span>
         </a>
       </li>
+      {% endif %}
 
+      {% if perms.students.view_student or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'students' %}active{% endif %}">
         <a href="{% url 'students:list' %}">
           <i data-lucide="graduation-cap"></i>
           <span class="label">Students</span>
         </a>
       </li>
+      {% endif %}
 
+      {% if perms.academics.view_academicrecord or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'academics' %}active{% endif %}">
         <a href="{% url 'academics:portal' %}">
           <i data-lucide="book-open"></i>
           <span class="label">Academics</span>
         </a>
       </li>
+      {% endif %}
 
     </ul>
 
 
     <!-- Programs & Benefits -->
+    {% if perms.eligibility.view_eligibilityrecord or perms.inventory.view_laptop or perms.distributions.view_distribution or perms.internships.view_internshipplacement or request.user.is_admin %}
     <div class="nav-section-title">
       Programs & Benefits
     </div>
 
     <ul class="nav-list">
 
+      {% if perms.eligibility.view_eligibilityrecord or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'eligibility' %}active{% endif %}">
         <a href="{% url 'eligibility:portal' %}">
           <i data-lucide="check-circle-2"></i>
           <span class="label">Eligibility</span>
         </a>
       </li>
+      {% endif %}
 
+      {% if perms.inventory.view_laptop or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'inventory' %}active{% endif %}">
         <a href="{% url 'inventory:portal' %}">
           <i data-lucide="laptop"></i>
           <span class="label">Inventory</span>
         </a>
       </li>
+      {% endif %}
 
+      {% if perms.distributions.view_distribution or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'distributions' %}active{% endif %}">
         <a href="{% url 'distributions:list' %}">
           <i data-lucide="package"></i>
           <span class="label">Distributions</span>
         </a>
       </li>
+      {% endif %}
 
+      {% if perms.internships.view_internshipplacement or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'internships' %}active{% endif %}">
         <a href="{% url 'internships:portal' %}">
           <i data-lucide="briefcase"></i>
           <span class="label">Internships</span>
         </a>
       </li>
+      {% endif %}
 
     </ul>
+    {% endif %}
 
 
     <!-- Foundation -->
+    {% if perms.events.view_event or perms.volunteers.view_volunteer or perms.reports.view_activitylog or request.user.is_admin %}
     <div class="nav-section-title">
       Foundation
     </div>
 
     <ul class="nav-list">
 
+      {% if perms.events.view_event or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'events' %}active{% endif %}">
         <a href="{% url 'events:list' %}">
           <i data-lucide="calendar"></i>
           <span class="label">Events</span>
         </a>
       </li>
+      {% endif %}
 
+      {% if perms.volunteers.view_volunteer or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'volunteers' %}active{% endif %}">
         <a href="{% url 'volunteers:list' %}">
           <i data-lucide="users"></i>
           <span class="label">Volunteers</span>
         </a>
       </li>
+      {% endif %}
 
+      {% if perms.reports.view_activitylog or request.user.is_admin %}
       <li class="nav-item {% if active_page == 'reports' %}active{% endif %}">
         <a href="{% url 'reports:list' %}">
           <i data-lucide="bar-chart-3"></i>
           <span class="label">Reports</span>
         </a>
       </li>
+      {% endif %}
 
     </ul>
+    {% endif %}
 
   </div>
 
@@ -1585,6 +1609,7 @@
   <!-- Footer -->
   <div class="sidebar-footer">
 
+    {% if request.user.is_admin %}
     <a href="/admin/" class="footer-action">
 
       <i data-lucide="settings"></i>
@@ -1594,6 +1619,17 @@
       </span>
 
     </a>
+
+    <a href="{% url 'accounts:user_list' %}" class="footer-action">
+
+      <i data-lucide="users"></i>
+
+      <span>
+        User Management
+      </span>
+
+    </a>
+    {% endif %}
 
     <a href="{% url 'logout' %}" class="footer-action" style="color: #ef4444 !important;">
 
@@ -1624,11 +1660,7 @@
 
         <span class="user-role">
 
-          {% if request.user.is_staff %}
-            System Admin
-          {% else %}
-            Coordinator
-          {% endif %}
+          {{ request.user.get_role_display }}
 
         </span>
 

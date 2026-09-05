@@ -1,956 +1,799 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
+    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>{{ volunteer.first_name }} {{ volunteer.last_name }} | Volunteer Details</title>
+    <title>{{ volunteer.first_name }} {{ volunteer.last_name }} - Volunteer Profile | Aequs EduTrack</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.section-header h2 {
-    margin: 0 0 5px;
-}
-
-.section-header p {
-    margin: 0;
-    color: #6b7280;
-    font-size: 13px;
-}
-
-.btn-primary {
-    display: inline-block;
-    padding: 10px 16px;
-    background: #1769aa;
-    color: white;
-    text-decoration: none;
-    border-radius: 7px;
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.btn-primary:hover {
-    background: #12588f;
-}
-
-@media (max-width: 700px) {
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
+        :root {
+            --aequs-red: #dd2d27;
+            --aequs-red-dark: #b91c1c;
+            --aequs-red-light: #fff1f1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
         }
 
-        .main {
-            margin-left: 256px;
-            min-height: 100vh;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
 
-        .header {
+        .topbar {
             background: #ffffff;
-            color: #0f172a;
-            padding: 12px 24px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            margin-top: 5px;
-            font-size: 13px;
-            opacity: 0.85;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
-
-        .page-header {
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--slate-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
-
-        .page-header h1 {
-            margin: 0 0 6px;
-            color: #173b6c;
-            font-size: 28px;
-        }
-
-        .page-header p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 17px;
-            border-radius: 7px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-back {
-            background: white;
-            color: #374151;
-            border: 1px solid #d1d5db;
-        }
-
-        .btn-primary {
-            background: #1769aa;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #12588f;
-        }
-
-        .profile-card {
-            background: white;
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.07);
-            margin-bottom: 25px;
-        }
-
-        .profile-top {
+        .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+        .breadcrumb { font-size: 11.5px; color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--slate-500); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--aequs-red); }
+        .topbar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--slate-900);
             display: flex;
             align-items: center;
-            gap: 20px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #e5e7eb;
+            gap: 8px;
         }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
-        .avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #1769aa, #123c73);
-            color: white;
+        .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1.3;
+        }
+        .btn-primary { background: var(--aequs-red); color: #ffffff; }
+        .btn-primary:hover { background: var(--aequs-red-dark); }
+        .btn-secondary { background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-secondary:hover { background: var(--slate-200); }
+        .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-sm { padding: 5px 10px; font-size: 11.5px; }
+
+        /* KPI grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+        }
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .kpi-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 25px;
-            font-weight: 700;
             flex-shrink: 0;
         }
+        .kpi-icon-red { background: var(--aequs-red-light); color: var(--aequs-red); }
+        .kpi-icon-blue { background: #eff6ff; color: #2563eb; }
+        .kpi-icon-emerald { background: #ecfdf5; color: #059669; }
+        .kpi-icon-amber { background: #fffbeb; color: #d97706; }
+        .kpi-info { display: flex; flex-direction: column; }
+        .kpi-label { font-size: 11.5px; font-weight: 600; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.3px; }
+        .kpi-val { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; color: var(--slate-900); }
 
-        .profile-name h2 {
-            margin: 0 0 5px;
-            color: #173b6c;
+        /* Card */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 22px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
-
-        .profile-name p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 14px;
+        .card-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-
-        .status {
-            margin-left: auto;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
             font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+        .card-subtitle { font-size: 12px; color: var(--slate-500); }
 
-        .status-active {
-            background: #dcfce7;
-            color: #166534;
+        /* Profile Banner */
+        .profile-banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--slate-200);
+            flex-wrap: wrap;
         }
-
-        .status-inactive {
-            background: #fee2e2;
-            color: #991b1b;
+        .avatar-lg {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aequs-red), #991b1b);
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(221,45,39,0.25);
+            flex-shrink: 0;
         }
+        .profile-title-area { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .profile-title-area h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--slate-900);
+        }
+        .profile-title-area p { font-size: 13px; color: var(--slate-500); display: flex; align-items: center; gap: 6px; }
 
+        /* Status Badges */
+        .status-badge {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-inactive { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .part-status {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .part-ASSIGNED { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+        .part-ONGOING { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .part-ATTENDED, .part-COMPLETED { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .part-ABSENT, .part-CANCELLED { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* Details Grid */
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 22px;
-            padding-top: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            padding-top: 6px;
         }
+        .info-block { display: flex; flex-direction: column; gap: 3px; }
+        .info-label { font-size: 11px; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.3px; }
+        .info-value { font-size: 13.5px; font-weight: 600; color: var(--slate-800); word-break: break-word; }
 
-        .info-item label {
-            display: block;
-            color: #6b7280;
-            font-size: 12px;
+        .skills-tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .skill-tag {
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 11.5px;
             font-weight: 600;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .info-item p {
-            margin: 0;
-            color: #1f2937;
-            font-size: 14px;
-            word-break: break-word;
-        }
-
-        .section-card {
-            background: white;
+            padding: 3px 9px;
             border-radius: 12px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.07);
-            margin-bottom: 25px;
-            overflow: hidden;
+            border: 1px solid #dbeafe;
         }
 
-        .section-header {
-            padding: 22px 25px;
+        /* Table */
+        .table-wrap { overflow-x: auto; margin-top: 6px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td {
+            padding: 11px 14px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12.5px;
+        }
+        .data-table th {
+            background: #fafbfc;
+            color: var(--slate-600);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            border-bottom: 1px solid var(--slate-200);
+        }
+        .data-table tbody tr:hover { background: #fbfcfe; }
+        .empty-state {
+            text-align: center;
+            padding: 36px 16px;
+            color: var(--slate-400);
+        }
+        .empty-state i { margin-bottom: 8px; }
+        .empty-title { font-weight: 600; color: var(--slate-700); font-size: 14px; margin-bottom: 3px; }
+
+        /* Modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(2px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-box {
+            background: #ffffff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--slate-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #e5e7eb;
         }
-
-        .section-header h2 {
-            margin: 0;
-            color: #173b6c;
-            font-size: 18px;
-        }
-
-        .section-header p {
-            margin: 5px 0 0;
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background: #f8fafc;
-            color: #374151;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            padding: 13px 18px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        td {
-            padding: 15px 18px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            color: #374151;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: #f9fbfd;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 11px;
+        .modal-header h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
             font-weight: 700;
-        }
-
-        .badge-assigned {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-ongoing {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-completed {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .badge-cancelled {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6b7280;
-        }
-
-        .empty-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 5px;
-        }
-
-        .empty-text {
-            font-size: 13px;
-        }
-
-        .skills {
+            color: var(--slate-900);
             display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
+            align-items: center;
+            gap: 7px;
         }
-
-        .skill {
-            background: #eef6ff;
-            color: #1769aa;
-            border-radius: 15px;
-            padding: 5px 10px;
-            font-size: 11px;
-            font-weight: 600;
+        .modal-close {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--slate-400);
+            display: flex;
+            align-items: center;
+        }
+        .modal-close:hover { color: var(--slate-700); }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .modal-footer {
+            padding: 14px 20px;
+            background: var(--slate-50);
+            border-top: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 11.5px; font-weight: 600; color: var(--slate-700); }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 8px 11px;
+            border: 1px solid var(--slate-200);
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--aequs-red);
+            box-shadow: 0 0 0 2px rgba(221,45,39,0.1);
         }
 
         @media (max-width: 850px) {
-
-            .header {
-                padding: 18px 20px;
-            }
-
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .info-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
+            .main { margin-left: 0; }
+            .topbar { padding: 14px 18px; }
+            .content { padding: 18px 16px; }
         }
-
-        @media (max-width: 600px) {
-
-            .container {
-                margin: 25px auto;
-            }
-
-            .profile-top {
-                align-items: flex-start;
-            }
-
-            .status {
-                margin-left: 0;
-            }
-
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .profile-top {
-                flex-direction: column;
-            }
-
-            .actions {
-                width: 100%;
-                flex-direction: column;
-            }
-
-            .actions .btn {
-                text-align: center;
-            }
-
-        }
-
     </style>
-
 </head>
-
-
 <body>
 
-    <!-- Modern Sleek Sidebar -->
     {% include 'includes/sidebar.html' with active_page='volunteers' %}
 
     <div class="main">
-
+        <!-- Topbar -->
         <header class="topbar">
-            <h1>👥 Volunteer Details</h1>
-            <a href="{% url 'volunteers:list' %}" class="btn-secondary">
-                ← Back to Volunteers
-            </a>
+            <div class="topbar-left">
+                <nav class="breadcrumb">
+                    <a href="{% url 'volunteers:list' %}">Volunteers</a>
+                    <span>/</span>
+                    <span>{{ volunteer.first_name }} {{ volunteer.last_name }}</span>
+                </nav>
+                <h1>
+                    <i data-lucide="user" style="width: 20px; height: 20px; color: var(--aequs-red);"></i>
+                    Volunteer Profile
+                </h1>
+            </div>
+            <div class="topbar-actions">
+                <a href="{% url 'volunteers:list' %}" class="btn btn-secondary">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Back to List
+                </a>
+                <a href="{% url 'volunteers:edit' volunteer.pk %}" class="btn btn-outline">
+                    <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Edit Profile
+                </a>
+                <button type="button" onclick="openModal('deleteModal')" class="btn btn-danger">
+                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete
+                </button>
+            </div>
         </header>
 
+        <div class="content">
 
-<main class="container">
-
-
-    <!-- PAGE HEADER -->
-
-    <div class="page-header">
-
-        <div>
-
-            <h1>
-                Volunteer Details
-            </h1>
-
-            <p>
-                View volunteer information, activities and event participation.
-            </p>
-
-        </div>
-
-
-        <div class="actions">
-
-            <a
-                href="{% url 'volunteers:list' %}"
-                class="btn btn-back"
-            >
-                Back to Volunteers
-            </a>
-
-            <a
-                href="{% url 'volunteers:activity_create' volunteer.pk %}"
-                class="btn btn-primary"
-            >
-                + Add Activity
-            </a>
-
-        </div>
-
-    </div>
-
-
-    <!-- VOLUNTEER PROFILE -->
-
-    <div class="profile-card">
-
-        <div class="profile-top">
-
-
-            <div class="avatar">
-
-                {{ volunteer.first_name|first|upper }}{{ volunteer.last_name|first|upper }}
-
-            </div>
-
-
-            <div class="profile-name">
-
-                <h2>
-                    {{ volunteer.first_name }}
-                    {{ volunteer.last_name }}
-                </h2>
-
-                <p>
-                    Volunteer
-                    {% if volunteer.occupation %}
-                        • {{ volunteer.occupation }}
-                    {% endif %}
-                </p>
-
-            </div>
-
-
-            {% if volunteer.status == "ACTIVE" %}
-
-                <span class="status status-active">
-                    Active
-                </span>
-
-            {% else %}
-
-                <span class="status status-inactive">
-                    Inactive
-                </span>
-
+            {% if messages %}
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    {% for message in messages %}
+                        <div style="padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+                            {% if message.tags == 'success' %}background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;
+                            {% elif message.tags == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+                            {% else %}background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe;{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
 
-
-        </div>
-
-
-        <div class="info-grid">
-
-
-            <div class="info-item">
-
-                <label>Email</label>
-
-                <p>
-                    {{ volunteer.email }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>Phone</label>
-
-                <p>
-                    {{ volunteer.phone }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>Gender</label>
-
-                <p>
-                    {{ volunteer.get_gender_display|default:"Not provided" }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>Qualification</label>
-
-                <p>
-                    {{ volunteer.qualification|default:"Not provided" }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>Occupation</label>
-
-                <p>
-                    {{ volunteer.occupation|default:"Not provided" }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>Registration Date</label>
-
-                <p>
-                    {{ volunteer.registration_date }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>City</label>
-
-                <p>
-                    {{ volunteer.city|default:"Not provided" }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>State</label>
-
-                <p>
-                    {{ volunteer.state|default:"Not provided" }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item">
-
-                <label>Pincode</label>
-
-                <p>
-                    {{ volunteer.pincode|default:"Not provided" }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item" style="grid-column: 1 / -1;">
-
-                <label>Address</label>
-
-                <p>
-                    {{ volunteer.address|default:"Not provided" }}
-                </p>
-
-            </div>
-
-
-            <div class="info-item" style="grid-column: 1 / -1;">
-
-                <label>Skills</label>
-
-                {% if volunteer.skills %}
-
-                    <div class="skills">
-
-                        {% for skill in volunteer.skills.split|default:"" %}
-
-                            <span class="skill">
-                                {{ skill }}
-                            </span>
-
-                        {% endfor %}
-
+            <!-- Top Profile Card -->
+            <div class="card">
+                <div class="profile-banner">
+                    <div class="avatar-lg">
+                        {{ volunteer.first_name|first|upper }}{{ volunteer.last_name|first|upper }}
                     </div>
+                    <div class="profile-title-area">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h2>{{ volunteer.first_name }} {{ volunteer.last_name }}</h2>
+                            {% if volunteer.status == "ACTIVE" %}
+                                <span class="status-badge status-active">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a;"></span>
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-inactive">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626;"></span>
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </div>
+                        <p>
+                            <i data-lucide="briefcase" style="width: 13px; height: 13px;"></i>
+                            {{ volunteer.occupation|default:"Volunteer" }}
+                            {% if volunteer.city %} • {{ volunteer.city }}{% endif %}
+                            • Enrolled on {{ volunteer.registration_date|date:"M d, Y" }}
+                        </p>
+                    </div>
+                </div>
 
-                {% else %}
+                <!-- Personal & Professional info -->
+                <div class="info-grid">
+                    <div class="info-block">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">
+                            {% if volunteer.email %}
+                                <a href="mailto:{{ volunteer.email }}" style="color: var(--aequs-red); text-decoration: none;">{{ volunteer.email }}</a>
+                            {% else %}—{% endif %}
+                        </span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value">{{ volunteer.phone|default:"—" }}</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Gender</span>
+                        <span class="info-value">{{ volunteer.get_gender_display|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Qualification</span>
+                        <span class="info-value">{{ volunteer.qualification|default:"—" }}</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Location</span>
+                        <span class="info-value">
+                            {% if volunteer.city or volunteer.state %}
+                                {{ volunteer.city }}{% if volunteer.city and volunteer.state %}, {% endif %}{{ volunteer.state }}
+                                {% if volunteer.pincode %} ({{ volunteer.pincode }}){% endif %}
+                            {% else %}—{% endif %}
+                        </span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Date of Birth</span>
+                        <span class="info-value">
+                            {% if volunteer.date_of_birth %}{{ volunteer.date_of_birth|date:"M d, Y" }}{% else %}—{% endif %}
+                        </span>
+                    </div>
+                </div>
 
-                    <p>
-                        Not provided
-                    </p>
-
+                {% if volunteer.address %}
+                <div style="padding-top: 10px; border-top: 1px solid var(--slate-100);">
+                    <span class="info-label">Address</span>
+                    <p style="font-size: 13px; color: var(--slate-700); margin-top: 3px;">{{ volunteer.address }}</p>
+                </div>
                 {% endif %}
 
+                {% if volunteer.skills %}
+                <div style="padding-top: 8px; border-top: 1px solid var(--slate-100);">
+                    <span class="info-label">Core Skills & Interests</span>
+                    <div class="skills-tag-wrap">
+                        {% for skill in volunteer.skills.split|default:"" %}
+                            <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if volunteer.remarks %}
+                <div style="padding-top: 8px; border-top: 1px solid var(--slate-100);">
+                    <span class="info-label">Remarks & Notes</span>
+                    <p style="font-size: 12.5px; color: var(--slate-600); margin-top: 3px; font-style: italic;">"{{ volunteer.remarks }}"</p>
+                </div>
+                {% endif %}
             </div>
 
+            <!-- KPI Row -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon-box kpi-icon-red">
+                        <i data-lucide="clock" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Contributed Hours</span>
+                        <span class="kpi-val">{{ total_hours }} hrs</span>
+                    </div>
+                </div>
 
-        </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon-box kpi-icon-blue">
+                        <i data-lucide="calendar" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Events Attended</span>
+                        <span class="kpi-val">{{ events_count }}</span>
+                    </div>
+                </div>
 
-    </div>
-
-
-    <!-- ACTIVITIES -->
-
-    <div class="section-card">
-
-
-        <div class="section-header">
-
-            <div>
-
-                <h2>
-                    Assigned Activities
-                </h2>
-
-                <p>
-                    Activities assigned to this volunteer.
-                </p>
-
+                <div class="kpi-card">
+                    <div class="kpi-icon-box kpi-icon-emerald">
+                        <i data-lucide="check-circle" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Activities Logged</span>
+                        <span class="kpi-val">{{ activities_count }}</span>
+                    </div>
+                </div>
             </div>
 
+            <!-- Event Participations Section -->
+            <div class="card">
+                <div class="card-header-flex">
+                    <div>
+                        <h3 class="card-title">
+                            <i data-lucide="calendar-check" style="width: 17px; height: 17px; color: var(--aequs-red);"></i>
+                            Event Participations
+                        </h3>
+                        <p class="card-subtitle">Events and foundation programs assigned to this volunteer.</p>
+                    </div>
+                    <button type="button" onclick="openModal('assignEventModal')" class="btn btn-primary btn-sm">
+                        <i data-lucide="plus" style="width: 13px; height: 13px;"></i> Assign to Event
+                    </button>
+                </div>
 
-            <a
-                href="{% url 'volunteers:activity_create' volunteer.pk %}"
-                class="btn btn-primary"
-            >
-                + Add Activity
-            </a>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Event Title</th>
+                                <th>Date</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Hours</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for part in participations %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'events:detail' part.event.pk %}" style="font-weight: 600; color: var(--slate-900); text-decoration: none;">
+                                            {{ part.event.title }}
+                                        </a>
+                                        {% if part.event.school %}
+                                            <div style="font-size: 11px; color: var(--slate-500);">{{ part.event.school.name }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td style="color: var(--slate-600); white-space: nowrap;">
+                                        {{ part.event.event_date|date:"d M Y" }}
+                                    </td>
+                                    <td>
+                                        <span style="font-weight: 500;">{{ part.role|default:"Volunteer" }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="part-status part-{{ part.participation_status }}">
+                                            {{ part.get_participation_status_display }}
+                                        </span>
+                                    </td>
+                                    <td style="font-weight: 700; color: var(--slate-800);">
+                                        {{ part.hours_contributed }} hrs
+                                    </td>
+                                    <td style="color: var(--slate-500); font-size: 11.5px;">
+                                        {{ part.remarks|default:"—" }}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="empty-state">
+                                            <i data-lucide="calendar-x" style="width: 36px; height: 36px; color: var(--slate-300);"></i>
+                                            <p class="empty-title">No event participations recorded</p>
+                                            <p style="font-size: 12px;">Assign this volunteer to an upcoming foundation event using the button above.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        </div>
+            <!-- Assigned Activities Section -->
+            <div class="card">
+                <div class="card-header-flex">
+                    <div>
+                        <h3 class="card-title">
+                            <i data-lucide="list-todo" style="width: 17px; height: 17px; color: var(--aequs-red);"></i>
+                            Assigned Activities
+                        </h3>
+                        <p class="card-subtitle">Dedicated tasks and program responsibilities assigned to this volunteer.</p>
+                    </div>
+                    <button type="button" onclick="openModal('addActivityModal')" class="btn btn-primary btn-sm">
+                        <i data-lucide="plus" style="width: 13px; height: 13px;"></i> Add Activity
+                    </button>
+                </div>
 
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>Activity</th>
-
-                        <th>Date</th>
-
-                        <th>Status</th>
-
-                        <th>Description</th>
-
-                        <th>Remarks</th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-
-                    {% for activity in activities %}
-
-                    <tr>
-
-                        <td>
-                            <strong>
-                                {{ activity.activity_name }}
-                            </strong>
-                        </td>
-
-                        <td>
-                            {{ activity.activity_date|date:"d M Y" }}
-                        </td>
-
-                        <td>
-
-                            {% if activity.status == "ASSIGNED" %}
-
-                                <span class="badge badge-assigned">
-                                    Assigned
-                                </span>
-
-                            {% elif activity.status == "ONGOING" %}
-
-                                <span class="badge badge-ongoing">
-                                    Ongoing
-                                </span>
-
-                            {% elif activity.status == "COMPLETED" %}
-
-                                <span class="badge badge-completed">
-                                    Completed
-                                </span>
-
-                            {% elif activity.status == "CANCELLED" %}
-
-                                <span class="badge badge-cancelled">
-                                    Cancelled
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-                            {{ activity.description|default:"—" }}
-                        </td>
-
-                        <td>
-                            {{ activity.remarks|default:"—" }}
-                        </td>
-
-                    </tr>
-
-
-                    {% empty %}
-
-                    <tr>
-
-                        <td colspan="5">
-
-                            <div class="empty">
-
-                                <div class="empty-title">
-                                    No activities assigned
-                                </div>
-
-                                <div class="empty-text">
-                                    Start by assigning an activity to this volunteer.
-                                </div>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-
-    <!-- EVENT PARTICIPATION -->
-
-    <div class="section-card">
-
-
-        <div class="section-header">
-
-            <div>
-
-                <div class="section-header">
-    <div>
-        <h2>Event Participation</h2>
-        <p>Events and programs attended by this volunteer.</p>
-    </div>
-
-    <a
-        href="{% url 'volunteers:event_participation_create' volunteer.pk %}"
-        class="btn btn-primary"
-    >
-        + Assign Event
-    </a>
-</div>                <p>
-                    Events and programs attended by this volunteer.
-                </p>
-
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Activity Name</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for act in activities %}
+                                <tr>
+                                    <td style="font-weight: 600; color: var(--slate-900);">
+                                        {{ act.activity_name }}
+                                    </td>
+                                    <td style="color: var(--slate-600); white-space: nowrap;">
+                                        {{ act.activity_date|date:"d M Y" }}
+                                    </td>
+                                    <td>
+                                        <span class="part-status part-{{ act.status }}">
+                                            {{ act.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td style="color: var(--slate-600); font-size: 12px;">
+                                        {{ act.description|default:"—" }}
+                                    </td>
+                                    <td style="color: var(--slate-500); font-size: 11.5px;">
+                                        {{ act.remarks|default:"—" }}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i data-lucide="clipboard-check" style="width: 36px; height: 36px; color: var(--slate-300);"></i>
+                                            <p class="empty-title">No individual activities logged</p>
+                                            <p style="font-size: 12px;">Record tasks or programs assigned to this volunteer.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
-
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>Event</th>
-
-                        <th>Event Date</th>
-
-                        <th>Role</th>
-
-                        <th>Status</th>
-
-                        <th>Hours</th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-
-                    {% for participation in participations %}
-
-                    <tr>
-
-                        <td>
-                            <strong>
-                                {{ participation.event.title }}
-                            </strong>
-                        </td>
-
-                        <td>
-                            {{ participation.event.event_date|date:"d M Y" }}
-                        </td>
-
-                        <td>
-                            {{ participation.role|default:"—" }}
-                        </td>
-
-                        <td>
-
-                            {% if participation.participation_status == "ATTENDED" %}
-
-                                <span class="badge badge-completed">
-                                    Attended
-                                </span>
-
-                            {% elif participation.participation_status == "ABSENT" %}
-
-                                <span class="badge badge-cancelled">
-                                    Absent
-                                </span>
-
-                            {% elif participation.participation_status == "CANCELLED" %}
-
-                                <span class="badge badge-cancelled">
-                                    Cancelled
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge badge-assigned">
-                                    Assigned
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-                            {{ participation.hours_contributed }}
-                        </td>
-
-                    </tr>
-
-
-                    {% empty %}
-
-                    <tr>
-
-                        <td colspan="5">
-
-                            <div class="empty">
-
-                                <div class="empty-title">
-                                    No event participation recorded
-                                </div>
-
-                                <div class="empty-text">
-                                    Event participation will appear here when the volunteer is assigned to an event.
-                                </div>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-
-                </tbody>
-
-            </table>
-
-        </div>
-
     </div>
 
+    <!-- Modal: Assign Event -->
+    <div id="assignEventModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>
+                    <i data-lucide="calendar-plus" style="width: 17px; height: 17px; color: var(--aequs-red);"></i>
+                    Assign to Event
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal('assignEventModal')">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'volunteers:event_participation_create' volunteer.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Select Event *</label>
+                        <select name="event" required>
+                            <option value="">-- Choose an event --</option>
+                            {% for ev in available_events %}
+                                <option value="{{ ev.id }}">{{ ev.title }} ({{ ev.event_date|date:"M d, Y" }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned Role</label>
+                        <input type="text" name="role" placeholder="e.g. Lead Facilitator, Volunteer Coordinator">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="participation_status">
+                                {% for code, label in participation_status_choices %}
+                                    <option value="{{ code }}" {% if code == 'ASSIGNED' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hours Contributed</label>
+                            <input type="number" step="0.5" min="0" name="hours_contributed" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <textarea name="remarks" rows="2" placeholder="Notes or instructions..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('assignEventModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Assign Volunteer</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-</main>
+    <!-- Modal: Add Activity -->
+    <div id="addActivityModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>
+                    <i data-lucide="plus-circle" style="width: 17px; height: 17px; color: var(--aequs-red);"></i>
+                    Add Volunteer Activity
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal('addActivityModal')">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'volunteers:activity_create' volunteer.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Activity Name *</label>
+                        <input type="text" name="activity_name" required placeholder="e.g. Science Fair Mentorship">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Activity Date *</label>
+                            <input type="date" name="activity_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="status">
+                                {% for code, label in activity_status_choices %}
+                                    <option value="{{ code }}" {% if code == 'ASSIGNED' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="2" placeholder="Key responsibilities and objectives..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <textarea name="remarks" rows="2" placeholder="Additional notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addActivityModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Activity</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-</div>
+    <!-- Modal: Delete Confirmation -->
+    <div id="deleteModal" class="modal-backdrop">
+        <div class="modal-box" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 style="color: #b91c1c;">
+                    <i data-lucide="alert-triangle" style="width: 18px; height: 18px; color: #b91c1c;"></i>
+                    Delete Volunteer
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal('deleteModal')">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'volunteers:delete' volunteer.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p style="font-size: 13.5px; color: var(--slate-700); line-height: 1.5;">
+                        Are you sure you want to permanently remove <strong>{{ volunteer.first_name }} {{ volunteer.last_name }}</strong> from the volunteer roster?
+                    </p>
+                    <p style="font-size: 12px; color: var(--slate-500); margin-top: 4px;">
+                        This will also remove any assigned event attendance records and activity logs.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    <script>
+        lucide.createIcons();
+
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('open');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.remove('open');
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-backdrop')) {
+                event.target.classList.remove('open');
+            }
+        };
+    </script>
 </body>
-
 </html>
-
