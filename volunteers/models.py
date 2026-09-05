@@ -1,3 +1,4 @@
+import secrets
 from django.conf import settings
 from django.db import models
 from events.models import Event
@@ -187,3 +188,27 @@ class EventParticipation(models.Model):
 
     def __str__(self):
         return f"{self.volunteer} - {self.event}"
+
+
+class VolunteerFormLink(models.Model):
+    token = models.CharField(
+        max_length=64,
+        unique=True,
+        db_index=True,
+        editable=False,
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(32)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Volunteer Form - {self.token}"
+

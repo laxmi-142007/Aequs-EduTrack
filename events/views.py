@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from inventory.models import InventoryItem, StockTransaction
 from reports.models import ActivityLog, log_activity
-from volunteers.models import EventParticipation, Volunteer
+from volunteers.models import EventParticipation, Volunteer, VolunteerFormLink
 
 from .forms import PublicEventForm
 from .models import Event, EventFormLink, EventResource
@@ -103,6 +103,12 @@ def event_list(request):
     can_create_event = is_event_manager(request.user)
     form_links = EventFormLink.objects.filter(is_active=True)
 
+    vol_link = VolunteerFormLink.objects.filter(is_active=True).order_by("-created_at").first()
+    if not vol_link:
+        vol_link = VolunteerFormLink.objects.create()
+    volunteer_form_url = request.build_absolute_uri(f"/volunteers/form/{vol_link.token}/")
+    volunteer_qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{vol_link.token}/")
+
     return render(
         request,
         "events/event_list.html",
@@ -119,6 +125,8 @@ def event_list(request):
             "volunteers_mobilized": volunteers_mobilized,
             "can_create_event": can_create_event,
             "form_links": form_links,
+            "volunteer_form_url": volunteer_form_url,
+            "volunteer_qr_url": volunteer_qr_url,
         },
     )
 

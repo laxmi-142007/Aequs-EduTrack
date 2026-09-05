@@ -1,7 +1,7 @@
 import csv
 from io import BytesIO
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.db.models import Q, Sum, Count
 
@@ -9,6 +9,7 @@ from .models import (
     Volunteer,
     VolunteerActivity,
     EventParticipation,
+    VolunteerFormLink,
 )
 from events.models import Event
 
@@ -49,6 +50,13 @@ def volunteer_list(request):
         event_count=Count("event_participations"),
     )
 
+    # Get or generate active unique form link
+    form_link = VolunteerFormLink.objects.filter(is_active=True).order_by("-created_at").first()
+    if not form_link:
+        form_link = VolunteerFormLink.objects.create()
+    form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
+    qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{form_link.token}/")
+
     return render(
         request,
         "volunteers/volunteer_list.html",
@@ -63,6 +71,9 @@ def volunteer_list(request):
             "active_count": active_count,
             "total_hours": round(total_hours_aggregated, 1),
             "total_participations": total_participations,
+            "form_link": form_link,
+            "form_url": form_url,
+            "qr_url": qr_url,
         },
     )
 
@@ -372,11 +383,129 @@ def volunteer_export_excel(request):
 
 
 # =============================================================================
-# PUBLIC VOLUNTEER REGISTRATION FORM & QR CODE
+# UNIQUE VOLUNTEER FORM LINK GENERATION & SHARING
 # =============================================================================
 
-def public_volunteer_registration(request):
-    """Public standalone registration form for prospective community volunteers."""
+def generate_volunteer_form_link_json(request):
+    """API endpoint to generate a fresh unique volunteer registration link asynchronously."""
+    form_link = VolunteerFormLink.objects.create()
+    form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
+    qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{form_link.token}/")
+    return JsonResponse({
+        "success": True,
+        "token": form_link.token,
+        "form_url": form_url,
+        "qr_url": qr_url,
+    })
+
+
+def create_volunteer_form_link(request):
+    """Full-page form link generator analogous to events:create_form_link."""
+    if request.method == "POST":
+        form_link = VolunteerFormLink.objects.create()
+        return redirect("volunteers:share_form", pk=form_link.pk)
+    return render(request, "volunteers/create_form_link.html")
+
+
+def share_volunteer_form(request, pk):
+    """Share page with unique URL and QR code analogous to events:share_form."""
+    form_link = get_object_or_404(VolunteerFormLink, pk=pk, is_active=True)
+    form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
+    qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{form_link.token}/")
+    return render(
+        request,
+        "volunteers/share_form.html",
+        {
+            "form_link": form_link,
+            "form_url": form_url,
+            "qr_url": qr_url,
+        },
+    )
+
+
+def volunteer_form_qr_by_token(request, token):
+    """Generate live PNG QR code for a unique volunteer form link by token."""
+    form_link = get_object_or_404(VolunteerFormLink, token=token, is_active=True)
+    form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
+
+    try:
+        import qrcode
+        import qrcode.constants
+    except ImportError:
+        qrcode = None
+
+    if not qrcode:
+        return HttpResponse("QR code generation library is not installed.", status=501)
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=8,
+        border=3,
+    )
+    qr.add_data(form_url)
+    qr.make(fit=True)
+
+    image = qr.make_image(fill_color="#1e293b", back_color="white")
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    response = HttpResponse(buffer.getvalue(), content_type="image/png")
+    response["Content-Disposition"] = f'inline; filename="volunteer-form-{token[:8]}.png"'
+    return response
+
+
+def volunteer_registration_qr(request, pk=None):
+    """Generate and return a live PNG QR code for volunteer registration."""
+    if pk:
+        form_link = get_object_or_404(VolunteerFormLink, pk=pk, is_active=True)
+        form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
+    else:
+        form_link = VolunteerFormLink.objects.filter(is_active=True).order_by("-created_at").first()
+        if not form_link:
+            form_link = VolunteerFormLink.objects.create()
+        form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
+
+    try:
+        import qrcode
+        import qrcode.constants
+    except ImportError:
+        qrcode = None
+
+    if not qrcode:
+        return HttpResponse("QR code generation library is not installed.", status=501)
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=8,
+        border=3,
+    )
+    qr.add_data(form_url)
+    qr.make(fit=True)
+
+    image = qr.make_image(fill_color="#1e293b", back_color="white")
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return HttpResponse(buffer.getvalue(), content_type="image/png")
+
+
+volunteer_form_qr = volunteer_registration_qr
+
+
+# =============================================================================
+# PUBLIC VOLUNTEER REGISTRATION FORM
+# =============================================================================
+
+def public_volunteer_registration(request, token=None):
+    """Public standalone registration form for prospective community volunteers, secured with unique token."""
+    form_link = None
+    if token:
+        form_link = get_object_or_404(VolunteerFormLink, token=token, is_active=True)
+
     if request.method == "POST":
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
@@ -412,6 +541,7 @@ def public_volunteer_registration(request):
                     "errors": errors,
                     "form_data": request.POST,
                     "gender_choices": Volunteer.GENDER_CHOICES,
+                    "form_link": form_link,
                 },
             )
 
@@ -442,7 +572,7 @@ def public_volunteer_registration(request):
                 action_type=ActivityLog.ActionType.CREATE,
                 object_type="Volunteer",
                 object_id=volunteer.pk,
-                details=f"Online public volunteer registration: {volunteer.email}",
+                details=f"Online public volunteer registration: {volunteer.email} (token: {token or 'direct'})",
             )
         except Exception:
             pass
@@ -454,6 +584,7 @@ def public_volunteer_registration(request):
         "volunteers/public_volunteer_form.html",
         {
             "gender_choices": Volunteer.GENDER_CHOICES,
+            "form_link": form_link,
         },
     )
 
@@ -461,33 +592,3 @@ def public_volunteer_registration(request):
 def volunteer_registration_success(request):
     """Confirmation page displayed after a public volunteer registration."""
     return render(request, "volunteers/registration_success.html")
-
-
-def volunteer_registration_qr(request):
-    """Generate and return a live PNG QR code for the public volunteer registration link."""
-    try:
-        import qrcode
-        import qrcode.constants
-    except ImportError:
-        qrcode = None
-
-    if not qrcode:
-        return HttpResponse("QR code generation library is not installed.", status=501)
-
-    form_url = request.build_absolute_uri("/volunteers/register/public/")
-
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=8,
-        border=3,
-    )
-    qr.add_data(form_url)
-    qr.make(fit=True)
-
-    image = qr.make_image(fill_color="#1e293b", back_color="white")
-    buffer = BytesIO()
-    image.save(buffer, format="PNG")
-    buffer.seek(0)
-
-    return HttpResponse(buffer.getvalue(), content_type="image/png")

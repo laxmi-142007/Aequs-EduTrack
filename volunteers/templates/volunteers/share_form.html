@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Volunteer Registration Form - EduTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f7fb;
+            color: #231f20;
+        }
+        .main { margin-left: 256px; min-height: 100vh; }
+        .topbar {
+            background: white;
+            padding: 18px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; }
+        .back {
+            color: #475569;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 9px 15px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .content { padding: 35px; }
+        .card {
+            max-width: 820px;
+            margin: 30px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+        }
+        .heading { text-align: center; margin-bottom: 35px; }
+        .heading-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+        }
+        .heading h2 { margin: 0 0 8px; font-size: 24px; font-weight: 800; color: #166534; }
+        .heading p { margin: 0; color: #64748b; font-size: 14px; }
+        .share-grid {
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            gap: 30px;
+            align-items: start;
+        }
+        .section { margin-bottom: 24px; }
+        .section-title { margin: 0 0 10px; font-size: 14px; font-weight: 700; color: #1e293b; }
+        .url-box {
+            display: flex;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+        .url-input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 13px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            color: #1e293b;
+            font-family: inherit;
+            outline: none;
+        }
+        .copy-btn {
+            background: #dd2d27;
+            color: white;
+            border: none;
+            padding: 0 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: #c92520; }
+        .copy-btn.copied { background: #16a34a; }
+        .instructions {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 12.5px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .instructions p { margin: 4px 0; }
+        .qr-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .qr-section h3 { margin: 0 0 14px; font-size: 14px; font-weight: 700; color: #1e293b; }
+        .qr-image {
+            width: 190px;
+            height: 190px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: block;
+            margin: 0 auto 12px;
+        }
+        .qr-help { margin: 0; font-size: 11.5px; color: #64748b; line-height: 1.5; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #dd2d27; color: white; border: none; width: 100%; }
+        .btn-primary:hover { background: #c92520; }
+        .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .actions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        @media (max-width: 800px) {
+            .main { margin-left: 0; }
+            .content { padding: 20px; }
+            .share-grid { grid-template-columns: 1fr; }
+            .card { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='volunteers' %}
+
+    <div class="main">
+        <header class="topbar">
+            <h1>🔗 Share Volunteer Registration Form</h1>
+            <a href="{% url 'volunteers:list' %}" class="back">← Back to Volunteers</a>
+        </header>
+
+        <main class="content">
+            <div class="card">
+                <div class="heading">
+                    <div class="heading-icon">✅</div>
+                    <h2>Unique Volunteer Form Generated</h2>
+                    <p>Share this unique registration link with volunteers using the URL or QR code below.</p>
+                </div>
+
+                <div class="share-grid">
+                    <div>
+                        <div class="section">
+                            <h3 class="section-title">🔗 Unique Registration URL</h3>
+                            <div class="url-box">
+                                <input type="text" id="form-url" class="url-input" value="{{ form_url }}" readonly>
+                                <button type="button" class="copy-btn" id="copy-button" onclick="copyFormUrl()">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <h3 class="section-title">📋 How to use</h3>
+                            <div class="instructions">
+                                <p><strong>1.</strong> Copy the unique form URL and send it to the volunteer candidate.</p>
+                                <p><strong>2.</strong> Or display the QR code on a screen, poster, or kiosk.</p>
+                                <p><strong>3.</strong> The volunteer scans the QR code or clicks the link on their mobile device.</p>
+                                <p><strong>4.</strong> They submit their contact details, skills, and availability.</p>
+                                <p><strong>5.</strong> Their active volunteer profile is automatically created in EduTrack.</p>
+                            </div>
+                        </div>
+
+                        <a href="{{ form_url }}" target="_blank" class="btn btn-primary">
+                            👁 Open Volunteer Registration Form
+                        </a>
+                    </div>
+
+                    <div class="qr-section">
+                        <h3>📱 Scan to Register</h3>
+                        <img src="{{ qr_url|default:'' }}" alt="Volunteer Form QR Code" class="qr-image" id="qr-img">
+                        <p class="qr-help">Volunteers can scan this QR code with their phone camera to open the registration form directly.</p>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <a href="{% url 'volunteers:create_form_link' %}" class="btn btn-secondary">
+                        🔄 Generate Another Unique Link
+                    </a>
+                    <a href="{% url 'volunteers:list' %}" class="btn btn-secondary">
+                        👥 Volunteers Directory
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function copyFormUrl() {
+            const input = document.getElementById("form-url");
+            const button = document.getElementById("copy-button");
+            navigator.clipboard.writeText(input.value).then(function () {
+                button.textContent = "✓ Copied";
+                button.classList.add("copied");
+                setTimeout(function () {
+                    button.textContent = "Copy";
+                    button.classList.remove("copied");
+                }, 2000);
+            }).catch(function () {
+                input.select();
+                document.execCommand("copy");
+                button.textContent = "✓ Copied";
+                button.classList.add("copied");
+                setTimeout(function () {
+                    button.textContent = "Copy";
+                    button.classList.remove("copied");
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

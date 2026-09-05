@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Volunteer Registration Form - EduTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f7fb;
+            color: #231f20;
+        }
+        .main { margin-left: 256px; min-height: 100vh; }
+        .topbar {
+            background: white;
+            padding: 18px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; }
+        .back {
+            color: #475569;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 9px 15px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .content { padding: 35px; }
+        .card {
+            max-width: 700px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+            text-align: center;
+        }
+        .icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fee2e2;
+            font-size: 34px;
+        }
+        h2 { margin: 0 0 12px; font-size: 24px; font-weight: 800; }
+        .description {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.7;
+            max-width: 550px;
+            margin: 0 auto 30px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .feature {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .feature span { margin-right: 8px; }
+        .generate-btn {
+            display: inline-block;
+            border: none;
+            background: #dd2d27;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .generate-btn:hover {
+            background: #c92520;
+            transform: translateY(-1px);
+        }
+        .note {
+            margin-top: 22px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            color: #1e40af;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        @media (max-width: 800px) {
+            .main { margin-left: 0; }
+            .content { padding: 20px; }
+            .features { grid-template-columns: 1fr; }
+            .card { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='volunteers' %}
+
+    <div class="main">
+        <header class="topbar">
+            <h1>📋 Generate Volunteer Registration Form</h1>
+            <a href="{% url 'volunteers:list' %}" class="back">← Back to Volunteers</a>
+        </header>
+
+        <main class="content">
+            <div class="card">
+                <div class="icon">🤝</div>
+                <h2>Create Volunteer Registration Form</h2>
+                <p class="description">
+                    Generate a unique, secure volunteer registration form that can be shared with prospective volunteers via URL or QR code.
+                    Volunteers can open the link or scan the QR code to submit their details directly into EduTrack.
+                </p>
+
+                <div class="features">
+                    <div class="feature"><span>👤</span> Personal & Contact Info</div>
+                    <div class="feature"><span>📍</span> Location & Address</div>
+                    <div class="feature"><span>🎓</span> Qualification & Profession</div>
+                    <div class="feature"><span>🌟</span> Skills & Community Interests</div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="generate-btn">
+                        🔗 Generate Unique Volunteer Form Link
+                    </button>
+                </form>
+
+                <div class="note">
+                    🔐 A unique, cryptographically secure tokenized link will be generated. You can share the link or display its QR code for scanning.
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

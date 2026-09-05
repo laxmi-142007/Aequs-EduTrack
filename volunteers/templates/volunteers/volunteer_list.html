@@ -453,19 +453,19 @@
         <div class="modal-header">
             <span class="modal-title" style="display:flex;align-items:center;gap:8px;">
                 <i data-lucide="qr-code" style="width:18px;height:18px;color:var(--aequs-red);"></i>
-                Volunteer Registration Form Link
+                Unique Volunteer Registration Form Link
             </span>
             <button type="button" class="modal-close" onclick="closeVolunteerRegistrationModal()">&times;</button>
         </div>
         <div class="modal-body" style="display:flex;flex-direction:column;gap:18px;text-align:center;">
             <div>
                 <p style="font-size:13.5px;color:var(--slate-800);margin:0 0 4px;font-weight:700;">Shareable Registration Form Link</p>
-                <p style="font-size:12px;color:var(--slate-500);margin:0;">Prospective volunteers can open this form online or scan the QR code to register directly.</p>
+                <p style="font-size:12px;color:var(--slate-500);margin:0;">A unique secure link and QR code generated for community volunteers to submit their details directly into EduTrack.</p>
             </div>
 
             <!-- Form URL with Copy button -->
             <div style="display:flex;gap:8px;background:#f8fafc;padding:6px;border:1px solid var(--slate-200);border-radius:8px;">
-                <input type="text" id="volunteerFormUrl" readonly style="font-size:12px;background:#ffffff;border:1px solid var(--slate-200);padding:8px 12px;border-radius:6px;flex:1;color:var(--slate-800);outline:none;" value="{{ request.scheme }}://{{ request.get_host }}{% url 'volunteers:public_registration' %}">
+                <input type="text" id="volunteerFormUrl" readonly style="font-size:12px;background:#ffffff;border:1px solid var(--slate-200);padding:8px 12px;border-radius:6px;flex:1;color:var(--slate-800);outline:none;" value="{{ form_url }}">
                 <button type="button" class="btn btn-primary btn-sm" onclick="copyVolunteerFormUrl()" id="copyVolUrlBtn" style="padding:0 14px;font-size:12px;display:inline-flex;align-items:center;gap:4px;">
                     <i data-lucide="copy" style="width:13px;height:13px;"></i> <span id="copyBtnText">Copy</span>
                 </button>
@@ -473,22 +473,28 @@
 
             <!-- QR Code Section -->
             <div style="display:flex;flex-direction:column;align-items:center;padding:16px;background:#f8fafc;border:1px solid var(--slate-200);border-radius:10px;">
-                <img src="{% url 'volunteers:registration_qr' %}" alt="Volunteer Registration QR" style="width:170px;height:170px;border-radius:8px;background:white;padding:8px;border:1px solid var(--slate-200);box-shadow:0 2px 6px rgba(0,0,0,0.05);">
-                <span style="font-size:11.5px;color:var(--slate-500);margin-top:8px;">Scan with mobile camera to open registration form</span>
+                <img src="{{ qr_url }}" alt="Volunteer Registration QR" id="volunteerQrImg" style="width:170px;height:170px;border-radius:8px;background:white;padding:8px;border:1px solid var(--slate-200);box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                <span style="font-size:11.5px;color:var(--slate-500);margin-top:8px;">Scan with mobile camera to open this unique registration form</span>
             </div>
 
-            <!-- Action buttons: Open Form / Fill out manually -->
+            <!-- Action buttons: Open Form / Staff Entry / Regenerate -->
             <div style="display:flex;gap:10px;justify-content:center;">
-                <a href="{% url 'volunteers:public_registration' %}" target="_blank" class="btn btn-primary" style="flex:1;justify-content:center;">
+                <a href="{{ form_url }}" target="_blank" id="openFormLinkBtn" class="btn btn-primary" style="flex:1;justify-content:center;">
                     <i data-lucide="external-link" style="width:14px;height:14px;"></i> Open Form to Fill Out
                 </a>
-                <a href="{% url 'volunteers:create' %}" class="btn btn-secondary" style="flex:1;justify-content:center;">
-                    <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Staff Direct Entry
-                </a>
+                <button type="button" onclick="generateNewVolunteerFormLink()" id="regenLinkBtn" class="btn btn-secondary" style="flex:1;justify-content:center;">
+                    <i data-lucide="refresh-cw" style="width:14px;height:14px;" id="regenIcon"></i> Generate New Link
+                </button>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="closeVolunteerRegistrationModal()">Close</button>
+        <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;">
+            <a href="{% url 'volunteers:create_form_link' %}" style="font-size:12px;color:var(--slate-600);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="arrow-up-right" style="width:13px;height:13px;"></i> Full Generator Page
+            </a>
+            <div style="display:flex;gap:8px;">
+                <a href="{% url 'volunteers:create' %}" class="btn btn-secondary btn-sm" style="font-size:12px;">Staff Direct Entry</a>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeVolunteerRegistrationModal()">Close</button>
+            </div>
         </div>
     </div>
 </div>
@@ -519,6 +525,32 @@
                 setTimeout(() => { if (btnText) btnText.innerText = 'Copy'; }, 2000);
             });
         }
+    }
+
+    function generateNewVolunteerFormLink() {
+        const btn = document.getElementById('regenLinkBtn');
+        const icon = document.getElementById('regenIcon');
+        if (btn) btn.disabled = true;
+        if (icon) icon.style.transform = 'rotate(180deg)';
+
+        fetch("{% url 'volunteers:generate_form_link_json' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const input = document.getElementById('volunteerFormUrl');
+                    const qrImg = document.getElementById('volunteerQrImg');
+                    const openBtn = document.getElementById('openFormLinkBtn');
+                    if (input) input.value = data.form_url;
+                    if (qrImg) qrImg.src = data.qr_url;
+                    if (openBtn) openBtn.href = data.form_url;
+                }
+            })
+            .catch(err => console.error("Error generating volunteer form link:", err))
+            .finally(() => {
+                if (btn) btn.disabled = false;
+                if (icon) icon.style.transform = 'none';
+                if (window.lucide) lucide.createIcons();
+            });
     }
 
     window.addEventListener('click', function(e) {

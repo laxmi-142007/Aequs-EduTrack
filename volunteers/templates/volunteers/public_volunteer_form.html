@@ -217,7 +217,7 @@
             </div>
             {% endif %}
 
-            <form method="post" action="{% url 'volunteers:public_registration' %}">
+            <form method="post" action="{% if form_link %}{% url 'volunteers:public_form_by_token' form_link.token %}{% else %}{% url 'volunteers:public_registration' %}{% endif %}">
                 {% csrf_token %}
 
                 <!-- PERSONAL INFO -->
