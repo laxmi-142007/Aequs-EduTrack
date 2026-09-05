@@ -1,8 +1,13 @@
 from django.db import models
 from django.utils import timezone
+
 from students.models import Student
 from schools.models import School
 
+
+# =============================================================================
+# DEPARTMENT
+# =============================================================================
 
 class Department(models.TextChoices):
     AEROSPACE_ENG = "AEROSPACE_ENG", "Aerospace Engineering"
@@ -16,10 +21,16 @@ class Department(models.TextChoices):
     OTHER = "OTHER", "General / Technical Operations"
 
 
+# =============================================================================
+# INTERNSHIP PROGRAM
+# =============================================================================
+
 class InternshipProgram(models.Model):
     """
-    Defines corporate internship tracks and batch postings offered by Aequs & industry partners.
+    Defines corporate internship tracks and batch postings
+    offered by Aequs & industry partners.
     """
+
     objects = models.Manager()
 
     class Status(models.TextChoices):
@@ -32,73 +43,93 @@ class InternshipProgram(models.Model):
         max_length=200,
         help_text="e.g. Aequs Aerospace Precision Engineering Internship",
     )
+
     program_code = models.CharField(
         max_length=50,
         unique=True,
         help_text="e.g. AEQ-INT-2026-01",
     )
+
     company_name = models.CharField(
         max_length=150,
         default="Aequs Aerospace SEZ",
     )
+
     department = models.CharField(
         max_length=50,
         choices=Department.choices,
         default=Department.PRECISION_MANUFACTURING,
     )
+
     location = models.CharField(
         max_length=150,
         default="Belagavi SEZ, Karnataka",
     )
+
     duration_months = models.PositiveIntegerField(
         default=3,
         help_text="Duration in months",
     )
+
     stipend_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=8000.00,
         help_text="Monthly stipend in INR",
     )
+
     total_slots = models.PositiveIntegerField(
         default=15,
         help_text="Maximum candidate capacity",
     )
+
     academic_year = models.CharField(
         max_length=20,
         default="2026-27",
     )
+
     start_date = models.DateField(
         null=True,
         blank=True,
     )
+
     end_date = models.DateField(
         null=True,
         blank=True,
     )
+
     eligibility_criteria = models.TextField(
         blank=True,
-        default="Degree / Diploma / Vocational candidates with technical or science background.",
+        default=(
+            "Degree / Diploma / Vocational candidates "
+            "with technical or science background."
+        ),
     )
+
     description = models.TextField(
         blank=True,
     )
+
     mentor_in_charge = models.CharField(
         max_length=150,
         blank=True,
     )
+
     mentor_contact = models.CharField(
         max_length=100,
         blank=True,
     )
+
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.OPEN,
     )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
+
     updated_at = models.DateTimeField(
         auto_now=True,
     )
@@ -109,7 +140,11 @@ class InternshipProgram(models.Model):
         verbose_name_plural = "Internship Programs"
 
     def __str__(self):
-        return f"{self.title} ({self.program_code}) - {self.company_name}"
+        return (
+            f"{self.title} "
+            f"({self.program_code}) - "
+            f"{self.company_name}"
+        )
 
     @property
     def enrolled_count(self):
@@ -123,13 +158,22 @@ class InternshipProgram(models.Model):
 
     @property
     def available_slots(self):
-        return max(0, self.total_slots - self.enrolled_count)
+        return max(
+            0,
+            self.total_slots - self.enrolled_count
+        )
 
+
+# =============================================================================
+# INTERNSHIP PLACEMENT
+# =============================================================================
 
 class InternshipPlacement(models.Model):
     """
-    Individual student placement/internship record linking a student to an internship track.
+    Individual student placement/internship record
+    linking a student to an internship track.
     """
+
     objects = models.Manager()
 
     class Status(models.TextChoices):
@@ -155,6 +199,7 @@ class InternshipPlacement(models.Model):
         on_delete=models.CASCADE,
         related_name="internship_placements",
     )
+
     program = models.ForeignKey(
         InternshipProgram,
         on_delete=models.SET_NULL,
@@ -162,6 +207,7 @@ class InternshipPlacement(models.Model):
         blank=True,
         related_name="placements",
     )
+
     school = models.ForeignKey(
         School,
         on_delete=models.SET_NULL,
@@ -169,59 +215,80 @@ class InternshipPlacement(models.Model):
         blank=True,
         related_name="internship_placements",
     )
+
     academic_year = models.CharField(
         max_length=20,
         default="2026-27",
     )
+
     department = models.CharField(
         max_length=50,
         choices=Department.choices,
         default=Department.PRECISION_MANUFACTURING,
     )
+
     company_name = models.CharField(
         max_length=150,
         default="Aequs Aerospace SEZ",
     )
+
     project_title = models.CharField(
         max_length=200,
         blank=True,
-        help_text="e.g. CNC Machine Calibration & Quality Tolerance Optimization",
+        help_text=(
+            "e.g. CNC Machine Calibration & "
+            "Quality Tolerance Optimization"
+        ),
     )
 
+    # -------------------------------------------------------------------------
     # Dates
+    # -------------------------------------------------------------------------
+
     start_date = models.DateField(
         default=timezone.localdate,
     )
+
     end_date = models.DateField(
         null=True,
         blank=True,
     )
 
+    # -------------------------------------------------------------------------
     # Financials & Mentor
+    # -------------------------------------------------------------------------
+
     stipend_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=8000.00,
         help_text="Monthly stipend in INR",
     )
+
     mentor_name = models.CharField(
         max_length=150,
         blank=True,
     )
+
     mentor_email = models.EmailField(
         blank=True,
     )
+
     mentor_phone = models.CharField(
         max_length=20,
         blank=True,
     )
 
+    # -------------------------------------------------------------------------
     # Status & Progress
+    # -------------------------------------------------------------------------
+
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.SELECTED,
     )
+
     attendance_percentage = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -229,22 +296,28 @@ class InternshipPlacement(models.Model):
         null=True,
         blank=True,
     )
+
     performance_grade = models.CharField(
         max_length=20,
         choices=PerformanceGrade.choices,
         default=PerformanceGrade.PENDING,
     )
 
+    # -------------------------------------------------------------------------
     # Certification
+    # -------------------------------------------------------------------------
+
     certificate_issued = models.BooleanField(
         default=False,
     )
+
     certificate_number = models.CharField(
         max_length=100,
         blank=True,
         null=True,
         unique=True,
     )
+
     certificate_issue_date = models.DateField(
         null=True,
         blank=True,
@@ -252,11 +325,16 @@ class InternshipPlacement(models.Model):
 
     evaluation_feedback = models.TextField(
         blank=True,
-        help_text="Supervisor performance remarks & learning milestones achieved",
+        help_text=(
+            "Supervisor performance remarks & "
+            "learning milestones achieved"
+        ),
     )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
+
     updated_at = models.DateTimeField(
         auto_now=True,
     )
@@ -267,14 +345,32 @@ class InternshipPlacement(models.Model):
         verbose_name_plural = "Internship Placements"
 
     def __str__(self):
-        title = self.project_title or (self.program.title if self.program else "Industrial Internship")
-        return f"{self.student.student_name} - {title} ({self.get_status_display()})"
+        title = (
+            self.project_title
+            or (
+                self.program.title
+                if self.program
+                else "Industrial Internship"
+            )
+        )
 
+        return (
+            f"{self.student.student_name} - "
+            f"{title} "
+            f"({self.get_status_display()})"
+        )
+
+
+# =============================================================================
+# INTERNSHIP MILESTONE
+# =============================================================================
 
 class InternshipMilestone(models.Model):
     """
-    Weekly or monthly milestone log for an intern's project deliverables.
+    Weekly or monthly milestone log
+    for an intern's project deliverables.
     """
+
     objects = models.Manager()
 
     class MilestoneStatus(models.TextChoices):
@@ -288,30 +384,40 @@ class InternshipMilestone(models.Model):
         on_delete=models.CASCADE,
         related_name="milestones",
     )
+
     title = models.CharField(
         max_length=200,
-        help_text="e.g. Week 4: CAD Blueprint Modelling & Simulation",
+        help_text=(
+            "e.g. Week 4: CAD Blueprint "
+            "Modelling & Simulation"
+        ),
     )
+
     due_date = models.DateField(
         null=True,
         blank=True,
     )
+
     completed_date = models.DateField(
         null=True,
         blank=True,
     )
+
     status = models.CharField(
         max_length=20,
         choices=MilestoneStatus.choices,
         default=MilestoneStatus.PENDING,
     )
+
     deliverables_url = models.URLField(
         blank=True,
         help_text="Link to reports or project repository",
     )
+
     mentor_comments = models.TextField(
         blank=True,
     )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -320,4 +426,66 @@ class InternshipMilestone(models.Model):
         ordering = ["due_date", "created_at"]
 
     def __str__(self):
-        return f"{self.placement.student.student_name} - {self.title} ({self.get_status_display()})"
+        return (
+            f"{self.placement.student.student_name} - "
+            f"{self.title} "
+            f"({self.get_status_display()})"
+        )
+
+
+# =============================================================================
+# INTERNSHIP DOCUMENT
+# =============================================================================
+
+class InternshipDocument(models.Model):
+    """
+    Documents uploaded for an internship placement.
+
+    Allowed file types:
+        - PDF
+        - JPG
+        - JPEG
+        - PNG
+    """
+
+    objects = models.Manager()
+
+    class DocumentType(models.TextChoices):
+        RESUME = "RESUME", "Resume"
+        AADHAAR = "AADHAAR", "Aadhaar Card"
+        PAN = "PAN", "PAN Card"
+        COLLEGE_ID = "COLLEGE_ID", "College ID"
+        BONAFIDE = "BONAFIDE", "Bonafide Certificate"
+        MARKSHEET = "MARKSHEET", "Marksheet"
+        OFFER_LETTER = "OFFER_LETTER", "Offer Letter"
+        OTHER = "OTHER", "Other Document"
+
+    placement = models.ForeignKey(
+        InternshipPlacement,
+        on_delete=models.CASCADE,
+        related_name="documents",
+    )
+
+    document_type = models.CharField(
+        max_length=30,
+        choices=DocumentType.choices,
+    )
+
+    document = models.FileField(
+        upload_to="internship_documents/%Y/%m/",
+    )
+
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+        verbose_name = "Internship Document"
+        verbose_name_plural = "Internship Documents"
+
+    def __str__(self):
+        return (
+            f"{self.placement.student.student_name} - "
+            f"{self.get_document_type_display()}"
+        )

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Submit Event - EduTrack</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family: 'Inter',
+                         -apple-system,
+                         BlinkMacSystemFont,
+                         "Segoe UI",
+                         sans-serif;
+
+            background: #f4f7fb;
+
+            color: #231f20;
+
+            min-height: 100vh;
+        }
+
+        .page {
+            width: 100%;
+
+            min-height: 100vh;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: flex-start;
+
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+
+            max-width: 760px;
+        }
+
+        /* ================================================================
+           HEADER
+        ================================================================= */
+
+        .header {
+            text-align: center;
+
+            margin-bottom: 25px;
+        }
+
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+
+            margin: 0 auto 16px;
+
+            border-radius: 18px;
+
+            background: #dd2d27;
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 34px;
+
+            box-shadow:
+                0 8px 20px
+                rgba(221, 45, 39, 0.20);
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+
+            font-size: 26px;
+
+            font-weight: 800;
+
+            color: #231f20;
+        }
+
+        .header p {
+            margin: 0;
+
+            color: #64748b;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        /* ================================================================
+           FORM CARD
+        ================================================================= */
+
+        .form-card {
+            background: white;
+
+            border-radius: 16px;
+
+            border: 1px solid #e2e8f0;
+
+            padding: 32px;
+
+            box-shadow:
+                0 8px 30px
+                rgba(15, 23, 42, 0.08);
+        }
+
+        .section-title {
+            margin: 0 0 20px;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+            color: #231f20;
+        }
+
+        /* ================================================================
+           FORM GROUP
+        ================================================================= */
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            color: #334155;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+
+            padding: 11px 13px;
+
+            border: 1px solid #cbd5e1;
+
+            border-radius: 8px;
+
+            background: white;
+
+            color: #334155;
+
+            font-family: inherit;
+
+            font-size: 13px;
+
+            outline: none;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #dd2d27;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(221, 45, 39, 0.10);
+        }
+
+        textarea {
+            resize: vertical;
+
+            min-height: 110px;
+        }
+
+        input[type="date"] {
+            cursor: pointer;
+        }
+
+        /* ================================================================
+           QUANTITY INPUT
+           
+           Normal text-entry box.
+           No dropdown.
+           No scroll selector.
+           No up/down spinner.
+        ================================================================= */
+
+        input[type="number"] {
+            width: 100%;
+
+            padding: 11px 13px;
+
+            border: 1px solid #cbd5e1;
+
+            border-radius: 8px;
+
+            background: white;
+
+            color: #334155;
+
+            font-family: inherit;
+
+            font-size: 13px;
+
+            outline: none;
+
+            appearance: textfield;
+
+            -moz-appearance: textfield;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            border-color: #dd2d27;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(221, 45, 39, 0.10);
+        }
+
+        /* Chrome / Edge / Safari */
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+
+            margin: 0;
+        }
+
+        /* ================================================================
+           TWO COLUMN AREA
+        ================================================================= */
+
+        .two-column {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+
+            gap: 18px;
+        }
+
+        /* ================================================================
+           INVENTORY SECTION
+        ================================================================= */
+
+        .inventory-section {
+            margin-top: 28px;
+
+            padding: 22px;
+
+            background: #f8fafc;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 12px;
+        }
+
+        .inventory-heading {
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            margin-bottom: 5px;
+
+            font-size: 15px;
+
+            font-weight: 800;
+
+            color: #334155;
+        }
+
+        .inventory-description {
+            margin: 0 0 18px;
+
+            color: #64748b;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+        }
+
+        /* ================================================================
+           ERRORS
+        ================================================================= */
+
+        .error-box {
+            margin-bottom: 20px;
+
+            padding: 13px 15px;
+
+            border-radius: 9px;
+
+            background: #fef2f2;
+
+            border: 1px solid #fecaca;
+
+            color: #991b1b;
+
+            font-size: 12.5px;
+
+            line-height: 1.6;
+        }
+
+        .field-error {
+            margin-top: 6px;
+
+            color: #dc2626;
+
+            font-size: 11.5px;
+
+            font-weight: 600;
+        }
+
+        /* ================================================================
+           BUTTON
+        ================================================================= */
+
+        .submit-area {
+            margin-top: 28px;
+
+            padding-top: 24px;
+
+            border-top: 1px solid #e2e8f0;
+
+            text-align: center;
+        }
+
+        .submit-btn {
+            width: 100%;
+
+            padding: 13px 20px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #dd2d27;
+
+            color: white;
+
+            font-family: inherit;
+
+            font-size: 14px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background: #c92520;
+
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .privacy-note {
+            margin: 14px 0 0;
+
+            color: #94a3b8;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+        }
+
+        /* ================================================================
+           MOBILE
+        ================================================================= */
+
+        @media (max-width: 600px) {
+
+            .page {
+                padding: 20px 12px;
+            }
+
+            .form-card {
+                padding: 22px 18px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+
+                gap: 0;
+            }
+
+            .inventory-section {
+                padding: 18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="page">
+
+    <div class="container">
+
+
+        <!-- ================================================================
+             HEADER
+        ================================================================= -->
+
+        <div class="header">
+
+            <div class="logo-icon">
+                📅
+            </div>
+
+            <h1>
+                Event Submission Form
+            </h1>
+
+            <p>
+                Please enter the details below to
+                create an event in EduTrack.
+            </p>
+
+        </div>
+
+
+        <!-- ================================================================
+             FORM CARD
+        ================================================================= -->
+
+        <div class="form-card">
+
+            <h2 class="section-title">
+                Event Details
+            </h2>
+
+
+            <!-- ============================================================
+                 FORM ERRORS
+            ============================================================= -->
+
+            {% if form.non_field_errors %}
+
+                <div class="error-box">
+
+                    {% for error in form.non_field_errors %}
+
+                        {{ error }}
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <form method="post">
+
+                {% csrf_token %}
+
+
+                <!-- ========================================================
+                     EVENT TITLE
+                ========================================================= -->
+
+                <div class="form-group">
+
+                    <label for="{{ form.title.id_for_label }}">
+
+                        Event Title
+                        <span class="required">*</span>
+
+                    </label>
+
+                    {{ form.title }}
+
+                    {% for error in form.title.errors %}
+
+                        <div class="field-error">
+                            {{ error }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- ========================================================
+                     DESCRIPTION
+                ========================================================= -->
+
+                <div class="form-group">
+
+                    <label for="{{ form.description.id_for_label }}">
+
+                        Description
+
+                    </label>
+
+                    {{ form.description }}
+
+                    {% for error in form.description.errors %}
+
+                        <div class="field-error">
+                            {{ error }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- ========================================================
+                     DATE + LOCATION
+                ========================================================= -->
+
+                <div class="two-column">
+
+
+                    <div class="form-group">
+
+                        <label for="{{ form.event_date.id_for_label }}">
+
+                            Event Date
+                            <span class="required">*</span>
+
+                        </label>
+
+                        {{ form.event_date }}
+
+                        {% for error in form.event_date.errors %}
+
+                            <div class="field-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="{{ form.location.id_for_label }}">
+
+                            Location
+
+                        </label>
+
+                        {{ form.location }}
+
+                        {% for error in form.location.errors %}
+
+                            <div class="field-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ========================================================
+                     ORGANIZER
+                ========================================================= -->
+
+                <div class="form-group">
+
+                    <label for="{{ form.organizer.id_for_label }}">
+
+                        Organizer
+
+                    </label>
+
+                    {{ form.organizer }}
+
+                    {% for error in form.organizer.errors %}
+
+                        <div class="field-error">
+                            {{ error }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- ========================================================
+                     INVENTORY
+                ========================================================= -->
+
+                <div class="inventory-section">
+
+                    <div class="inventory-heading">
+
+                        📦
+                        Resource / Inventory Requirement
+
+                    </div>
+
+                    <p class="inventory-description">
+
+                        If this event requires inventory,
+                        select the item and enter the
+                        required quantity.
+
+                        Inventory stock will be updated
+                        automatically after submission.
+
+                    </p>
+
+
+                    <!-- ====================================================
+                         INVENTORY ITEM
+                    ==================================================== -->
+
+                    <div class="form-group">
+
+                        <label for="{{ form.inventory_item.id_for_label }}">
+
+                            Inventory Item
+
+                        </label>
+
+                        {{ form.inventory_item }}
+
+                        {% for error in form.inventory_item.errors %}
+
+                            <div class="field-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <!-- ====================================================
+                         QUANTITY REQUIRED
+                         
+                         This is rendered by Django as:
+                         
+                         <input type="number">
+                         
+                         NOT a dropdown.
+                    ==================================================== -->
+
+                    <div class="form-group"
+                         style="margin-bottom: 0;">
+
+                        <label for="{{ form.inventory_quantity.id_for_label }}">
+
+                            Quantity Required
+
+                        </label>
+
+                        {{ form.inventory_quantity }}
+
+                        {% for error in form.inventory_quantity.errors %}
+
+                            <div class="field-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ========================================================
+                     SUBMIT
+                ========================================================= -->
+
+                <div class="submit-area">
+
+                    <button
+                        type="submit"
+                        class="submit-btn">
+
+                        ✅ Submit Event
+
+                    </button>
+
+                    <p class="privacy-note">
+
+                        By submitting this form, the event
+                        will be recorded in the EduTrack
+                        system.
+
+                    </p>
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

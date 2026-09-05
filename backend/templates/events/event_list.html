@@ -23,7 +23,10 @@
             min-height: 100vh;
         }
 
-        /* Header */
+        /* =========================================================
+           HEADER
+        ========================================================= */
+
         .events-header {
             background: #2563eb;
             color: #ffffff;
@@ -49,6 +52,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -68,6 +72,8 @@
             white-space: nowrap;
         }
 
+        /* Add Event */
+
         .btn-add {
             background: #ffffff;
             color: #2563eb;
@@ -77,6 +83,20 @@
             background: #eff6ff;
             color: #1d4ed8;
         }
+
+        /* Employee Form */
+
+        .btn-form {
+            background: #0f172a;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-form:hover {
+            background: #1e293b;
+        }
+
+        /* Dashboard */
 
         .btn-dashboard {
             background: rgba(255, 255, 255, 0.15);
@@ -89,7 +109,10 @@
             color: #2563eb;
         }
 
-        /* Content */
+        /* =========================================================
+           CONTENT
+        ========================================================= */
+
         .container {
             max-width: 1200px;
             margin: 35px auto;
@@ -100,7 +123,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .top h2 {
@@ -115,10 +138,122 @@
             font-size: 14px;
         }
 
-        /* Event Grid */
+        /* =========================================================
+           EMPLOYEE FORM FEATURE
+        ========================================================= */
+
+        .form-feature {
+            background: linear-gradient(
+                135deg,
+                #eff6ff,
+                #ffffff
+            );
+
+            border: 1px solid #bfdbfe;
+
+            border-radius: 14px;
+
+            padding: 20px 22px;
+
+            margin-bottom: 25px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+            box-shadow:
+                0 3px 12px rgba(37, 99, 235, 0.07);
+        }
+
+        .form-feature-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .form-feature-icon {
+            width: 52px;
+            height: 52px;
+
+            border-radius: 12px;
+
+            background: #dbeafe;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 26px;
+
+            flex-shrink: 0;
+        }
+
+        .form-feature-text h3 {
+            margin: 0 0 5px;
+
+            font-size: 16px;
+
+            color: #1e3a8a;
+
+            font-weight: 700;
+        }
+
+        .form-feature-text p {
+            margin: 0;
+
+            color: #64748b;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+        .feature-button {
+            background: #2563eb;
+
+            color: #ffffff;
+
+            min-height: 42px;
+
+            padding: 10px 16px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            text-decoration: none;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 7px;
+
+            white-space: nowrap;
+        }
+
+        .feature-button:hover {
+            background: #1d4ed8;
+        }
+
+        /* =========================================================
+           EVENT GRID
+        ========================================================= */
+
         .event-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(300px, 1fr)
+            );
             gap: 22px;
         }
 
@@ -131,12 +266,16 @@
             display: flex;
             flex-direction: column;
             min-height: 330px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
         }
 
         .event-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+            box-shadow:
+                0 8px 24px
+                rgba(15, 23, 42, 0.10);
         }
 
         .event-icon {
@@ -175,7 +314,10 @@
             color: #334155;
         }
 
-        /* Action area */
+        /* =========================================================
+           EVENT ACTIONS
+        ========================================================= */
+
         .event-actions {
             margin-top: auto;
             padding-top: 18px;
@@ -209,7 +351,8 @@
             transition: all 0.2s ease;
         }
 
-        /* Primary action */
+        /* Edit */
+
         .edit-btn {
             background: #2563eb;
             color: #ffffff;
@@ -219,7 +362,8 @@
             background: #1d4ed8;
         }
 
-        /* Secondary action */
+        /* Delete */
+
         .delete-btn {
             background: #ffffff;
             color: #dc2626;
@@ -231,14 +375,20 @@
             border-color: #fca5a5;
         }
 
-        /* Empty state */
+        /* =========================================================
+           EMPTY STATE
+        ========================================================= */
+
         .empty {
             background: #ffffff;
             padding: 55px 30px;
             text-align: center;
             border-radius: 14px;
             color: #64748b;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            box-shadow:
+                0 4px 15px
+                rgba(0, 0, 0, 0.06);
+
             grid-column: 1 / -1;
         }
 
@@ -256,8 +406,12 @@
             margin: 0 0 20px;
         }
 
-        /* Mobile */
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
         @media (max-width: 850px) {
+
             .main {
                 margin-left: 0;
             }
@@ -284,9 +438,19 @@
                 margin-top: 25px;
                 padding: 0 18px;
             }
+
+            .form-feature {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .feature-button {
+                width: 100%;
+            }
         }
 
         @media (max-width: 520px) {
+
             .event-grid {
                 grid-template-columns: 1fr;
             }
@@ -303,103 +467,277 @@
             .action-btn {
                 flex: 1;
             }
+
+            .form-feature-left {
+                align-items: flex-start;
+            }
+
         }
+
     </style>
 </head>
 
+
 <body>
+
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
 
     {% include 'includes/sidebar.html' with active_page='events' %}
 
+
     <div class="main">
 
-        <!-- Events Header -->
+
+        <!-- =========================================================
+             EVENTS HEADER
+        ========================================================== -->
+
         <header class="events-header">
 
-            <h1>&#128197; Foundation Events</h1>
+            <h1>
+                &#128197; Foundation Events
+            </h1>
+
 
             <div class="header-actions">
 
-                <a href="{% url 'events:create' %}" class="btn btn-add">
+
+                <!-- Add Event -->
+
+                <a
+                    href="{% url 'events:create' %}"
+                    class="btn btn-add"
+                >
                     + Add Event
                 </a>
 
-                <a href="{% url 'dashboard' %}" class="btn btn-dashboard">
+
+                <!-- Generate Employee Form -->
+
+                <a
+                    href="{% url 'events:create_form_link' %}"
+                    class="btn btn-form"
+                >
+                    &#128279; Employee Form
+                </a>
+
+
+                <!-- Dashboard -->
+
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="btn btn-dashboard"
+                >
                     &#8592; Dashboard
                 </a>
+
 
             </div>
 
         </header>
 
+
         <div class="container">
+
+
+            <!-- =====================================================
+                 PAGE TITLE
+            ====================================================== -->
 
             <div class="top">
 
                 <div>
-                    <h2>Foundation Events</h2>
-                    <p>Manage upcoming and completed foundation activities.</p>
+
+                    <h2>
+                        Foundation Events
+                    </h2>
+
+                    <p>
+                        Manage upcoming and completed foundation activities.
+                    </p>
+
                 </div>
 
             </div>
 
+
+            <!-- =====================================================
+                 EMPLOYEE EVENT FORM FEATURE
+            ====================================================== -->
+
+            <div class="form-feature">
+
+
+                <div class="form-feature-left">
+
+
+                    <div class="form-feature-icon">
+                        &#128241;
+                    </div>
+
+
+                    <div class="form-feature-text">
+
+                        <h3>
+                            Employee Event Submission
+                        </h3>
+
+                        <p>
+                            Generate a secure event form link and QR code.
+                            Employees can scan or open the link, fill in
+                            the event details, and submit it.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <a
+                    href="{% url 'events:create_form_link' %}"
+                    class="feature-button"
+                >
+                    &#128279; Generate Form Link
+                </a>
+
+
+            </div>
+
+
+            <!-- =====================================================
+                 EVENT GRID
+            ====================================================== -->
+
             <div class="event-grid">
+
 
                 {% for event in events %}
 
+
                     <div class="event-card">
+
+
+                        <!-- Event Icon -->
 
                         <div class="event-icon">
                             &#128197;
                         </div>
 
+
+                        <!-- Event Title -->
+
                         <div class="event-title">
                             {{ event.title }}
                         </div>
 
+
+                        <!-- Description -->
+
                         {% if event.description %}
+
                             <p class="event-description">
                                 {{ event.description }}
                             </p>
+
                         {% endif %}
+
+
+                        <!-- Date -->
 
                         <div class="event-info">
-                            <strong>&#128197; Date:</strong>
+
+                            <strong>
+                                &#128197; Date:
+                            </strong>
+
                             {{ event.event_date|date:"d M Y" }}
+
                         </div>
 
+
+                        <!-- Location -->
+
                         {% if event.location %}
+
                             <div class="event-info">
-                                <strong>&#128205; Location:</strong>
+
+                                <strong>
+                                    &#128205; Location:
+                                </strong>
+
                                 {{ event.location }}
+
                             </div>
+
                         {% endif %}
+
+
+                        <!-- Organizer -->
 
                         {% if event.organizer %}
+
                             <div class="event-info">
-                                <strong>&#128100; Organizer:</strong>
+
+                                <strong>
+                                    &#128100; Organizer:
+                                </strong>
+
                                 {{ event.organizer }}
+
                             </div>
+
                         {% endif %}
+
+
+                        <!-- Requested Inventory -->
 
                         {% if event.requested_item %}
-                            <div class="event-info" style="color: #059669;">
-                                <strong>&#128230; Resource Requested:</strong>
-                                {{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}
+
+                            <div
+                                class="event-info"
+                                style="color: #059669;"
+                            >
+
+                                <strong>
+                                    &#128230; Resource Requested:
+                                </strong>
+
+                                {{ event.requested_quantity }}
+                                &times;
+                                {{ event.requested_item.item_name }}
+
                             </div>
+
                         {% endif %}
 
-                        <!-- Event Actions -->
+
+                        <!-- =================================================
+                             EVENT ACTIONS
+                        ================================================== -->
+
                         <div class="event-actions">
 
+
                             <div class="event-actions-left">
+
+
+                                <!-- Edit -->
 
                                 <a
                                     href="{% url 'events:edit' event.pk %}"
                                     class="action-btn edit-btn"
                                 >
+
                                     &#9998; Edit
+
                                 </a>
+
+
+                                <!-- Delete -->
 
                                 <form
                                     method="post"
@@ -407,36 +745,54 @@
                                     onsubmit="return confirm('Are you sure you want to delete this event?');"
                                     style="margin: 0;"
                                 >
+
                                     {% csrf_token %}
 
                                     <button
                                         type="submit"
                                         class="action-btn delete-btn"
                                     >
+
                                         &#128465; Delete
+
                                     </button>
 
                                 </form>
 
+
                             </div>
+
 
                         </div>
 
+
                     </div>
+
 
                 {% empty %}
 
+
+                    <!-- =================================================
+                         EMPTY STATE
+                    ================================================== -->
+
                     <div class="empty">
+
 
                         <div class="empty-icon">
                             &#128197;
                         </div>
 
-                        <h3>No Events Found</h3>
+
+                        <h3>
+                            No Events Found
+                        </h3>
+
 
                         <p>
                             No foundation events have been created yet.
                         </p>
+
 
                         <a
                             href="{% url 'events:create' %}"
@@ -445,11 +801,24 @@
                             + Create First Event
                         </a>
 
+
+                        <a
+                            href="{% url 'events:create_form_link' %}"
+                            class="btn btn-form"
+                            style="margin-left: 8px;"
+                        >
+                            &#128279; Employee Form
+                        </a>
+
+
                     </div>
+
 
                 {% endfor %}
 
+
             </div>
+
 
         </div>
 

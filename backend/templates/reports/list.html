@@ -1,300 +1,1464 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <link rel="icon" type="image/jpeg" href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <link
+        rel="icon"
+        type="image/jpeg"
+        href="https://www.aequs.com/wp-content/uploads/2025/06/cropped-Aequs-Lines-01-32x32.jpg"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Reports & Audit Logs - EduTrack</title>
 
+
     <style>
+
         * {
             box-sizing: border-box;
         }
 
+
         body {
             margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+
             background: #f4f7fb;
             color: #231f20;
             font-size: 13px;
         }
+
 
         .main {
             margin-left: 256px;
             min-height: 100vh;
         }
 
+
+        /* ================================================================
+           TOP BAR
+           ================================================================ */
+
         .topbar {
             background: white;
             padding: 18px 32px;
-            border-bottom: 1px solid #e5e7eb;
+
+            border-bottom:
+                1px solid #e5e7eb;
+
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
+
         .topbar h1 {
             margin: 0;
+
             font-size: 22px;
             font-weight: 700;
+
             color: #231f20;
         }
+
 
         .back {
             color: #4b5563;
             text-decoration: none;
+
             background: #f1f5f9;
+
             padding: 8px 14px;
+
             border-radius: 6px;
+
             font-size: 13px;
             font-weight: 500;
         }
+
+
+        .back:hover {
+            background: #e2e8f0;
+        }
+
+
+        /* ================================================================
+           CONTENT
+           ================================================================ */
 
         .content {
             padding: 28px 32px;
         }
 
-        .filter {
-            background: white;
-            padding: 18px 22px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
 
-        select, button {
-            padding: 9px 14px;
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-            font-size: 13px;
-        }
-
-        button {
-            background: #dd2d27;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
+        /* ================================================================
+           KPI CARDS
+           ================================================================ */
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(180px, 1fr));
+
             gap: 18px;
+
             margin-bottom: 30px;
         }
 
+
         .card {
             background: white;
+
             padding: 20px;
+
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
-            border: 1px solid #e2e8f0;
+
+            box-shadow:
+                0 2px 8px rgba(15, 23, 42, 0.05);
+
+            border:
+                1px solid #e2e8f0;
         }
+
 
         .card h3 {
             margin: 0;
+
             color: #64748b;
+
             font-size: 13px;
             font-weight: 600;
         }
+
 
         .number {
             font-size: 28px;
             font-weight: 800;
+
             margin-top: 8px;
+
             color: #231f20;
         }
 
-        /* --- Audit Log Section --- */
+
+        /* ================================================================
+           AUDIT CARD
+           ================================================================ */
+
         .audit-card {
             background: white;
+
             border-radius: 12px;
+
             padding: 24px;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
-            border: 1px solid #e2e8f0;
+
+            box-shadow:
+                0 2px 8px rgba(15, 23, 42, 0.05);
+
+            border:
+                1px solid #e2e8f0;
         }
+
 
         .audit-header {
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
+
             margin-bottom: 18px;
+
+            gap: 20px;
         }
+
 
         .audit-header h2 {
             margin: 0;
+
             font-size: 17px;
+
             color: #231f20;
         }
 
+
+        /* ================================================================
+           FILTER AREA
+           ================================================================ */
+
+        .audit-filters {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: flex-end;
+
+            gap: 8px;
+
+            flex-wrap: wrap;
+        }
+
+
+        .filter-group {
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+        }
+
+
+        .filter-label {
+            color: #64748b;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+
+        select,
+        input[type="date"] {
+            height: 38px;
+
+            padding:
+                8px 12px;
+
+            border:
+                1px solid #d1d5db;
+
+            border-radius: 7px;
+
+            background: white;
+
+            color: #231f20;
+
+            font-size: 13px;
+
+            font-family: inherit;
+
+            cursor: pointer;
+        }
+
+
+        select {
+            min-width: 180px;
+        }
+
+
+        input[type="date"] {
+            min-width: 145px;
+        }
+
+
+        select:focus,
+        input[type="date"]:focus {
+            outline: none;
+
+            border-color: #dd2d27;
+
+            box-shadow:
+                0 0 0 2px rgba(221, 45, 39, 0.10);
+        }
+
+
+        /* ================================================================
+           BUTTONS
+           ================================================================ */
+
+        .btn {
+            height: 38px;
+
+            padding:
+                0 14px;
+
+            border-radius: 7px;
+
+            border: none;
+
+            font-family: inherit;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+
+        .btn-filter {
+            background: #dd2d27;
+
+            color: white;
+        }
+
+
+        .btn-filter:hover {
+            background: #c92520;
+        }
+
+
+        .btn-clear {
+            background: #f1f5f9;
+
+            color: #475569;
+
+            border:
+                1px solid #dbe2ea;
+        }
+
+
+        .btn-clear:hover {
+            background: #e2e8f0;
+        }
+
+
+        /* ================================================================
+           LIVE STATUS
+           ================================================================ */
+
+        .live-status {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            font-size: 11.5px;
+
+            font-weight: 700;
+
+            color: #166534;
+
+            background: #dcfce7;
+
+            padding: 4px 10px;
+
+            border-radius: 12px;
+
+            border:
+                1px solid #bbf7d0;
+
+            white-space: nowrap;
+        }
+
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+
+            background: #22c55e;
+
+            border-radius: 50%;
+
+            display: inline-block;
+
+            box-shadow:
+                0 0 6px #22c55e;
+        }
+
+
+        /* ================================================================
+           TABLE
+           ================================================================ */
+
         .audit-table {
             width: 100%;
+
             border-collapse: collapse;
         }
 
-        .audit-table th, .audit-table td {
+
+        .audit-table th,
+        .audit-table td {
             padding: 12px 14px;
+
             text-align: left;
-            border-bottom: 1px solid #f1f5f9;
+
+            border-bottom:
+                1px solid #f1f5f9;
         }
+
 
         .audit-table th {
             background: #f8fafc;
+
             color: #64748b;
+
             font-size: 12px;
+
             font-weight: 700;
+
             text-transform: uppercase;
         }
 
+
+        .audit-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+
+        /* ================================================================
+           CATEGORY BADGES
+           ================================================================ */
+
         .cat-badge {
-            padding: 3px 8px;
+            padding:
+                3px 8px;
+
             border-radius: 12px;
+
             font-size: 11px;
+
             font-weight: 700;
+
             display: inline-block;
         }
 
-        .cat-INVENTORY { background: #e0f2fe; color: #0369a1; }
-        .cat-SCHOOL { background: #fef3c7; color: #92400e; }
-        .cat-STUDENT { background: #dcfce7; color: #166534; }
-        .cat-AUTH { background: #f3e8ff; color: #6b21a8; }
-        .cat-GENERAL { background: #f1f5f9; color: #475569; }
+
+        .cat-STUDENT {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+
+        .cat-ACADEMIC {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+
+        .cat-INVENTORY {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+
+        .cat-SCHOOL {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+
+        .cat-EVENT {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+
+
+        .cat-DISTRIBUTION {
+            background: #cffafe;
+            color: #155e75;
+        }
+
+
+        .cat-INTERNSHIP {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+
+        .cat-VOLUNTEER {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+
+        .cat-AUTH {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+
+        .cat-GENERAL {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+
+        .cat-ELIGIBILITY {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+
+        .cat-USER {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+
+        .cat-REPORT {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+
+        .cat-DASHBOARD {
+            background: #ccfbf1;
+            color: #115e59;
+        }
+
+
+        /* ================================================================
+           MOBILE
+           ================================================================ */
+
+        @media (max-width: 1100px) {
+
+            .audit-header {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+
+            .audit-filters {
+                justify-content: flex-start;
+            }
+
+        }
+
+
+        @media (max-width: 900px) {
+
+            .main {
+                margin-left: 0;
+            }
+
+
+            .content {
+                padding: 20px;
+            }
+
+
+            .topbar {
+                padding: 16px 20px;
+            }
+
+
+            .audit-filters {
+                width: 100%;
+
+                flex-direction: column;
+
+                align-items: stretch;
+            }
+
+
+            .filter-group {
+                width: 100%;
+            }
+
+
+            .filter-group select,
+            .filter-group input {
+                flex: 1;
+
+                width: 100%;
+            }
+
+
+            .btn {
+                width: 100%;
+            }
+
+
+            .audit-table {
+                display: block;
+
+                overflow-x: auto;
+            }
+
+        }
+
     </style>
+
 </head>
+
 
 <body>
 
-    <!-- Modern Sleek Sidebar -->
+
+    <!-- ================================================================
+         SIDEBAR
+         ================================================================ -->
+
     {% include 'includes/sidebar.html' with active_page='reports' %}
+
 
     <div class="main">
 
+
+        <!-- ============================================================
+             TOP BAR
+             ============================================================ -->
+
         <header class="topbar">
-            <h1>📊 Reports & Real-Time Activity Audit Logs</h1>
-            <a href="{% url 'dashboard' %}" class="back">← Dashboard</a>
+
+            <h1>
+                📊 Reports & Real-Time Activity Audit Logs
+            </h1>
+
+
+            <a
+                href="{% url 'dashboard' %}"
+                class="back"
+            >
+                ← Dashboard
+            </a>
+
         </header>
+
 
         <main class="content">
 
-            <!-- Summary KPI Cards -->
+
+            <!-- ========================================================
+                 SUMMARY KPI CARDS
+                 ======================================================== -->
+
             <div class="cards">
+
+
                 <div class="card">
-                    <h3>Active Students</h3>
-                    <div class="number">{{ total_students }}</div>
+
+                    <h3>
+                        Active Students
+                    </h3>
+
+                    <div class="number">
+                        {{ total_students }}
+                    </div>
+
                 </div>
+
+
                 <div class="card">
-                    <h3>Books Eligible</h3>
-                    <div class="number">{{ book_count }}</div>
+
+                    <h3>
+                        Books Eligible
+                    </h3>
+
+                    <div class="number">
+                        {{ book_count }}
+                    </div>
+
                 </div>
+
+
                 <div class="card">
-                    <h3>Workbooks Eligible</h3>
-                    <div class="number">{{ workbook_count }}</div>
+
+                    <h3>
+                        Workbooks Eligible
+                    </h3>
+
+                    <div class="number">
+                        {{ workbook_count }}
+                    </div>
+
                 </div>
+
+
                 <div class="card">
-                    <h3>Study Kits Eligible</h3>
-                    <div class="number">{{ study_kit_count }}</div>
+
+                    <h3>
+                        Study Kits Eligible
+                    </h3>
+
+                    <div class="number">
+                        {{ study_kit_count }}
+                    </div>
+
                 </div>
+
+
                 <div class="card">
-                    <h3>Laptops Eligible</h3>
-                    <div class="number">{{ laptop_count }}</div>
+
+                    <h3>
+                        Laptops Eligible
+                    </h3>
+
+                    <div class="number">
+                        {{ laptop_count }}
+                    </div>
+
                 </div>
+
+
                 <div class="card">
-                    <h3>Internships Eligible</h3>
-                    <div class="number">{{ internship_count }}</div>
+
+                    <h3>
+                        Internships Eligible
+                    </h3>
+
+                    <div class="number">
+                        {{ internship_count }}
+                    </div>
+
                 </div>
+
+
             </div>
 
-            <!-- Activity Audit Log Card -->
+
+            <!-- ========================================================
+                 AUDIT LOG CARD
+                 ======================================================== -->
+
             <div class="audit-card">
+
+
                 <div class="audit-header">
+
+
                     <div>
-                        <h2>📋 Real-Time Activity Audit Logs</h2>
-                        <p style="margin: 4px 0 0; color: #64748b; font-size: 12.5px;">Every system action, stock dispatch, school edit, and user login is automatically logged here.</p>
+
+                        <h2>
+                            📋 Real-Time Activity Audit Logs
+                        </h2>
+
+                        <p
+                            style="
+                                margin: 4px 0 0;
+                                color: #64748b;
+                                font-size: 12.5px;
+                            "
+                        >
+                            Every system action, stock dispatch,
+                            school edit, and user login is automatically
+                            logged here.
+                        </p>
+
                     </div>
 
-                    <!-- Category Filter & Live Pulse -->
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: #166534; background: #dcfce7; padding: 4px 10px; border-radius: 12px; border: 1px solid #bbf7d0;">
-                            <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #22c55e;"></span> Real-Time Auto Update
+
+                    <!-- ==================================================
+                         FILTERS
+                         ================================================== -->
+
+                    <div class="audit-filters">
+
+
+                        <!-- LIVE STATUS -->
+
+                        <span class="live-status">
+
+                            <span class="live-dot"></span>
+
+                            Real-Time Auto Update
+
                         </span>
 
-                        <form method="get" style="display: flex; gap: 8px;">
-                            <select name="category" id="category-filter-select" onchange="this.form.submit()">
-                                <option value="">All Action Categories</option>
-                                <option value="INVENTORY" {% if category_filter == 'INVENTORY' %}selected{% endif %}>Inventory & Stock Out</option>
-                                <option value="SCHOOL" {% if category_filter == 'SCHOOL' %}selected{% endif %}>School Updates</option>
-                                <option value="STUDENT" {% if category_filter == 'STUDENT' %}selected{% endif %}>Student Records</option>
-                                <option value="AUTH" {% if category_filter == 'AUTH' %}selected{% endif %}>Auth & Login</option>
-                            </select>
+
+                        <!-- FILTER FORM -->
+
+                        <form
+                            method="get"
+                            id="audit-filter-form"
+                            class="audit-filters"
+                        >
+
+
+                            <!-- CATEGORY -->
+
+                            <div class="filter-group">
+
+                                <span class="filter-label">
+                                    Category
+                                </span>
+
+
+                                <select
+                                    name="category"
+                                    id="category-filter-select"
+                                >
+
+                                    <option value="">
+                                        All Action Categories
+                                    </option>
+
+
+                                    <option
+                                        value="STUDENT"
+                                        {% if category_filter == 'STUDENT' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Students
+                                    </option>
+
+
+                                    <option
+                                        value="ACADEMIC"
+                                        {% if category_filter == 'ACADEMIC' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Academics
+                                    </option>
+
+
+                                    <option
+                                        value="INVENTORY"
+                                        {% if category_filter == 'INVENTORY' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Inventory
+                                    </option>
+
+
+                                    <option
+                                        value="SCHOOL"
+                                        {% if category_filter == 'SCHOOL' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Schools
+                                    </option>
+
+
+                                    <option
+                                        value="EVENT"
+                                        {% if category_filter == 'EVENT' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Events
+                                    </option>
+
+
+                                    <option
+                                        value="DISTRIBUTION"
+                                        {% if category_filter == 'DISTRIBUTION' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Distributions
+                                    </option>
+
+
+                                    <option
+                                        value="INTERNSHIP"
+                                        {% if category_filter == 'INTERNSHIP' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Internships
+                                    </option>
+
+
+                                    <option
+                                        value="VOLUNTEER"
+                                        {% if category_filter == 'VOLUNTEER' %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Volunteers
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- FROM DATE -->
+
+                            <div class="filter-group">
+
+                                <span class="filter-label">
+                                    From
+                                </span>
+
+
+                                <input
+                                    type="date"
+                                    name="date_from"
+                                    id="date-from"
+                                    value="{{ date_from }}"
+                                    title="Select starting date"
+                                >
+
+                            </div>
+
+
+                            <!-- TO DATE -->
+
+                            <div class="filter-group">
+
+                                <span class="filter-label">
+                                    To
+                                </span>
+
+
+                                <input
+                                    type="date"
+                                    name="date_to"
+                                    id="date-to"
+                                    value="{{ date_to }}"
+                                    title="Select ending date"
+                                >
+
+                            </div>
+
+
+                            <!-- APPLY -->
+
+                            <button
+                                type="submit"
+                                class="btn btn-filter"
+                            >
+                                🔍 Filter
+                            </button>
+
+
+                            <!-- CLEAR -->
+
+                            <button
+                                type="button"
+                                class="btn btn-clear"
+                                onclick="clearAuditFilters()"
+                            >
+                                ✕ Clear
+                            </button>
+
+
                         </form>
+
                     </div>
+
                 </div>
 
+
+                <!-- ======================================================
+                     AUDIT TABLE
+                     ====================================================== -->
+
                 <table class="audit-table">
+
+
                     <thead>
+
                         <tr>
-                            <th>Timestamp</th>
-                            <th>Category</th>
-                            <th>Action / Activity Description</th>
-                            <th>Performed By</th>
+
+                            <th>
+                                Timestamp
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Action / Activity Description
+                            </th>
+
+                            <th>
+                                Performed By
+                            </th>
+
                         </tr>
+
                     </thead>
+
+
                     <tbody id="audit-logs-tbody">
+
+
                         {% for log in activity_logs %}
+
                         <tr>
-                            <td style="color: #64748b; font-size: 12px; white-space: nowrap;">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
-                            <td><span class="cat-badge cat-{{ log.category }}">{{ log.category }}</span></td>
-                            <td style="font-weight: 600; color: #231f20;">{{ log.action }}</td>
-                            <td style="color: #475569;">👤 {{ log.user.username|default:"System Admin" }}</td>
+
+
+                            <td
+                                style="
+                                    color: #64748b;
+                                    font-size: 12px;
+                                    white-space: nowrap;
+                                "
+                            >
+                                {{ log.timestamp|date:"M d, Y H:i:s" }}
+                            </td>
+
+
+                            <td>
+
+                                <span
+                                    class="cat-badge cat-{{ log.category }}"
+                                >
+                                    {{ log.category }}
+                                </span>
+
+                            </td>
+
+
+                            <td
+                                style="
+                                    font-weight: 600;
+                                    color: #231f20;
+                                "
+                            >
+                                {{ log.action }}
+                            </td>
+
+
+                            <td
+                                style="
+                                    color: #475569;
+                                "
+                            >
+                                👤
+                                {{ log.user.username|default:"System Admin" }}
+                            </td>
+
+
                         </tr>
+
+
                         {% empty %}
+
                         <tr>
-                            <td colspan="4" style="text-align: center; color: #64748b; padding: 25px;">No activity logs recorded yet.</td>
+
+                            <td
+                                colspan="4"
+                                style="
+                                    text-align: center;
+                                    color: #64748b;
+                                    padding: 25px;
+                                "
+                            >
+                                No activity logs found for the selected
+                                filters.
+                            </td>
+
                         </tr>
+
                         {% endfor %}
+
+
                     </tbody>
+
                 </table>
+
+
             </div>
 
         </main>
 
     </div>
 
-    <!-- Real-Time Auto Refresh Script -->
+
+    <!-- ================================================================
+         JAVASCRIPT
+         ================================================================ -->
+
     <script>
-        async function fetchLiveAuditLogs() {
-            try {
-                const category = document.getElementById('category-filter-select').value;
-                const res = await fetch(`/reports/api/logs/?category=${encodeURIComponent(category)}`);
-                const data = await res.json();
-                if (data.success && data.logs) {
-                    const tbody = document.getElementById('audit-logs-tbody');
-                    if (data.logs.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 25px;">No activity logs recorded yet.</td></tr>`;
-                        return;
-                    }
-                    tbody.innerHTML = data.logs.map(log => `
-                        <tr>
-                            <td style="color: #64748b; font-size: 12px; white-space: nowrap;">${log.timestamp}</td>
-                            <td><span class="cat-badge cat-${log.category}">${log.category}</span></td>
-                            <td style="font-weight: 600; color: #231f20;">${log.action}</td>
-                            <td style="color: #475569;">👤 ${log.username}</td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (err) {
-                console.error("Live audit log refresh error:", err);
+
+
+        // ================================================================
+        // CLEAR FILTERS
+        // ================================================================
+
+        function clearAuditFilters() {
+
+            const category =
+                document.getElementById(
+                    "category-filter-select"
+                );
+
+            const dateFrom =
+                document.getElementById(
+                    "date-from"
+                );
+
+            const dateTo =
+                document.getElementById(
+                    "date-to"
+                );
+
+
+            if (category) {
+                category.value = "";
             }
+
+
+            if (dateFrom) {
+                dateFrom.value = "";
+            }
+
+
+            if (dateTo) {
+                dateTo.value = "";
+            }
+
+
+            // Reload page without filter parameters.
+
+            window.location.href =
+                window.location.pathname;
+
         }
 
-        // Auto-refresh logs every 3 seconds for real-time tracking
-        setInterval(fetchLiveAuditLogs, 3000);
+
+        // ================================================================
+        // VALIDATE DATE RANGE
+        // ================================================================
+
+        document
+            .getElementById("audit-filter-form")
+            .addEventListener(
+                "submit",
+                function(event) {
+
+                    const dateFrom =
+                        document.getElementById(
+                            "date-from"
+                        ).value;
+
+                    const dateTo =
+                        document.getElementById(
+                            "date-to"
+                        ).value;
+
+
+                    if (
+                        dateFrom &&
+                        dateTo &&
+                        dateFrom > dateTo
+                    ) {
+
+                        event.preventDefault();
+
+
+                        alert(
+                            "From Date cannot be later than To Date."
+                        );
+
+                    }
+
+                }
+            );
+
+
+        // ================================================================
+        // REAL-TIME AUDIT LOG REFRESH
+        // ================================================================
+
+        async function fetchLiveAuditLogs() {
+
+            try {
+
+                const categoryElement =
+                    document.getElementById(
+                        "category-filter-select"
+                    );
+
+
+                const dateFromElement =
+                    document.getElementById(
+                        "date-from"
+                    );
+
+
+                const dateToElement =
+                    document.getElementById(
+                        "date-to"
+                    );
+
+
+                const tbody =
+                    document.getElementById(
+                        "audit-logs-tbody"
+                    );
+
+
+                if (
+                    !categoryElement ||
+                    !dateFromElement ||
+                    !dateToElement ||
+                    !tbody
+                ) {
+
+                    return;
+
+                }
+
+
+                const category =
+                    categoryElement.value;
+
+
+                const dateFrom =
+                    dateFromElement.value;
+
+
+                const dateTo =
+                    dateToElement.value;
+
+
+                const params =
+                    new URLSearchParams();
+
+
+                if (category) {
+
+                    params.set(
+                        "category",
+                        category
+                    );
+
+                }
+
+
+                if (dateFrom) {
+
+                    params.set(
+                        "date_from",
+                        dateFrom
+                    );
+
+                }
+
+
+                if (dateTo) {
+
+                    params.set(
+                        "date_to",
+                        dateTo
+                    );
+
+                }
+
+
+                const url =
+                    `/reports/api/logs/?${params.toString()}`;
+
+
+                const response =
+                    await fetch(url);
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP error: ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success ||
+                    !Array.isArray(data.logs)
+                ) {
+
+                    return;
+
+                }
+
+
+                // --------------------------------------------------------
+                // NO RESULTS
+                // --------------------------------------------------------
+
+                if (data.logs.length === 0) {
+
+                    tbody.innerHTML = `
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                style="
+                                    text-align: center;
+                                    color: #64748b;
+                                    padding: 25px;
+                                "
+                            >
+                                No activity logs found for the selected
+                                filters.
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                    return;
+
+                }
+
+
+                // --------------------------------------------------------
+                // BUILD TABLE
+                // --------------------------------------------------------
+
+                tbody.innerHTML =
+                    data.logs
+                        .map(
+                            function(log) {
+
+                                const category =
+                                    log.category ||
+                                    "GENERAL";
+
+
+                                const action =
+                                    log.action ||
+                                    "";
+
+
+                                const username =
+                                    log.username ||
+                                    "System";
+
+
+                                return `
+
+                                    <tr>
+
+                                        <td
+                                            style="
+                                                color: #64748b;
+                                                font-size: 12px;
+                                                white-space: nowrap;
+                                            "
+                                        >
+                                            ${escapeHtml(
+                                                log.timestamp
+                                            )}
+                                        </td>
+
+
+                                        <td>
+
+                                            <span
+                                                class="
+                                                    cat-badge
+                                                    cat-${escapeHtml(
+                                                        category
+                                                    )}
+                                                "
+                                            >
+                                                ${escapeHtml(
+                                                    category
+                                                )}
+                                            </span>
+
+                                        </td>
+
+
+                                        <td
+                                            style="
+                                                font-weight: 600;
+                                                color: #231f20;
+                                            "
+                                        >
+                                            ${escapeHtml(
+                                                action
+                                            )}
+                                        </td>
+
+
+                                        <td
+                                            style="
+                                                color: #475569;
+                                            "
+                                        >
+                                            👤
+                                            ${escapeHtml(
+                                                username
+                                            )}
+                                        </td>
+
+                                    </tr>
+
+                                `;
+
+                            }
+                        )
+                        .join("");
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Live audit log refresh error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // ================================================================
+        // HTML ESCAPE
+        //
+        // Prevents log text returned from the API from being interpreted
+        // as HTML.
+        // ================================================================
+
+        function escapeHtml(value) {
+
+            if (value === null || value === undefined) {
+
+                return "";
+
+            }
+
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+
+        // ================================================================
+        // AUTO REFRESH EVERY 3 SECONDS
+        // ================================================================
+
+        setInterval(
+            fetchLiveAuditLogs,
+            3000
+        );
+
+
     </script>
+
+
 </body>
+
 </html>

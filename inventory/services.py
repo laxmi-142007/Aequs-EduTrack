@@ -5,6 +5,7 @@ from django.utils import timezone
 from eligibility.models import EligibilityRecord
 from .models import (
     InventoryItem,
+    InventoryCategory,
     StockTransaction,
     Laptop,
     LaptopAssignment,
@@ -691,4 +692,3 @@ def bulk_import_inventory(
         "created": len(created_items),
         "items": created_items,
     }
-

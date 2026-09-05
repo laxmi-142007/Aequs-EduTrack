@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Share Event Form - EduTrack</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family: 'Inter',
+                         -apple-system,
+                         BlinkMacSystemFont,
+                         "Segoe UI",
+                         sans-serif;
+
+            background: #f4f7fb;
+            color: #231f20;
+        }
+
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+
+            padding: 18px 32px;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar h1 {
+            margin: 0;
+
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .back {
+            color: #475569;
+
+            text-decoration: none;
+
+            background: #f1f5f9;
+
+            padding: 9px 15px;
+
+            border-radius: 7px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 35px;
+        }
+
+        .card {
+            max-width: 850px;
+
+            margin: 25px auto;
+
+            background: white;
+
+            padding: 35px;
+
+            border-radius: 16px;
+
+            border: 1px solid #e2e8f0;
+
+            box-shadow:
+                0 8px 30px rgba(
+                    15,
+                    23,
+                    42,
+                    0.08
+                );
+        }
+
+        .heading {
+            text-align: center;
+
+            margin-bottom: 30px;
+        }
+
+        .heading-icon {
+            width: 65px;
+            height: 65px;
+
+            margin: 0 auto 15px;
+
+            border-radius: 16px;
+
+            background: #dcfce7;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 32px;
+        }
+
+        h2 {
+            margin: 0 0 8px;
+
+            font-size: 24px;
+
+            font-weight: 800;
+        }
+
+        .heading p {
+            margin: 0;
+
+            color: #64748b;
+
+            font-size: 13px;
+        }
+
+        .share-grid {
+            display: grid;
+
+            grid-template-columns:
+                1fr 300px;
+
+            gap: 30px;
+
+            align-items: center;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            margin: 0 0 10px;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            color: #334155;
+        }
+
+        .url-box {
+            display: flex;
+
+            gap: 8px;
+        }
+
+        .url-input {
+            flex: 1;
+
+            min-width: 0;
+
+            padding: 12px 14px;
+
+            border: 1px solid #cbd5e1;
+
+            border-radius: 8px;
+
+            background: #f8fafc;
+
+            color: #334155;
+
+            font-size: 12px;
+
+            outline: none;
+        }
+
+        .copy-btn {
+            border: none;
+
+            background: #dd2d27;
+
+            color: white;
+
+            padding: 0 18px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: #c92520;
+        }
+
+        .instructions {
+            background: #f8fafc;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 10px;
+
+            padding: 18px;
+        }
+
+        .instructions p {
+            margin: 0 0 10px;
+
+            color: #475569;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        .instructions p:last-child {
+            margin-bottom: 0;
+        }
+
+        .qr-section {
+            text-align: center;
+
+            padding: 20px;
+
+            background: #f8fafc;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 14px;
+        }
+
+        .qr-section h3 {
+            margin: 0 0 15px;
+
+            font-size: 14px;
+
+            font-weight: 700;
+        }
+
+        .qr-image {
+            width: 220px;
+            height: 220px;
+
+            max-width: 100%;
+
+            background: white;
+
+            padding: 10px;
+
+            border-radius: 8px;
+
+            border: 1px solid #e2e8f0;
+        }
+
+        .qr-help {
+            margin: 15px 0 0;
+
+            color: #64748b;
+
+            font-size: 11.5px;
+
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            margin-top: 30px;
+
+            padding-top: 25px;
+
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            display: inline-block;
+
+            padding: 10px 18px;
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            background: #dd2d27;
+
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+
+            color: #475569;
+
+            border: 1px solid #e2e8f0;
+        }
+
+        .copied {
+            background: #16a34a !important;
+        }
+
+        @media (max-width: 900px) {
+
+            .main {
+                margin-left: 0;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .share-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .qr-section {
+                max-width: 350px;
+
+                margin: 0 auto;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .topbar {
+                padding: 16px 20px;
+            }
+
+            .topbar h1 {
+                font-size: 17px;
+            }
+
+            .card {
+                padding: 22px;
+            }
+
+            .url-box {
+                flex-direction: column;
+            }
+
+            .copy-btn {
+                padding: 11px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    {% include 'includes/sidebar.html' with active_page='events' %}
+
+
+    <div class="main">
+
+        <!-- ================================================================
+             TOP BAR
+        ================================================================= -->
+
+        <header class="topbar">
+
+            <h1>
+                🔗 Share Event Form
+            </h1>
+
+            <a href="{% url 'events:list' %}"
+               class="back">
+
+                ← Back to Events
+
+            </a>
+
+        </header>
+
+
+        <main class="content">
+
+            <div class="card">
+
+                <!-- ========================================================
+                     HEADER
+                ========================================================= -->
+
+                <div class="heading">
+
+                    <div class="heading-icon">
+                        ✅
+                    </div>
+
+                    <h2>
+                        Event Form Created Successfully
+                    </h2>
+
+                    <p>
+                        Share this form with employees
+                        using the URL or QR code below.
+                    </p>
+
+                </div>
+
+
+                <div class="share-grid">
+
+
+                    <!-- ====================================================
+                         LEFT SIDE
+                    ===================================================== -->
+
+                    <div>
+
+
+                        <!-- =================================================
+                             FORM URL
+                        ================================================== -->
+
+                        <div class="section">
+
+                            <h3 class="section-title">
+                                🔗 Employee Form URL
+                            </h3>
+
+                            <div class="url-box">
+
+                                <input
+                                    type="text"
+                                    id="form-url"
+                                    class="url-input"
+                                    value="{{ form_url }}"
+                                    readonly
+                                >
+
+                                <button
+                                    type="button"
+                                    class="copy-btn"
+                                    id="copy-button"
+                                    onclick="copyFormUrl()">
+
+                                    Copy
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             INSTRUCTIONS
+                        ================================================== -->
+
+                        <div class="section">
+
+                            <h3 class="section-title">
+                                📋 How to use
+                            </h3>
+
+                            <div class="instructions">
+
+                                <p>
+                                    <strong>1.</strong>
+                                    Copy the form URL and
+                                    send it to the employee.
+                                </p>
+
+                                <p>
+                                    <strong>2.</strong>
+                                    Or display the QR code
+                                    on a screen/poster.
+                                </p>
+
+                                <p>
+                                    <strong>3.</strong>
+                                    The employee scans the
+                                    QR code using their phone.
+                                </p>
+
+                                <p>
+                                    <strong>4.</strong>
+                                    They fill in the event
+                                    details and submit.
+                                </p>
+
+                                <p>
+                                    <strong>5.</strong>
+                                    The event is automatically
+                                    created in EduTrack.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             OPEN FORM
+                        ================================================== -->
+
+                        <a
+                            href="{{ form_url }}"
+                            target="_blank"
+                            class="btn btn-primary">
+
+                            👁 Open Employee Form
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- ====================================================
+                         RIGHT SIDE - QR
+                    ===================================================== -->
+
+                    <div class="qr-section">
+
+                        <h3>
+                            📱 Scan to Open Form
+                        </h3>
+
+                        <img
+                            src="{% url 'events:form_qr' form_link.pk %}"
+                            alt="Event Form QR Code"
+                            class="qr-image"
+                        >
+
+                        <p class="qr-help">
+
+                            Employees can scan this QR
+                            code with their phone camera
+                            to open the event submission
+                            form.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ========================================================
+                     BOTTOM ACTIONS
+                ========================================================= -->
+
+                <div class="actions">
+
+                    <a
+                        href="{% url 'events:create_form_link' %}"
+                        class="btn btn-secondary">
+
+                        🔄 Generate Another Form
+
+                    </a>
+
+                    <a
+                        href="{% url 'events:list' %}"
+                        class="btn btn-secondary">
+
+                        📅 Events List
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- ================================================================
+         COPY URL SCRIPT
+    ================================================================= -->
+
+    <script>
+
+        function copyFormUrl() {
+
+            const input =
+                document.getElementById(
+                    "form-url"
+                );
+
+            const button =
+                document.getElementById(
+                    "copy-button"
+                );
+
+
+            navigator.clipboard.writeText(
+                input.value
+            ).then(function () {
+
+                button.textContent =
+                    "✓ Copied";
+
+                button.classList.add(
+                    "copied"
+                );
+
+
+                setTimeout(function () {
+
+                    button.textContent =
+                        "Copy";
+
+                    button.classList.remove(
+                        "copied"
+                    );
+
+                }, 2000);
+
+            }).catch(function () {
+
+                input.select();
+
+                document.execCommand(
+                    "copy"
+                );
+
+                button.textContent =
+                    "✓ Copied";
+
+                button.classList.add(
+                    "copied"
+                );
+
+
+                setTimeout(function () {
+
+                    button.textContent =
+                        "Copy";
+
+                    button.classList.remove(
+                        "copied"
+                    );
+
+                }, 2000);
+
+            });
+
+        }
+
+    </script>
+
+</body>
+
+</html>
