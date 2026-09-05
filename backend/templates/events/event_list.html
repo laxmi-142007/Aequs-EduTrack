@@ -501,6 +501,11 @@
                     &#128279; Employee Form
                 </a>
 
+                <!-- Volunteer Registration Form -->
+                <a href="{% url 'volunteers:registration' %}" class="btn" style="background:#16a34a;color:#ffffff;display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 6px rgba(22,163,74,0.3);" title="Volunteer Registration Form">
+                    &#9997; Volunteer Form
+                </a>
+
                 <!-- Export Buttons -->
                 <a href="{% url 'events:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-export">
                     &#128202; Excel

@@ -5,7 +5,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if is_edit %}Edit {{ volunteer.first_name }} {{ volunteer.last_name }}{% else %}Register Volunteer{% endif %} | Aequs EduTrack</title>
+    <title>{% if is_edit %}Edit {{ volunteer.first_name }} {{ volunteer.last_name }}{% else %}Volunteer Registration{% endif %} | Aequs EduTrack</title>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -164,11 +164,11 @@
                 <nav class="breadcrumb">
                     <a href="{% url 'volunteers:list' %}">Volunteers</a>
                     <span>/</span>
-                    <span>{% if is_edit %}Edit Volunteer{% else %}New Registration{% endif %}</span>
+                    <span>{% if is_edit %}Edit Volunteer{% else %}Volunteer Registration{% endif %}</span>
                 </nav>
                 <h1>
                     <i data-lucide="user-plus" style="width: 20px; height: 20px; color: var(--aequs-red);"></i>
-                    {% if is_edit %}Edit Volunteer: {{ volunteer.first_name }} {{ volunteer.last_name }}{% else %}Register New Volunteer{% endif %}
+                    {% if is_edit %}Edit Volunteer: {{ volunteer.first_name }} {{ volunteer.last_name }}{% else %}Volunteer Registration Form{% endif %}
                 </h1>
             </div>
             <div>

@@ -236,8 +236,8 @@
             <a href="{% url 'volunteers:export_csv' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary" title="Export volunteers to CSV">
                 <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
             </a>
-            <a href="{% url 'volunteers:create' %}" class="btn btn-primary" id="volunteer-form-btn" title="Open Volunteer Registration Form">
-                <i data-lucide="file-text" style="width:14px;height:14px;"></i> Volunteer Form
+            <a href="{% url 'volunteers:registration' %}" class="btn btn-primary" id="volunteer-form-btn" title="Open Volunteer Registration Form">
+                <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Volunteer Registration
             </a>
             <a href="{% url 'dashboard' %}" class="btn btn-secondary" title="Return to Dashboard">
                 <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Dashboard
@@ -387,8 +387,8 @@
                                 <div style="font-size:14px;font-weight:600;">No volunteers found</div>
                                 <p style="font-size:12px;margin-top:4px;">Try modifying your search or filter parameters.</p>
                                 <div style="margin-top:12px;">
-                                    <a href="{% url 'volunteers:create' %}" class="btn btn-primary btn-sm">
-                                        <i data-lucide="file-text" style="width:12px;height:12px;"></i> Open Volunteer Form
+                                    <a href="{% url 'volunteers:registration' %}" class="btn btn-primary btn-sm">
+                                        <i data-lucide="user-plus" style="width:12px;height:12px;"></i> Volunteer Registration
                                     </a>
                                 </div>
                             </td>
