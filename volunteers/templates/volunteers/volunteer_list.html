@@ -230,14 +230,17 @@
             <h1><i data-lucide="users" style="width:20px;height:20px;color:var(--aequs-red);"></i> Volunteers Directory & Community Roster</h1>
         </div>
         <div class="topbar-actions">
-            <a href="{% url 'volunteers:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-outline" style="color:#15803d;border-color:#bbf7d0;background:#f0fdf4;">
+            <a href="{% url 'volunteers:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-outline" style="color:#15803d;border-color:#bbf7d0;background:#f0fdf4;" title="Export volunteers to Excel">
                 <i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#16a34a;"></i> Export Excel
             </a>
-            <a href="{% url 'volunteers:export_csv' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary">
+            <a href="{% url 'volunteers:export_csv' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary" title="Export volunteers to CSV">
                 <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
             </a>
-            <a href="{% url 'volunteers:create' %}" class="btn btn-primary">
-                <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Enroll Volunteer
+            <a href="{% url 'volunteers:create' %}" class="btn btn-primary" id="volunteer-form-btn" title="Open Volunteer Registration Form">
+                <i data-lucide="file-text" style="width:14px;height:14px;"></i> Volunteer Form
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary" title="Return to Dashboard">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Dashboard
             </a>
         </div>
     </header>
@@ -383,6 +386,11 @@
                                 <i data-lucide="users" style="width:36px;height:36px;margin-bottom:8px;opacity:0.5;"></i>
                                 <div style="font-size:14px;font-weight:600;">No volunteers found</div>
                                 <p style="font-size:12px;margin-top:4px;">Try modifying your search or filter parameters.</p>
+                                <div style="margin-top:12px;">
+                                    <a href="{% url 'volunteers:create' %}" class="btn btn-primary btn-sm">
+                                        <i data-lucide="file-text" style="width:12px;height:12px;"></i> Open Volunteer Form
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
