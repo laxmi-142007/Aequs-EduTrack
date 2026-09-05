@@ -473,6 +473,51 @@
             .controls-card { flex-direction: column; align-items: stretch; }
             .search-wrap { width: 100%; }
         }
+
+        /* Modal Backdrop & Window */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 520px;
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+        .modal-close { background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; padding: 4px; line-height: 1; border-radius: 4px; }
+        .modal-close:hover { color: #1e293b; background: #f1f5f9; }
+        .modal-body { padding: 22px; }
+        .modal-footer {
+            padding: 14px 20px;
+            background: #fafbfc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+        }
     </style>
 </head>
 <body>
@@ -501,10 +546,10 @@
                     &#128279; Employee Form
                 </a>
 
-                <!-- Volunteer Registration Form -->
-                <a href="{% url 'volunteers:registration' %}" class="btn" style="background:#16a34a;color:#ffffff;display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 6px rgba(22,163,74,0.3);" title="Volunteer Registration Form">
+                <!-- Volunteer Registration Form Modal Trigger -->
+                <button type="button" class="btn" onclick="openVolunteerRegistrationModal()" style="background:#16a34a;color:#ffffff;display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 6px rgba(22,163,74,0.3);border:none;cursor:pointer;" title="Generate & Share Volunteer Registration Form">
                     &#9997; Volunteer Form
-                </a>
+                </button>
 
                 <!-- Export Buttons -->
                 <a href="{% url 'events:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-export">
@@ -760,5 +805,78 @@
         </div>
     </div>
 
+    <!-- Volunteer Registration Form Link Modal -->
+    <div class="modal-backdrop" id="volunteerRegModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <span class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                    &#128241; Volunteer Registration Form Link
+                </span>
+                <button type="button" class="modal-close" onclick="closeVolunteerRegistrationModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:18px;text-align:center;">
+                <div>
+                    <p style="font-size:13.5px;color:#1e293b;margin:0 0 4px;font-weight:700;">Shareable Registration Form Link</p>
+                    <p style="font-size:12px;color:#64748b;margin:0;">Prospective volunteers can open this form online or scan the QR code to register directly into EduTrack.</p>
+                </div>
+
+                <!-- Form URL with Copy button -->
+                <div style="display:flex;gap:8px;background:#f8fafc;padding:6px;border:1px solid #e2e8f0;border-radius:8px;">
+                    <input type="text" id="volunteerFormUrl" readonly style="font-size:12px;background:#ffffff;border:1px solid #cbd5e1;padding:8px 12px;border-radius:6px;flex:1;color:#1e293b;outline:none;" value="{{ request.scheme }}://{{ request.get_host }}{% url 'volunteers:public_registration' %}">
+                    <button type="button" class="btn" onclick="copyVolunteerFormUrl()" id="copyVolUrlBtn" style="padding:0 14px;font-size:12px;background:#dd2d27;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">
+                        <span id="copyBtnText">Copy</span>
+                    </button>
+                </div>
+
+                <!-- QR Code Section -->
+                <div style="display:flex;flex-direction:column;align-items:center;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
+                    <img src="{% url 'volunteers:registration_qr' %}" alt="Volunteer Registration QR" style="width:170px;height:170px;border-radius:8px;background:white;padding:8px;border:1px solid #e2e8f0;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                    <span style="font-size:11.5px;color:#64748b;margin-top:8px;">Scan with mobile camera to open registration form</span>
+                </div>
+
+                <!-- Action buttons -->
+                <div style="display:flex;gap:10px;justify-content:center;">
+                    <a href="{% url 'volunteers:public_registration' %}" target="_blank" class="action-btn" style="flex:1;justify-content:center;background:#dd2d27;color:white;padding:10px;border-radius:8px;text-decoration:none;">
+                        &#128065; Open Form to Fill Out
+                    </a>
+                    <a href="{% url 'volunteers:create' %}" class="action-btn" style="flex:1;justify-content:center;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:10px;border-radius:8px;text-decoration:none;">
+                        &#128100; Staff Direct Entry
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn edit-btn" onclick="closeVolunteerRegistrationModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openVolunteerRegistrationModal() {
+            const m = document.getElementById('volunteerRegModal');
+            if (m) m.classList.add('open');
+        }
+
+        function closeVolunteerRegistrationModal() {
+            const m = document.getElementById('volunteerRegModal');
+            if (m) m.classList.remove('open');
+        }
+
+        function copyVolunteerFormUrl() {
+            const input = document.getElementById('volunteerFormUrl');
+            if (input) {
+                input.select();
+                navigator.clipboard.writeText(input.value).then(() => {
+                    const btnText = document.getElementById('copyBtnText');
+                    if (btnText) btnText.innerText = 'Copied!';
+                    setTimeout(() => { if (btnText) btnText.innerText = 'Copy'; }, 2000);
+                });
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const m = document.getElementById('volunteerRegModal');
+            if (e.target === m) closeVolunteerRegistrationModal();
+        });
+    </script>
 </body>
 </html>

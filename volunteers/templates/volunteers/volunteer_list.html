@@ -205,6 +205,52 @@
             margin: 1px;
         }
 
+        /* Modal Backdrop & Window */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 520px;
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; color: var(--slate-900); }
+        .modal-close { background: none; border: none; font-size: 20px; color: var(--slate-400); cursor: pointer; padding: 4px; line-height: 1; border-radius: 4px; }
+        .modal-close:hover { color: var(--slate-800); background: var(--slate-100); }
+        .modal-body { padding: 20px; }
+        .modal-footer {
+            padding: 14px 20px;
+            background: #fafbfc;
+            border-top: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
         @media (max-width: 768px) {
             .main { margin-left: 0; }
             .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -236,9 +282,9 @@
             <a href="{% url 'volunteers:export_csv' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary" title="Export volunteers to CSV">
                 <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
             </a>
-            <a href="{% url 'volunteers:registration' %}" class="btn btn-primary" id="volunteer-form-btn" title="Open Volunteer Registration Form">
-                <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Volunteer Registration
-            </a>
+            <button type="button" class="btn btn-primary" id="volunteer-form-btn" onclick="openVolunteerRegistrationModal()" title="Generate and Share Volunteer Registration Form">
+                <i data-lucide="qr-code" style="width:14px;height:14px;"></i> Volunteer Registration
+            </button>
             <a href="{% url 'dashboard' %}" class="btn btn-secondary" title="Return to Dashboard">
                 <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Dashboard
             </a>
@@ -401,8 +447,84 @@
     </main>
 </div>
 
+<!-- Volunteer Registration Form Link Modal -->
+<div class="modal-backdrop" id="volunteerRegModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <span class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="qr-code" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                Volunteer Registration Form Link
+            </span>
+            <button type="button" class="modal-close" onclick="closeVolunteerRegistrationModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:18px;text-align:center;">
+            <div>
+                <p style="font-size:13.5px;color:var(--slate-800);margin:0 0 4px;font-weight:700;">Shareable Registration Form Link</p>
+                <p style="font-size:12px;color:var(--slate-500);margin:0;">Prospective volunteers can open this form online or scan the QR code to register directly.</p>
+            </div>
+
+            <!-- Form URL with Copy button -->
+            <div style="display:flex;gap:8px;background:#f8fafc;padding:6px;border:1px solid var(--slate-200);border-radius:8px;">
+                <input type="text" id="volunteerFormUrl" readonly style="font-size:12px;background:#ffffff;border:1px solid var(--slate-200);padding:8px 12px;border-radius:6px;flex:1;color:var(--slate-800);outline:none;" value="{{ request.scheme }}://{{ request.get_host }}{% url 'volunteers:public_registration' %}">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyVolunteerFormUrl()" id="copyVolUrlBtn" style="padding:0 14px;font-size:12px;display:inline-flex;align-items:center;gap:4px;">
+                    <i data-lucide="copy" style="width:13px;height:13px;"></i> <span id="copyBtnText">Copy</span>
+                </button>
+            </div>
+
+            <!-- QR Code Section -->
+            <div style="display:flex;flex-direction:column;align-items:center;padding:16px;background:#f8fafc;border:1px solid var(--slate-200);border-radius:10px;">
+                <img src="{% url 'volunteers:registration_qr' %}" alt="Volunteer Registration QR" style="width:170px;height:170px;border-radius:8px;background:white;padding:8px;border:1px solid var(--slate-200);box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                <span style="font-size:11.5px;color:var(--slate-500);margin-top:8px;">Scan with mobile camera to open registration form</span>
+            </div>
+
+            <!-- Action buttons: Open Form / Fill out manually -->
+            <div style="display:flex;gap:10px;justify-content:center;">
+                <a href="{% url 'volunteers:public_registration' %}" target="_blank" class="btn btn-primary" style="flex:1;justify-content:center;">
+                    <i data-lucide="external-link" style="width:14px;height:14px;"></i> Open Form to Fill Out
+                </a>
+                <a href="{% url 'volunteers:create' %}" class="btn btn-secondary" style="flex:1;justify-content:center;">
+                    <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Staff Direct Entry
+                </a>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeVolunteerRegistrationModal()">Close</button>
+        </div>
+    </div>
+</div>
+
 <script>
     if (window.lucide) lucide.createIcons();
+
+    function openVolunteerRegistrationModal() {
+        const m = document.getElementById('volunteerRegModal');
+        if (m) {
+            m.classList.add('open');
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+
+    function closeVolunteerRegistrationModal() {
+        const m = document.getElementById('volunteerRegModal');
+        if (m) m.classList.remove('open');
+    }
+
+    function copyVolunteerFormUrl() {
+        const input = document.getElementById('volunteerFormUrl');
+        if (input) {
+            input.select();
+            navigator.clipboard.writeText(input.value).then(() => {
+                const btnText = document.getElementById('copyBtnText');
+                if (btnText) btnText.innerText = 'Copied!';
+                setTimeout(() => { if (btnText) btnText.innerText = 'Copy'; }, 2000);
+            });
+        }
+    }
+
+    window.addEventListener('click', function(e) {
+        const m = document.getElementById('volunteerRegModal');
+        if (e.target === m) closeVolunteerRegistrationModal();
+    });
 </script>
 </body>
 </html>

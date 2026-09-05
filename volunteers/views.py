@@ -369,3 +369,125 @@ def volunteer_export_excel(request):
     )
     response["Content-Disposition"] = 'attachment; filename="aequs_volunteers.xlsx"'
     return response
+
+
+# =============================================================================
+# PUBLIC VOLUNTEER REGISTRATION FORM & QR CODE
+# =============================================================================
+
+def public_volunteer_registration(request):
+    """Public standalone registration form for prospective community volunteers."""
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        gender = request.POST.get("gender", "")
+        date_of_birth = request.POST.get("date_of_birth") or None
+        address = request.POST.get("address", "")
+        city = request.POST.get("city", "")
+        state = request.POST.get("state", "")
+        pincode = request.POST.get("pincode", "")
+        occupation = request.POST.get("occupation", "")
+        qualification = request.POST.get("qualification", "")
+        skills = request.POST.get("skills", "")
+        remarks = request.POST.get("remarks", "")
+
+        errors = []
+        if not first_name:
+            errors.append("First name is required.")
+        if not email:
+            errors.append("Email address is required.")
+        if not phone:
+            errors.append("Phone number is required.")
+
+        if Volunteer.objects.filter(email__iexact=email).exists():
+            errors.append("A volunteer with this email address is already registered.")
+
+        if errors:
+            return render(
+                request,
+                "volunteers/public_volunteer_form.html",
+                {
+                    "errors": errors,
+                    "form_data": request.POST,
+                    "gender_choices": Volunteer.GENDER_CHOICES,
+                },
+            )
+
+        volunteer = Volunteer.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+            gender=gender,
+            date_of_birth=date_of_birth,
+            address=address,
+            city=city,
+            state=state,
+            pincode=pincode,
+            occupation=occupation,
+            qualification=qualification,
+            skills=skills,
+            status="ACTIVE",
+            remarks=remarks,
+        )
+
+        try:
+            from reports.models import log_activity, ActivityLog
+            log_activity(
+                request,
+                action=f"New volunteer registered online: {volunteer.first_name} {volunteer.last_name}",
+                category="VOLUNTEER",
+                action_type=ActivityLog.ActionType.CREATE,
+                object_type="Volunteer",
+                object_id=volunteer.pk,
+                details=f"Online public volunteer registration: {volunteer.email}",
+            )
+        except Exception:
+            pass
+
+        return redirect("volunteers:registration_success")
+
+    return render(
+        request,
+        "volunteers/public_volunteer_form.html",
+        {
+            "gender_choices": Volunteer.GENDER_CHOICES,
+        },
+    )
+
+
+def volunteer_registration_success(request):
+    """Confirmation page displayed after a public volunteer registration."""
+    return render(request, "volunteers/registration_success.html")
+
+
+def volunteer_registration_qr(request):
+    """Generate and return a live PNG QR code for the public volunteer registration link."""
+    try:
+        import qrcode
+        import qrcode.constants
+    except ImportError:
+        qrcode = None
+
+    if not qrcode:
+        return HttpResponse("QR code generation library is not installed.", status=501)
+
+    form_url = request.build_absolute_uri("/volunteers/register/public/")
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=8,
+        border=3,
+    )
+    qr.add_data(form_url)
+    qr.make(fit=True)
+
+    image = qr.make_image(fill_color="#1e293b", back_color="white")
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return HttpResponse(buffer.getvalue(), content_type="image/png")

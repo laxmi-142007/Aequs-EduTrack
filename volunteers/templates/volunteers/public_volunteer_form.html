@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Registration - EduTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f7fb;
+            color: #231f20;
+            min-height: 100vh;
+        }
+        .page {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 760px;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 16px;
+            border-radius: 18px;
+            background: #dd2d27;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            box-shadow: 0 8px 20px rgba(221, 45, 39, 0.20);
+        }
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+            font-weight: 800;
+            color: #231f20;
+        }
+        .header p {
+            margin: 0;
+            color: #64748b;
+            font-size: 13.5px;
+            line-height: 1.6;
+        }
+
+        /* FORM CARD */
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 32px;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+        }
+        .section-title {
+            margin: 20px 0 16px;
+            font-size: 15px;
+            font-weight: 800;
+            color: #231f20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        /* FORM GROUP */
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+        }
+        .required {
+            color: #dc2626;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            color: #334155;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #dd2d27;
+            box-shadow: 0 0 0 3px rgba(221, 45, 39, 0.10);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        input[type="date"] {
+            cursor: pointer;
+        }
+
+        /* GRID LAYOUTS */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ERROR BANNER */
+        .error-banner {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+            color: #991b1b;
+            font-size: 13px;
+        }
+        .error-banner ul {
+            margin: 6px 0 0;
+            padding-left: 20px;
+        }
+        .error-banner li {
+            margin: 3px 0;
+        }
+
+        /* SUBMIT BUTTON */
+        .submit-btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #dd2d27;
+            color: white;
+            font-family: inherit;
+            font-size: 14.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .submit-btn:hover {
+            background: #c92520;
+            transform: translateY(-1px);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .privacy-note {
+            margin: 14px 0 0;
+            color: #94a3b8;
+            font-size: 11.5px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .page { padding: 20px 12px; }
+            .form-card { padding: 22px 18px; }
+            .header h1 { font-size: 22px; }
+            .two-column, .three-column { grid-template-columns: 1fr; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo-icon">&#129309;</div>
+            <h1>Volunteer Registration Form</h1>
+            <p>Join the Aequs Foundation community volunteer network. Please fill out your details below to register.</p>
+        </div>
+
+        <!-- FORM CARD -->
+        <div class="form-card">
+            {% if errors %}
+            <div class="error-banner">
+                <strong>Please correct the following errors:</strong>
+                <ul>
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'volunteers:public_registration' %}">
+                {% csrf_token %}
+
+                <!-- PERSONAL INFO -->
+                <div class="section-title">&#128100; Personal Information</div>
+
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="first_name">First Name <span class="required">*</span></label>
+                        <input type="text" id="first_name" name="first_name" required placeholder="e.g. Priya" value="{{ form_data.first_name|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name <span class="required">*</span></label>
+                        <input type="text" id="last_name" name="last_name" required placeholder="e.g. Sharma" value="{{ form_data.last_name|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" required placeholder="priya.sharma@example.com" value="{{ form_data.email|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="phone" name="phone" required placeholder="e.g. 9876543210" value="{{ form_data.phone|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender">
+                            <option value="">-- Select Gender --</option>
+                            {% for val, label in gender_choices %}
+                            <option value="{{ val }}" {% if form_data.gender == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date_of_birth">Date of Birth</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" value="{{ form_data.date_of_birth|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- ADDRESS INFO -->
+                <div class="section-title">&#128205; Address & Location</div>
+
+                <div class="form-group">
+                    <label for="address">Street Address</label>
+                    <input type="text" id="address" name="address" placeholder="e.g. Flat 301, Lakeview Residency" value="{{ form_data.address|default:'' }}">
+                </div>
+
+                <div class="three-column">
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" placeholder="e.g. Belagavi" value="{{ form_data.city|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" id="state" name="state" placeholder="e.g. Karnataka" value="{{ form_data.state|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="pincode">PIN Code</label>
+                        <input type="text" id="pincode" name="pincode" placeholder="e.g. 590001" value="{{ form_data.pincode|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- BACKGROUND & SKILLS -->
+                <div class="section-title">&#127891; Background & Skills</div>
+
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="occupation">Current Occupation</label>
+                        <input type="text" id="occupation" name="occupation" placeholder="e.g. Software Engineer / Student" value="{{ form_data.occupation|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="qualification">Highest Qualification</label>
+                        <input type="text" id="qualification" name="qualification" placeholder="e.g. B.Tech / M.Sc / High School" value="{{ form_data.qualification|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="skills">Key Skills & Interests</label>
+                    <input type="text" id="skills" name="skills" placeholder="e.g. Teaching, STEM Mentorship, Event Coordination, First Aid" value="{{ form_data.skills|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Availability / Notes</label>
+                    <textarea id="remarks" name="remarks" placeholder="Tell us about your weekly availability or preferences...">{{ form_data.remarks|default:'' }}</textarea>
+                </div>
+
+                <!-- SUBMIT -->
+                <button type="submit" class="submit-btn">
+                    &#10003; Submit Volunteer Registration
+                </button>
+
+                <p class="privacy-note">
+                    By submitting this form, you consent to Aequs Foundation contacting you for community initiatives and educational volunteering opportunities.
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

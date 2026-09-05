@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful - EduTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f7fb;
+            color: #231f20;
+        }
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+        .card {
+            width: 100%;
+            max-width: 620px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+        }
+        .success-icon {
+            width: 82px;
+            height: 82px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            border: 6px solid #f0fdf4;
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: 26px;
+            font-weight: 800;
+            color: #166534;
+        }
+        .subtitle {
+            margin: 0 auto 28px;
+            max-width: 500px;
+            color: #64748b;
+            font-size: 14.5px;
+            line-height: 1.6;
+        }
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 28px;
+            text-align: left;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: #475569;
+        }
+        .info-box strong {
+            color: #1e293b;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: #dd2d27;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: #c92520;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="card">
+        <div class="success-icon">&#10003;</div>
+        <h1>Registration Submitted!</h1>
+        <p class="subtitle">Thank you for registering with the Aequs Foundation Volunteer Program. Your details have been successfully recorded in EduTrack.</p>
+
+        <div class="info-box">
+            <p style="margin:0 0 10px;"><strong>What happens next?</strong></p>
+            <ul style="margin:0;padding-left:20px;">
+                <li>The Aequs Foundation team will review your profile and match you with upcoming community and educational initiatives.</li>
+                <li>You will be contacted via email or phone regarding orientation sessions and event scheduling.</li>
+            </ul>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'volunteers:public_registration' %}" class="btn btn-secondary">
+                &#8634; Register Another Volunteer
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                &#8592; EduTrack Portal
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
