@@ -1,7 +1,9 @@
 import csv
 from io import BytesIO
-
-import qrcode
+try:
+    import qrcode
+except ImportError:
+    qrcode = None
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -820,6 +822,9 @@ def event_form_qr(request, pk):
     )
 
     form_url = request.build_absolute_uri(f"/events/form/{form_link.token}/")
+
+    if not qrcode:
+        return HttpResponse("QR code generation library is not installed.", status=501)
 
     qr = qrcode.QRCode(
         version=1,

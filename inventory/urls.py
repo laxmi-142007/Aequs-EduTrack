@@ -40,11 +40,21 @@ urlpatterns = [
         views.api_stock_in,
         name="stock_in",
     ),
+    path(
+        "api/stock/in/",
+        views.api_stock_in,
+        name="api_stock_in",
+    ),
 
     path(
         "api/stock/out/",
         views.api_stock_out,
         name="stock_out",
+    ),
+    path(
+        "api/stock/out/",
+        views.api_stock_out,
+        name="api_stock_out",
     ),
 
     path(

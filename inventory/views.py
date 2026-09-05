@@ -1371,53 +1371,82 @@ def inventory_bulk_upload(request):
 
 @require_http_methods(["GET"])
 def api_export_csv(request):
+    """Export inventory items or transaction history as CSV"""
+    export_type = request.GET.get("type", "items")
+    response = HttpResponse(content_type="text/csv")
 
-    items = InventoryItem.objects.all()
-
-    response = HttpResponse(
-        content_type="text/csv"
-    )
-
-    response["Content-Disposition"] = (
-        'attachment; filename="inventory_export.csv"'
-    )
-
-    writer = csv.writer(response)
-
-    writer.writerow([
-        "item_name",
-        "sku",
-        "category",
-        "unit",
-        "current_stock",
-        "low_stock_threshold",
-        "unit_cost",
-        "location",
-        "description",
-        "status",
-    ])
-
-    for item in items:
-
-        writer.writerow([
-            item.item_name,
-            item.sku,
-            item.category,
-            item.unit,
-            item.current_stock,
-            item.low_stock_threshold,
-            item.unit_cost,
-            item.location,
-            item.description,
-            item.status,
-        ])
-
-    _log(
-        request,
-        action="Exported inventory CSV",
-        action_type="EXPORT",
-        object_type="Inventory",
-        details=f"Exported {items.count()} inventory items.",
-    )
+    if export_type == "transactions":
+        response["Content-Disposition"] = 'attachment; filename="inventory_transactions.csv"'
+        writer = csv.writer(response)
+        writer.writerow(["Date", "Time", "Item Name", "SKU", "Category", "Type", "Quantity", "Unit", "Prev Stock", "New Stock", "Source/Destination", "Reference #", "Performed By", "Notes"])
+        tx_qs = StockTransaction.objects.select_related("item").all().order_by("-created_at")
+        for tx in tx_qs:
+            writer.writerow([
+                tx.transaction_date.strftime("%Y-%m-%d") if tx.transaction_date else "",
+                tx.created_at.strftime("%H:%M:%S") if tx.created_at else "",
+                tx.item.item_name if tx.item else "",
+                tx.item.sku if tx.item else "",
+                tx.item.get_category_display() if tx.item else "",
+                tx.get_transaction_type_display(),
+                tx.quantity,
+                tx.item.unit if tx.item else "",
+                tx.previous_stock,
+                tx.new_stock,
+                tx.source_destination,
+                tx.reference_number,
+                tx.performed_by,
+                tx.notes,
+            ])
+        _log(
+            request,
+            action="Exported inventory transactions CSV",
+            action_type="EXPORT",
+            object_type="Inventory",
+            details=f"Exported {tx_qs.count()} transaction records.",
+        )
+    elif export_type == "raw":
+        response["Content-Disposition"] = 'attachment; filename="inventory_export.csv"'
+        writer = csv.writer(response)
+        writer.writerow(["item_name", "sku", "category", "unit", "current_stock", "low_stock_threshold", "unit_cost", "location", "description", "status"])
+        items = InventoryItem.objects.all().order_by("category", "item_name")
+        for item in items:
+            writer.writerow([
+                item.item_name, item.sku, item.category, item.unit,
+                item.current_stock, item.low_stock_threshold, item.unit_cost,
+                item.location, item.description, item.status,
+            ])
+        _log(
+            request,
+            action="Exported inventory CSV",
+            action_type="EXPORT",
+            object_type="Inventory",
+            details=f"Exported {items.count()} inventory items.",
+        )
+    else:
+        response["Content-Disposition"] = 'attachment; filename="inventory_stock_report.csv"'
+        writer = csv.writer(response)
+        writer.writerow(["Item Name", "SKU", "Category", "Current Stock", "Unit", "Low Stock Threshold", "Stock Status", "Unit Cost (INR)", "Location", "Description", "Last Updated"])
+        items = InventoryItem.objects.all().order_by("category", "item_name")
+        for item in items:
+            writer.writerow([
+                item.item_name,
+                item.sku,
+                item.get_category_display(),
+                item.current_stock,
+                item.unit,
+                item.low_stock_threshold,
+                item.stock_status,
+                f"{item.unit_cost:.2f}" if item.unit_cost else "0.00",
+                item.location,
+                item.description,
+                item.updated_at.strftime("%Y-%m-%d %H:%M") if item.updated_at else "",
+            ])
+        _log(
+            request,
+            action="Exported inventory stock report CSV",
+            action_type="EXPORT",
+            object_type="Inventory",
+            details=f"Exported {items.count()} inventory items.",
+        )
 
     return response

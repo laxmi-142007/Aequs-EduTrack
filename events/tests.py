@@ -1,11 +1,21 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from inventory.models import InventoryItem, StockTransaction, InventoryCategory
 from events.models import Event
+
+User = get_user_model()
 
 
 class EventInventoryRequestTest(TestCase):
     def setUp(self):
+        self.user = User.objects.create_superuser(
+            username="testadmin",
+            email="admin@example.com",
+            password="password123",
+            role="ADMIN",
+        )
+        self.client.force_login(self.user)
         self.item = InventoryItem.objects.create(
             item_name="Event Banners",
             sku="EVT-BAN-01",
