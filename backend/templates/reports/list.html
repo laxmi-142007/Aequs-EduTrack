@@ -25,7 +25,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--slate-800); min-height: 100vh; font-size: 13px; }
         .main { margin-left: 256px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; }
 
         /* Topbar */
@@ -247,6 +247,8 @@
             font-weight: 700;
             text-transform: uppercase;
         }
+        .audit-table tbody tr:hover { background: #f8fafc; }
+
         .cat-badge {
             padding: 3px 8px;
             border-radius: 12px;
@@ -254,12 +256,20 @@
             font-weight: 700;
             display: inline-block;
         }
+        .cat-STUDENT { background: #dcfce7; color: #166534; }
+        .cat-ACADEMIC { background: #ede9fe; color: #5b21b6; }
         .cat-INVENTORY { background: #e0f2fe; color: #0369a1; }
         .cat-SCHOOL { background: #fef3c7; color: #92400e; }
-        .cat-STUDENT { background: #dcfce7; color: #166534; }
+        .cat-EVENT { background: #fce7f3; color: #9d174d; }
+        .cat-DISTRIBUTION { background: #cffafe; color: #155e75; }
+        .cat-INTERNSHIP { background: #dbeafe; color: #1d4ed8; }
+        .cat-VOLUNTEER { background: #ffedd5; color: #9a3412; }
         .cat-AUTH { background: #f3e8ff; color: #6b21a8; }
         .cat-REPORT { background: #ffe4e6; color: #e11d48; }
         .cat-GENERAL { background: #f1f5f9; color: #475569; }
+        .cat-ELIGIBILITY { background: #fef9c3; color: #854d0e; }
+        .cat-USER { background: #e0e7ff; color: #3730a3; }
+        .cat-DASHBOARD { background: #ccfbf1; color: #115e59; }
 
         /* Modal Backdrop & Window */
         .modal-backdrop {
@@ -327,431 +337,494 @@
         .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--slate-700); cursor: pointer; }
         .checkbox-item input { accent-color: var(--aequs-red); cursor: pointer; }
 
+        .audit-filters {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 1100px) {
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .audit-filters { width: 100%; justify-content: flex-start; }
+        }
+
         @media (max-width: 768px) {
             .main { margin-left: 0; }
             .form-row { grid-template-columns: 1fr; }
             .reports-grid { grid-template-columns: 1fr; }
+            .audit-table { display: block; overflow-x: auto; }
         }
     </style>
 </head>
-
 <body>
-    {% include 'includes/sidebar.html' with active_page='reports' %}
+{% include 'includes/sidebar.html' with active_page='reports' %}
 
-    <div class="main">
-        <header class="topbar">
-            <div class="topbar-left">
-                <div class="breadcrumb">
-                    <a href="{% url 'dashboard' %}">Dashboard</a>
-                    <span>/</span>
-                    <span>Reports & Analytics</span>
-                </div>
-                <h1><i data-lucide="bar-chart-3" style="width:20px;height:20px;color:var(--aequs-red);"></i> Reports & Analytics Hub</h1>
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="breadcrumb">
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <span>/</span>
+                <span>Reports & Analytics</span>
             </div>
-            <div class="topbar-actions">
-                {% if can_create_reports %}
-                <button type="button" class="btn btn-primary" onclick="openCreateReportModal()">
-                    <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Create Report
-                </button>
-                {% endif %}
-                <a href="{% url 'dashboard' %}" class="btn btn-outline">
-                    <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Dashboard
-                </a>
-            </div>
-        </header>
-
-        <main class="content">
-            <!-- Messages -->
-            {% if messages %}
-            <div>
-                {% for message in messages %}
-                <div style="padding:10px 14px;border-radius:6px;font-size:12.5px;font-weight:500;margin-bottom:12px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;display:flex;align-items:center;gap:8px;">
-                    <i data-lucide="check-circle" style="width:16px;height:16px;"></i> {{ message }}
-                </div>
-                {% endfor %}
-            </div>
+            <h1><i data-lucide="bar-chart-3" style="width:20px;height:20px;color:var(--aequs-red);"></i> Reports & Analytics Hub</h1>
+        </div>
+        <div class="topbar-actions">
+            {% if can_create_reports %}
+            <button type="button" class="btn btn-primary" onclick="openCreateReportModal()">
+                <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Create Report
+            </button>
             {% endif %}
+            <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Dashboard
+            </a>
+        </div>
+    </header>
 
-            <!-- Summary KPI Cards -->
-            <div class="cards">
-                <div class="card">
-                    <h3>Active Students</h3>
-                    <div class="number">{{ total_students }}</div>
+    <main class="content">
+        <!-- Messages -->
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div style="padding:10px 14px;border-radius:6px;font-size:12.5px;font-weight:500;margin-bottom:12px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="check-circle" style="width:16px;height:16px;"></i> {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- KPI Cards -->
+        <div class="cards">
+            <div class="card">
+                <h3>Active Students</h3>
+                <div class="number">{{ total_students }}</div>
+            </div>
+            <div class="card">
+                <h3>Study Kits Eligible</h3>
+                <div class="number">{{ study_kit_count }}</div>
+            </div>
+            <div class="card">
+                <h3>Laptops Eligible</h3>
+                <div class="number">{{ laptop_count }}</div>
+            </div>
+            <div class="card">
+                <h3>Books Eligible</h3>
+                <div class="number">{{ book_count }}</div>
+            </div>
+            <div class="card">
+                <h3>Workbooks Eligible</h3>
+                <div class="number">{{ workbook_count }}</div>
+            </div>
+            <div class="card">
+                <h3>Internships Eligible</h3>
+                <div class="number">{{ internship_count }}</div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: Configured & Saved Reports Hub -->
+        <div class="section-card">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">
+                        <i data-lucide="file-text" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                        Reports Directory
+                        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--slate-100);color:var(--slate-600);margin-left:6px;">{{ reports|length }} Available</span>
+                    </div>
+                    <div class="section-subtitle">
+                        Reports configured in the system. Visibility and access are governed per report policy.
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Study Kits Eligible</h3>
-                    <div class="number">{{ study_kit_count }}</div>
-                </div>
-                <div class="card">
-                    <h3>Laptops Eligible</h3>
-                    <div class="number">{{ laptop_count }}</div>
-                </div>
-                <div class="card">
-                    <h3>Books Eligible</h3>
-                    <div class="number">{{ book_count }}</div>
-                </div>
-                <div class="card">
-                    <h3>Workbooks Eligible</h3>
-                    <div class="number">{{ workbook_count }}</div>
-                </div>
-                <div class="card">
-                    <h3>Internships Eligible</h3>
-                    <div class="number">{{ internship_count }}</div>
+
+                <!-- Scope & Status Filter Pills -->
+                <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+                    <div class="filter-pills">
+                        <a href="{% url 'reports:list' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" class="pill {% if not scope_filter %}active{% endif %}">All Visible</a>
+                        <a href="{% url 'reports:list' %}?scope=mine{% if status_filter %}&status={{ status_filter }}{% endif %}" class="pill {% if scope_filter == 'mine' %}active{% endif %}">My Reports</a>
+                        <a href="{% url 'reports:list' %}?scope=public{% if status_filter %}&status={{ status_filter }}{% endif %}" class="pill {% if scope_filter == 'public' %}active{% endif %}">Public</a>
+                        <a href="{% url 'reports:list' %}?scope=shared{% if status_filter %}&status={{ status_filter }}{% endif %}" class="pill {% if scope_filter == 'shared' %}active{% endif %}">Role & Group Shared</a>
+                    </div>
+                    <div class="filter-pills">
+                        <span style="font-size:11px;color:var(--slate-400);margin-right:4px;font-weight:600;display:flex;align-items:center;">Status:</span>
+                        <a href="{% url 'reports:list' %}{% if scope_filter %}?scope={{ scope_filter }}{% endif %}" class="pill {% if not status_filter %}active{% endif %}" style="padding:3px 8px;font-size:11px;">All</a>
+                        <a href="{% url 'reports:list' %}?status=PUBLISHED{% if scope_filter %}&scope={{ scope_filter }}{% endif %}" class="pill {% if status_filter == 'PUBLISHED' %}active{% endif %}" style="padding:3px 8px;font-size:11px;">Published</a>
+                        <a href="{% url 'reports:list' %}?status=DRAFT{% if scope_filter %}&scope={{ scope_filter }}{% endif %}" class="pill {% if status_filter == 'DRAFT' %}active{% endif %}" style="padding:3px 8px;font-size:11px;">Drafts</a>
+                        <a href="{% url 'reports:list' %}?status=ARCHIVED{% if scope_filter %}&scope={{ scope_filter }}{% endif %}" class="pill {% if status_filter == 'ARCHIVED' %}active{% endif %}" style="padding:3px 8px;font-size:11px;">Archived</a>
+                    </div>
                 </div>
             </div>
 
-            <!-- SECTION 1: Configured & Saved Reports Hub -->
-            <div class="section-card">
-                <div class="section-header">
-                    <div>
-                        <div class="section-title">
-                            <i data-lucide="file-text" style="width:18px;height:18px;color:var(--aequs-red);"></i>
-                            Reports Directory
-                            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--slate-100);color:var(--slate-600);margin-left:6px;">{{ reports|length }} Available</span>
-                        </div>
-                        <div class="section-subtitle">
-                            Reports configured in the system. Visibility and access are governed per report policy.
-                        </div>
-                    </div>
+            <!-- Reports Cards Grid -->
+            <div class="reports-grid">
+                {% for r in reports %}
+                <div class="report-card">
+                    <div class="report-card-top">
+                        <div class="report-badges">
+                            <span class="report-type-badge">{{ r.get_report_type_display }}</span>
 
-                    <!-- Scope & Status Filter Pills -->
-                    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-                        <div class="filter-pills">
-                            <a href="{% url 'reports:list' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" class="pill {% if not scope_filter %}active{% endif %}">All Visible</a>
-                            <a href="{% url 'reports:list' %}?scope=mine{% if status_filter %}&status={{ status_filter }}{% endif %}" class="pill {% if scope_filter == 'mine' %}active{% endif %}">My Reports</a>
-                            <a href="{% url 'reports:list' %}?scope=public{% if status_filter %}&status={{ status_filter }}{% endif %}" class="pill {% if scope_filter == 'public' %}active{% endif %}">Public</a>
-                            <a href="{% url 'reports:list' %}?scope=shared{% if status_filter %}&status={{ status_filter }}{% endif %}" class="pill {% if scope_filter == 'shared' %}active{% endif %}">Role & Group Shared</a>
-                        </div>
-                        <div class="filter-pills">
-                            <span style="font-size:11px;color:var(--slate-400);margin-right:4px;font-weight:600;display:flex;align-items:center;">Status:</span>
-                            <a href="{% url 'reports:list' %}{% if scope_filter %}?scope={{ scope_filter }}{% endif %}" class="pill {% if not status_filter %}active{% endif %}" style="padding:3px 8px;font-size:11px;">All</a>
-                            <a href="{% url 'reports:list' %}?status=PUBLISHED{% if scope_filter %}&scope={{ scope_filter }}{% endif %}" class="pill {% if status_filter == 'PUBLISHED' %}active{% endif %}" style="padding:3px 8px;font-size:11px;">Published</a>
-                            <a href="{% url 'reports:list' %}?status=DRAFT{% if scope_filter %}&scope={{ scope_filter }}{% endif %}" class="pill {% if status_filter == 'DRAFT' %}active{% endif %}" style="padding:3px 8px;font-size:11px;">Drafts</a>
-                            <a href="{% url 'reports:list' %}?status=ARCHIVED{% if scope_filter %}&scope={{ scope_filter }}{% endif %}" class="pill {% if status_filter == 'ARCHIVED' %}active{% endif %}" style="padding:3px 8px;font-size:11px;">Archived</a>
-                        </div>
-                    </div>
-                </div>
+                            <!-- Who Has Access Badge -->
+                            {% if r.visibility == 'PUBLIC' %}
+                            <span class="access-badge access-public" title="Visible to all users with reports access">
+                                <i data-lucide="globe" style="width:11px;height:11px;"></i> All Users
+                            </span>
+                            {% elif r.visibility == 'ROLES' %}
+                            <span class="access-badge access-roles" title="{{ r.get_access_display }}">
+                                <i data-lucide="shield" style="width:11px;height:11px;"></i> {{ r.get_access_display }}
+                            </span>
+                            {% elif r.visibility == 'GROUPS' %}
+                            <span class="access-badge access-groups" title="{{ r.get_access_display }}">
+                                <i data-lucide="users" style="width:11px;height:11px;"></i> {{ r.get_access_display }}
+                            </span>
+                            {% else %}
+                            <span class="access-badge access-creator" title="Private to creator & super admins">
+                                <i data-lucide="lock" style="width:11px;height:11px;"></i> Private
+                            </span>
+                            {% endif %}
 
-                <!-- Reports Cards Grid -->
-                <div class="reports-grid">
-                    {% for r in reports %}
-                    <div class="report-card">
-                        <div class="report-card-top">
-                            <div class="report-badges">
-                                <span class="report-type-badge">{{ r.get_report_type_display }}</span>
+                            {% if r.status == 'PUBLISHED' %}
+                            <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;">Published</span>
+                            {% elif r.status == 'DRAFT' %}
+                            <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:#fef3c7;color:#b45309;border:1px solid #fde68a;">Draft</span>
+                            {% else %}
+                            <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;">Archived</span>
+                            {% endif %}
 
-                                <!-- Who Has Access Badge -->
-                                {% if r.visibility == 'PUBLIC' %}
-                                <span class="access-badge access-public" title="Visible to all users with reports access">
-                                    <i data-lucide="globe" style="width:11px;height:11px;"></i> All Users
-                                </span>
-                                {% elif r.visibility == 'ROLES' %}
-                                <span class="access-badge access-roles" title="{{ r.get_access_display }}">
-                                    <i data-lucide="shield" style="width:11px;height:11px;"></i> {{ r.get_access_display }}
-                                </span>
-                                {% elif r.visibility == 'GROUPS' %}
-                                <span class="access-badge access-groups" title="{{ r.get_access_display }}">
-                                    <i data-lucide="users" style="width:11px;height:11px;"></i> {{ r.get_access_display }}
-                                </span>
-                                {% else %}
-                                <span class="access-badge access-creator" title="Private to creator & super admins">
-                                    <i data-lucide="lock" style="width:11px;height:11px;"></i> Private
-                                </span>
-                                {% endif %}
-
-                                {% if r.status == 'PUBLISHED' %}
-                                <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;">Published</span>
-                                {% elif r.status == 'DRAFT' %}
-                                <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:#fef3c7;color:#b45309;border:1px solid #fde68a;">Draft</span>
-                                {% else %}
-                                <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;">Archived</span>
-                                {% endif %}
-
-                                {% if r.has_attachment %}
-                                <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:10px;background:#fff1f1;color:var(--aequs-red);border:1px solid #fecaca;" title="Attachment Available">
-                                    <i data-lucide="paperclip" style="width:10px;height:10px;display:inline-block;vertical-align:middle;"></i> {% if r.is_pdf %}PDF{% else %}Doc{% endif %}
-                                </span>
-                                {% endif %}
-                            </div>
-
-                            <div class="report-title">{{ r.title }}</div>
-                            {% if r.description %}
-                            <div class="report-desc">{{ r.description }}</div>
+                            {% if r.has_attachment %}
+                            <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:10px;background:#fff1f1;color:var(--aequs-red);border:1px solid #fecaca;" title="Attachment Available">
+                                <i data-lucide="paperclip" style="width:10px;height:10px;display:inline-block;vertical-align:middle;"></i> {% if r.is_pdf %}PDF{% else %}Doc{% endif %}
+                            </span>
                             {% endif %}
                         </div>
 
-                        <div class="report-card-footer">
-                            <div>
-                                <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i>
-                                {{ r.created_at|date:"M d, Y" }}
-                            </div>
-                            <div class="report-actions">
-                                <a href="{% url 'reports:export_excel' r.id %}" class="btn btn-outline btn-sm" title="Download Excel (.xlsx)">
-                                    <i data-lucide="file-spreadsheet" style="width:12px;height:12px;color:#16a34a;"></i> Excel
-                                </a>
-                                <a href="{% url 'reports:export_csv' r.id %}" class="btn btn-outline btn-sm" title="Download CSV">
-                                    <i data-lucide="download" style="width:12px;height:12px;"></i> CSV
-                                </a>
-                                <a href="{% url 'reports:detail' r.id %}" class="btn btn-secondary btn-sm" style="color:var(--slate-800);font-weight:600;">
-                                    <i data-lucide="eye" style="width:12px;height:12px;"></i> View
-                                </a>
-                                {% if can_create_reports and r.created_by_id == request.user.id or request.user.is_admin %}
-                                <a href="{% url 'reports:edit' r.id %}" class="btn btn-outline btn-sm" title="Edit Report Definition">
-                                    <i data-lucide="edit-2" style="width:12px;height:12px;"></i>
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div style="grid-column: 1 / -1; padding: 36px 20px; text-align: center; color: var(--slate-400); background: #fafbfc; border-radius: 8px; border: 1px dashed var(--slate-200);">
-                        <i data-lucide="file-x" style="width:36px;height:36px;margin:0 auto 10px;opacity:0.6;"></i>
-                        <p style="font-size:14px;font-weight:600;color:var(--slate-700);">No reports match your current filter.</p>
-                        <p style="font-size:12px;color:var(--slate-500);margin-top:4px;">You only see reports permitted by your role, group memberships, or creator status.</p>
-                        {% if can_create_reports %}
-                        <button type="button" class="btn btn-primary btn-sm" onclick="openCreateReportModal()" style="margin-top:14px;">
-                            <i data-lucide="plus-circle" style="width:13px;height:13px;"></i> Create First Report
-                        </button>
+                        <div class="report-title">{{ r.title }}</div>
+                        {% if r.description %}
+                        <div class="report-desc">{{ r.description }}</div>
                         {% endif %}
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <!-- SECTION 2: Real-Time Activity Audit Logs -->
-            <div class="section-card">
-                <div class="section-header">
-                    <div>
-                        <div class="section-title">
-                            <i data-lucide="activity" style="width:18px;height:18px;color:var(--aequs-red);"></i>
-                            Real-Time Activity Audit Logs
+                    <div class="report-card-footer">
+                        <div>
+                            <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i>
+                            {{ r.created_at|date:"M d, Y" }}
                         </div>
-                        <div class="section-subtitle">Comprehensive system activity trail with auto-refresh.</div>
-                    </div>
-
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: #166534; background: #dcfce7; padding: 4px 10px; border-radius: 12px; border: 1px solid #bbf7d0;">
-                            <span style="width: 7px; height: 7px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> Auto-Sync
-                        </span>
-
-                        <form method="get" style="display: flex; gap: 8px;">
-                            <select name="category" id="category-filter-select" onchange="this.form.submit()" class="form-control" style="width: auto; padding: 6px 10px; font-size: 12px;">
-                                <option value="">All Categories</option>
-                                <option value="REPORT" {% if category_filter == 'REPORT' %}selected{% endif %}>Report Actions</option>
-                                <option value="INVENTORY" {% if category_filter == 'INVENTORY' %}selected{% endif %}>Inventory & Distribution</option>
-                                <option value="SCHOOL" {% if category_filter == 'SCHOOL' %}selected{% endif %}>School Updates</option>
-                                <option value="STUDENT" {% if category_filter == 'STUDENT' %}selected{% endif %}>Student Records</option>
-                                <option value="AUTH" {% if category_filter == 'AUTH' %}selected{% endif %}>Authentication</option>
-                            </select>
-                        </form>
+                        <div class="report-actions">
+                            <a href="{% url 'reports:export_excel' r.id %}" class="btn btn-outline btn-sm" title="Download Excel (.xlsx)">
+                                <i data-lucide="file-spreadsheet" style="width:12px;height:12px;color:#16a34a;"></i> Excel
+                            </a>
+                            <a href="{% url 'reports:export_csv' r.id %}" class="btn btn-outline btn-sm" title="Download CSV">
+                                <i data-lucide="download" style="width:12px;height:12px;"></i> CSV
+                            </a>
+                            <a href="{% url 'reports:detail' r.id %}" class="btn btn-secondary btn-sm" style="color:var(--slate-800);font-weight:600;">
+                                <i data-lucide="eye" style="width:12px;height:12px;"></i> View
+                            </a>
+                            {% if can_create_reports and r.created_by_id == request.user.id or request.user.is_admin %}
+                            <a href="{% url 'reports:edit' r.id %}" class="btn btn-outline btn-sm" title="Edit Report Definition">
+                                <i data-lucide="edit-2" style="width:12px;height:12px;"></i>
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-
-                <table class="audit-table">
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Category</th>
-                            <th>Action / Activity Description</th>
-                            <th>Performed By</th>
-                        </tr>
-                    </thead>
-                    <tbody id="audit-logs-tbody">
-                        {% for log in activity_logs %}
-                        <tr>
-                            <td style="color: var(--slate-500); font-size: 12px; white-space: nowrap;">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
-                            <td><span class="cat-badge cat-{{ log.category }}">{{ log.category }}</span></td>
-                            <td style="font-weight: 600; color: var(--slate-900);">{{ log.action }}</td>
-                            <td style="color: var(--slate-600);">👤 {{ log.user.username|default:"System Admin" }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" style="text-align: center; color: var(--slate-400); padding: 25px;">No activity logs recorded yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </main>
-    </div>
-
-    <!-- Quick Create Report Modal -->
-    {% if can_create_reports %}
-    <div class="modal-backdrop" id="reportModal">
-        <div class="modal-window">
-            <div class="modal-header">
-                <span class="modal-title" style="display:flex;align-items:center;gap:8px;">
-                    <i data-lucide="plus-circle" style="width:18px;height:18px;color:var(--aequs-red);"></i>
-                    Create New Report
-                </span>
-                <button type="button" class="modal-close" onclick="closeCreateReportModal()">&times;</button>
-            </div>
-            <form action="{% url 'reports:create' %}" method="post" id="createReportForm" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="form-row" style="grid-template-columns: 2fr 1fr;">
-                        <div class="form-group">
-                            <label for="modalReportTitle">Report Title <span style="color:var(--aequs-red);">*</span></label>
-                            <input type="text" name="title" id="modalReportTitle" class="form-control" placeholder="e.g. Q3 Belagavi Laptop Distribution Summary" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="modalReportStatus">Status <span style="color:var(--aequs-red);">*</span></label>
-                            <select name="status" id="modalReportStatus" class="form-control">
-                                {% for s_val, s_lbl in report_statuses %}
-                                <option value="{{ s_val }}" {% if s_val == 'PUBLISHED' %}selected{% endif %}>{{ s_lbl }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                        <div class="form-group">
-                            <label for="modalReportType">Report Type <span style="color:var(--aequs-red);">*</span></label>
-                            <select name="report_type" id="modalReportType" class="form-control" required>
-                                {% for val, lbl in report_types %}
-                                <option value="{{ val }}">{{ lbl }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="modalAcademicYear">Academic Year</label>
-                            <input type="text" name="academic_year" id="modalAcademicYear" class="form-control" placeholder="e.g. 2024-2025 (or blank for all)">
-                        </div>
-                        <div class="form-group">
-                            <label for="modalRowLimit">Records Limit</label>
-                            <input type="number" name="row_limit" id="modalRowLimit" class="form-control" placeholder="100 (0 for all)" value="100">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="modalAttachment">Attach Supporting Document / PDF (Optional)</label>
-                        <input type="file" name="attachment" id="modalAttachment" class="form-control" accept=".pdf,.docx,.xlsx,.csv,.png,.jpg">
-                        <span class="help-text">Attach an official signed PDF or supporting documentation (Max 25 MB)</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="modalReportDesc">Description / Purpose</label>
-                        <textarea name="description" id="modalReportDesc" class="form-control" rows="2" placeholder="Brief summary of what this report covers..."></textarea>
-                    </div>
-
-                    <!-- Access Visibility Settings -->
-                    <div class="form-group" style="padding:14px;background:#fafbfc;border:1px solid var(--slate-200);border-radius:8px;">
-                        <label for="modalVisibility" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <i data-lucide="shield-check" style="width:15px;height:15px;color:var(--aequs-red);"></i>
-                            Report Access & Visibility <span style="color:var(--aequs-red);">*</span>
-                        </label>
-                        <select name="visibility" id="modalVisibility" class="form-control" onchange="toggleAccessFields(this.value)">
-                            <option value="PUBLIC">All Users (Public)</option>
-                            <option value="ROLES">Specific System Roles</option>
-                            <option value="GROUPS">Specific User Groups</option>
-                            <option value="CREATOR">Private (Only Me & Super Admins)</option>
-                        </select>
-                        <span class="help-text" id="visibilityHelpText">Visible to everyone who has access to the Reports module</span>
-
-                        <!-- Role Selector (shown when ROLES selected) -->
-                        <div id="rolesSelectorWrap" style="display:none;margin-top:10px;">
-                            <div style="font-size:11.5px;font-weight:600;color:var(--slate-700);margin-bottom:4px;">Select Permitted Roles:</div>
-                            <div class="checkbox-grid">
-                                {% for r_val, r_lbl in available_roles %}
-                                <label class="checkbox-item">
-                                    <input type="checkbox" name="allowed_roles" value="{{ r_val }}">
-                                    <span>{{ r_lbl }}</span>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <!-- Group Selector (shown when GROUPS selected) -->
-                        <div id="groupsSelectorWrap" style="display:none;margin-top:10px;">
-                            <div style="font-size:11.5px;font-weight:600;color:var(--slate-700);margin-bottom:4px;">Select Permitted Groups:</div>
-                            <div class="checkbox-grid">
-                                {% for g in available_groups %}
-                                <label class="checkbox-item">
-                                    <input type="checkbox" name="allowed_groups" value="{{ g.id }}">
-                                    <span>{{ g.name }}</span>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="font-size:12px;color:var(--slate-500);display:flex;align-items:center;gap:6px;">
-                        <i data-lucide="info" style="width:14px;height:14px;color:var(--slate-400);"></i>
-                        <span>Need advanced date ranges or category filters? Visit the <a href="{% url 'reports:create' %}" style="color:var(--aequs-red);font-weight:600;text-decoration:none;">Full Report Builder &rarr;</a></span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeCreateReportModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i data-lucide="check" style="width:14px;height:14px;"></i> Save & Generate Report
+                {% empty %}
+                <div style="grid-column: 1 / -1; padding: 36px 20px; text-align: center; color: var(--slate-400); background: #fafbfc; border-radius: 8px; border: 1px dashed var(--slate-200);">
+                    <i data-lucide="file-x" style="width:36px;height:36px;margin:0 auto 10px;opacity:0.6;"></i>
+                    <p style="font-size:14px;font-weight:600;color:var(--slate-700);">No reports match your current filter.</p>
+                    <p style="font-size:12px;color:var(--slate-500);margin-top:4px;">You only see reports permitted by your role, group memberships, or creator status.</p>
+                    {% if can_create_reports %}
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openCreateReportModal()" style="margin-top:14px;">
+                        <i data-lucide="plus-circle" style="width:13px;height:13px;"></i> Create First Report
                     </button>
+                    {% endif %}
                 </div>
-            </form>
+                {% endfor %}
+            </div>
         </div>
+
+        <!-- SECTION 2: Real-Time Activity Audit Logs -->
+        <div class="section-card">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">
+                        <i data-lucide="activity" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                        Real-Time Activity Audit Logs
+                    </div>
+                    <div class="section-subtitle">Every system action, stock dispatch, school edit, and user login is automatically logged here.</div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: #166534; background: #dcfce7; padding: 4px 10px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                        <span style="width: 7px; height: 7px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> Live Sync
+                    </span>
+
+                    <form method="get" id="audit-filter-form" class="audit-filters">
+                        <div class="filter-group">
+                            <span class="filter-label">Category:</span>
+                            <select name="category" id="category-filter-select" class="form-control" style="width: auto; padding: 6px 10px; font-size: 12px;">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.value }}" {% if category_filter == cat.value %}selected{% endif %}>{{ cat.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-label">From:</span>
+                            <input type="date" name="date_from" id="date-from" value="{{ date_from }}" class="form-control" style="width: auto; padding: 5px 8px; font-size: 12px;">
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-label">To:</span>
+                            <input type="date" name="date_to" id="date-to" value="{{ date_to }}" class="form-control" style="width: auto; padding: 5px 8px; font-size: 12px;">
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="clearAuditFilters()">Clear</button>
+                    </form>
+                </div>
+            </div>
+
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Category</th>
+                        <th>Action / Activity Description</th>
+                        <th>Performed By</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-logs-tbody">
+                    {% for log in activity_logs %}
+                    <tr>
+                        <td style="color: var(--slate-500); font-size: 12px; white-space: nowrap;">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                        <td><span class="cat-badge cat-{{ log.category }}">{{ log.category }}</span></td>
+                        <td style="font-weight: 600; color: var(--slate-900);">{{ log.action }}</td>
+                        <td style="color: var(--slate-600);">👤 {{ log.user.username|default:"System Admin" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--slate-400); padding: 25px;">No activity logs found for the selected filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Quick Create Report Modal -->
+{% if can_create_reports %}
+<div class="modal-backdrop" id="reportModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <span class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="plus-circle" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                Create New Report
+            </span>
+            <button type="button" class="modal-close" onclick="closeCreateReportModal()">&times;</button>
+        </div>
+        <form action="{% url 'reports:create' %}" method="post" id="createReportForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-row" style="grid-template-columns: 2fr 1fr;">
+                    <div class="form-group">
+                        <label for="modalReportTitle">Report Title <span style="color:var(--aequs-red);">*</span></label>
+                        <input type="text" name="title" id="modalReportTitle" class="form-control" placeholder="e.g. Q3 Belagavi Laptop Distribution Summary" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalReportStatus">Status <span style="color:var(--aequs-red);">*</span></label>
+                        <select name="status" id="modalReportStatus" class="form-control">
+                            {% for s_val, s_lbl in report_statuses %}
+                            <option value="{{ s_val }}" {% if s_val == 'PUBLISHED' %}selected{% endif %}>{{ s_lbl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="form-group">
+                        <label for="modalReportType">Report Type <span style="color:var(--aequs-red);">*</span></label>
+                        <select name="report_type" id="modalReportType" class="form-control" required>
+                            {% for val, lbl in report_types %}
+                            <option value="{{ val }}">{{ lbl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalAcademicYear">Academic Year</label>
+                        <input type="text" name="academic_year" id="modalAcademicYear" class="form-control" placeholder="e.g. 2024-2025 (or blank for all)">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalRowLimit">Records Limit</label>
+                        <input type="number" name="row_limit" id="modalRowLimit" class="form-control" placeholder="100 (0 for all)" value="100">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalAttachment">Attach Supporting Document / PDF (Optional)</label>
+                    <input type="file" name="attachment" id="modalAttachment" class="form-control" accept=".pdf,.docx,.xlsx,.csv,.png,.jpg">
+                    <span class="help-text">Attach an official signed PDF or supporting documentation (Max 25 MB)</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalReportDesc">Description / Purpose</label>
+                    <textarea name="description" id="modalReportDesc" class="form-control" rows="2" placeholder="Brief summary of what this report covers..."></textarea>
+                </div>
+
+                <!-- Access Visibility Settings -->
+                <div class="form-group" style="padding:14px;background:#fafbfc;border:1px solid var(--slate-200);border-radius:8px;">
+                    <label for="modalVisibility" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                        <i data-lucide="shield-check" style="width:15px;height:15px;color:var(--aequs-red);"></i>
+                        Report Access & Visibility <span style="color:var(--aequs-red);">*</span>
+                    </label>
+                    <select name="visibility" id="modalVisibility" class="form-control" onchange="toggleAccessFields(this.value)">
+                        <option value="PUBLIC">All Users (Public)</option>
+                        <option value="ROLES">Specific System Roles</option>
+                        <option value="GROUPS">Specific User Groups</option>
+                        <option value="CREATOR">Private (Only Me & Super Admins)</option>
+                    </select>
+                    <span class="help-text" id="visibilityHelpText">Visible to everyone who has access to the Reports module</span>
+
+                    <!-- Role Selector (shown when ROLES selected) -->
+                    <div id="rolesSelectorWrap" style="display:none;margin-top:10px;">
+                        <div style="font-size:11.5px;font-weight:600;color:var(--slate-700);margin-bottom:4px;">Select Permitted Roles:</div>
+                        <div class="checkbox-grid">
+                            {% for r_val, r_lbl in available_roles %}
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="allowed_roles" value="{{ r_val }}">
+                                <span>{{ r_lbl }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Group Selector (shown when GROUPS selected) -->
+                    <div id="groupsSelectorWrap" style="display:none;margin-top:10px;">
+                        <div style="font-size:11.5px;font-weight:600;color:var(--slate-700);margin-bottom:4px;">Select Permitted Groups:</div>
+                        <div class="checkbox-grid">
+                            {% for g in available_groups %}
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="allowed_groups" value="{{ g.id }}">
+                                <span>{{ g.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size:12px;color:var(--slate-500);display:flex;align-items:center;gap:6px;">
+                    <i data-lucide="info" style="width:14px;height:14px;color:var(--slate-400);"></i>
+                    <span>Need advanced date ranges or category filters? Visit the <a href="{% url 'reports:create' %}" style="color:var(--aequs-red);font-weight:600;text-decoration:none;">Full Report Builder &rarr;</a></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateReportModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="check" style="width:14px;height:14px;"></i> Save & Generate Report
+                </button>
+            </div>
+        </form>
     </div>
-    {% endif %}
+</div>
+{% endif %}
 
-    <script>
-        if (window.lucide) lucide.createIcons();
+<script>
+    if (window.lucide) lucide.createIcons();
 
-        function openCreateReportModal() {
-            const m = document.getElementById('reportModal');
-            if (m) {
-                m.classList.add('open');
-                if (window.lucide) lucide.createIcons();
-                setTimeout(() => document.getElementById('modalReportTitle')?.focus(), 50);
-            }
+    function openCreateReportModal() {
+        const m = document.getElementById('reportModal');
+        if (m) {
+            m.classList.add('open');
+            if (window.lucide) lucide.createIcons();
+            setTimeout(() => document.getElementById('modalReportTitle')?.focus(), 50);
         }
+    }
 
-        function closeCreateReportModal() {
-            document.getElementById('reportModal')?.classList.remove('open');
+    function closeCreateReportModal() {
+        document.getElementById('reportModal')?.classList.remove('open');
+    }
+
+    function toggleAccessFields(val) {
+        const rolesWrap = document.getElementById('rolesSelectorWrap');
+        const groupsWrap = document.getElementById('groupsSelectorWrap');
+        const help = document.getElementById('visibilityHelpText');
+
+        if (rolesWrap) rolesWrap.style.display = val === 'ROLES' ? 'block' : 'none';
+        if (groupsWrap) groupsWrap.style.display = val === 'GROUPS' ? 'block' : 'none';
+
+        if (help) {
+            if (val === 'PUBLIC') help.innerText = 'Visible to everyone who has access to the Reports module';
+            else if (val === 'ROLES') help.innerText = 'Visible only to users holding the selected roles';
+            else if (val === 'GROUPS') help.innerText = 'Visible only to members of the selected groups';
+            else if (val === 'CREATOR') help.innerText = 'Visible only to you and Super Administrators';
         }
+    }
 
-        function toggleAccessFields(val) {
-            const rolesWrap = document.getElementById('rolesSelectorWrap');
-            const groupsWrap = document.getElementById('groupsSelectorWrap');
-            const help = document.getElementById('visibilityHelpText');
+    function clearAuditFilters() {
+        const cat = document.getElementById("category-filter-select");
+        const df = document.getElementById("date-from");
+        const dt = document.getElementById("date-to");
+        if (cat) cat.value = "";
+        if (df) df.value = "";
+        if (dt) dt.value = "";
+        window.location.href = window.location.pathname;
+    }
 
-            if (rolesWrap) rolesWrap.style.display = val === 'ROLES' ? 'block' : 'none';
-            if (groupsWrap) groupsWrap.style.display = val === 'GROUPS' ? 'block' : 'none';
+    function escapeHtml(value) {
+        if (value === null || value === undefined) return "";
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
-            if (help) {
-                if (val === 'PUBLIC') help.innerText = 'Visible to everyone who has access to the Reports module';
-                else if (val === 'ROLES') help.innerText = 'Visible only to users holding the selected roles';
-                else if (val === 'GROUPS') help.innerText = 'Visible only to members of the selected groups';
-                else if (val === 'CREATOR') help.innerText = 'Visible only to you and Super Administrators';
-            }
-        }
+    async function fetchLiveAuditLogs() {
+        try {
+            const cat = document.getElementById('category-filter-select')?.value || '';
+            const df = document.getElementById('date-from')?.value || '';
+            const dt = document.getElementById('date-to')?.value || '';
+            const params = new URLSearchParams();
+            if (cat) params.set('category', cat);
+            if (df) params.set('date_from', df);
+            if (dt) params.set('date_to', dt);
 
-        // Live audit log polling
-        async function fetchLiveAuditLogs() {
-            try {
-                const categoryEl = document.getElementById('category-filter-select');
-                const category = categoryEl ? categoryEl.value : '';
-                const res = await fetch(`/reports/api/logs/?category=${encodeURIComponent(category)}`);
-                const data = await res.json();
-                if (data.success && data.logs) {
-                    const tbody = document.getElementById('audit-logs-tbody');
-                    if (!tbody) return;
-                    if (data.logs.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--slate-400); padding: 25px;">No activity logs recorded yet.</td></tr>`;
-                        return;
-                    }
-                    tbody.innerHTML = data.logs.map(log => `
-                        <tr>
-                            <td style="color: var(--slate-500); font-size: 12px; white-space: nowrap;">${log.timestamp}</td>
-                            <td><span class="cat-badge cat-${log.category}">${log.category}</span></td>
-                            <td style="font-weight: 600; color: var(--slate-900);">${log.action}</td>
-                            <td style="color: var(--slate-600);">👤 ${log.username}</td>
-                        </tr>
-                    `).join('');
+            const res = await fetch(`/reports/api/logs/?${params.toString()}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.success && Array.isArray(data.logs)) {
+                const tbody = document.getElementById('audit-logs-tbody');
+                if (!tbody) return;
+                if (data.logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--slate-400); padding: 25px;">No activity logs found for the selected filters.</td></tr>`;
+                    return;
                 }
-            } catch (err) {
-                console.error("Live audit log refresh error:", err);
+                tbody.innerHTML = data.logs.map(log => `
+                    <tr>
+                        <td style="color: var(--slate-500); font-size: 12px; white-space: nowrap;">${escapeHtml(log.timestamp)}</td>
+                        <td><span class="cat-badge cat-${escapeHtml(log.category || 'GENERAL')}">${escapeHtml(log.category || 'GENERAL')}</span></td>
+                        <td style="font-weight: 600; color: var(--slate-900);">${escapeHtml(log.action || '')}</td>
+                        <td style="color: var(--slate-600);">👤 ${escapeHtml(log.username || 'System')}</td>
+                    </tr>
+                `).join('');
             }
+        } catch (err) {
+            console.error("Live audit log refresh error:", err);
         }
+    }
 
-        setInterval(fetchLiveAuditLogs, 5000);
-    </script>
+    setInterval(fetchLiveAuditLogs, 3000);
+</script>
 </body>
 </html>

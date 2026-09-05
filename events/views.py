@@ -1,13 +1,20 @@
 import csv
 from io import BytesIO
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+
+import qrcode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q, Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
 from inventory.models import InventoryItem, StockTransaction
-from volunteers.models import Volunteer, EventParticipation
-from .models import Event, EventResource
+from reports.models import ActivityLog, log_activity
+from volunteers.models import EventParticipation, Volunteer
+
+from .forms import PublicEventForm
+from .models import Event, EventFormLink, EventResource
 
 
 def is_event_manager(user, event=None):
@@ -33,12 +40,19 @@ def is_event_manager(user, event=None):
     return False
 
 
+# =============================================================================
+# EVENT LIST
+# =============================================================================
+
+@login_required
 def event_list(request):
     q = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "").strip()
     my_events_filter = request.GET.get("my_events", "").strip()
 
-    events_qs = Event.objects.select_related("requested_item").prefetch_related("volunteer_participations__volunteer").all()
+    events_qs = Event.objects.select_related("requested_item").prefetch_related(
+        "volunteer_participations__volunteer", "resources__item"
+    ).all()
 
     # KPI counts calculated across all records
     total_events = events_qs.count()
@@ -63,10 +77,10 @@ def event_list(request):
 
     if q:
         events_qs = events_qs.filter(
-            Q(title__icontains=q) |
-            Q(location__icontains=q) |
-            Q(organizer__icontains=q) |
-            Q(description__icontains=q)
+            Q(title__icontains=q)
+            | Q(location__icontains=q)
+            | Q(organizer__icontains=q)
+            | Q(description__icontains=q)
         )
 
     if status_filter:
@@ -83,6 +97,7 @@ def event_list(request):
         ev.user_participation = user_participations_map.get(ev.id)
 
     can_create_event = is_event_manager(request.user)
+    form_links = EventFormLink.objects.filter(is_active=True)
 
     return render(
         request,
@@ -99,13 +114,21 @@ def event_list(request):
             "completed_count": completed_count,
             "volunteers_mobilized": volunteers_mobilized,
             "can_create_event": can_create_event,
+            "form_links": form_links,
         },
     )
 
 
+# =============================================================================
+# EVENT DETAIL
+# =============================================================================
+
+@login_required
 def event_detail(request, pk):
     event = get_object_or_404(
-        Event.objects.select_related("requested_item").prefetch_related("volunteer_participations__volunteer"),
+        Event.objects.select_related("requested_item").prefetch_related(
+            "volunteer_participations__volunteer", "resources__item"
+        ),
         pk=pk,
     )
     participations = event.volunteer_participations.select_related("volunteer").all()
@@ -136,7 +159,7 @@ def event_detail(request, pk):
         EventResource.objects.get_or_create(
             event=event,
             item=event.requested_item,
-            defaults={"quantity": event.requested_quantity or 1}
+            defaults={"quantity": event.requested_quantity or 1},
         )
 
     event_resources = event.resources.select_related("item").all()
@@ -164,6 +187,10 @@ def event_detail(request, pk):
     )
 
 
+# =============================================================================
+# VOLUNTEER SELF-ACTIONS & APPROVALS
+# =============================================================================
+
 @login_required
 def event_volunteer_signup(request, pk):
     """Allow an authenticated volunteer to choose and request to volunteer for an event."""
@@ -188,7 +215,7 @@ def event_volunteer_signup(request, pk):
         )
         messages.success(
             request,
-            f"Your request to volunteer for '{event.title}' has been submitted for coordinator approval."
+            f"Your request to volunteer for '{event.title}' has been submitted for coordinator approval.",
         )
     return redirect("events:detail", pk=event.pk)
 
@@ -238,6 +265,7 @@ def event_decline_volunteer(request, pk, participation_id):
     return redirect("events:detail", pk=event.pk)
 
 
+@login_required
 def event_assign_volunteer(request, pk):
     event = get_object_or_404(Event, pk=pk)
 
@@ -277,6 +305,7 @@ def event_assign_volunteer(request, pk):
     return redirect("events:detail", pk=event.pk)
 
 
+@login_required
 def event_remove_volunteer(request, pk, participation_id):
     event = get_object_or_404(Event, pk=pk)
 
@@ -293,6 +322,11 @@ def event_remove_volunteer(request, pk, participation_id):
     return redirect("events:detail", pk=event.pk)
 
 
+# =============================================================================
+# EVENT CREATE
+# =============================================================================
+
+@login_required
 def event_create(request):
     if request.user.is_authenticated and not is_event_manager(request.user):
         messages.error(request, "Permission denied. Normal volunteers are not authorized to schedule events.")
@@ -305,56 +339,70 @@ def event_create(request):
         event_date = request.POST.get("event_date")
         location = request.POST.get("location", "")
         organizer = request.POST.get("organizer", "")
+
         inventory_item_id = request.POST.get("inventory_item")
         inventory_quantity = request.POST.get("inventory_quantity")
 
-        event = Event.objects.create(
-            title=title,
-            status=status,
-            description=description,
-            event_date=event_date,
-            location=location,
-            organizer=organizer,
-        )
+        with transaction.atomic():
+            event = Event.objects.create(
+                title=title,
+                status=status,
+                description=description,
+                event_date=event_date,
+                location=location,
+                organizer=organizer,
+            )
 
-        if inventory_item_id and inventory_quantity:
-            try:
-                qty = int(inventory_quantity)
-                if qty > 0:
-                    item = InventoryItem.objects.get(pk=inventory_item_id)
-                    prev_stock = item.current_stock
-                    new_stock = max(0, prev_stock - qty)
-                    item.current_stock = new_stock
-                    item.save()
+            if inventory_item_id and inventory_quantity:
+                try:
+                    qty = int(inventory_quantity)
+                    if qty > 0:
+                        item = InventoryItem.objects.select_for_update().get(pk=inventory_item_id)
+                        previous_stock = item.current_stock
+                        if qty > previous_stock:
+                            qty = previous_stock
 
-                    StockTransaction.objects.create(
-                        item=item,
-                        transaction_type=StockTransaction.TransactionType.STOCK_OUT,
-                        quantity=qty,
-                        previous_stock=prev_stock,
-                        new_stock=new_stock,
-                        source_destination=f"Event: {event.title}",
-                        reference_number=f"EVT-{event.pk}",
-                        notes=f"Resource requested for event: {event.title}",
-                    )
+                        new_stock = previous_stock - qty
+                        item.current_stock = new_stock
+                        item.save()
 
-                    event.requested_item = item
-                    event.requested_quantity = qty
-                    event.save()
+                        StockTransaction.objects.create(
+                            item=item,
+                            transaction_type=StockTransaction.TransactionType.STOCK_OUT,
+                            quantity=qty,
+                            previous_stock=previous_stock,
+                            new_stock=new_stock,
+                            source_destination=f"Event: {event.title}",
+                            reference_number=f"EVT-{event.pk}",
+                            notes=f"Resource requested for event: {event.title}",
+                        )
 
-                    EventResource.objects.get_or_create(
-                        event=event,
-                        item=item,
-                        defaults={"quantity": qty}
-                    )
-            except (ValueError, InventoryItem.DoesNotExist):
-                pass
+                        event.requested_item = item
+                        event.requested_quantity = qty
+                        event.save()
+
+                        EventResource.objects.get_or_create(
+                            event=event,
+                            item=item,
+                            defaults={"quantity": qty},
+                        )
+                except (ValueError, InventoryItem.DoesNotExist):
+                    pass
+
+            log_activity(
+                request,
+                action=f"Event created: {event.title}",
+                category="EVENT",
+                action_type=ActivityLog.ActionType.CREATE,
+                object_type="Event",
+                object_id=event.pk,
+                details=f"Event '{event.title}' was created.",
+            )
 
         messages.success(request, f"Event '{event.title}' scheduled successfully.")
         return redirect("events:detail", pk=event.pk)
 
     inventory_items = InventoryItem.objects.filter(status="ACTIVE")
-
     return render(
         request,
         "events/event_form.html",
@@ -365,6 +413,11 @@ def event_create(request):
     )
 
 
+# =============================================================================
+# EVENT EDIT
+# =============================================================================
+
+@login_required
 def event_edit(request, pk):
     event = get_object_or_404(Event, pk=pk)
 
@@ -389,7 +442,7 @@ def event_edit(request, pk):
                 qty = int(inventory_quantity)
                 if qty > 0:
                     item = InventoryItem.objects.get(pk=inventory_item_id)
-                    # If this item was already assigned and quantity increased, deduct the difference
+                    # If this item was already assigned and quantity increased, deduct difference
                     if event.requested_item_id == item.id:
                         additional_qty = max(0, qty - (event.requested_quantity or 0))
                         if additional_qty > 0:
@@ -409,7 +462,6 @@ def event_edit(request, pk):
                             )
                         event.requested_quantity = qty
                     else:
-                        # New item assigned
                         prev_stock = item.current_stock
                         new_stock = max(0, prev_stock - qty)
                         item.current_stock = new_stock
@@ -430,11 +482,20 @@ def event_edit(request, pk):
             except (ValueError, InventoryItem.DoesNotExist):
                 pass
 
+        log_activity(
+            request,
+            action=f"Event updated: {event.title}",
+            category="EVENT",
+            action_type=ActivityLog.ActionType.UPDATE,
+            object_type="Event",
+            object_id=event.pk,
+            details=f"Event '{event.title}' was updated.",
+        )
+
         messages.success(request, f"Event '{event.title}' updated successfully.")
         return redirect("events:detail", pk=event.pk)
 
     inventory_items = InventoryItem.objects.filter(status="ACTIVE")
-
     return render(
         request,
         "events/event_form.html",
@@ -446,6 +507,10 @@ def event_edit(request, pk):
         },
     )
 
+
+# =============================================================================
+# RESOURCE ALLOCATION (MULTI-ITEM)
+# =============================================================================
 
 @login_required
 def event_add_resource(request, pk):
@@ -554,6 +619,11 @@ def event_remove_resource(request, pk, resource_id):
     return redirect("events:detail", pk=event.pk)
 
 
+# =============================================================================
+# EVENT DELETE
+# =============================================================================
+
+@login_required
 def event_delete(request, pk):
     event = get_object_or_404(Event, pk=pk)
 
@@ -562,13 +632,28 @@ def event_delete(request, pk):
         return redirect("events:detail", pk=event.pk)
 
     if request.method == "POST":
-        title = event.title
+        event_title = event.title
+        event_id = event.pk
         event.delete()
-        messages.success(request, f"Event '{title}' was deleted.")
+
+        log_activity(
+            request,
+            action=f"Event deleted: {event_title}",
+            category="EVENT",
+            action_type=ActivityLog.ActionType.DELETE,
+            object_type="Event",
+            object_id=event_id,
+            details=f"Event '{event_title}' was deleted.",
+        )
+        messages.success(request, f"Event '{event_title}' was deleted.")
         return redirect("events:list")
 
     return redirect("events:detail", pk=event.pk)
 
+
+# =============================================================================
+# EXPORTS
+# =============================================================================
 
 def event_export_csv(request):
     events = Event.objects.select_related("requested_item").all()
@@ -577,9 +662,9 @@ def event_export_csv(request):
 
     if q:
         events = events.filter(
-            Q(title__icontains=q) |
-            Q(location__icontains=q) |
-            Q(organizer__icontains=q)
+            Q(title__icontains=q)
+            | Q(location__icontains=q)
+            | Q(organizer__icontains=q)
         )
     if status_filter:
         events = events.filter(status=status_filter)
@@ -609,7 +694,7 @@ def event_export_csv(request):
 
 def event_export_excel(request):
     import openpyxl
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
     events = Event.objects.select_related("requested_item").all()
     q = request.GET.get("q", "").strip()
@@ -617,9 +702,9 @@ def event_export_excel(request):
 
     if q:
         events = events.filter(
-            Q(title__icontains=q) |
-            Q(location__icontains=q) |
-            Q(organizer__icontains=q)
+            Q(title__icontains=q)
+            | Q(location__icontains=q)
+            | Q(organizer__icontains=q)
         )
     if status_filter:
         events = events.filter(status=status_filter)
@@ -628,7 +713,6 @@ def event_export_excel(request):
     ws = wb.active
     ws.title = "Aequs Events"
 
-    # Title & Metadata
     title_font = Font(name="Calibri", size=14, bold=True, color="1E293B")
     meta_font = Font(name="Calibri", size=10, italic=True, color="64748B")
     header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
@@ -684,3 +768,187 @@ def event_export_excel(request):
     )
     response["Content-Disposition"] = 'attachment; filename="aequs_events.xlsx"'
     return response
+
+
+# =============================================================================
+# CREATE EVENT FORM LINK
+# =============================================================================
+
+@login_required
+def create_event_form_link(request):
+    if request.method == "POST":
+        form_link = EventFormLink.objects.create()
+        return redirect("events:share_form", pk=form_link.pk)
+
+    return render(request, "events/create_form_link.html")
+
+
+# =============================================================================
+# SHARE EVENT FORM
+# =============================================================================
+
+@login_required
+def share_event_form(request, pk):
+    form_link = get_object_or_404(
+        EventFormLink,
+        pk=pk,
+        is_active=True,
+    )
+
+    form_url = request.build_absolute_uri(f"/events/form/{form_link.token}/")
+
+    return render(
+        request,
+        "events/share_form.html",
+        {
+            "form_link": form_link,
+            "form_url": form_url,
+        },
+    )
+
+
+# =============================================================================
+# EVENT FORM QR CODE
+# =============================================================================
+
+@login_required
+def event_form_qr(request, pk):
+    form_link = get_object_or_404(
+        EventFormLink,
+        pk=pk,
+        is_active=True,
+    )
+
+    form_url = request.build_absolute_uri(f"/events/form/{form_link.token}/")
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(form_url)
+    qr.make(fit=True)
+
+    image = qr.make_image(
+        fill_color="black",
+        back_color="white",
+    )
+
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type="image/png",
+    )
+    response["Content-Disposition"] = f'inline; filename="event-form-{pk}.png"'
+    return response
+
+
+# =============================================================================
+# PUBLIC EMPLOYEE EVENT FORM
+# =============================================================================
+
+def public_event_form(request, token):
+    form_link = get_object_or_404(
+        EventFormLink,
+        token=token,
+        is_active=True,
+    )
+
+    if request.method == "POST":
+        form = PublicEventForm(request.POST)
+
+        if form.is_valid():
+            inventory_item = form.cleaned_data.get("inventory_item")
+            quantity = form.cleaned_data.get("inventory_quantity") or 0
+
+            with transaction.atomic():
+                event = form.save(commit=False)
+
+                if inventory_item and quantity > 0:
+                    item = InventoryItem.objects.select_for_update().get(pk=inventory_item.pk)
+
+                    if quantity > item.current_stock:
+                        form.add_error(
+                            "inventory_quantity",
+                            f"Only {item.current_stock} items are available.",
+                        )
+                    else:
+                        previous_stock = item.current_stock
+                        new_stock = previous_stock - quantity
+                        item.current_stock = new_stock
+                        item.save()
+
+                        event.requested_item = item
+                        event.requested_quantity = quantity
+                        event.save()
+
+                        StockTransaction.objects.create(
+                            item=item,
+                            transaction_type=StockTransaction.TransactionType.STOCK_OUT,
+                            quantity=quantity,
+                            previous_stock=previous_stock,
+                            new_stock=new_stock,
+                            source_destination=f"Event: {event.title}",
+                            reference_number=f"EVT-{event.pk}",
+                            notes=f"Resource requested through public event form: {event.title}",
+                        )
+
+                        EventResource.objects.get_or_create(
+                            event=event,
+                            item=item,
+                            defaults={"quantity": quantity},
+                        )
+                else:
+                    event.save()
+
+                if form.errors:
+                    return render(
+                        request,
+                        "events/public_event_form.html",
+                        {
+                            "form": form,
+                            "form_link": form_link,
+                        },
+                    )
+
+                log_activity(
+                    request,
+                    action=f"Event created: {event.title}",
+                    category="EVENT",
+                    action_type=ActivityLog.ActionType.CREATE,
+                    object_type="Event",
+                    object_id=event.pk,
+                    details="Event created through public employee event form.",
+                )
+
+            return redirect("events:success", pk=event.pk)
+    else:
+        form = PublicEventForm()
+
+    return render(
+        request,
+        "events/public_event_form.html",
+        {
+            "form": form,
+            "form_link": form_link,
+        },
+    )
+
+
+# =============================================================================
+# EVENT SUCCESS PAGE
+# =============================================================================
+
+def event_success(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    return render(
+        request,
+        "events/event_success.html",
+        {
+            "event": event,
+        },
+    )

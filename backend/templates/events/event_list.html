@@ -78,6 +78,8 @@
         .btn-secondary:hover { background: var(--slate-200); }
         .btn-outline { background: #ffffff; color: var(--slate-700); border: 1px solid var(--slate-200); }
         .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .btn-dark { background: var(--slate-900); color: #ffffff; }
+        .btn-dark:hover { background: var(--slate-800); }
         .btn-sm { padding: 5px 10px; font-size: 11.5px; }
 
         /* KPI Cards */
@@ -111,6 +113,44 @@
             color: var(--slate-900);
         }
         .sub-text { font-size: 11.5px; color: var(--slate-400); }
+
+        /* Employee Form Feature Banner */
+        .form-feature {
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(37, 99, 235, 0.06);
+        }
+        .form-feature-left { display: flex; align-items: center; gap: 14px; }
+        .form-feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            color: #2563eb;
+        }
+        .form-feature-text h3 {
+            font-size: 14px;
+            color: #1e3a8a;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .form-feature-text p {
+            color: var(--slate-600);
+            font-size: 12.5px;
+            line-height: 1.4;
+            margin: 0;
+        }
 
         /* Controls Section */
         .controls-card {
@@ -262,9 +302,10 @@
             .main { margin-left: 0; }
             .events-grid { grid-template-columns: 1fr; }
             .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .topbar-actions { width: 100%; justify-content: flex-start; }
+            .topbar-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
             .controls-card { flex-direction: column; align-items: stretch; }
             .search-wrap { width: 100%; }
+            .form-feature { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
@@ -284,6 +325,9 @@
             <h1><i data-lucide="calendar" style="width:20px;height:20px;color:var(--aequs-red);"></i> Events & Outreach Management</h1>
         </div>
         <div class="topbar-actions">
+            <a href="{% url 'events:create_form_link' %}" class="btn btn-dark" title="Generate Employee Event Submission Form">
+                <i data-lucide="link" style="width:14px;height:14px;"></i> Employee Form
+            </a>
             <a href="{% url 'events:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-outline" style="color:#15803d;border-color:#bbf7d0;background:#f0fdf4;">
                 <i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#16a34a;"></i> Export Excel
             </a>
@@ -332,6 +376,22 @@
                 <div class="number" style="color:var(--aequs-red);">{{ volunteers_mobilized }}</div>
                 <div class="sub-text">Distinct community volunteers</div>
             </div>
+        </div>
+
+        <!-- Employee Event Submission Feature Banner -->
+        <div class="form-feature">
+            <div class="form-feature-left">
+                <div class="form-feature-icon">
+                    <i data-lucide="smartphone" style="width:22px;height:22px;"></i>
+                </div>
+                <div class="form-feature-text">
+                    <h3>Employee Event Submission</h3>
+                    <p>Generate a secure event form link and QR code. Employees can scan or open the link, fill in event details, and submit directly.</p>
+                </div>
+            </div>
+            <a href="{% url 'events:create_form_link' %}" class="btn btn-outline" style="color:#1d4ed8;border-color:#bfdbfe;background:#eff6ff;">
+                <i data-lucide="qr-code" style="width:14px;height:14px;"></i> Generate Form Link & QR
+            </a>
         </div>
 
         <!-- Controls: Search & Filters -->

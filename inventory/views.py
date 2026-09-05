@@ -1,15 +1,12 @@
 # inventory/views.py
 
 import csv
-import io
 import json
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from django.contrib import messages
-from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
@@ -19,15 +16,16 @@ from .models import (
     Laptop,
     LaptopAssignment,
 )
+
 from .services import (
     process_stock_in,
     process_stock_out,
-    adjust_stock,
     issue_laptop,
     return_laptop,
-    replace_laptop,
     bulk_import_inventory,
 )
+
+from reports.models import log_activity
 
 
 # =============================================================================
@@ -38,6 +36,22 @@ def _current_user_name(request):
     if request.user.is_authenticated:
         return request.user.username
     return "Admin"
+
+
+def _log(request, action, action_type="CREATE", object_type="", object_id="", details=""):
+    """
+    Central helper for Inventory activity logging.
+    """
+
+    log_activity(
+        request,
+        action=action,
+        category="INVENTORY",
+        action_type=action_type,
+        object_type=object_type,
+        object_id=str(object_id) if object_id else "",
+        details=details,
+    )
 
 
 def _item_to_dict(item):
@@ -158,9 +172,6 @@ def _laptop_to_dict(laptop):
 
 @ensure_csrf_cookie
 def inventory_portal(request):
-    """
-    Main Inventory Management Portal.
-    """
 
     items = InventoryItem.objects.all()
 
@@ -171,7 +182,8 @@ def inventory_portal(request):
     ).count()
 
     low_stock_count = sum(
-        1 for item in items
+        1
+        for item in items
         if item.is_low_stock and item.current_stock > 0
     )
 
@@ -234,21 +246,16 @@ def api_inventory_items(request):
     status = request.GET.get("status", "").strip()
 
     if search:
-        items = items.filter(
-            item_name__icontains=search
-        ) | items.filter(
-            sku__icontains=search
+        items = (
+            items.filter(item_name__icontains=search)
+            | items.filter(sku__icontains=search)
         )
 
     if category:
-        items = items.filter(
-            category=category
-        )
+        items = items.filter(category=category)
 
     if status:
-        items = items.filter(
-            status=status
-        )
+        items = items.filter(status=status)
 
     data = [
         _item_to_dict(item)
@@ -270,6 +277,7 @@ def api_inventory_items(request):
 def api_create_inventory_item(request):
 
     try:
+
         if request.content_type == "application/json":
             data = json.loads(
                 request.body.decode("utf-8")
@@ -392,6 +400,20 @@ def api_create_inventory_item(request):
             status=status,
         )
 
+        # LOG CREATE
+        _log(
+            request,
+            action=f"Created inventory item '{item.item_name}'",
+            action_type="CREATE",
+            object_type="InventoryItem",
+            object_id=item.id,
+            details=(
+                f"SKU: {item.sku}; "
+                f"Category: {item.category}; "
+                f"Initial stock: {item.current_stock}"
+            ),
+        )
+
         return JsonResponse({
             "success": True,
             "message": "Inventory item created successfully.",
@@ -414,16 +436,26 @@ def api_create_inventory_item(request):
 # =============================================================================
 
 @require_http_methods(["POST", "PUT"])
-def api_update_inventory_item(
-    request,
-    item_id,
-):
+def api_update_inventory_item(request, item_id):
 
     try:
+
         item = get_object_or_404(
             InventoryItem,
             id=item_id,
         )
+
+        old_values = {
+            "item_name": item.item_name,
+            "sku": item.sku,
+            "category": item.category,
+            "unit": item.unit,
+            "low_stock_threshold": item.low_stock_threshold,
+            "unit_cost": str(item.unit_cost),
+            "location": item.location,
+            "description": item.description,
+            "status": item.status,
+        }
 
         if request.content_type == "application/json":
             data = json.loads(
@@ -438,6 +470,7 @@ def api_update_inventory_item(
             ).strip()
 
         if "sku" in data:
+
             new_sku = str(
                 data["sku"]
             ).strip().upper()
@@ -447,6 +480,7 @@ def api_update_inventory_item(
             ).exclude(
                 id=item.id
             ).exists():
+
                 return JsonResponse(
                     {
                         "success": False,
@@ -494,6 +528,44 @@ def api_update_inventory_item(
 
         item.save()
 
+        new_values = {
+            "item_name": item.item_name,
+            "sku": item.sku,
+            "category": item.category,
+            "unit": item.unit,
+            "low_stock_threshold": item.low_stock_threshold,
+            "unit_cost": str(item.unit_cost),
+            "location": item.location,
+            "description": item.description,
+            "status": item.status,
+        }
+
+        changes = []
+
+        for field in old_values:
+
+            if old_values[field] != new_values[field]:
+
+                changes.append(
+                    f"{field}: "
+                    f"'{old_values[field]}' → "
+                    f"'{new_values[field]}'"
+                )
+
+        # LOG UPDATE
+        _log(
+            request,
+            action=f"Updated inventory item '{item.item_name}'",
+            action_type="UPDATE",
+            object_type="InventoryItem",
+            object_id=item.id,
+            details=(
+                "; ".join(changes)
+                if changes
+                else "Item opened and saved without field changes."
+            ),
+        )
+
         return JsonResponse({
             "success": True,
             "message": "Inventory item updated successfully.",
@@ -516,10 +588,7 @@ def api_update_inventory_item(
 # =============================================================================
 
 @require_http_methods(["POST", "DELETE"])
-def api_delete_inventory_item(
-    request,
-    item_id,
-):
+def api_delete_inventory_item(request, item_id):
 
     try:
 
@@ -528,7 +597,29 @@ def api_delete_inventory_item(
             id=item_id,
         )
 
+        # Save values BEFORE deleting.
+        deleted_item_name = item.item_name
+        deleted_sku = item.sku
+        deleted_category = item.category
+        deleted_stock = item.current_stock
+
+        # DELETE FIRST
         item.delete()
+
+        # LOG AFTER DELETE
+        # We use the saved values because the object no longer exists.
+        _log(
+            request,
+            action=f"Deleted inventory item '{deleted_item_name}'",
+            action_type="DELETE",
+            object_type="InventoryItem",
+            object_id=item_id,
+            details=(
+                f"SKU: {deleted_sku}; "
+                f"Category: {deleted_category}; "
+                f"Stock at deletion: {deleted_stock}"
+            ),
+        )
 
         return JsonResponse({
             "success": True,
@@ -562,7 +653,10 @@ def api_stock_in(request):
         else:
             data = request.POST
 
-        item_id = data.get("item_id") or data.get("itemId")
+        item_id = (
+            data.get("item_id")
+            or data.get("itemId")
+        )
 
         quantity = int(
             data.get("quantity")
@@ -601,6 +695,19 @@ def api_stock_in(request):
             ),
         )
 
+        _log(
+            request,
+            action=f"Added stock for '{item.item_name}'",
+            action_type="STOCK_IN",
+            object_type="InventoryItem",
+            object_id=item.id,
+            details=(
+                f"Quantity: {quantity}; "
+                f"New stock: {item.current_stock}; "
+                f"Transaction ID: {record.id}"
+            ),
+        )
+
         return JsonResponse({
             "success": True,
             "message": "Stock added successfully.",
@@ -635,7 +742,10 @@ def api_stock_out(request):
         else:
             data = request.POST
 
-        item_id = data.get("item_id") or data.get("itemId")
+        item_id = (
+            data.get("item_id")
+            or data.get("itemId")
+        )
 
         quantity = int(
             data.get("quantity")
@@ -665,6 +775,19 @@ def api_stock_out(request):
                 data.get("notes")
                 or ""
             ).strip(),
+        )
+
+        _log(
+            request,
+            action=f"Removed stock from '{item.item_name}'",
+            action_type="STOCK_OUT",
+            object_type="InventoryItem",
+            object_id=item.id,
+            details=(
+                f"Quantity: {quantity}; "
+                f"New stock: {item.current_stock}; "
+                f"Transaction ID: {record.id}"
+            ),
         )
 
         return JsonResponse({
@@ -699,6 +822,7 @@ def api_stock_transactions(request):
     )
 
     item_id = request.GET.get("item_id")
+
     transaction_type = request.GET.get(
         "transaction_type"
     )
@@ -772,14 +896,19 @@ def api_laptops(request):
         )
 
     if search:
-        laptops = laptops.filter(
-            asset_number__icontains=search
-        ) | laptops.filter(
-            serial_number__icontains=search
-        ) | laptops.filter(
-            brand__icontains=search
-        ) | laptops.filter(
-            model_name__icontains=search
+        laptops = (
+            laptops.filter(
+                asset_number__icontains=search
+            )
+            | laptops.filter(
+                serial_number__icontains=search
+            )
+            | laptops.filter(
+                brand__icontains=search
+            )
+            | laptops.filter(
+                model_name__icontains=search
+            )
         )
 
     data = [
@@ -876,16 +1005,27 @@ def api_create_laptop(request):
                 data.get("condition")
                 or Laptop.Condition.NEW
             ).upper(),
-            status=(
-                str(
-                    data.get("status")
-                    or Laptop.Status.AVAILABLE
-                ).upper()
-            ),
+            status=str(
+                data.get("status")
+                or Laptop.Status.AVAILABLE
+            ).upper(),
             notes=str(
                 data.get("notes")
                 or ""
             ).strip(),
+        )
+
+        _log(
+            request,
+            action=f"Created laptop '{laptop.asset_number}'",
+            action_type="CREATE",
+            object_type="Laptop",
+            object_id=laptop.id,
+            details=(
+                f"Serial number: {laptop.serial_number}; "
+                f"Brand: {laptop.brand}; "
+                f"Model: {laptop.model_name}"
+            ),
         )
 
         return JsonResponse({
@@ -967,6 +1107,20 @@ def api_issue_laptop(request):
             ),
         )
 
+        _log(
+            request,
+            action=f"Issued laptop '{laptop.asset_number}'",
+            action_type="ISSUE",
+            object_type="Laptop",
+            object_id=laptop.id,
+            details=(
+                f"Student: {student.student_name}; "
+                f"Student ID: {student.id}; "
+                f"Assignment ID: {assignment.id}; "
+                f"Academic year: {academic_year}"
+            ),
+        )
+
         return JsonResponse({
             "success": True,
             "message": "Laptop issued successfully.",
@@ -989,10 +1143,7 @@ def api_issue_laptop(request):
 # =============================================================================
 
 @require_http_methods(["POST"])
-def api_return_laptop(
-    request,
-    laptop_id,
-):
+def api_return_laptop(request, laptop_id):
 
     try:
 
@@ -1007,6 +1158,7 @@ def api_return_laptop(
                 laptop=laptop,
                 status=LaptopAssignment.Status.ISSUED,
             )
+            .select_related("student")
             .order_by("-created_at")
             .first()
         )
@@ -1034,6 +1186,18 @@ def api_return_laptop(
                 data.get("condition")
                 or Laptop.Condition.GOOD
             ).upper(),
+        )
+
+        _log(
+            request,
+            action=f"Returned laptop '{laptop.asset_number}'",
+            action_type="RETURN",
+            object_type="Laptop",
+            object_id=laptop.id,
+            details=(
+                f"Student: {assignment.student.student_name}; "
+                f"Assignment ID: {result.id}"
+            ),
         )
 
         return JsonResponse({
@@ -1078,7 +1242,6 @@ def inventory_csv_template(request):
         "category",
         "current_stock",
         "unit",
-        "current_stock",
         "low_stock_threshold",
         "unit_cost",
         "location",
@@ -1090,8 +1253,8 @@ def inventory_csv_template(request):
         "Mathematics Textbook",
         "BOOK-001",
         "BOOKS",
-        "Pieces",
         "100",
+        "Pieces",
         "10",
         "250.00",
         "Warehouse A",
@@ -1103,8 +1266,8 @@ def inventory_csv_template(request):
         "Student Workbook",
         "WORK-001",
         "WORKBOOKS",
-        "Pieces",
         "200",
+        "Pieces",
         "20",
         "120.00",
         "Warehouse A",
@@ -1139,7 +1302,9 @@ def inventory_bulk_upload(request):
 
     filename = uploaded_file.name.lower()
 
-    if not filename.endswith((".csv", ".xlsx")):
+    if not filename.endswith(
+        (".csv", ".xlsx")
+    ):
         messages.error(
             request,
             "Invalid file format. Please upload CSV or XLSX."
@@ -1147,7 +1312,6 @@ def inventory_bulk_upload(request):
         return redirect("inventory:bulk_upload")
 
     try:
-        from .services import bulk_import_inventory
 
         result = bulk_import_inventory(
             file_obj=uploaded_file,
@@ -1162,6 +1326,18 @@ def inventory_bulk_upload(request):
         created = result.get("created", 0)
         updated = result.get("updated", 0)
 
+        _log(
+            request,
+            action="Bulk inventory upload completed",
+            action_type="IMPORT",
+            object_type="Inventory",
+            details=(
+                f"File: {uploaded_file.name}; "
+                f"Created: {created}; "
+                f"Updated: {updated}"
+            ),
+        )
+
         messages.success(
             request,
             f"Inventory upload successful! "
@@ -1169,6 +1345,18 @@ def inventory_bulk_upload(request):
         )
 
     except Exception as exc:
+
+        _log(
+            request,
+            action="Bulk inventory upload failed",
+            action_type="ERROR",
+            object_type="Inventory",
+            details=(
+                f"File: {uploaded_file.name}; "
+                f"Error: {str(exc)}"
+            ),
+        )
+
         messages.error(
             request,
             f"Inventory upload failed: {exc}"
@@ -1177,8 +1365,6 @@ def inventory_bulk_upload(request):
     return redirect("inventory:bulk_upload")
 
 
-
-   
 # =============================================================================
 # EXPORT INVENTORY CSV
 # =============================================================================
@@ -1225,5 +1411,13 @@ def api_export_csv(request):
             item.description,
             item.status,
         ])
+
+    _log(
+        request,
+        action="Exported inventory CSV",
+        action_type="EXPORT",
+        object_type="Inventory",
+        details=f"Exported {items.count()} inventory items.",
+    )
 
     return response
