@@ -79,14 +79,31 @@
 
 
         /* =========================================================
-           PAGE WRAPPER
+           MAIN WORKSPACE & PAGE WRAPPER
         ========================================================= */
+
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
 
         .documents-page {
             width: 100%;
             max-width: 1500px;
             margin: 0 auto;
             padding: 28px;
+        }
+
+        @media (max-width: 768px) {
+            .main {
+                margin-left: 0;
+            }
+            .documents-page {
+                padding: 16px;
+            }
         }
 
 
@@ -1281,8 +1298,11 @@
 
 
 <body>
+    <!-- Sidebar -->
+    {% include 'includes/sidebar.html' with active_page='internships' %}
 
-<div class="documents-page">
+    <main class="main">
+        <div class="documents-page">
 
 
     <!-- =========================================================
@@ -2267,7 +2287,8 @@
     </div>
 
 
-</div>
+        </div>
+    </main>
 
 
 <script>
