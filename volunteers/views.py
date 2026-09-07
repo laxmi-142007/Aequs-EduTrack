@@ -423,59 +423,24 @@ def share_volunteer_form(request, pk):
     )
 
 
-def volunteer_form_qr_by_token(request, token):
-    """Generate live PNG QR code for a unique volunteer form link by token."""
-    form_link = get_object_or_404(VolunteerFormLink, token=token, is_active=True)
-    form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
-
-    try:
-        import qrcode
-        import qrcode.constants
-    except ImportError:
-        qrcode = None
-
-    if not qrcode:
-        return HttpResponse("QR code generation library is not installed.", status=501)
-
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=8,
-        border=3,
-    )
-    qr.add_data(form_url)
-    qr.make(fit=True)
-
-    image = qr.make_image(fill_color="#1e293b", back_color="white")
-    buffer = BytesIO()
-    image.save(buffer, format="PNG")
-    buffer.seek(0)
-
-    response = HttpResponse(buffer.getvalue(), content_type="image/png")
-    response["Content-Disposition"] = f'inline; filename="volunteer-form-{token[:8]}.png"'
-    return response
-
-
-def volunteer_registration_qr(request, pk=None):
-    """Generate and return a live PNG QR code for volunteer registration."""
-    if pk:
+def volunteer_form_qr(request, token=None, pk=None):
+    """Generate and return live PNG QR code for volunteer registration form."""
+    if token:
+        form_link = get_object_or_404(VolunteerFormLink, token=token, is_active=True)
+    elif pk:
         form_link = get_object_or_404(VolunteerFormLink, pk=pk, is_active=True)
-        form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
     else:
         form_link = VolunteerFormLink.objects.filter(is_active=True).order_by("-created_at").first()
         if not form_link:
             form_link = VolunteerFormLink.objects.create()
-        form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
 
     try:
         import qrcode
         import qrcode.constants
     except ImportError:
-        qrcode = None
-
-    if not qrcode:
         return HttpResponse("QR code generation library is not installed.", status=501)
 
+    form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -485,15 +450,17 @@ def volunteer_registration_qr(request, pk=None):
     qr.add_data(form_url)
     qr.make(fit=True)
 
-    image = qr.make_image(fill_color="#1e293b", back_color="white")
     buffer = BytesIO()
-    image.save(buffer, format="PNG")
+    qr.make_image(fill_color="#1e293b", back_color="white").save(buffer, format="PNG")
     buffer.seek(0)
 
-    return HttpResponse(buffer.getvalue(), content_type="image/png")
+    response = HttpResponse(buffer.getvalue(), content_type="image/png")
+    response["Content-Disposition"] = f'inline; filename="volunteer-form-{form_link.token[:8]}.png"'
+    return response
 
 
-volunteer_form_qr = volunteer_registration_qr
+volunteer_form_qr_by_token = volunteer_form_qr
+volunteer_registration_qr = volunteer_form_qr
 
 
 # =============================================================================

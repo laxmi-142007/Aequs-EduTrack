@@ -56,12 +56,7 @@ INSTALLED_APPS = [
     "internships",
     "events",
     "volunteers",
-    "donations",
-    "expense_management",
-    "documents",
-    "notifications",
     "reports",
-    "audit",
 ]
 
 MIDDLEWARE = [
