@@ -1517,8 +1517,7 @@
 
 
     <!-- Programs & Benefits -->
-    {% if perms.eligibility.view_eligibilityrecord or perms.inventory.view_laptop or
-    perms.distributions.view_distribution or perms.internships.view_internshipplacement or request.user.is_admin %}
+    {% if perms.eligibility.view_eligibilityrecord or perms.inventory.view_laptop or perms.distributions.view_distribution or perms.internships.view_internshipplacement or request.user.is_admin %}
     <div class="nav-section-title">
       Programs & Benefits
     </div>
@@ -1566,8 +1565,7 @@
 
 
     <!-- Foundation -->
-    {% if perms.events.view_event or perms.volunteers.view_volunteer or perms.reports.view_activitylog or
-    request.user.is_admin %}
+    {% if perms.events.view_event or perms.volunteers.view_volunteer or perms.reports.view_activitylog or request.user.is_admin %}
     <div class="nav-section-title">
       Foundation
     </div>
