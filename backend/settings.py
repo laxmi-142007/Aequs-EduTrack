@@ -30,10 +30,24 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ['true', '1', 'yes']
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = ['*'] if os.environ.get('ALLOWED_HOSTS') in [None, '', '*'] else [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
 
-
-# Application definition
+# Allow local network origins, subnets, and tunnels for CSRF in development
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://0.0.0.0:8000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://*.local",
+    "http://*.local:8000",
+    "http://*.ngrok-free.app",
+    "https://*.ngrok-free.app",
+]
+if os.environ.get("CSRF_TRUSTED_ORIGINS"):
+    CSRF_TRUSTED_ORIGINS.extend([
+        o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS").split(",") if o.strip()
+    ])
 
 INSTALLED_APPS = [
     # Django built-in apps
@@ -168,7 +182,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 

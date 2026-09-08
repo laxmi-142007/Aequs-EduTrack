@@ -108,3 +108,26 @@ class AcademicSectionTests(TestCase):
         self.record.refresh_from_db()
         self.assertEqual(self.record.percentage, Decimal("95.5"))
 
+    def test_academic_bulk_upload_overwrites_existing_record_without_duplicate(self):
+        import io
+        initial_count = AcademicRecord.objects.filter(student=self.student).count()
+        self.assertEqual(initial_count, 1)
+
+        # Upload with 4-digit second year "2023-2024"
+        csv_data = (
+            "Student Name,Academic Year,Class,Percentage,Rank,Promotion Status\n"
+            f"{self.student.student_name},2023-2024,Class 5,98.2,1,Promoted\n"
+        )
+        csv_file = io.BytesIO(csv_data.encode("utf-8"))
+        csv_file.name = "test_academics_overwrite.csv"
+        response = self.client.post(
+            reverse("academics:bulk_upload"),
+            data={"academic_file": csv_file}
+        )
+        self.assertEqual(response.status_code, 302)
+        final_count = AcademicRecord.objects.filter(student=self.student).count()
+        self.assertEqual(final_count, 1)
+        self.record.refresh_from_db()
+        self.assertEqual(self.record.percentage, Decimal("98.20"))
+        self.assertEqual(self.record.academic_year, "2023-24")
+

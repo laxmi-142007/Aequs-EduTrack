@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import re
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
@@ -877,6 +878,23 @@ def _normalize_academic_header(name):
     return alias_map.get(cleaned, cleaned)
 
 
+def _normalize_academic_year(year_str):
+    """
+    Normalize academic year representations (e.g., '2025-2026', '2025/2026', '2025-26')
+    to standard 'YYYY-YY' format like '2025-26'.
+    """
+    if not year_str:
+        return ""
+    val = str(year_str).strip()
+    m = re.match(r"^(\d{4})[-/](\d{2,4})$", val)
+    if m:
+        y1, y2 = m.group(1), m.group(2)
+        if len(y2) == 4:
+            y2 = y2[-2:]
+        return f"{y1}-{y2}"
+    return val
+
+
 def academic_bulk_upload(request):
     """
     Bulk upload academic records from CSV or Excel (.xlsx).
@@ -983,7 +1001,8 @@ def academic_bulk_upload(request):
                 try:
                     admission_number = str(row.get("admission_number") or "").strip()
                     student_name = str(row.get("student_name") or "").strip()
-                    academic_year = str(row.get("academic_year") or "2025-26").strip()
+                    raw_academic_year = str(row.get("academic_year") or "2025-26").strip()
+                    academic_year = _normalize_academic_year(raw_academic_year) or "2025-26"
                     class_or_course = str(row.get("class_or_course") or "").strip()
 
                     # Find student by student_name or admission_number
@@ -1028,20 +1047,40 @@ def academic_bulk_upload(request):
                     transfer_school = str(row.get("transfer_school") or "").strip()
                     remarks = str(row.get("remarks") or "").strip()
 
-                    # Find existing AcademicRecord to update, or create new
-                    record = AcademicRecord.objects.filter(
-                        student=student,
-                        academic_year=academic_year,
-                        class_or_course=class_or_course,
-                    ).first()
-
-                    if not record:
-                        record = AcademicRecord.objects.filter(
+                    # Find existing AcademicRecord to update/overwrite, or create new
+                    candidate_years = list(dict.fromkeys([
+                        academic_year,
+                        raw_academic_year,
+                        "2025-26",
+                        "2025-2026",
+                    ]))
+                    record = (
+                        AcademicRecord.objects.filter(
                             student=student,
                             academic_year=academic_year,
+                            class_or_course=class_or_course,
                         ).first()
+                        or AcademicRecord.objects.filter(
+                            student=student,
+                            academic_year__in=candidate_years,
+                            class_or_course=class_or_course,
+                        ).first()
+                        or AcademicRecord.objects.filter(
+                            student=student,
+                            academic_year__in=candidate_years,
+                        ).first()
+                        or AcademicRecord.objects.filter(
+                            student=student,
+                            marks_obtained__isnull=True,
+                            percentage__isnull=True,
+                        ).first()
+                        or AcademicRecord.objects.filter(
+                            student=student,
+                        ).first()
+                    )
 
                     if record:
+                        record.academic_year = academic_year
                         record.class_or_course = class_or_course
                         if marks_obtained is not None:
                             record.marks_obtained = marks_obtained
@@ -1062,6 +1101,12 @@ def academic_bulk_upload(request):
                         if remarks:
                             record.remarks = remarks
                         record.save()
+                        # Clean up any leftover empty duplicate records for this student
+                        AcademicRecord.objects.filter(
+                            student=student,
+                            marks_obtained__isnull=True,
+                            percentage__isnull=True,
+                        ).exclude(id=record.id).delete()
                         updated_count += 1
                     else:
                         record = AcademicRecord(
@@ -1081,6 +1126,12 @@ def academic_bulk_upload(request):
                         if previous_class:
                             record.previous_class = previous_class
                         record.save()
+                        # Clean up any leftover empty duplicate records for this student
+                        AcademicRecord.objects.filter(
+                            student=student,
+                            marks_obtained__isnull=True,
+                            percentage__isnull=True,
+                        ).exclude(id=record.id).delete()
                         created_count += 1
 
                 except Exception as exc:
