@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ ngo.name }} | NGO Partner Profile | Aequs Foundation</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='ngos' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ ngo.name }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Code: {{ ngo.code }} &bull; Strategic NGO Partner</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:ngo_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="arrow-left"></i> Back to NGOs
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="detail-card">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">Status</span>
+                        <span class="val">
+                            <span class="af-badge {% if ngo.is_active %}badge-active{% else %}badge-archived{% endif %}">
+                                {% if ngo.is_active %}Active MoU{% else %}Inactive{% endif %}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Primary Contact</span>
+                        <span class="val">{{ ngo.contact_person|default:"Lead Coordinator" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Phone</span>
+                        <span class="val">{{ ngo.phone|default:"N/A" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Email</span>
+                        <span class="val">{{ ngo.email|default:"N/A" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Headquarters / Hub</span>
+                        <span class="val">{{ ngo.headquarters|default:"Karnataka" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Partner Schools</span>
+                        <span class="val">{{ ngo.partner_schools.count }} Schools</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                    <span class="label" style="display: block; margin-bottom: 6px;">Core Focus Areas &amp; Methodologies</span>
+                    <p style="font-size: 14px; color: #334155; line-height: 1.6; margin: 0;">{{ ngo.focus_areas }}</p>
+                </div>
+            </div>
+
+            <!-- Associated Projects -->
+            <div class="detail-card">
+                <h3 style="font-size: 16px; font-weight: 700; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="folder-kanban" style="color: #ed1c24;"></i> Collaborative Projects ({{ projects.count }})
+                </h3>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Project Name</th>
+                                <th>Timeline</th>
+                                <th>Allocated Budget</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in projects %}
+                            <tr>
+                                <td><strong>{{ p.code }}</strong></td>
+                                <td>{{ p.name }}</td>
+                                <td>{{ p.start_date|date:"M Y" }} - {{ p.end_date|date:"M Y"|default:"Ongoing" }}</td>
+                                <td>&#8377; {{ p.allocated_budget|floatformat:0 }}</td>
+                                <td><span class="af-badge badge-{{ p.status|lower }}">{{ p.get_status_display }}</span></td>
+                                <td style="text-align: right;">
+                                    <a href="{% url 'programs:project_detail' p.pk %}" class="btn-af btn-af-secondary btn-af-sm">View</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">No projects directly linked yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Associated EV Sessions -->
+            <div class="detail-card">
+                <h3 style="font-size: 16px; font-weight: 700; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="zap" style="color: #f59e0b;"></i> EV Class &amp; Field Sessions Delivered ({{ ev_sessions.count }})
+                </h3>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Session Title</th>
+                                <th>Topic</th>
+                                <th>School</th>
+                                <th>Date</th>
+                                <th>Attendees</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ev in ev_sessions %}
+                            <tr>
+                                <td><strong>{{ ev.session_code }}</strong></td>
+                                <td>{{ ev.session_title }}</td>
+                                <td>{{ ev.topic }}</td>
+                                <td>{{ ev.school.school_name }}</td>
+                                <td>{{ ev.session_date|date:"d M Y" }}</td>
+                                <td>{{ ev.attendee_count }} students</td>
+                                <td><span class="af-badge badge-{{ ev.status|lower }}">{{ ev.get_status_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #94a3b8; padding: 20px;">No EV sessions recorded under this partner yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

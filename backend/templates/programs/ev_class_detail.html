@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ session.session_title }} | EV Class Record | Aequs Foundation</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='ev_classes' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ session.session_title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Session Code: {{ session.session_code }} &bull; {{ session.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:ev_class_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="arrow-left"></i> Back to EV Classes
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="detail-card">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">Status</span>
+                        <span class="val">
+                            <span class="af-badge badge-{{ session.status|lower }}">{{ session.get_status_display }}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Topic &amp; Curriculum</span>
+                        <span class="val">{{ session.topic }} ({{ session.curriculum_module }})</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">School &amp; Grade</span>
+                        <span class="val">{{ session.school.school_name }} &bull; Grade {{ session.grade_level }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Date &amp; Time</span>
+                        <span class="val">{{ session.session_date|date:"d M Y" }} &bull; {{ session.start_time|time:"H:i" }} - {{ session.end_time|time:"H:i"|default:"TBD" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Duration</span>
+                        <span class="val">{{ session.duration_minutes }} Minutes</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Facilitator</span>
+                        <span class="val">{{ session.facilitator_name }} ({{ session.facilitator_contact|default:"N/A" }})</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Venue / Exposure Route</span>
+                        <span class="val">{{ session.venue_or_route|default:"School Campus Lab" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Partner NGO</span>
+                        <span class="val">{{ session.ngo.name|default:"Aequs Foundation Directly" }}</span>
+                    </div>
+                </div>
+
+                {% if session.learning_objectives %}
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                    <span class="label" style="display: block; margin-bottom: 6px;">Learning Objectives</span>
+                    <p style="font-size: 14px; color: #334155; line-height: 1.6; margin: 0;">{{ session.learning_objectives }}</p>
+                </div>
+                {% endif %}
+
+                {% if session.materials_or_kits_used %}
+                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                    <span class="label" style="display: block; margin-bottom: 6px;">Kits &amp; Learning Materials Utilized</span>
+                    <p style="font-size: 14px; color: #334155; line-height: 1.6; margin: 0;">{{ session.materials_or_kits_used }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Outcomes & Assessments -->
+            <div class="detail-card">
+                <h3 style="font-size: 16px; font-weight: 700; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="award" style="color: #10b981;"></i> Outcomes &amp; Assessment Metrics
+                </h3>
+                <div class="metric-grid" style="margin-bottom: 0;">
+                    <div class="metric-card accent-blue">
+                        <div class="metric-label">Student Attendees</div>
+                        <div class="metric-value">{{ session.attendee_count }}</div>
+                        <div class="metric-meta">Verified in attendance</div>
+                    </div>
+                    <div class="metric-card accent-amber">
+                        <div class="metric-label">Pre-Assessment Avg</div>
+                        <div class="metric-value">{{ session.pre_assessment_avg|default:"-" }}%</div>
+                        <div class="metric-meta">Baseline knowledge</div>
+                    </div>
+                    <div class="metric-card accent-green">
+                        <div class="metric-label">Post-Assessment Avg</div>
+                        <div class="metric-value">{{ session.post_assessment_avg|default:"-" }}%</div>
+                        <div class="metric-meta">Post-exposure comprehension</div>
+                    </div>
+                </div>
+
+                {% if session.student_feedback %}
+                <div style="margin-top: 20px; padding: 14px 18px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                    <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Student &amp; School Feedback:</div>
+                    <div style="font-size: 13.5px; color: #475569; font-style: italic;">"{{ session.student_feedback }}"</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

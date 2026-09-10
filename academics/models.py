@@ -598,3 +598,84 @@ class AcademicRecord(models.Model):
                 "rank",
             ]
         )
+
+
+# ============================================================================
+# SUBJECT SCORE MODEL (Module 3: Separate Subject Tracking & Academics)
+# ============================================================================
+
+class SubjectScore(models.Model):
+    """
+    Individual subject-level marks and evaluation breakdown
+    for student academic records.
+    """
+    class ExamType(models.TextChoices):
+        UNIT_TEST = "UNIT_TEST", "Unit Test"
+        MIDTERM = "MIDTERM", "Midterm Examination"
+        ANNUAL = "ANNUAL", "Annual Examination"
+        DIAGNOSTIC = "DIAGNOSTIC", "Diagnostic Assessment"
+
+    academic_record = models.ForeignKey(
+        AcademicRecord,
+        on_delete=models.CASCADE,
+        related_name="subject_scores",
+    )
+    subject_name = models.CharField(
+        max_length=100,
+        help_text="e.g. Mathematics, Science, English, Regional Language, Social Science",
+    )
+    exam_type = models.CharField(
+        max_length=30,
+        choices=ExamType.choices,
+        default=ExamType.ANNUAL,
+    )
+    marks_obtained = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+    )
+    max_marks = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=100.00,
+    )
+    percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    grade = models.CharField(
+        max_length=10,
+        blank=True,
+        help_text="e.g. A+, A, B, C, D",
+    )
+    remarks = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["subject_name", "exam_type"]
+        unique_together = ["academic_record", "subject_name", "exam_type"]
+
+    def __str__(self):
+        return f"{self.subject_name} ({self.get_exam_type_display()}): {self.marks_obtained}/{self.max_marks}"
+
+    def save(self, *args, **kwargs):
+        if self.max_marks and self.max_marks > 0:
+            self.percentage = round((self.marks_obtained / self.max_marks) * 100, 2)
+            if self.percentage >= 90:
+                self.grade = "A+"
+            elif self.percentage >= 80:
+                self.grade = "A"
+            elif self.percentage >= 70:
+                self.grade = "B+"
+            elif self.percentage >= 60:
+                self.grade = "B"
+            elif self.percentage >= 50:
+                self.grade = "C"
+            elif self.percentage >= 35:
+                self.grade = "D"
+            else:
+                self.grade = "F"
+        super().save(*args, **kwargs)

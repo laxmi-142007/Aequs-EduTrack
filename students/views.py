@@ -1,4 +1,4 @@
-﻿import csv
+import csv
 import io
 import random
 from datetime import datetime
@@ -9,8 +9,10 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
+from django.urls import reverse
+import qrcode
 
 from .models import Student
 from .forms import StudentForm
@@ -321,6 +323,18 @@ def add_student(request):
                 class_or_course=student.current_class,
             )
 
+            # Activity log
+            try:
+                from reports.models import log_activity
+
+                log_activity(
+                    request,
+                    f"Enrolled new student '{student.student_name}' ({student.admission_number})",
+                    category="STUDENT"
+                )
+            except Exception:
+                pass
+
             messages.success(
                 request,
                 f"Student '{student.student_name}' "
@@ -328,7 +342,8 @@ def add_student(request):
             )
 
             return redirect(
-                "students:list"
+                "students:detail",
+                pk=student.pk
             )
 
     else:
@@ -337,7 +352,7 @@ def add_student(request):
 
     return render(
         request,
-        "students/student_form.html",
+        "students/add_student.html",
         {
             "form": form,
             "is_edit": False,
@@ -1295,16 +1310,201 @@ def clear_all_students(request):
 # =============================================================
 
 def student_detail(request, pk):
-
     student = get_object_or_404(
         Student.objects.select_related("school"),
         pk=pk
     )
+
+    academic_records = student.academic_records.all().order_by("-academic_year")
+    eligibility_records = student.eligibility_records.all().order_by("-academic_year")
+    distributions = student.distributions.all().select_related("study_kit").order_by("-distribution_date")
+    internships = student.internship_placements.all().select_related("program").order_by("-created_at")
 
     return render(
         request,
         "students/student_detail.html",
         {
             "student": student,
+            "academic_records": academic_records,
+            "eligibility_records": eligibility_records,
+            "distributions": distributions,
+            "internships": internships,
+        },
+    )
+
+
+# =============================================================
+# EDIT STUDENT PROFILE
+# =============================================================
+
+def edit_student(request, pk):
+    student = get_object_or_404(
+        Student.objects.select_related("school"),
+        pk=pk
+    )
+
+    if request.method == "POST":
+        form = StudentForm(
+            request.POST,
+            request.FILES,
+            instance=student
+        )
+
+        if form.is_valid():
+            student = form.save()
+
+            try:
+                from reports.models import log_activity
+                log_activity(
+                    request,
+                    f"Updated profile for student '{student.student_name}' ({student.admission_number})",
+                    category="STUDENT"
+                )
+            except Exception:
+                pass
+
+            messages.success(
+                request,
+                f"Student '{student.student_name}' details were updated successfully."
+            )
+
+            return redirect(
+                "students:detail",
+                pk=student.pk
+            )
+    else:
+        form = StudentForm(instance=student)
+
+    return render(
+        request,
+        "students/add_student.html",
+        {
+            "form": form,
+            "student": student,
+            "is_edit": True,
+        },
+    )
+
+
+# =============================================================
+# STUDENT ID CARD (SINGLE VIEW & PRINT)
+# =============================================================
+
+def student_id_card(request, pk):
+    student = get_object_or_404(
+        Student.objects.select_related("school"),
+        pk=pk
+    )
+
+    verify_url = request.build_absolute_uri(
+        reverse("students:detail", args=[student.pk])
+    )
+
+    return render(
+        request,
+        "students/student_id_card.html",
+        {
+            "student": student,
+            "verify_url": verify_url,
+        },
+    )
+
+
+# =============================================================
+# STUDENT ID VERIFICATION QR CODE GENERATOR (PNG STREAM)
+# =============================================================
+
+def student_qr_code(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+
+    verify_url = request.build_absolute_uri(
+        reverse("students:detail", args=[student.pk])
+    )
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=8,
+        border=2,
+    )
+    qr.add_data(verify_url)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="#171717", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    response = HttpResponse(buffer.getvalue(), content_type="image/png")
+    response["Cache-Control"] = "public, max-age=3600"
+    return response
+
+
+# =============================================================
+# BULK STUDENT ID CARDS GENERATION & PRINT
+# =============================================================
+
+def bulk_id_cards(request):
+    school_id = request.GET.get("school")
+    class_filter = request.GET.get("class")
+    search_query = request.GET.get("q")
+
+    queryset = (
+        Student.objects
+        .select_related("school")
+        .filter(status=Student.Status.ACTIVE)
+        .order_by("school__name", "current_class", "roll_number", "student_name")
+    )
+
+    if school_id:
+        queryset = queryset.filter(school_id=school_id)
+
+    if class_filter:
+        equivs = get_class_equivalents(class_filter)
+        class_q = Q()
+        for eq in equivs:
+            class_q |= Q(current_class__iexact=eq)
+        queryset = queryset.filter(class_q)
+
+    if search_query:
+        query_strip = search_query.strip()
+        queryset = queryset.filter(
+            Q(student_name__icontains=query_strip) |
+            Q(admission_number__icontains=query_strip) |
+            Q(roll_number__icontains=query_strip)
+        )
+
+    schools = School.objects.all().order_by("name")
+
+    raw_classes = (
+        Student.objects
+        .values_list("current_class", flat=True)
+        .distinct()
+    )
+    distinct_classes = sorted(
+        {
+            get_canonical_class(c)
+            for c in raw_classes
+            if c
+        },
+        key=lambda v: (int(v) if v.isdigit() else 999, v.lower())
+    )
+
+    total_count = queryset.count()
+    # ponytail: 60 cards per print batch, paginate if larger
+    students_batch = queryset[:60]
+
+    return render(
+        request,
+        "students/bulk_id_cards.html",
+        {
+            "students": students_batch,
+            "total_count": total_count,
+            "batch_count": len(students_batch),
+            "schools": schools,
+            "distinct_classes": distinct_classes,
+            "selected_school": school_id,
+            "selected_class": class_filter,
+            "search_query": search_query,
         },
     )

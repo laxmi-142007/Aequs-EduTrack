@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='ev_classes' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 4 &bull; Detailed EV Class &amp; Exposure Visit Recording</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:ev_class_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="x"></i> Cancel
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="form-container">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-section-title">
+                        <i data-lucide="zap" style="color: #ed1c24;"></i> Session Basics &amp; Curriculum
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Session Title <span class="required-star">*</span></label>
+                            {{ form.session_title }}
+                            {% if form.session_title.errors %}<div class="field-error">{{ form.session_title.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Session Code <span class="required-star">*</span></label>
+                            {{ form.session_code }}
+                            {% if form.session_code.errors %}<div class="field-error">{{ form.session_code.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Topic <span class="required-star">*</span></label>
+                            {{ form.topic }}
+                            {% if form.topic.errors %}<div class="field-error">{{ form.topic.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Curriculum Module</label>
+                            {{ form.curriculum_module }}
+                            {% if form.curriculum_module.errors %}<div class="field-error">{{ form.curriculum_module.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Learning Objectives</label>
+                            {{ form.learning_objectives }}
+                            {% if form.learning_objectives.errors %}<div class="field-error">{{ form.learning_objectives.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-section-title">
+                        <i data-lucide="map-pin" style="color: #3b82f6;"></i> School, Schedule &amp; Facilitator
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Partner School <span class="required-star">*</span></label>
+                            {{ form.school }}
+                            {% if form.school.errors %}<div class="field-error">{{ form.school.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Grade Level <span class="required-star">*</span></label>
+                            {{ form.grade_level }}
+                            {% if form.grade_level.errors %}<div class="field-error">{{ form.grade_level.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Session Date <span class="required-star">*</span></label>
+                            {{ form.session_date }}
+                            {% if form.session_date.errors %}<div class="field-error">{{ form.session_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Start Time <span class="required-star">*</span></label>
+                            {{ form.start_time }}
+                            {% if form.start_time.errors %}<div class="field-error">{{ form.start_time.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>End Time</label>
+                            {{ form.end_time }}
+                            {% if form.end_time.errors %}<div class="field-error">{{ form.end_time.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (Minutes)</label>
+                            {{ form.duration_minutes }}
+                            {% if form.duration_minutes.errors %}<div class="field-error">{{ form.duration_minutes.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Facilitator Name <span class="required-star">*</span></label>
+                            {{ form.facilitator_name }}
+                            {% if form.facilitator_name.errors %}<div class="field-error">{{ form.facilitator_name.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Facilitator Contact</label>
+                            {{ form.facilitator_contact }}
+                            {% if form.facilitator_contact.errors %}<div class="field-error">{{ form.facilitator_contact.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Venue / Exposure Visit Route</label>
+                            {{ form.venue_or_route }}
+                            {% if form.venue_or_route.errors %}<div class="field-error">{{ form.venue_or_route.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Executing NGO Partner</label>
+                            {{ form.ngo }}
+                            {% if form.ngo.errors %}<div class="field-error">{{ form.ngo.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-section-title">
+                        <i data-lucide="check-circle" style="color: #10b981;"></i> Attendees, Assessments &amp; Outcomes
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Attendee Count (Students)</label>
+                            {{ form.attendee_count }}
+                            {% if form.attendee_count.errors %}<div class="field-error">{{ form.attendee_count.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="field-error">{{ form.status.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Pre-Assessment Avg Score (%)</label>
+                            {{ form.pre_assessment_avg }}
+                            {% if form.pre_assessment_avg.errors %}<div class="field-error">{{ form.pre_assessment_avg.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Post-Assessment Avg Score (%)</label>
+                            {{ form.post_assessment_avg }}
+                            {% if form.post_assessment_avg.errors %}<div class="field-error">{{ form.post_assessment_avg.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Materials / Science Kits Used</label>
+                            {{ form.materials_or_kits_used }}
+                            {% if form.materials_or_kits_used.errors %}<div class="field-error">{{ form.materials_or_kits_used.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Student / Teacher Feedback</label>
+                            {{ form.student_feedback }}
+                            {% if form.student_feedback.errors %}<div class="field-error">{{ form.student_feedback.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'programs:ev_class_list' %}" class="btn-af btn-af-secondary">Cancel</a>
+                        <button type="submit" class="btn-af btn-af-primary">
+                            <i data-lucide="save"></i> Save EV Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

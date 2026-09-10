@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='programs' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 11 &amp; 16 &bull; Mandatory Location In Every Program</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="x"></i> Cancel
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="form-container">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-section-title">
+                        <i data-lucide="layers" style="color: #ed1c24;"></i> Program Overview
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Program Title <span class="required-star">*</span></label>
+                            {{ form.title }}
+                            {% if form.title.errors %}<div class="field-error">{{ form.title.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Program Code <span class="required-star">*</span></label>
+                            {{ form.code }}
+                            {% if form.code.errors %}<div class="field-error">{{ form.code.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category <span class="required-star">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}<div class="field-error">{{ form.category.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Academic Year</label>
+                            {{ form.academic_year }}
+                            {% if form.academic_year.errors %}<div class="field-error">{{ form.academic_year.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Parent Project</label>
+                            {{ form.project }}
+                            {% if form.project.errors %}<div class="field-error">{{ form.project.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Executing NGO Partner</label>
+                            {{ form.ngo }}
+                            {% if form.ngo.errors %}<div class="field-error">{{ form.ngo.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Description &amp; Goals</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="field-error">{{ form.description.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Mandatory Location Section (Module 11 & 16) -->
+                    <div class="form-section-title" style="color: #ed1c24; border-bottom: 2px solid #ed1c24;">
+                        <i data-lucide="map-pin"></i> Mandatory Program Location (Module 16 Requirement)
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Campus / Facility / Location Name <span class="required-star">*</span></label>
+                            {{ form.location_name }}
+                            {% if form.location_name.errors %}<div class="field-error">{{ form.location_name.errors }}</div>{% endif %}
+                            <span class="field-help">E.g., Govt High School Campus / Hukkeri Field Center</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Village or Town <span class="required-star">*</span></label>
+                            {{ form.village_or_town }}
+                            {% if form.village_or_town.errors %}<div class="field-error">{{ form.village_or_town.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Taluk <span class="required-star">*</span></label>
+                            {{ form.taluk }}
+                            {% if form.taluk.errors %}<div class="field-error">{{ form.taluk.errors }}</div>{% endif %}
+                            <span class="field-help">E.g., Belagavi, Hukkeri, Khanapur, Bailhongal</span>
+                        </div>
+                        <div class="form-group">
+                            <label>District <span class="required-star">*</span></label>
+                            {{ form.district }}
+                            {% if form.district.errors %}<div class="field-error">{{ form.district.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>State</label>
+                            {{ form.state }}
+                            {% if form.state.errors %}<div class="field-error">{{ form.state.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>GPS Coordinates / Landmarks</label>
+                            {{ form.gps_coordinates }}
+                            {% if form.gps_coordinates.errors %}<div class="field-error">{{ form.gps_coordinates.errors }}</div>{% endif %}
+                            <span class="field-help">Optional: Lat/Long for mobile labs or field routes</span>
+                        </div>
+                    </div>
+
+                    <div class="form-section-title">
+                        <i data-lucide="school" style="color: #3b82f6;"></i> Scope &amp; Status
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Participating Schools</label>
+                            {{ form.participating_schools }}
+                            {% if form.participating_schools.errors %}<div class="field-error">{{ form.participating_schools.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="field-error">{{ form.status.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">Cancel</a>
+                        <button type="submit" class="btn-af btn-af-primary">
+                            <i data-lucide="save"></i> Save Program
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

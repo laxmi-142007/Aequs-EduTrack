@@ -1,0 +1,666 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bulk Student ID Cards | Aequs EduTrack</title>
+
+    <link rel="icon" type="image/jpeg" href="{% static 'images/cropped-Aequs-Lines-01-32x32.jpg' %}">
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+
+    <style>
+        :root {
+            --aequs-red: #ed1c24;
+            --aequs-red-dark: #c9141b;
+            --aequs-red-light: #fff1f1;
+            --aequs-dark: #171717;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-600: #475569;
+            --slate-800: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            min-height: 100vh;
+        }
+
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-brand img {
+            height: 32px;
+            width: auto;
+        }
+
+        .topbar-brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #171717;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-print {
+            background: #ed1c24;
+            color: #ffffff;
+        }
+
+        .btn-print:hover {
+            background: #c9141b;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 24px 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Filter Card */
+        .filter-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+        }
+
+        .filter-form {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select, .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #0f172a;
+            background: #ffffff;
+            outline: none;
+        }
+
+        .filter-input {
+            min-width: 240px;
+        }
+
+        .btn-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #0f172a;
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 14px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 13px;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Batch Info Bar */
+        .batch-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .batch-title h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .batch-title p {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* Cards Print Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* ID Card Item */
+        .id-card {
+            width: 100%;
+            max-width: 320px;
+            height: 470px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Card Header */
+        .card-header-banner {
+            background: #ed1c24;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #ffffff;
+            border-bottom: 3px solid #171717;
+        }
+
+        .card-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-brand-logo {
+            height: 22px;
+            width: auto;
+            background: #ffffff;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .card-brand-name {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .card-brand-sub {
+            font-size: 7.5px;
+            opacity: 0.9;
+        }
+
+        .card-ribbon {
+            background: #171717;
+            color: #ffffff;
+            font-size: 8.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            padding: 2px 0;
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 10px 14px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+
+        .card-photo-wrap {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            border: 2.5px solid #ed1c24;
+            padding: 2px;
+            background: #ffffff;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .card-photo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-photo-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #ed1c24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .card-student-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 260px;
+        }
+
+        .card-admission-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid #bfdbfe;
+            margin-bottom: 6px;
+        }
+
+        .card-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            text-align: left;
+            margin-bottom: 6px;
+        }
+
+        .card-info-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .card-info-label {
+            color: #64748b;
+            font-weight: 600;
+            width: 40%;
+        }
+
+        .card-info-val {
+            color: #0f172a;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+
+        .card-qr-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 4px 8px;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .card-qr-img {
+            width: 40px;
+            height: 40px;
+            display: block;
+        }
+
+        .card-qr-text {
+            text-align: left;
+            font-size: 8.5px;
+            color: #475569;
+            line-height: 1.15;
+        }
+
+        .card-qr-text strong {
+            display: block;
+            color: #0f172a;
+            font-size: 9px;
+        }
+
+        .card-footer {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8.5px;
+            color: #64748b;
+        }
+
+        .card-sign-line {
+            font-size: 7.5px;
+            font-weight: 700;
+            color: #0f172a;
+            border-top: 1px solid #334155;
+            padding-top: 2px;
+            display: inline-block;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 48px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            width: 48px;
+            height: 48px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+        }
+
+        /* Print Media Styles for Clean Multi-Card Sheets */
+        @media print {
+            body {
+                background: #ffffff !important;
+            }
+
+            .sidebar, .topbar, .filter-card, .btn-action, .batch-bar {
+                display: none !important;
+            }
+
+            .main {
+                margin-left: 0 !important;
+            }
+
+            .content {
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+
+            .cards-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 16px !important;
+                page-break-after: auto;
+            }
+
+            .id-card {
+                box-shadow: none !important;
+                border: 1px solid #475569 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                margin-bottom: 14px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'includes/sidebar.html' with active_page='students' %}
+
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-brand">
+                <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs Foundation">
+                <span class="topbar-brand-title">Bulk Student ID Cards Generator</span>
+            </div>
+
+            <div class="topbar-actions">
+                <button onclick="window.print()" class="btn-action btn-print">
+                    <i data-lucide="printer" style="width:15px;height:15px;"></i>
+                    Print All Cards ({{ batch_count }})
+                </button>
+
+                <a href="{% url 'students:list' %}" class="btn-action btn-secondary">
+                    <i data-lucide="arrow-left" style="width:15px;height:15px;"></i>
+                    Student Directory
+                </a>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <!-- FILTER CARD -->
+            <div class="filter-card">
+                <form method="GET" action="{% url 'students:bulk_id_cards' %}" class="filter-form">
+                    <!-- School Filter -->
+                    <select name="school" class="filter-select">
+                        <option value="">All Partner Schools</option>
+                        {% for school in schools %}
+                            <option value="{{ school.id }}" {% if selected_school == school.id|stringformat:"s" %}selected{% endif %}>
+                                {{ school.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Class Filter -->
+                    <select name="class" class="filter-select">
+                        <option value="">All Classes</option>
+                        {% for cls in distinct_classes %}
+                            <option value="{{ cls }}" {% if selected_class == cls %}selected{% endif %}>
+                                Class {{ cls }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Search Input -->
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ search_query|default:'' }}"
+                        placeholder="Search student name or admission ID..."
+                        class="filter-input"
+                    >
+
+                    <button type="submit" class="btn-filter">
+                        <i data-lucide="filter" style="width:13px;height:13px;"></i>
+                        Filter Cards
+                    </button>
+
+                    {% if selected_school or selected_class or search_query %}
+                        <a href="{% url 'students:bulk_id_cards' %}" class="btn-reset">
+                            <i data-lucide="x" style="width:13px;height:13px;"></i>
+                            Reset
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- BATCH HEADER -->
+            <div class="batch-bar">
+                <div class="batch-title">
+                    <h2>Generated Identity Cards ({{ batch_count }} of {{ total_count }})</h2>
+                    <p>Standard CR-80 cards formatted for high-resolution classroom printing and card stock cutting.</p>
+                </div>
+
+                <button onclick="window.print()" class="btn-action btn-print">
+                    <i data-lucide="printer" style="width:15px;height:15px;"></i>
+                    Print Batch
+                </button>
+            </div>
+
+            <!-- CARDS GRID -->
+            {% if students %}
+                <div class="cards-grid">
+                    {% for student in students %}
+                        <div class="id-card">
+                            <div>
+                                <!-- Header Banner -->
+                                <div class="card-header-banner">
+                                    <div class="card-brand-wrap">
+                                        <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs" class="card-brand-logo">
+                                        <div>
+                                            <div class="card-brand-name">Aequs Foundation</div>
+                                            <div class="card-brand-sub">Educational CSR Initiative</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-ribbon">
+                                    Student Identity Card
+                                </div>
+
+                                <!-- Body -->
+                                <div class="card-body">
+                                    <div class="card-photo-wrap">
+                                        {% if student.photo %}
+                                            <img src="{{ student.photo.url }}" alt="{{ student.student_name }}" class="card-photo">
+                                        {% else %}
+                                            <div class="card-photo-placeholder">
+                                                {{ student.student_name|make_list|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <h3 class="card-student-name" title="{{ student.student_name }}">{{ student.student_name }}</h3>
+                                    <span class="card-admission-badge">ID: {{ student.admission_number }}</span>
+
+                                    <table class="card-info-table">
+                                        <tr>
+                                            <td class="card-info-label">School:</td>
+                                            <td class="card-info-val" title="{{ student.school.name }}">{{ student.school.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="card-info-label">Grade / Class:</td>
+                                            <td class="card-info-val">Class {{ student.current_class }}{% if student.section %} ({{ student.section }}){% endif %}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="card-info-label">Roll Number:</td>
+                                            <td class="card-info-val">{{ student.roll_number|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="card-info-label">Date of Birth:</td>
+                                            <td class="card-info-val">{{ student.date_of_birth|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="card-info-label">Emergency:</td>
+                                            <td class="card-info-val">{{ student.parent_phone|default:student.student_phone|default:"-" }}</td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- QR Code -->
+                                    <div class="card-qr-box">
+                                        <img src="{% url 'students:qr_code' student.id %}" alt="QR Verification" class="card-qr-img">
+                                        <div class="card-qr-text">
+                                            <strong>Digital Verification</strong>
+                                            Scan to verify student enrollment
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="card-footer">
+                                <span>Academic Year 2026-27</span>
+                                <div class="card-sign-line">Authorized Signatory</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i data-lucide="users-2"></i>
+                    <h3>No Active Students Found</h3>
+                    <p>Try adjusting your search criteria or school filters.</p>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+
+</body>
+</html>

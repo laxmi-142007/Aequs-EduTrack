@@ -39,6 +39,11 @@ urlpatterns = [
     path("<int:pk>/resources/<int:resource_id>/remove/", views.event_remove_resource, name="remove_resource"),
 
     # =========================================================================
+    # EVENT REMINDER (Module 10)
+    # =========================================================================
+    path("<int:pk>/send-reminder/", views.event_send_reminder, name="send_reminder"),
+
+    # =========================================================================
     # EXPORTS
     # =========================================================================
     path("export-csv/", views.event_export_csv, name="export_csv"),

@@ -1,0 +1,259 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive Portal &amp; Data Lifecycle | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='archive' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Archive Portal &amp; Historical Data Lifecycle</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 17 &bull; Read-Only Audit Access &amp; Safe One-Click Restoration</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="af-badge badge-neutral" style="font-size: 12.5px; padding: 6px 12px;">
+                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> Role: Admin Audit Safe
+                </span>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Information Notice Banner -->
+            <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="alert-circle" style="color: #ea580c; width: 22px; height: 22px; flex-shrink: 0;"></i>
+                <div style="font-size: 13px; color: #9a3412;">
+                    <strong>Historical Record Isolation:</strong> Archived projects, programs, sessions, and scholarships are kept read-only for audit compliance. Restoring an item returns it to active operations immediately.
+                </div>
+            </div>
+
+            <!-- Archive Category Tabs -->
+            <div class="af-tabs">
+                <a href="{% url 'programs:archive_portal' %}?tab=projects" class="af-tab-item {% if active_tab == 'projects' %}active{% endif %}">
+                    <i data-lucide="folder-kanban"></i> Projects <span class="badge-count">{{ projects_count }}</span>
+                </a>
+                <a href="{% url 'programs:archive_portal' %}?tab=programs" class="af-tab-item {% if active_tab == 'programs' %}active{% endif %}">
+                    <i data-lucide="layers"></i> Programs <span class="badge-count">{{ programs_count }}</span>
+                </a>
+                <a href="{% url 'programs:archive_portal' %}?tab=ev_classes" class="af-tab-item {% if active_tab == 'ev_classes' %}active{% endif %}">
+                    <i data-lucide="zap"></i> EV Classes <span class="badge-count">{{ ev_count }}</span>
+                </a>
+                <a href="{% url 'programs:archive_portal' %}?tab=scholarships" class="af-tab-item {% if active_tab == 'scholarships' %}active{% endif %}">
+                    <i data-lucide="award"></i> Scholarships <span class="badge-count">{{ scholarships_count }}</span>
+                </a>
+                <a href="{% url 'programs:archive_portal' %}?tab=students" class="af-tab-item {% if active_tab == 'students' %}active{% endif %}">
+                    <i data-lucide="graduation-cap"></i> Inactive/Graduated Students <span class="badge-count">{{ students_count }}</span>
+                </a>
+            </div>
+
+            <!-- TAB 1: ARCHIVED PROJECTS -->
+            {% if active_tab == 'projects' %}
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Project Name</th>
+                            <th>Partner NGO</th>
+                            <th>Budget Allocated</th>
+                            <th>Archive Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in archived_projects %}
+                        <tr>
+                            <td><strong>{{ p.code }}</strong></td>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.ngo.name|default:"Aequs Direct" }}</td>
+                            <td>&#8377; {{ p.allocated_budget|floatformat:0 }}</td>
+                            <td><span class="af-badge badge-archived">Archived</span></td>
+                            <td style="text-align: right;">
+                                <a href="{% url 'programs:archive_restore' 'project' p.pk %}" class="btn-af btn-af-sm btn-af-primary" onclick="return confirm('Restore this project to active operations?');">
+                                    <i data-lucide="rotate-ccw"></i> Restore
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">No archived projects in storage.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- TAB 2: ARCHIVED PROGRAMS -->
+            {% if active_tab == 'programs' %}
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Program Title</th>
+                            <th>Category</th>
+                            <th>Location Name</th>
+                            <th>Archive Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prg in archived_programs %}
+                        <tr>
+                            <td><strong>{{ prg.code }}</strong></td>
+                            <td>{{ prg.title }}</td>
+                            <td>{{ prg.get_category_display }}</td>
+                            <td>{{ prg.location_name }}, {{ prg.taluk }}</td>
+                            <td><span class="af-badge badge-archived">Archived</span></td>
+                            <td style="text-align: right;">
+                                <a href="{% url 'programs:archive_restore' 'program' prg.pk %}" class="btn-af btn-af-sm btn-af-primary" onclick="return confirm('Restore this program to active operations?');">
+                                    <i data-lucide="rotate-ccw"></i> Restore
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">No archived programs in storage.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- TAB 3: ARCHIVED EV CLASSES -->
+            {% if active_tab == 'ev_classes' %}
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Session Title</th>
+                            <th>School</th>
+                            <th>Session Date</th>
+                            <th>Attendees</th>
+                            <th>Archive Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ev in archived_ev %}
+                        <tr>
+                            <td><strong>{{ ev.session_code }}</strong></td>
+                            <td>{{ ev.session_title }}</td>
+                            <td>{{ ev.school.school_name }}</td>
+                            <td>{{ ev.session_date|date:"d M Y" }}</td>
+                            <td>{{ ev.attendee_count }}</td>
+                            <td><span class="af-badge badge-archived">Archived</span></td>
+                            <td style="text-align: right;">
+                                <a href="{% url 'programs:archive_restore' 'ev_class' ev.pk %}" class="btn-af btn-af-sm btn-af-primary" onclick="return confirm('Restore this EV class session?');">
+                                    <i data-lucide="rotate-ccw"></i> Restore
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #94a3b8; padding: 24px;">No archived EV class sessions in storage.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- TAB 4: ARCHIVED SCHOLARSHIPS -->
+            {% if active_tab == 'scholarships' %}
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Scheme</th>
+                            <th>Category</th>
+                            <th>App No</th>
+                            <th>Sanctioned Amount</th>
+                            <th>Archive Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in archived_scholarships %}
+                        <tr>
+                            <td><strong>{{ s.student.student_name }}</strong></td>
+                            <td>{{ s.scheme_name }}</td>
+                            <td>{{ s.get_category_display }}</td>
+                            <td>{{ s.application_number }}</td>
+                            <td>&#8377; {{ s.sanctioned_amount|floatformat:0 }}</td>
+                            <td><span class="af-badge badge-archived">Archived</span></td>
+                            <td style="text-align: right;">
+                                <a href="{% url 'programs:archive_restore' 'scholarship' s.pk %}" class="btn-af btn-af-sm btn-af-primary" onclick="return confirm('Restore this scholarship record?');">
+                                    <i data-lucide="rotate-ccw"></i> Restore
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #94a3b8; padding: 24px;">No archived scholarships in storage.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- TAB 5: INACTIVE / GRADUATED STUDENTS -->
+            {% if active_tab == 'students' %}
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Admission No</th>
+                            <th>Student Name</th>
+                            <th>School</th>
+                            <th>Exit Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for st in inactive_students %}
+                        <tr>
+                            <td><strong>{{ st.admission_number }}</strong></td>
+                            <td>{{ st.student_name }}</td>
+                            <td>{{ st.school.school_name }}</td>
+                            <td><span class="af-badge badge-archived">{{ st.get_status_display }}</span></td>
+                            <td style="text-align: right;">
+                                <a href="{% url 'students:detail' st.pk %}" class="btn-af btn-af-sm btn-af-secondary">
+                                    <i data-lucide="eye"></i> View Profile
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #94a3b8; padding: 24px;">No inactive or graduated students.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

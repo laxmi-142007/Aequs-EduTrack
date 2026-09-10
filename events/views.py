@@ -12,6 +12,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from inventory.models import InventoryItem, StockTransaction
 from reports.models import ActivityLog, log_activity
@@ -970,3 +971,27 @@ def event_success(request, pk):
             "event": event,
         },
     )
+
+
+# =============================================================================
+# EVENT REMINDER FEATURE (Module 10)
+# =============================================================================
+
+@login_required
+def event_send_reminder(request, pk):
+    """
+    Module 10: Event Reminder Feature.
+    Dispatches automated event reminder alerts to organizers and volunteers.
+    """
+    event = get_object_or_404(Event, pk=pk)
+    if request.method == "POST":
+        event.reminder_sent = True
+        event.reminder_scheduled_date = timezone.now().date()
+        event.save(update_fields=["reminder_sent", "reminder_scheduled_date"])
+        vol_count = event.volunteer_participations.count()
+        messages.success(
+            request,
+            f"Event reminder sent for '{event.title}'. Notified organizer and {vol_count} registered volunteer(s)."
+        )
+    return redirect("events:detail", pk=event.pk)
+

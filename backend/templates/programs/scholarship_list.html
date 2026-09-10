@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholarship Tracking &amp; Employee Special | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='scholarships' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Scholarship &amp; Educational Aid Tracking</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 8 &amp; 9 &bull; Foundation, Government (SSP/NSP) &amp; Employee Special Grants</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:scholarship_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="plus-circle"></i> Record Scholarship
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Metric Cards -->
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Applications</div>
+                    <div class="metric-value">{{ total_count }}</div>
+                    <div class="metric-meta">Logged in portal</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">Total Sanctioned</div>
+                    <div class="metric-value">&#8377; {{ total_sanctioned|floatformat:0 }}</div>
+                    <div class="metric-meta">Approved educational aid</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">Total Disbursed</div>
+                    <div class="metric-value">&#8377; {{ total_disbursed|floatformat:0 }}</div>
+                    <div class="metric-meta">Funds directly transferred</div>
+                </div>
+                <div class="metric-card accent-amber">
+                    <div class="metric-label">Pending Verification</div>
+                    <div class="metric-value">{{ pending_count }}</div>
+                    <div class="metric-meta">Under review / docs pending</div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation (Module 8 & 9) -->
+            <div class="af-tabs">
+                <a href="{% url 'programs:scholarship_list' %}" class="af-tab-item {% if not selected_tab or selected_tab == 'all' %}active{% endif %}">
+                    <i data-lucide="layout-grid"></i> All Educational Aids
+                </a>
+                <a href="{% url 'programs:scholarship_list' %}?tab=foundation" class="af-tab-item {% if selected_tab == 'foundation' %}active{% endif %}">
+                    <i data-lucide="award"></i> Foundation Scholarships (Module 8)
+                </a>
+                <a href="{% url 'programs:scholarship_list' %}?tab=government" class="af-tab-item {% if selected_tab == 'government' %}active{% endif %}">
+                    <i data-lucide="landmark"></i> Government Schemes (SSP/NSP) (Module 9)
+                </a>
+                <a href="{% url 'programs:scholarship_list' %}?tab=employee_special" class="af-tab-item {% if selected_tab == 'employee_special' %}active{% endif %}">
+                    <i data-lucide="briefcase"></i> Employee Special Tab (Module 9)
+                </a>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="filter-bar">
+                <form method="get" class="filter-form">
+                    {% if selected_tab %}<input type="hidden" name="tab" value="{{ selected_tab }}">{% endif %}
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search student name, application number, or employee code..." class="input-search">
+                    <button type="submit" class="btn-af btn-af-secondary">
+                        <i data-lucide="search"></i> Filter
+                    </button>
+                    {% if search_query %}
+                    <a href="{% url 'programs:scholarship_list' %}{% if selected_tab %}?tab={{ selected_tab }}{% endif %}" class="btn-af btn-af-secondary">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Scholarships Table -->
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Student &amp; School</th>
+                            <th>Category &amp; Scheme</th>
+                            <th>App No / Year</th>
+                            <th>Sanctioned &amp; Disbursed</th>
+                            {% if selected_tab == 'government' %}
+                            <th>Govt Doc Verification</th>
+                            {% elif selected_tab == 'employee_special' %}
+                            <th>Aequs Employee Details</th>
+                            {% else %}
+                            <th>Verification &amp; Employee Info</th>
+                            {% endif %}
+                            <th>Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in scholarships %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'students:detail' s.student.pk %}" style="font-weight: 700; color: #0f172a; text-decoration: none;">
+                                    {{ s.student.student_name }}
+                                </a>
+                                <div style="font-size: 11px; color: #64748b;">
+                                    {{ s.student.school.school_name }} &bull; Cls {{ s.student.current_class }}
+                                </div>
+                            </td>
+                            <td>
+                                <div><strong>{{ s.scheme_name }}</strong></div>
+                                <span class="af-badge badge-neutral" style="font-size: 10.5px;">{{ s.get_category_display }}</span>
+                            </td>
+                            <td>
+                                <div>{{ s.application_number }}</div>
+                                <div style="font-size: 11px; color: #64748b;">AY: {{ s.academic_year }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: #1e293b;">Sanctioned: &#8377; {{ s.sanctioned_amount|floatformat:0 }}</div>
+                                <div style="font-size: 11px; color: #15803d; font-weight: 600;">Disbursed: &#8377; {{ s.disbursed_amount|floatformat:0 }}</div>
+                            </td>
+
+                            {% if selected_tab == 'government' %}
+                            <td>
+                                <div style="display: flex; flex-direction: column; gap: 3px; font-size: 11.5px;">
+                                    <span>Aadhaar: {% if s.aadhaar_verified %}<span style="color: #15803d; font-weight: 600;">&#10004; Verified</span>{% else %}<span style="color: #dc2626;">Pending</span>{% endif %}</span>
+                                    <span>Income: {% if s.income_cert_verified %}<span style="color: #15803d; font-weight: 600;">&#10004; Verified</span>{% else %}<span style="color: #dc2626;">Pending</span>{% endif %}</span>
+                                    <span>Bank: {% if s.bank_account_verified %}<span style="color: #15803d; font-weight: 600;">&#10004; Verified</span>{% else %}<span style="color: #dc2626;">Pending</span>{% endif %}</span>
+                                </div>
+                            </td>
+                            {% elif selected_tab == 'employee_special' %}
+                            <td>
+                                <div style="font-size: 12px;">
+                                    <strong>{{ s.employee_name|default:"Employee Child Aid" }}</strong>
+                                    <div style="font-size: 11px; color: #64748b;">Code: {{ s.employee_code|default:"-" }} &bull; Dept: {{ s.employee_department|default:"-" }}</div>
+                                    <div style="font-size: 11px; color: #64748b;">Plant: {{ s.plant_location|default:"Belagavi" }}</div>
+                                </div>
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if s.category == 'GOVERNMENT' %}
+                                <div style="font-size: 11.5px; color: #475569;">
+                                    Govt Docs: {% if s.aadhaar_verified and s.income_cert_verified and s.bank_account_verified %}<span style="color: #15803d; font-weight: 600;">All Verified</span>{% else %}<span style="color: #b45309;">Docs Pending</span>{% endif %}
+                                </div>
+                                {% elif s.category == 'EMPLOYEE_SPECIAL' %}
+                                <div style="font-size: 11.5px; color: #475569;">
+                                    Emp: {{ s.employee_code|default:"-" }} ({{ s.plant_location|default:"Plant" }})
+                                </div>
+                                {% else %}
+                                <div style="font-size: 11.5px; color: #64748b;">Sponsor: {{ s.donor_sponsor|default:"Aequs Foundation" }}</div>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+
+                            <td>
+                                <span class="af-badge badge-{{ s.status|lower }}">{{ s.get_status_display }}</span>
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 6px;">
+                                    {% if s.status != 'DISBURSED' %}
+                                    <form method="post" action="{% url 'programs:scholarship_update_status' s.pk %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="DISBURSED">
+                                        <button type="submit" class="btn-af btn-af-sm btn-af-primary" title="Mark Disbursed">
+                                            Disburse
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <a href="{% url 'programs:scholarship_toggle_archive' s.pk %}" class="btn-af btn-af-danger btn-af-sm" title="Archive" onclick="return confirm('Archive this record?');">
+                                        <i data-lucide="archive"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i data-lucide="award"></i>
+                                    <p>No scholarship or educational aid records found for this section.</p>
+                                    <a href="{% url 'programs:scholarship_create' %}" class="btn-af btn-af-primary btn-af-sm" style="margin-top: 10px;">Record Scholarship</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

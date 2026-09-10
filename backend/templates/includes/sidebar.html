@@ -1483,6 +1483,164 @@
     color: #ffffff !important;
   }
 
+  /* =========================================================
+     DROPDOWN & SUB-NAV STYLING
+     ========================================================= */
+
+  .nav-dropdown {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .dropdown-trigger {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 4px 8px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    color: #2b2b2b !important;
+    text-decoration: none !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    border: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.15s ease !important;
+    font-family: inherit !important;
+  }
+
+  .dropdown-trigger:hover {
+    background-color: #f1f1f1 !important;
+    color: var(--aequs-red) !important;
+  }
+
+  .dropdown-trigger-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .dropdown-trigger-left i,
+  .dropdown-trigger-left svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2 !important;
+    color: var(--aequs-red) !important;
+    flex-shrink: 0 !important;
+  }
+
+  .dropdown-trigger .dropdown-arrow {
+    width: 12px !important;
+    height: 12px !important;
+    stroke-width: 2.2 !important;
+    color: #888888 !important;
+    transition: transform 0.2s ease !important;
+    flex-shrink: 0 !important;
+  }
+
+  .nav-dropdown.open .dropdown-trigger .dropdown-arrow {
+    transform: rotate(180deg) !important;
+  }
+
+  .nav-dropdown.open .dropdown-trigger {
+    color: var(--aequs-red) !important;
+  }
+
+  .sub-nav-list {
+    list-style: none !important;
+    margin: 1px 0 3px 0 !important;
+    padding: 2px 0 2px 8px !important;
+    display: none !important;
+    flex-direction: column !important;
+    gap: 1px !important;
+    border-left: 1.5px solid #e5e5e5 !important;
+    margin-left: 14px !important;
+  }
+
+  .nav-dropdown.open .sub-nav-list {
+    display: flex !important;
+  }
+
+  .sub-nav-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-radius: 4px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+  }
+
+  .sub-nav-item a.sub-link {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 3px 6px !important;
+    height: 25px !important;
+    min-height: 25px !important;
+    color: #4b5563 !important;
+    text-decoration: none !important;
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+    border-radius: 4px !important;
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    transition: all 0.15s ease !important;
+  }
+
+  .sub-nav-item a.sub-link i,
+  .sub-nav-item a.sub-link svg {
+    width: 13px !important;
+    height: 13px !important;
+    stroke-width: 1.8 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .sub-nav-item a.sub-link:hover {
+    background-color: #f7f7f7 !important;
+    color: var(--aequs-red) !important;
+  }
+
+  .sub-nav-item.active a.sub-link {
+    background-color: var(--aequs-red-light) !important;
+    color: var(--aequs-red) !important;
+    font-weight: 700 !important;
+  }
+
+  .sub-nav-item a.sub-add-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 3px !important;
+    color: #777777 !important;
+    background: #f1f1f1 !important;
+    text-decoration: none !important;
+    margin-right: 2px !important;
+    transition: all 0.15s ease !important;
+    flex-shrink: 0 !important;
+  }
+
+  .sub-nav-item a.sub-add-btn:hover {
+    background: var(--aequs-red) !important;
+    color: #ffffff !important;
+  }
+
+  .sub-nav-item a.sub-add-btn i,
+  .sub-nav-item a.sub-add-btn svg {
+    width: 11px !important;
+    height: 11px !important;
+    stroke-width: 2.5 !important;
+  }
+
   /* Compact Footer */
   .sidebar-footer {
     flex-shrink: 0 !important;
@@ -1820,91 +1978,176 @@
     </ul>
 
 
-    <!-- Programs & Benefits -->
-    {% if request.user.is_admin or perms.eligibility.view_eligibilityrecord or perms.inventory.view_laptop or perms.distributions.view_distribution or perms.internships.view_internshipplacement %}
+    <!-- 1. Tracking Dropdown (Projects, Programs, EV Classes, Monthly Tracking) -->
     <div class="nav-section-title">
-      Programs & Benefits
+      Tracking &amp; Operations
     </div>
 
     <ul class="nav-list">
+      <li class="nav-dropdown {% if active_page == 'projects' or active_page == 'programs' or active_page == 'ev_classes' or active_page == 'monthly_tracking' %}open{% endif %}" id="dropdownTracking">
+        <button type="button" class="dropdown-trigger" onclick="toggleNavDropdown('dropdownTracking')" title="Tracking">
+          <div class="dropdown-trigger-left">
+            <i data-lucide="trending-up"></i>
+            <span class="label">Tracking</span>
+          </div>
+          <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+        </button>
 
-      {% if perms.eligibility.view_eligibilityrecord or request.user.is_admin %}
-      <li class="nav-item {% if active_page == 'eligibility' %}active{% endif %}">
-        <a href="{% url 'eligibility:portal' %}" title="Eligibility">
-          <i data-lucide="check-circle-2"></i>
-          <span class="label">Eligibility</span>
-        </a>
+        <ul class="sub-nav-list">
+          <li class="sub-nav-item {% if active_page == 'projects' %}active{% endif %}">
+            <a href="{% url 'programs:project_list' %}" class="sub-link" title="Projects">
+              <i data-lucide="folder-kanban"></i>
+              <span class="label">Projects</span>
+            </a>
+            <a href="{% url 'programs:project_create' %}" class="sub-add-btn" title="Create New Project" onclick="event.stopPropagation();">
+              <i data-lucide="plus"></i>
+            </a>
+          </li>
+
+          <li class="sub-nav-item {% if active_page == 'programs' %}active{% endif %}">
+            <a href="{% url 'programs:program_list' %}" class="sub-link" title="Programs">
+              <i data-lucide="layers"></i>
+              <span class="label">Programs</span>
+            </a>
+            <a href="{% url 'programs:program_create' %}" class="sub-add-btn" title="Create New Program" onclick="event.stopPropagation();">
+              <i data-lucide="plus"></i>
+            </a>
+          </li>
+
+          <li class="sub-nav-item {% if active_page == 'ev_classes' %}active{% endif %}">
+            <a href="{% url 'programs:ev_class_list' %}" class="sub-link" title="EV Classes">
+              <i data-lucide="zap"></i>
+              <span class="label">EV Classes</span>
+            </a>
+            <a href="{% url 'programs:ev_class_create' %}" class="sub-add-btn" title="Log New EV Class" onclick="event.stopPropagation();">
+              <i data-lucide="plus"></i>
+            </a>
+          </li>
+
+          <li class="sub-nav-item {% if active_page == 'monthly_tracking' %}active{% endif %}">
+            <a href="{% url 'programs:monthly_tracking' %}" class="sub-link" title="Monthly Tracking">
+              <i data-lucide="calendar-check"></i>
+              <span class="label">Monthly Tracking</span>
+            </a>
+          </li>
+        </ul>
       </li>
-      {% endif %}
-
-      {% if perms.inventory.view_laptop or request.user.is_admin %}
-      <li class="nav-item {% if active_page == 'inventory' %}active{% endif %}">
-        <a href="{% url 'inventory:portal' %}" title="Inventory">
-          <i data-lucide="laptop"></i>
-          <span class="label">Inventory</span>
-        </a>
-      </li>
-      {% endif %}
-
-      {% if perms.distributions.view_distribution or request.user.is_admin %}
-      <li class="nav-item {% if active_page == 'distributions' %}active{% endif %}">
-        <a href="{% url 'distributions:list' %}" title="Distributions">
-          <i data-lucide="package"></i>
-          <span class="label">Distributions</span>
-        </a>
-      </li>
-      {% endif %}
-
-      {% if perms.internships.view_internshipplacement or request.user.is_admin %}
-      <li class="nav-item {% if active_page == 'internships' %}active{% endif %}">
-        <a href="{% url 'internships:portal' %}" title="Internships">
-          <i data-lucide="briefcase"></i>
-          <span class="label">Internships</span>
-        </a>
-      </li>
-      {% endif %}
-
     </ul>
-    {% endif %}
 
-
-    <!-- Foundation -->
-    {% if request.user.is_admin or perms.events.view_event or perms.volunteers.view_volunteer or perms.reports.view_activitylog %}
+    <!-- 2. Scholarship Dropdown (Scholarships, Eligibility, Internships, Mentorship) -->
     <div class="nav-section-title">
-      Foundation
+      Scholarships &amp; Grants
     </div>
 
     <ul class="nav-list">
+      <li class="nav-dropdown {% if active_page == 'scholarships' or active_page == 'eligibility' or active_page == 'internships' %}open{% endif %}" id="dropdownScholarship">
+        <button type="button" class="dropdown-trigger" onclick="toggleNavDropdown('dropdownScholarship')" title="Scholarships">
+          <div class="dropdown-trigger-left">
+            <i data-lucide="award"></i>
+            <span class="label">Scholarship</span>
+          </div>
+          <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+        </button>
 
-      {% if perms.events.view_event or request.user.is_admin %}
-      <li class="nav-item {% if active_page == 'events' %}active{% endif %}">
-        <a href="{% url 'events:list' %}" title="Events">
-          <i data-lucide="calendar"></i>
-          <span class="label">Events</span>
-        </a>
+        <ul class="sub-nav-list">
+          <li class="sub-nav-item {% if active_page == 'scholarships' %}active{% endif %}">
+            <a href="{% url 'programs:scholarship_list' %}" class="sub-link" title="Scholarship Directory">
+              <i data-lucide="badge-percent"></i>
+              <span class="label">Scholarships</span>
+            </a>
+            <a href="{% url 'programs:scholarship_create' %}" class="sub-add-btn" title="Record Scholarship" onclick="event.stopPropagation();">
+              <i data-lucide="plus"></i>
+            </a>
+          </li>
+
+          {% if perms.eligibility.view_eligibilityrecord or request.user.is_admin %}
+          <li class="sub-nav-item {% if active_page == 'eligibility' %}active{% endif %}">
+            <a href="{% url 'eligibility:portal' %}" class="sub-link" title="Eligibility">
+              <i data-lucide="check-circle-2"></i>
+              <span class="label">Eligibility</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if perms.internships.view_internshipplacement or request.user.is_admin %}
+          <li class="sub-nav-item {% if active_page == 'internships' %}active{% endif %}">
+            <a href="{% url 'internships:portal' %}" class="sub-link" title="Internships">
+              <i data-lucide="briefcase"></i>
+              <span class="label">Internship</span>
+            </a>
+          </li>
+
+          <li class="sub-nav-item">
+            <a href="{% url 'internships:portal' %}" class="sub-link" title="Mentorship Program">
+              <i data-lucide="user-check"></i>
+              <span class="label">Mentorship</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
       </li>
-      {% endif %}
-
-      {% if perms.volunteers.view_volunteer or request.user.is_admin %}
-      <li class="nav-item {% if active_page == 'volunteers' %}active{% endif %}">
-        <a href="{% url 'volunteers:list' %}" title="Volunteers">
-          <i data-lucide="users"></i>
-          <span class="label">Volunteers</span>
-        </a>
-      </li>
-      {% endif %}
-
-      {% if perms.reports.view_activitylog or request.user.is_admin %}
-      <li class="nav-item {% if active_page == 'reports' %}active{% endif %}">
-        <a href="{% url 'reports:list' %}" title="Reports">
-          <i data-lucide="bar-chart-3"></i>
-          <span class="label">Reports</span>
-        </a>
-      </li>
-      {% endif %}
-
     </ul>
-    {% endif %}
+
+    <!-- 3. Ekatra Dropdown (Volunteer, Campaign & Events, NGOs, Archive) -->
+    <div class="nav-section-title">
+      Ekatra
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-dropdown {% if active_page == 'volunteers' or active_page == 'events' or active_page == 'reports' or active_page == 'archive' %}open{% endif %}" id="dropdownEkatra">
+        <button type="button" class="dropdown-trigger" onclick="toggleNavDropdown('dropdownEkatra')" title="Ekatra">
+          <div class="dropdown-trigger-left">
+            <i data-lucide="heart-handshake"></i>
+            <span class="label">Ekatra</span>
+          </div>
+          <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+        </button>
+
+        <ul class="sub-nav-list">
+          {% if perms.volunteers.view_volunteer or request.user.is_admin %}
+          <li class="sub-nav-item {% if active_page == 'volunteers' %}active{% endif %}">
+            <a href="{% url 'volunteers:list' %}" class="sub-link" title="Volunteers">
+              <i data-lucide="users"></i>
+              <span class="label">Volunteer</span>
+            </a>
+            <a href="{% url 'volunteers:create' %}" class="sub-add-btn" title="Add Volunteer" onclick="event.stopPropagation();">
+              <i data-lucide="plus"></i>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if perms.events.view_event or request.user.is_admin %}
+          <li class="sub-nav-item {% if active_page == 'events' %}active{% endif %}">
+            <a href="{% url 'events:list' %}" class="sub-link" title="Campaign &amp; Events">
+              <i data-lucide="calendar"></i>
+              <span class="label">Campaign &amp; Events</span>
+            </a>
+            <a href="{% url 'events:create' %}" class="sub-add-btn" title="Create Event" onclick="event.stopPropagation();">
+              <i data-lucide="plus"></i>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if perms.reports.view_activitylog or request.user.is_admin %}
+          <li class="sub-nav-item {% if active_page == 'reports' %}active{% endif %}">
+            <a href="{% url 'reports:list' %}" class="sub-link" title="Reports">
+              <i data-lucide="bar-chart-3"></i>
+              <span class="label">Reports</span>
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="sub-nav-item {% if active_page == 'archive' %}active{% endif %}">
+            <a href="{% url 'programs:archive_portal' %}" class="sub-link" title="Archive Portal">
+              <i data-lucide="archive"></i>
+              <span class="label">Archive Portal</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+
 
   </div>
 
@@ -1994,6 +2237,32 @@
         }
       });
     }
+  })();
+
+  function toggleNavDropdown(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('open');
+      try {
+        localStorage.setItem('aequs_nav_' + id, el.classList.contains('open') ? 'open' : 'closed');
+      } catch (e) {}
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+  }
+
+  (function() {
+    ['dropdownTracking', 'dropdownScholarship', 'dropdownEkatra'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && !el.classList.contains('open')) {
+        try {
+          if (localStorage.getItem('aequs_nav_' + id) === 'open') {
+            el.classList.add('open');
+          }
+        } catch (e) {}
+      }
+    });
   })();
 
   if (window.lucide) {

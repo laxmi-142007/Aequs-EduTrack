@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -945,12 +946,13 @@
         <!-- TOP BAR -->
 
         <header class="topbar">
-            <h1>
-                <i data-lucide="layout-dashboard"
-                   style="width: 18px; height: 18px; color: #dd2d27;"></i>
-
-                EduTrack Dashboard
-            </h1>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs Foundation" style="height: 32px; width: auto;">
+                <h1 style="margin: 0; font-size: 18px; font-weight: 700; color: #171717; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="layout-dashboard" style="width: 18px; height: 18px; color: #ed1c24;"></i>
+                    EduTrack Dashboard
+                </h1>
+            </div>
 
             <span class="topbar-badge">
                 Live System Overview

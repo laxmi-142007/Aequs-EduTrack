@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "events",
     "volunteers",
     "reports",
+    "programs",
 ]
 
 MIDDLEWARE = [

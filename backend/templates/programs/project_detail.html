@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.name }} | Project Dossier | Aequs Foundation</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='projects' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ project.name }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Project Code: {{ project.code }} &bull; {{ project.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:project_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="arrow-left"></i> Back to Projects
+                </a>
+                <a href="{% url 'programs:program_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="plus"></i> Add Sub-Program
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Project Header Overview -->
+            <div class="detail-card">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">Status</span>
+                        <span class="val">
+                            <span class="af-badge badge-{{ project.status|lower }}">{{ project.get_status_display }}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Partner NGO</span>
+                        <span class="val">{{ project.ngo.name|default:"Direct Aequs Implementation" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Lead Coordinator</span>
+                        <span class="val">{{ project.lead_coordinator|default:"Aequs Program Officer" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Duration</span>
+                        <span class="val">{{ project.start_date|date:"d M Y" }} to {{ project.end_date|date:"d M Y"|default:"Ongoing" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Allocated Budget</span>
+                        <span class="val" style="color: #ed1c24;">&#8377; {{ project.allocated_budget|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Spent Budget</span>
+                        <span class="val">&#8377; {{ project.spent_budget|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                {% if project.description %}
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                    <span class="label" style="display: block; margin-bottom: 6px;">Project Scope & Objectives</span>
+                    <p style="font-size: 14px; color: #334155; line-height: 1.6; margin: 0;">{{ project.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Target Schools Grid -->
+            <div class="detail-card">
+                <h3 style="font-size: 16px; font-weight: 700; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="school" style="color: #ed1c24;"></i> Beneficiary Partner Schools ({{ project.target_schools.count }})
+                </h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    {% for sc in project.target_schools.all %}
+                    <span class="af-badge badge-neutral" style="font-size: 12.5px; padding: 6px 12px;">
+                        {{ sc.school_name }} ({{ sc.village_or_town|default:"Belagavi" }})
+                    </span>
+                    {% empty %}
+                    <p style="color: #94a3b8; font-size: 13px; margin: 0;">No specific schools assigned yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Sub-Programs Linked -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="layers" style="color: #3b82f6;"></i> Sub-Programs Under This Project ({{ programs.count }})
+                    </h3>
+                    <a href="{% url 'programs:program_create' %}" class="btn-af btn-af-secondary btn-af-sm">
+                        + New Program
+                    </a>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Program Title</th>
+                                <th>Category</th>
+                                <th>Mandatory Location</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prg in programs %}
+                            <tr>
+                                <td><strong>{{ prg.code }}</strong></td>
+                                <td>
+                                    <a href="{% url 'programs:program_detail' prg.pk %}" style="color: #0f172a; font-weight: 600; text-decoration: none;">
+                                        {{ prg.title }}
+                                    </a>
+                                </td>
+                                <td>{{ prg.get_category_display }}</td>
+                                <td>
+                                    <span style="display: inline-flex; align-items: center; gap: 4px; color: #475569; font-size: 12px;">
+                                        <i data-lucide="map-pin" style="width: 14px; height: 14px; color: #ed1c24;"></i>
+                                        {{ prg.location_name }}, {{ prg.taluk }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="af-badge badge-{{ prg.status|lower }}">{{ prg.get_status_display }}</span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <a href="{% url 'programs:program_detail' prg.pk %}" class="btn-af btn-af-secondary btn-af-sm">View</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">
+                                    No sub-programs created under this project yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CSR Grants Linked -->
+            {% if csr_grants %}
+            <div class="detail-card">
+                <h3 style="font-size: 16px; font-weight: 700; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="landmark" style="color: #10b981;"></i> Corporate CSR Funding Allocations ({{ csr_grants.count }})
+                </h3>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Corporate Donor</th>
+                                <th>Grant ID</th>
+                                <th>Target School</th>
+                                <th>Grant Amount</th>
+                                <th>Sanction Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grant in csr_grants %}
+                            <tr>
+                                <td><strong>{{ grant.corporate_donor }}</strong></td>
+                                <td>{{ grant.grant_id }}</td>
+                                <td>{{ grant.school.school_name|default:"Central Project Pool" }}</td>
+                                <td style="color: #15803d; font-weight: 600;">&#8377; {{ grant.grant_amount|floatformat:2 }}</td>
+                                <td>{{ grant.sanction_date|date:"d M Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

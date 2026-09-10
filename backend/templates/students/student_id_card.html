@@ -1,0 +1,705 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ID Card - {{ student.student_name }} | Aequs EduTrack</title>
+
+    <link rel="icon" type="image/jpeg" href="{% static 'images/cropped-Aequs-Lines-01-32x32.jpg' %}">
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+
+    <style>
+        :root {
+            --aequs-red: #ed1c24;
+            --aequs-red-dark: #c9141b;
+            --aequs-red-light: #fff1f1;
+            --aequs-dark: #171717;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-600: #475569;
+            --slate-800: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            min-height: 100vh;
+        }
+
+        .main {
+            margin-left: 256px;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-brand img {
+            height: 32px;
+            width: auto;
+        }
+
+        .topbar-brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #171717;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-print {
+            background: #ed1c24;
+            color: #ffffff;
+        }
+
+        .btn-print:hover {
+            background: #c9141b;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Container */
+        .container {
+            padding: 36px 32px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .preview-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .preview-header p {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* Cards Flex Preview */
+        .cards-preview-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 36px;
+            flex-wrap: wrap;
+        }
+
+        /* Standard Card Badge Design (Approx. CR-80 54mm x 85.6mm scaled) */
+        .id-card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .id-card-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .id-card {
+            width: 320px;
+            height: 490px;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            position: relative;
+            background-image: radial-gradient(#f8fafc 1px, transparent 1px);
+            background-size: 12px 12px;
+        }
+
+        /* Card Header */
+        .card-header-banner {
+            background: #ed1c24;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #ffffff;
+            border-bottom: 3px solid #171717;
+        }
+
+        .card-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-brand-logo {
+            height: 26px;
+            width: auto;
+            background: #ffffff;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .card-brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .card-brand-name {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .card-brand-sub {
+            font-size: 8px;
+            font-weight: 500;
+            opacity: 0.9;
+            letter-spacing: 0.3px;
+        }
+
+        .card-ribbon {
+            background: #171717;
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            padding: 3px 0;
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 14px 18px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+
+        .card-photo-wrap {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            border: 3px solid #ed1c24;
+            padding: 2px;
+            background: #ffffff;
+            overflow: hidden;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-photo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-photo-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #ed1c24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .card-student-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 3px;
+            line-height: 1.2;
+        }
+
+        .card-admission-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #bfdbfe;
+            margin-bottom: 8px;
+        }
+
+        .card-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .card-info-table td {
+            padding: 3px 0;
+            vertical-align: top;
+        }
+
+        .card-info-label {
+            color: #64748b;
+            font-weight: 600;
+            width: 42%;
+        }
+
+        .card-info-val {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        /* QR Code verification */
+        .card-qr-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 10px;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .card-qr-img {
+            width: 48px;
+            height: 48px;
+            display: block;
+        }
+
+        .card-qr-text {
+            text-align: left;
+            font-size: 9px;
+            color: #475569;
+            line-height: 1.2;
+        }
+
+        .card-qr-text strong {
+            display: block;
+            color: #0f172a;
+            font-size: 10px;
+        }
+
+        /* Card Footer */
+        .card-footer {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        .card-signatory {
+            text-align: right;
+            line-height: 1.1;
+        }
+
+        .card-sign-line {
+            font-size: 8px;
+            font-weight: 700;
+            color: #0f172a;
+            border-top: 1px solid #334155;
+            padding-top: 2px;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        /* Back of Card */
+        .id-card.back {
+            background: #ffffff;
+        }
+
+        .card-back-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            font-size: 11px;
+            text-align: left;
+        }
+
+        .back-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ed1c24;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 3px;
+            margin-bottom: 6px;
+        }
+
+        .back-instructions {
+            list-style: none;
+            margin-bottom: 14px;
+        }
+
+        .back-instructions li {
+            position: relative;
+            padding-left: 12px;
+            margin-bottom: 4px;
+            font-size: 10px;
+            color: #475569;
+            line-height: 1.3;
+        }
+
+        .back-instructions li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #ed1c24;
+            font-weight: bold;
+        }
+
+        .back-contact-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: auto;
+            font-size: 9px;
+            color: #475569;
+            line-height: 1.3;
+        }
+
+        .back-contact-box strong {
+            color: #0f172a;
+        }
+
+        .card-barcode-strip {
+            height: 18px;
+            background: repeating-linear-gradient(
+                90deg,
+                #171717,
+                #171717 2px,
+                #ffffff 2px,
+                #ffffff 4px,
+                #171717 4px,
+                #171717 5px,
+                #ffffff 5px,
+                #ffffff 7px
+            );
+            margin-top: 10px;
+            border-radius: 3px;
+        }
+
+        /* Print Media Query */
+        @media print {
+            body {
+                background: #ffffff !important;
+            }
+
+            .sidebar, .topbar, .topbar-actions, .preview-header, .id-card-label {
+                display: none !important;
+            }
+
+            .main {
+                margin-left: 0 !important;
+            }
+
+            .container {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            .cards-preview-wrap {
+                gap: 20px !important;
+                justify-content: flex-start !important;
+            }
+
+            .id-card {
+                box-shadow: none !important;
+                border: 1px solid #000000 !important;
+                page-break-inside: avoid !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main {
+                margin-left: 0;
+            }
+            .cards-preview-wrap {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'includes/sidebar.html' with active_page='students' %}
+
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-brand">
+                <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs Foundation">
+                <span class="topbar-brand-title">Student ID Card Generator</span>
+            </div>
+
+            <div class="topbar-actions">
+                <button onclick="window.print()" class="btn-action btn-print">
+                    <i data-lucide="printer" style="width:15px;height:15px;"></i>
+                    Print ID Card
+                </button>
+
+                <a href="{% url 'students:bulk_id_cards' %}?school={{ student.school.id }}" class="btn-action btn-secondary" title="Batch print all students in this school">
+                    <i data-lucide="users" style="width:15px;height:15px;"></i>
+                    Batch Print School Cards
+                </a>
+
+                <a href="{% url 'students:detail' student.id %}" class="btn-action btn-secondary">
+                    <i data-lucide="arrow-left" style="width:15px;height:15px;"></i>
+                    Back to Profile
+                </a>
+            </div>
+        </header>
+
+        <div class="container">
+
+            <div class="preview-header">
+                <h1>Official Student Identity Card</h1>
+                <p>Ready to print on standard card stock or PVC ID card printer (CR-80 Format)</p>
+            </div>
+
+            <!-- CARDS DISPLAY (FRONT & BACK) -->
+            <div class="cards-preview-wrap">
+
+                <!-- 1. FRONT SIDE -->
+                <div class="id-card-wrapper">
+                    <span class="id-card-label">Front View</span>
+
+                    <div class="id-card">
+                        <div>
+                            <!-- Header Banner -->
+                            <div class="card-header-banner">
+                                <div class="card-brand-wrap">
+                                    <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs" class="card-brand-logo">
+                                    <div class="card-brand-text">
+                                        <span class="card-brand-name">Aequs Foundation</span>
+                                        <span class="card-brand-sub">Educational CSR Initiative</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-ribbon">
+                                Student Identity Card
+                            </div>
+
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <div class="card-photo-wrap">
+                                    {% if student.photo %}
+                                        <img src="{{ student.photo.url }}" alt="{{ student.student_name }}" class="card-photo">
+                                    {% else %}
+                                        <div class="card-photo-placeholder">
+                                            {{ student.student_name|make_list|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <h2 class="card-student-name">{{ student.student_name }}</h2>
+                                <span class="card-admission-badge">ID: {{ student.admission_number }}</span>
+
+                                <table class="card-info-table">
+                                    <tr>
+                                        <td class="card-info-label">School:</td>
+                                        <td class="card-info-val">{{ student.school.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="card-info-label">Grade / Class:</td>
+                                        <td class="card-info-val">Class {{ student.current_class }}{% if student.section %} ({{ student.section }}){% endif %}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="card-info-label">Roll Number:</td>
+                                        <td class="card-info-val">{{ student.roll_number|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="card-info-label">Date of Birth:</td>
+                                        <td class="card-info-val">{{ student.date_of_birth|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="card-info-label">Emergency Phone:</td>
+                                        <td class="card-info-val">{{ student.parent_phone|default:student.student_phone|default:"-" }}</td>
+                                    </tr>
+                                </table>
+
+                                <!-- Scannable QR -->
+                                <div class="card-qr-box">
+                                    <img src="{% url 'students:qr_code' student.id %}" alt="Student QR Verification" class="card-qr-img">
+                                    <div class="card-qr-text">
+                                        <strong>Digital Verification</strong>
+                                        Scan with camera to verify student enrollment status
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer">
+                            <span>Academic Year 2026-27</span>
+                            <div class="card-signatory">
+                                <span class="card-sign-line">Authorized Signatory</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. BACK SIDE -->
+                <div class="id-card-wrapper">
+                    <span class="id-card-label">Back View</span>
+
+                    <div class="id-card back">
+                        <div>
+                            <!-- Header Banner -->
+                            <div class="card-header-banner" style="background:#171717; border-bottom:3px solid #ed1c24;">
+                                <div class="card-brand-wrap">
+                                    <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs" class="card-brand-logo">
+                                    <div class="card-brand-text">
+                                        <span class="card-brand-name">Aequs Foundation</span>
+                                        <span class="card-brand-sub">Terms & Instructions</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-ribbon" style="background:#ed1c24;">
+                                Cardholder Guidelines
+                            </div>
+
+                            <!-- Back Body -->
+                            <div class="card-back-body">
+                                <div class="back-section-title">Emergency Details</div>
+                                <table class="card-info-table">
+                                    <tr>
+                                        <td class="card-info-label">Parent / Guardian:</td>
+                                        <td class="card-info-val">{{ student.parent_name|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="card-info-label">Contact:</td>
+                                        <td class="card-info-val">{{ student.parent_phone|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="card-info-label">Address:</td>
+                                        <td class="card-info-val">{{ student.address|default:"Not specified"|truncatewords:8 }}</td>
+                                    </tr>
+                                </table>
+
+                                <div class="back-section-title">Terms & Conditions</div>
+                                <ul class="back-instructions">
+                                    <li>This card is non-transferable and remains the property of Aequs Foundation.</li>
+                                    <li>Must be presented for educational assistance, library access, and CSR distributions.</li>
+                                    <li>Loss of card must be reported immediately to school authorities.</li>
+                                    <li>If found, please hand over to the nearest school authority or return to the hub address below.</li>
+                                </ul>
+
+                                <div class="back-contact-box">
+                                    <strong>Aequs Foundation CSR Hub</strong><br>
+                                    Aequs SEZ, Hattargi, Belagavi, Karnataka 591243<br>
+                                    Email: foundation@aequs.com · www.aequsfoundation.org
+                                </div>
+
+                                <div class="card-barcode-strip"></div>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer">
+                            <span>EduTrack Identity System</span>
+                            <span>Helpline: +91 831 240 4000</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+
+</body>
+</html>

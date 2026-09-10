@@ -1,16 +1,31 @@
-﻿<!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>
-        {{ student.student_name }} | Student Details | EduTrack
-    </title>
+    <title>{{ student.student_name }} | Student Profile | Aequs EduTrack</title>
 
-    <script src="/static/js/lucide.min.js"></script>
+    <link rel="icon" type="image/jpeg" href="{% static 'images/cropped-Aequs-Lines-01-32x32.jpg' %}">
+    <script src="{% static 'js/lucide.min.js' %}"></script>
 
     <style>
+        :root {
+            --aequs-red: #ed1c24;
+            --aequs-red-dark: #c9141b;
+            --aequs-red-light: #fff1f1;
+            --aequs-black: #171717;
+            --aequs-dark: #242424;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-900: #0f172a;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -18,8 +33,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: #f8fafc;
             color: #0f172a;
             min-height: 100vh;
@@ -29,54 +43,172 @@
             margin-left: 256px;
             min-height: 100vh;
             background: #f8fafc;
+            display: flex;
+            flex-direction: column;
         }
 
-        .content {
-            padding: 32px;
+        /* Topbar */
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .page-header {
-            margin-bottom: 28px;
-        }
-
-        .page-header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .page-header p {
-            margin-top: 6px;
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        .profile-header {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 18px;
-            padding: 28px;
+        .topbar-brand {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 12px;
+        }
+
+        .topbar-brand img {
+            height: 32px;
+            width: auto;
+        }
+
+        .topbar-brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #171717;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-idcard {
+            background: #ed1c24;
+            color: #ffffff;
+            border: 1px solid #c9141b;
+        }
+
+        .btn-idcard:hover {
+            background: #c9141b;
+        }
+
+        .btn-edit {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        .btn-edit:hover {
+            background: #334155;
+        }
+
+        .btn-print {
+            background: #ffffff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-print:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 28px 32px;
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Messages */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .message.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Profile Hero Card */
+        .profile-hero {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 26px;
             margin-bottom: 24px;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .profile-hero-left {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .avatar-wrap {
+            position: relative;
         }
 
         .avatar {
-            width: 110px;
-            height: 110px;
-            min-width: 110px;
+            width: 100px;
+            height: 100px;
+            min-width: 100px;
             border-radius: 50%;
-            background: #e2e8f0;
+            background: #f1f5f9;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            font-size: 40px;
+            font-size: 36px;
             font-weight: 700;
             color: #475569;
-            border: 4px solid #f1f5f9;
+            border: 4px solid #ffffff;
+            box-shadow: 0 0 0 2px #ed1c24;
         }
 
         .avatar img {
@@ -86,28 +218,56 @@
             display: block;
         }
 
-        .profile-info h2 {
-            font-size: 25px;
+        .hero-info h1 {
+            font-size: 24px;
             font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .hero-tags {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
             margin-bottom: 8px;
         }
 
-        .admission-number {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 12px;
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
         }
 
-        .admission-number strong {
+        .tag-adm {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
+        .tag-school {
+            background: #f1f5f9;
             color: #334155;
+            border: 1px solid #e2e8f0;
+        }
+
+        .tag-class {
+            background: #fdf2f8;
+            color: #be185d;
+            border: 1px solid #fbcfe8;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 6px 12px;
+            gap: 5px;
+            padding: 4px 10px;
             border-radius: 999px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
         }
 
@@ -121,52 +281,107 @@
             color: #991b1b;
         }
 
-        .status-other {
+        .status-transferred {
             background: #fef3c7;
             color: #92400e;
         }
 
+        .status-passed_out {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        /* Hero Stats */
+        .hero-stats {
+            display: flex;
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .stat-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .stat-lbl {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* Grid Layout */
         .details-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 20px;
+            margin-bottom: 24px;
         }
 
-        .details-card {
-            background: white;
+        .card {
+            background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 22px;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
         }
 
-        .details-card.full-width {
+        .card.full-width {
             grid-column: 1 / -1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 14px;
         }
 
         .card-title {
             display: flex;
             align-items: center;
-            gap: 9px;
-            font-size: 16px;
+            gap: 8px;
+            font-size: 15px;
             font-weight: 700;
             color: #0f172a;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 6px;
         }
 
-        .card-title svg {
+        .card-title i {
+            color: #ed1c24;
             width: 18px;
             height: 18px;
         }
 
+        .card-badge {
+            font-size: 12px;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Detail Rows */
         .detail-row {
             display: flex;
             justify-content: space-between;
-            gap: 20px;
-            padding: 13px 0;
+            align-items: center;
+            padding: 10px 0;
             border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
         }
 
         .detail-row:last-child {
@@ -175,493 +390,546 @@
 
         .detail-label {
             color: #64748b;
-            font-size: 14px;
+            font-weight: 500;
         }
 
         .detail-value {
             color: #0f172a;
-            font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             text-align: right;
             word-break: break-word;
         }
 
-        .class-pill {
+        /* Data Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 9px 12px;
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .badge-pill {
             display: inline-block;
-            padding: 5px 10px;
-            background: #eff6ff;
-            color: #1d4ed8;
-            border-radius: 7px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
         }
 
-        .page-actions {
-            margin-top: 25px;
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-purple { background: #f3e8ff; color: #6b21a8; }
+        .badge-slate { background: #f1f5f9; color: #475569; }
+
+        /* Empty State */
+        .empty-state {
+            padding: 28px;
+            text-align: center;
+            color: #64748b;
         }
 
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            background: #0f172a;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 9px;
-            font-size: 14px;
-            font-weight: 600;
+        .empty-state i {
+            width: 36px;
+            height: 36px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
         }
 
-        .back-button:hover {
-            opacity: 0.9;
+        .empty-state p {
+            font-size: 13px;
+        }
+
+        /* Print Specifics */
+        @media print {
+            .sidebar, .topbar, .topbar-actions, .btn-action, .btn-idcard, .btn-edit, .btn-print, .btn-secondary {
+                display: none !important;
+            }
+            .main {
+                margin-left: 0 !important;
+            }
+            .content {
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            .profile-hero, .card {
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
         }
 
         @media (max-width: 900px) {
             .main {
                 margin-left: 0;
             }
-
             .details-grid {
                 grid-template-columns: 1fr;
             }
-
-            .details-card.full-width {
-                grid-column: auto;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .content {
-                padding: 18px;
-            }
-
-            .profile-header {
+            .profile-hero {
                 flex-direction: column;
-                text-align: center;
+                align-items: flex-start;
             }
-
-            .detail-row {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .detail-value {
-                text-align: left;
+            .hero-stats {
+                width: 100%;
+                justify-content: space-between;
             }
         }
     </style>
 </head>
-
 <body>
 
     {% include 'includes/sidebar.html' with active_page='students' %}
 
     <main class="main">
 
-        <section class="content">
-
-            <!-- PAGE HEADER -->
-
-            <div class="page-header">
-
-                <h1>Student Details</h1>
-
-                <p>
-                    Complete information about the student
-                </p>
-
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-brand">
+                <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs Foundation">
+                <span class="topbar-brand-title">Student Profile & Records</span>
             </div>
 
-
-            <!-- PROFILE HEADER -->
-
-            <div class="profile-header">
-
-                <div class="avatar">
-
-                    {% if student.photo %}
-
-                        <img
-                            src="{{ student.photo.url }}"
-                            alt="{{ student.student_name }}"
-                        >
-
-                    {% else %}
-
-                        {{ student.student_name|make_list|first|upper }}
-
-                    {% endif %}
-
-                </div>
-
-
-                <div class="profile-info">
-
-                    <h2>
-                        {{ student.student_name }}
-                    </h2>
-
-                    <div class="admission-number">
-
-                        Admission No:
-
-                        <strong>
-                            {{ student.admission_number }}
-                        </strong>
-
-                    </div>
-
-
-                    {% if student.status == 'ACTIVE' %}
-
-                        <span class="status-badge status-active">
-                            ● Active
-                        </span>
-
-                    {% elif student.status == 'INACTIVE' %}
-
-                        <span class="status-badge status-inactive">
-                            ● Inactive
-                        </span>
-
-                    {% else %}
-
-                        <span class="status-badge status-other">
-                            {{ student.get_status_display }}
-                        </span>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            <!-- DETAILS -->
-
-            <div class="details-grid">
-
-
-                <!-- ACADEMIC INFORMATION -->
-
-                <div class="details-card">
-
-                    <div class="card-title">
-
-                        <i data-lucide="school"></i>
-
-                        Academic Information
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            School Institution
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.school.name }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Current Class
-                        </span>
-
-                        <span class="detail-value">
-
-                            <span class="class-pill">
-                                {{ student.current_class }}
-                            </span>
-
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Section
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.section|default:"-" }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Roll Number
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.roll_number|default:"-" }}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- PERSONAL INFORMATION -->
-
-                <div class="details-card">
-
-                    <div class="card-title">
-
-                        <i data-lucide="user"></i>
-
-                        Personal Information
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Gender
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.get_gender_display }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Date of Birth
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.date_of_birth|default:"-" }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Student Phone
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.student_phone|default:"-" }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Email
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.email|default:"-" }}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- PARENT INFORMATION -->
-
-                <div class="details-card">
-
-                    <div class="card-title">
-
-                        <i data-lucide="users"></i>
-
-                        Parent / Guardian Information
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Parent Name
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.parent_name|default:"-" }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Relationship
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.relationship_to_student|default:"-" }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Parent Phone
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.parent_phone|default:"-" }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Parent Email
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.parent_email|default:"-" }}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ADMISSION INFORMATION -->
-
-                <div class="details-card">
-
-                    <div class="card-title">
-
-                        <i data-lucide="calendar"></i>
-
-                        Admission Information
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Admission Number
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.admission_number }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Admission Date
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.admission_date|default:"-" }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Status
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.get_status_display }}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ADDRESS -->
-
-                <div class="details-card full-width">
-
-                    <div class="card-title">
-
-                        <i data-lucide="map-pin"></i>
-
-                        Address
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <span class="detail-label">
-                            Student Address
-                        </span>
-
-                        <span class="detail-value">
-                            {{ student.address|default:"-" }}
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- BACK BUTTON -->
-
-            <div class="page-actions">
-
-                <a
-                    href="{% url 'students:list' %}"
-                    class="back-button"
-                >
-                    ← Back to Student Directory
+            <div class="topbar-actions">
+                <a href="{% url 'students:id_card' student.id %}" class="btn-action btn-idcard" title="Generate printable student ID card">
+                    <i data-lucide="id-card" style="width:15px;height:15px;"></i>
+                    Student ID Card
                 </a>
 
+                <a href="{% url 'students:edit' student.id %}" class="btn-action btn-edit" title="Edit student demographics and status">
+                    <i data-lucide="edit-3" style="width:15px;height:15px;"></i>
+                    Edit Profile
+                </a>
+
+                <button onclick="window.print()" class="btn-action btn-print" title="Print this complete profile">
+                    <i data-lucide="printer" style="width:15px;height:15px;"></i>
+                    Print Profile
+                </button>
+
+                <a href="{% url 'students:list' %}" class="btn-action btn-secondary">
+                    <i data-lucide="arrow-left" style="width:15px;height:15px;"></i>
+                    Directory
+                </a>
+            </div>
+        </header>
+
+        <div class="content">
+
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- PROFILE HERO -->
+            <div class="profile-hero">
+                <div class="profile-hero-left">
+                    <div class="avatar-wrap">
+                        <div class="avatar">
+                            {% if student.photo %}
+                                <img src="{{ student.photo.url }}" alt="{{ student.student_name }}">
+                            {% else %}
+                                {{ student.student_name|make_list|first|upper }}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="hero-info">
+                        <h1>{{ student.student_name }}</h1>
+
+                        <div class="hero-tags">
+                            <span class="tag-pill tag-adm">
+                                <i data-lucide="hash" style="width:12px;height:12px;"></i>
+                                {{ student.admission_number }}
+                            </span>
+
+                            <span class="tag-pill tag-school">
+                                <i data-lucide="school" style="width:12px;height:12px;"></i>
+                                {{ student.school.name }}
+                            </span>
+
+                            <span class="tag-pill tag-class">
+                                Class {{ student.current_class }}{% if student.section %} ({{ student.section }}){% endif %}
+                            </span>
+
+                            {% if student.status == 'ACTIVE' %}
+                                <span class="status-badge status-active">● Active</span>
+                            {% elif student.status == 'INACTIVE' %}
+                                <span class="status-badge status-inactive">● Inactive</span>
+                            {% elif student.status == 'TRANSFERRED' %}
+                                <span class="status-badge status-transferred">● Transferred</span>
+                            {% elif student.status == 'PASSED_OUT' %}
+                                <span class="status-badge status-passed_out">● Graduated</span>
+                            {% else %}
+                                <span class="status-badge status-active">{{ student.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+
+                        <p style="font-size:13px; color:#64748b;">
+                            Enrolled on {{ student.admission_date|default:student.created_at|date:"M d, Y" }} · Roll #{{ student.roll_number|default:"-" }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Summary Counts -->
+                <div class="hero-stats">
+                    <div class="stat-box">
+                        <div class="stat-num">{{ academic_records|length }}</div>
+                        <div class="stat-lbl">Academics</div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-num">{{ distributions|length }}</div>
+                        <div class="stat-lbl">Benefits</div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-num">{{ internships|length }}</div>
+                        <div class="stat-lbl">Internships</div>
+                    </div>
+                </div>
             </div>
 
-        </section>
+            <!-- DETAILS GRID: 2 COLUMNS -->
+            <div class="details-grid">
+
+                <!-- 1. ACADEMIC & ENROLLMENT INFO -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="graduation-cap"></i>
+                            Academic & School Information
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Partner School Institution</span>
+                        <span class="detail-value">{{ student.school.name }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">School UDISE Code</span>
+                        <span class="detail-value">{{ student.school.udise_code|default:"-" }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Current Enrolled Grade / Class</span>
+                        <span class="detail-value"><span class="badge-pill badge-blue">{{ student.current_class }}</span></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Section & Roll Number</span>
+                        <span class="detail-value">Sec: {{ student.section|default:"-" }} | Roll: {{ student.roll_number|default:"-" }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Admission Number</span>
+                        <span class="detail-value">{{ student.admission_number }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Admission Date</span>
+                        <span class="detail-value">{{ student.admission_date|default:"-" }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Enrollment Status</span>
+                        <span class="detail-value">{{ student.get_status_display }}</span>
+                    </div>
+                </div>
+
+                <!-- 2. PERSONAL & GUARDIAN DETAILS -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="user-check"></i>
+                            Personal & Guardian Details
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Gender</span>
+                        <span class="detail-value">{{ student.get_gender_display }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Date of Birth</span>
+                        <span class="detail-value">{{ student.date_of_birth|default:"-" }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Student Phone / Contact</span>
+                        <span class="detail-value">{{ student.student_phone|default:"-" }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Parent / Guardian Name</span>
+                        <span class="detail-value">{{ student.parent_name|default:"-" }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Relationship to Student</span>
+                        <span class="detail-value">{{ student.relationship_to_student|default:"Parent" }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Guardian Phone (Emergency)</span>
+                        <span class="detail-value">
+                            {% if request.user.is_admin %}
+                                {{ student.parent_phone|default:"-" }}
+                            {% else %}
+                                {{ student.masked_phone|default:"-" }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Residential Address</span>
+                        <span class="detail-value">{{ student.address|default:"-" }}</span>
+                    </div>
+
+                    <div class="detail-row" style="background: #f8fafc; padding: 6px 10px; border-radius: 6px; margin-top: 6px; border: 1px solid #e2e8f0;">
+                        <span class="detail-label" style="color: #0f172a; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                            <i data-lucide="shield-check" style="width: 13px; height: 13px; color: #16a34a;"></i> DPDP Parental Consent (Mod 18)
+                        </span>
+                        <span class="detail-value">
+                            {% if student.parental_consent_obtained %}
+                                <span class="badge-pill badge-green">&#10004; Verified ({{ student.consent_date|date:"d M Y"|default:"Documented" }})</span>
+                            {% else %}
+                                <span class="badge-pill badge-amber">Consent Pending</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 3. ACADEMIC PERFORMANCE & MARKS HISTORY -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="book-open"></i>
+                            Academic Progression & Examination History
+                        </div>
+                        <span class="card-badge">{{ academic_records|length }} Record(s)</span>
+                    </div>
+
+                    {% if academic_records %}
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Academic Year</th>
+                                        <th>Class / Course</th>
+                                        <th>Marks Obtained</th>
+                                        <th>Total Marks</th>
+                                        <th>Percentage</th>
+                                        <th>Class Rank</th>
+                                        <th>Status / Promotion</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rec in academic_records %}
+                                        <tr>
+                                            <td><strong>{{ rec.academic_year }}</strong></td>
+                                            <td><span class="badge-pill badge-slate">{{ rec.class_or_course }}</span></td>
+                                            <td>{{ rec.marks_obtained|default:"-" }}</td>
+                                            <td>{{ rec.total_marks|default:"-" }}</td>
+                                            <td>
+                                                {% if rec.percentage %}
+                                                    <span class="badge-pill badge-green">{{ rec.percentage }}%</span>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ rec.rank|default:"-" }}</td>
+                                            <td>
+                                                {% if rec.promotion_status %}
+                                                    <span class="badge-pill badge-blue">{{ rec.promotion_status }}</span>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td style="color:#64748b; font-size:12px;">{{ rec.remarks|default:"-" }}</td>
+                                        </tr>
+                                        {% if rec.subject_scores.all %}
+                                        <tr>
+                                            <td colspan="8" style="background: #fafafa; padding: 10px 16px; border-bottom: 2px solid #e2e8f0;">
+                                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11.5px;">
+                                                    <strong style="color: #ed1c24; display: inline-flex; align-items: center; gap: 4px;">
+                                                        <i data-lucide="book-open" style="width: 13px; height: 13px;"></i> Subject-Wise Breakdown (Module 3):
+                                                    </strong>
+                                                    {% for sub in rec.subject_scores.all %}
+                                                        <span style="background: white; border: 1px solid #cbd5e1; border-radius: 4px; padding: 3px 8px; color: #1e293b;">
+                                                            <strong>{{ sub.subject_name }}</strong> ({{ sub.get_exam_type_display }}):
+                                                            <span style="color: #0284c7; font-weight: 700;">{{ sub.marks_obtained }}/{{ sub.max_marks }}</span>
+                                                            &bull; Grade <span style="color: #15803d; font-weight: 700;">{{ sub.grade }}</span> ({{ sub.percentage }}%)
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i data-lucide="book-x"></i>
+                            <p>No academic examination records logged yet for this student.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 4. BENEFITS & CSR DISTRIBUTION HISTORY -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="package-check"></i>
+                            Benefits & CSR Distributions Received
+                        </div>
+                        <span class="card-badge">{{ distributions|length }} Distribution(s)</span>
+                    </div>
+
+                    {% if distributions %}
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Benefit Category</th>
+                                        <th>Kit / Item Specification</th>
+                                        <th>Quantity</th>
+                                        <th>Distributed By</th>
+                                        <th>Handover Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dist in distributions %}
+                                        <tr>
+                                            <td>{{ dist.distribution_date|date:"M d, Y" }}</td>
+                                            <td><span class="badge-pill badge-blue">{{ dist.get_benefit_type_display }}</span></td>
+                                            <td>
+                                                {% if dist.study_kit %}
+                                                    <strong>{{ dist.study_kit.name }}</strong> ({{ dist.study_kit.target_grade_level }})
+                                                {% elif dist.inventory_item %}
+                                                    {{ dist.inventory_item.item_name }}
+                                                {% else %}
+                                                    {{ dist.get_benefit_type_display }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ dist.quantity }}</td>
+                                            <td style="color:#64748b;">{{ dist.issued_by|default:"Aequs Team" }}</td>
+                                            <td style="color:#64748b; font-size:12px;">{{ dist.remarks|default:"-" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i data-lucide="gift"></i>
+                            <p>No material distributions or kits logged for this student yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 5. CORPORATE INTERNSHIPS & INDUSTRIAL TRAINING -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="briefcase"></i>
+                            Corporate Internships & Vocational Training
+                        </div>
+                        <span class="card-badge">{{ internships|length }} Track(s)</span>
+                    </div>
+
+                    {% if internships %}
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Program Title</th>
+                                        <th>Company / Unit</th>
+                                        <th>Department</th>
+                                        <th>Placement Status</th>
+                                        <th>Performance Grade</th>
+                                        <th>Period</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for intern in internships %}
+                                        <tr>
+                                            <td><strong>{{ intern.program.title }}</strong></td>
+                                            <td>{{ intern.program.company_name }}</td>
+                                            <td><span class="badge-pill badge-slate">{{ intern.program.get_department_display }}</span></td>
+                                            <td>
+                                                <span class="badge-pill badge-purple">{{ intern.get_status_display }}</span>
+                                            </td>
+                                            <td>
+                                                {% if intern.performance_grade %}
+                                                    <span class="badge-pill badge-green">{{ intern.get_performance_grade_display }}</span>
+                                                {% else %}
+                                                    Pending
+                                                {% endif %}
+                                            </td>
+                                            <td style="font-size:12px; color:#64748b;">
+                                                {{ intern.start_date|default:"-" }} to {{ intern.end_date|default:"-" }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i data-lucide="briefcase"></i>
+                            <p>No corporate internship or vocational track enrolled yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
 
     </main>
 
-
     <script>
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
-
-                if (window.lucide) {
-                    lucide.createIcons();
-                }
-
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.lucide) {
+                lucide.createIcons();
             }
-        );
-
+        });
     </script>
 
 </body>

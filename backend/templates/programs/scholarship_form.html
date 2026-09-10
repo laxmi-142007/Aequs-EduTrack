@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='scholarships' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 8 &amp; 9 &bull; Foundation, Govt (SSP/NSP) &amp; Employee Special</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:scholarship_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="x"></i> Cancel
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="form-container">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-section-title">
+                        <i data-lucide="award" style="color: #ed1c24;"></i> Scheme &amp; Student Beneficiary
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Beneficiary Student <span class="required-star">*</span></label>
+                            {{ form.student }}
+                            {% if form.student.errors %}<div class="field-error">{{ form.student.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Scholarship Category <span class="required-star">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}<div class="field-error">{{ form.category.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Scheme Name <span class="required-star">*</span></label>
+                            {{ form.scheme_name }}
+                            {% if form.scheme_name.errors %}<div class="field-error">{{ form.scheme_name.errors }}</div>{% endif %}
+                            <span class="field-help">E.g., Aequs Merit Scholarship, Karnataka SSP, Pre-Matric SC/ST, Employee Child Grant</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Application / Acknowledgement Number <span class="required-star">*</span></label>
+                            {{ form.application_number }}
+                            {% if form.application_number.errors %}<div class="field-error">{{ form.application_number.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Academic Year</label>
+                            {{ form.academic_year }}
+                            {% if form.academic_year.errors %}<div class="field-error">{{ form.academic_year.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Donor / Sponsor</label>
+                            {{ form.donor_sponsor }}
+                            {% if form.donor_sponsor.errors %}<div class="field-error">{{ form.donor_sponsor.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-section-title">
+                        <i data-lucide="indian-rupee" style="color: #10b981;"></i> Financials &amp; Disbursement
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Sanctioned Amount (&#8377;) <span class="required-star">*</span></label>
+                            {{ form.sanctioned_amount }}
+                            {% if form.sanctioned_amount.errors %}<div class="field-error">{{ form.sanctioned_amount.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Disbursed Amount (&#8377;)</label>
+                            {{ form.disbursed_amount }}
+                            {% if form.disbursed_amount.errors %}<div class="field-error">{{ form.disbursed_amount.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Disbursement Date</label>
+                            {{ form.disbursement_date }}
+                            {% if form.disbursement_date.errors %}<div class="field-error">{{ form.disbursement_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="field-error">{{ form.status.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Government Scholarship Verifications (Module 9) -->
+                    <div class="form-section-title">
+                        <i data-lucide="landmark" style="color: #3b82f6;"></i> Government Scheme Documentation (Module 9 SSP/NSP)
+                    </div>
+
+                    <div class="form-row" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                            {{ form.aadhaar_verified }}
+                            <label style="margin: 0;">Aadhaar Seeded</label>
+                        </div>
+                        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                            {{ form.income_cert_verified }}
+                            <label style="margin: 0;">Income/Caste Cert Verified</label>
+                        </div>
+                        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                            {{ form.bank_account_verified }}
+                            <label style="margin: 0;">Bank Account Validated</label>
+                        </div>
+                    </div>
+
+                    <!-- Employee Special Tab (Module 9) -->
+                    <div class="form-section-title">
+                        <i data-lucide="briefcase" style="color: #8b5cf6;"></i> Aequs Employee Special Welfare (Module 9)
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Employee Code</label>
+                            {{ form.employee_code }}
+                            {% if form.employee_code.errors %}<div class="field-error">{{ form.employee_code.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Employee Parent Name</label>
+                            {{ form.employee_name }}
+                            {% if form.employee_name.errors %}<div class="field-error">{{ form.employee_name.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Department</label>
+                            {{ form.employee_department }}
+                            {% if form.employee_department.errors %}<div class="field-error">{{ form.employee_department.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Plant / Unit Location</label>
+                            {{ form.plant_location }}
+                            {% if form.plant_location.errors %}<div class="field-error">{{ form.plant_location.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Remarks &amp; References</label>
+                            {{ form.remarks }}
+                            {% if form.remarks.errors %}<div class="field-error">{{ form.remarks.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'programs:scholarship_list' %}" class="btn-af btn-af-secondary">Cancel</a>
+                        <button type="submit" class="btn-af btn-af-primary">
+                            <i data-lucide="save"></i> Save Scholarship
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

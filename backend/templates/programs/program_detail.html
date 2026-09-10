@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ program.title }} | Program Dossier | Aequs Foundation</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='programs' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ program.title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Code: {{ program.code }} &bull; {{ program.get_category_display }}</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="arrow-left"></i> Back to Programs
+                </a>
+                <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="zap"></i> Log EV Session
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Mandatory Location Banner (Module 11 & 16) -->
+            <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="background: rgba(237, 28, 36, 0.2); border: 1px solid #ed1c24; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="map-pin" style="color: #ed1c24; width: 22px; height: 22px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; font-weight: 600;">Verified Program Location</div>
+                        <div style="font-size: 18px; font-weight: 700; color: white;">{{ program.location_name }}</div>
+                        <div style="font-size: 13px; color: #cbd5e1;">{{ program.village_or_town }}, Taluk: {{ program.taluk }}, District: {{ program.district }}, {{ program.state }}</div>
+                    </div>
+                </div>
+                {% if program.gps_coordinates %}
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-family: monospace;">
+                    GPS: {{ program.gps_coordinates }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Program Details -->
+            <div class="detail-card">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">Status</span>
+                        <span class="val">
+                            <span class="af-badge badge-{{ program.status|lower }}">{{ program.get_status_display }}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Category</span>
+                        <span class="val">{{ program.get_category_display }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Parent Project</span>
+                        <span class="val">
+                            {% if program.project %}
+                            <a href="{% url 'programs:project_detail' program.project.pk %}" style="color: #2563eb; text-decoration: none;">
+                                {{ program.project.name }}
+                            </a>
+                            {% else %}
+                            Standalone
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Partner NGO</span>
+                        <span class="val">{{ program.ngo.name|default:"Direct Aequs Operation" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Academic Year</span>
+                        <span class="val">{{ program.academic_year }}</span>
+                    </div>
+                </div>
+
+                {% if program.description %}
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                    <span class="label" style="display: block; margin-bottom: 6px;">Program Scope</span>
+                    <p style="font-size: 14px; color: #334155; line-height: 1.6; margin: 0;">{{ program.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Participating Schools -->
+            <div class="detail-card">
+                <h3 style="font-size: 16px; font-weight: 700; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="school" style="color: #ed1c24;"></i> Participating Schools ({{ program.participating_schools.count }})
+                </h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    {% for sc in program.participating_schools.all %}
+                    <span class="af-badge badge-neutral" style="font-size: 12.5px; padding: 6px 12px;">
+                        {{ sc.school_name }} ({{ sc.taluk }})
+                    </span>
+                    {% empty %}
+                    <p style="color: #94a3b8; font-size: 13px; margin: 0;">No schools assigned yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- EV Sessions / Exposure Visits linked -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="zap" style="color: #f59e0b;"></i> EV Class &amp; Exposure Visit Sessions ({{ ev_sessions.count }})
+                    </h3>
+                    <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-secondary btn-af-sm">
+                        + Log New EV Session
+                    </a>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Session Title</th>
+                                <th>Topic &amp; Module</th>
+                                <th>School &amp; Grade</th>
+                                <th>Date &amp; Facilitator</th>
+                                <th>Attendees</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ev in ev_sessions %}
+                            <tr>
+                                <td><strong>{{ ev.session_code }}</strong></td>
+                                <td>
+                                    <a href="{% url 'programs:ev_class_detail' ev.pk %}" style="color: #0f172a; font-weight: 600; text-decoration: none;">
+                                        {{ ev.session_title }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div>{{ ev.topic }}</div>
+                                    <div style="font-size: 11px; color: #64748b;">{{ ev.curriculum_module }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ ev.school.school_name }}</div>
+                                    <div style="font-size: 11px; color: #64748b;">Grade: {{ ev.grade_level }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ ev.session_date|date:"d M Y" }}</div>
+                                    <div style="font-size: 11px; color: #64748b;">{{ ev.facilitator_name }}</div>
+                                </td>
+                                <td>
+                                    <span class="af-badge badge-neutral">{{ ev.attendee_count }} students</span>
+                                </td>
+                                <td>
+                                    <span class="af-badge badge-{{ ev.status|lower }}">{{ ev.get_status_display }}</span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <a href="{% url 'programs:ev_class_detail' ev.pk %}" class="btn-af btn-af-secondary btn-af-sm">View</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" style="text-align: center; color: #94a3b8; padding: 24px;">
+                                    No EV class sessions logged for this program yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Add Student | EduTrack</title>
+    <title>{% if is_edit %}Edit {{ student.student_name }} | Student Profile | EduTrack{% else %}Add Student | EduTrack{% endif %}</title>
 
     <script src="/static/js/lucide.min.js"></script>
 
@@ -249,16 +249,40 @@
 
     <main class="main">
 
+        <header class="topbar" style="background:#ffffff; border-bottom:1px solid #e2e8f0; padding:14px 32px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs Foundation" style="height:32px; width:auto;">
+                <span style="font-size:15px; font-weight:700; color:#171717;">
+                    {% if is_edit %}Edit Student Profile{% else %}Student Enrollment{% endif %}
+                </span>
+            </div>
+            <a href="{% if is_edit %}{% url 'students:detail' student.id %}{% else %}{% url 'students:list' %}{% endif %}" style="text-decoration:none; color:#475569; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; background:#f1f5f9; padding:6px 14px; border-radius:8px; border:1px solid #e2e8f0;">
+                <i data-lucide="arrow-left" style="width:14px; height:14px;"></i> Back to {% if is_edit %}Profile{% else %}Directory{% endif %}
+            </a>
+        </header>
+
         <section class="content">
 
             <!-- PAGE HEADER -->
 
             <div class="page-header">
 
-                <h1>Add Student</h1>
+                <h1>
+                    {% if is_edit %}
+                        <i data-lucide="user-pen" style="width:26px; height:26px; color:#ed1c24; vertical-align:middle;"></i>
+                        Edit Student Profile
+                    {% else %}
+                        <i data-lucide="user-plus" style="width:26px; height:26px; color:#ed1c24; vertical-align:middle;"></i>
+                        Add Student
+                    {% endif %}
+                </h1>
 
                 <p>
-                    Add a new student to the EduTrack student directory.
+                    {% if is_edit %}
+                        Update student demographic records, schooling status, and guardian details for <strong>{{ student.student_name }}</strong> (Admission: {{ student.admission_number }}).
+                    {% else %}
+                        Enroll a new student to the EduTrack student directory and assign their partner school.
+                    {% endif %}
                 </p>
 
             </div>
@@ -426,6 +450,10 @@
                                 id="photoPreview"
                                 class="photo-preview"
                                 alt="Student photo preview"
+                                {% if is_edit and student.photo %}
+                                    src="{{ student.photo.url }}"
+                                    style="display:block;"
+                                {% endif %}
                             >
 
                             {% if form.photo.errors %}
@@ -844,7 +872,7 @@
                     <div class="button-row">
 
                         <a
-                            href="{% url 'students:list' %}"
+                            href="{% if is_edit %}{% url 'students:detail' student.id %}{% else %}{% url 'students:list' %}{% endif %}"
                             class="button cancel-button"
                         >
 
@@ -858,11 +886,16 @@
                         <button
                             type="submit"
                             class="button submit-button"
+                            style="background:#ed1c24;"
                         >
 
-                            <i data-lucide="user-plus"></i>
-
-                            Add Student
+                            {% if is_edit %}
+                                <i data-lucide="check"></i>
+                                Save Changes
+                            {% else %}
+                                <i data-lucide="user-plus"></i>
+                                Add Student
+                            {% endif %}
 
                         </button>
 

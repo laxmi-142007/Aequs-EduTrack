@@ -83,6 +83,17 @@ class Event(models.Model):
         default=0,
     )
 
+    # Event Reminder feature (Module 10)
+    reminder_sent = models.BooleanField(
+        default=False,
+        help_text="Automated reminder sent to organizers and volunteers",
+    )
+    reminder_scheduled_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Configured notification trigger date",
+    )
+
     class Meta:
         ordering = ["-event_date"]
 

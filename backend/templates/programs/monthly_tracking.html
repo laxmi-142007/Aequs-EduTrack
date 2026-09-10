@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Foundation Tracking | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='monthly_tracking' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Monthly Foundation Tracking</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 6 &bull; Multi-Dimensional Monthly Metrics &amp; Executive Aggregation</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button onclick="window.print()" class="btn-af btn-af-secondary">
+                    <i data-lucide="printer"></i> Print Monthly Dossier
+                </button>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Period Selector Filter -->
+            <div class="filter-bar" style="background: white; border-radius: 12px; padding: 18px 22px;">
+                <form method="get" class="filter-form" style="align-items: center; gap: 14px;">
+                    <span style="font-weight: 700; color: #1e293b; display: inline-flex; align-items: center; gap: 6px;">
+                        <i data-lucide="calendar" style="color: #ed1c24;"></i> Select Reporting Period:
+                    </span>
+                    <select name="month" class="select-filter" style="min-width: 150px;">
+                        {% for num, name in month_names %}
+                        <option value="{{ num }}" {% if selected_month == num %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="year" class="select-filter" style="min-width: 110px;">
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-af btn-af-primary">
+                        <i data-lucide="refresh-cw"></i> Load Period
+                    </button>
+                </form>
+                <div style="font-size: 13px; font-weight: 600; color: #64748b;">
+                    Showing: <span style="color: #ed1c24;">{{ selected_month_name }} {{ selected_year }}</span>
+                </div>
+            </div>
+
+            <!-- Aggregated Monthly Metrics Grid -->
+            <div class="metric-grid">
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">EV Sessions Delivered</div>
+                    <div class="metric-value">{{ ev_sessions_count }}</div>
+                    <div class="metric-meta">{{ ev_students_reached }} student exposures</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">Kit &amp; Book Distributions</div>
+                    <div class="metric-value">{{ units_distributed }}</div>
+                    <div class="metric-meta">Individual beneficiary issues</div>
+                </div>
+                <div class="metric-card accent-amber">
+                    <div class="metric-label">Scholarships Disbursed</div>
+                    <div class="metric-value">&#8377; {{ scholarship_disbursed_total|floatformat:0 }}</div>
+                    <div class="metric-meta">{{ scholarships.count }} recipient grants</div>
+                </div>
+                <div class="metric-card accent-purple">
+                    <div class="metric-label">Active Partner NGOs</div>
+                    <div class="metric-value">{{ ngos_active.count }}</div>
+                    <div class="metric-meta">Active on field this month</div>
+                </div>
+            </div>
+
+            <!-- Monthly Section: EV Classes & Exposures -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="zap" style="color: #3b82f6;"></i> EV Class &amp; Science Sessions in {{ selected_month_name }} {{ selected_year }} ({{ ev_sessions.count }})
+                    </h3>
+                    <span class="af-badge badge-neutral">{{ ev_students_reached }} Students Benefitted</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Session</th>
+                                <th>Partner School</th>
+                                <th>Topic &amp; Module</th>
+                                <th>Facilitator</th>
+                                <th>Attendees</th>
+                                <th>Avg Post-Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ev in ev_sessions %}
+                            <tr>
+                                <td>{{ ev.session_date|date:"d M Y" }}</td>
+                                <td><strong>{{ ev.session_title }}</strong></td>
+                                <td>{{ ev.school.school_name }} (Gr {{ ev.grade_level }})</td>
+                                <td>{{ ev.topic }}</td>
+                                <td>{{ ev.facilitator_name }}</td>
+                                <td><span class="af-badge badge-neutral">{{ ev.attendee_count }}</span></td>
+                                <td style="color: #15803d; font-weight: 600;">{{ ev.post_assessment_avg|default:"-" }}%</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #94a3b8; padding: 18px;">
+                                    No EV class sessions logged during this month.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Monthly Section: Study Kit & Resource Distributions -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="package" style="color: #10b981;"></i> Material &amp; Benefit Distributions in {{ selected_month_name }} {{ selected_year }}
+                    </h3>
+                    <span class="af-badge badge-neutral">{{ units_distributed }} Units Given</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Student Recipient</th>
+                                <th>School</th>
+                                <th>Kit / Material Provided</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dist in distributions %}
+                            <tr>
+                                <td>{{ dist.distribution_date|date:"d M Y" }}</td>
+                                <td>
+                                    <a href="{% url 'students:detail' dist.student.pk %}" style="font-weight: 600; color: #0f172a; text-decoration: none;">
+                                        {{ dist.student.student_name }}
+                                    </a>
+                                </td>
+                                <td>{{ dist.student.school.school_name }}</td>
+                                <td>{{ dist.study_kit.name }}</td>
+                                <td>{{ dist.quantity }}</td>
+                                <td><span class="af-badge badge-completed">{{ dist.get_status_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 18px;">
+                                    No material distributions recorded in this period.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Monthly Section: Scholarships Disbursed -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="award" style="color: #f59e0b;"></i> Educational Aids &amp; Scholarships Disbursed in {{ selected_month_name }} {{ selected_year }}
+                    </h3>
+                    <span class="af-badge badge-active">&#8377; {{ scholarship_disbursed_total|floatformat:0 }} Disbursed</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Disbursement Date</th>
+                                <th>Student</th>
+                                <th>Scheme &amp; Category</th>
+                                <th>Disbursed Amount</th>
+                                <th>Application Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sch in scholarships %}
+                            <tr>
+                                <td>{{ sch.disbursement_date|date:"d M Y" }}</td>
+                                <td><strong>{{ sch.student.student_name }}</strong></td>
+                                <td>{{ sch.scheme_name }} ({{ sch.get_category_display }})</td>
+                                <td style="color: #15803d; font-weight: 700;">&#8377; {{ sch.disbursed_amount|floatformat:0 }}</td>
+                                <td><code>{{ sch.application_number }}</code></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #94a3b8; padding: 18px;">
+                                    No scholarships disbursed during this month.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

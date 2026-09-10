@@ -27,7 +27,7 @@ def login_view(request):
         # 1. Standard authentication attempt
         user = authenticate(request, username=login_input, password=password)
 
-        # 2. Case-insensitive username or email matching
+        # 2. Case-insensitive username or email matching (with plain-text SQL password upgrade)
         if user is None and login_input:
             try:
                 matched_user = User.objects.filter(username__iexact=login_input).first()
@@ -35,22 +35,23 @@ def login_view(request):
                     matched_user = User.objects.filter(email__iexact=login_input).first()
                 if matched_user:
                     user = authenticate(request, username=matched_user.username, password=password)
+                    # If raw SQL insert stored unhashed plain-text password in MSSQL, upgrade to Django PBKDF2:
+                    if user is None and matched_user.password == password:
+                        matched_user.set_password(password)
+                        matched_user.save()
+                        user = authenticate(request, username=matched_user.username, password=password)
             except Exception:
                 user = None
 
-        # 3. Demo admin fallback: ensures admin/admin123 works reliably on any cloned laptop or fresh DB
+        # 3. Demo admin fallback: ensures admin/admin123 works reliably on any cloned laptop, fresh DB, or MSSQL
         if user is None and login_input.lower() == "admin" and password == "admin123":
             try:
-                admin_user, created = User.objects.get_or_create(
-                    username="admin",
-                    defaults={
-                        "is_staff": True,
-                        "is_superuser": True,
-                        "role": "SUPER_ADMIN",
-                        "email": "admin@aequsedutrack.org",
-                        "must_change_password": False,
-                    }
-                )
+                admin_user = User.objects.filter(username__iexact="admin").first()
+                if not admin_user:
+                    admin_user = User(
+                        username="admin",
+                        email="admin@aequsedutrack.org",
+                    )
                 admin_user.set_password("admin123")
                 admin_user.is_active = True
                 admin_user.is_staff = True
@@ -58,7 +59,7 @@ def login_view(request):
                 admin_user.role = "SUPER_ADMIN"
                 admin_user.must_change_password = False
                 admin_user.save()
-                user = authenticate(request, username="admin", password="admin123")
+                user = authenticate(request, username=admin_user.username, password="admin123")
             except Exception:
                 pass
 

@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects Management | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='projects' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Project Management Portal</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 7 &bull; Centralized Project-Based Tracking</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:project_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="plus-circle"></i> Create Project
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Metric Cards -->
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Projects</div>
+                    <div class="metric-value">{{ total_count }}</div>
+                    <div class="metric-meta">Across all focus areas</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">Active Projects</div>
+                    <div class="metric-value">{{ active_count }}</div>
+                    <div class="metric-meta">Currently in execution</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">Total Allocated Budget</div>
+                    <div class="metric-value">&#8377; {{ total_budget|floatformat:0 }}</div>
+                    <div class="metric-meta">CSR & Foundation Funds</div>
+                </div>
+                <div class="metric-card accent-amber">
+                    <div class="metric-label">Spent Budget</div>
+                    <div class="metric-value">&#8377; {{ spent_budget|floatformat:0 }}</div>
+                    <div class="metric-meta">Disbursed & logged</div>
+                </div>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div class="filter-bar">
+                <form method="get" class="filter-form">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search project name or code..." class="input-search">
+                    <select name="status" class="select-filter" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        {% for code, label in status_choices %}
+                        <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-af btn-af-secondary">
+                        <i data-lucide="search"></i> Filter
+                    </button>
+                    {% if search_query or selected_status %}
+                    <a href="{% url 'programs:project_list' %}" class="btn-af btn-af-secondary">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Projects Table -->
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Project Name</th>
+                            <th>Partner NGO</th>
+                            <th>Target Schools</th>
+                            <th>Timeline</th>
+                            <th>Budget (Allocated / Spent)</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in projects %}
+                        <tr>
+                            <td><strong style="color: #ed1c24;">{{ p.code }}</strong></td>
+                            <td>
+                                <a href="{% url 'programs:project_detail' p.pk %}" style="color: #0f172a; font-weight: 600; text-decoration: none;">
+                                    {{ p.name }}
+                                </a>
+                                {% if p.lead_coordinator %}
+                                <div style="font-size: 11px; color: #64748b;">Lead: {{ p.lead_coordinator }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.ngo %}
+                                <a href="{% url 'programs:ngo_detail' p.ngo.pk %}" style="color: #2563eb; text-decoration: none;">
+                                    {{ p.ngo.name }}
+                                </a>
+                                {% else %}
+                                <span style="color: #94a3b8;">Direct / Foundation</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="af-badge badge-neutral">
+                                    {{ p.target_schools.count }} schools
+                                </span>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">{{ p.start_date|date:"M Y" }} - {{ p.end_date|date:"M Y"|default:"Ongoing" }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">&#8377; {{ p.allocated_budget|floatformat:0 }}</div>
+                                <div style="font-size: 11px; color: #64748b;">Spent: &#8377; {{ p.spent_budget|floatformat:0 }}</div>
+                            </td>
+                            <td>
+                                <span class="af-badge badge-{{ p.status|lower }}">
+                                    {{ p.get_status_display }}
+                                </span>
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 6px;">
+                                    <a href="{% url 'programs:project_detail' p.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="View Details">
+                                        <i data-lucide="eye"></i>
+                                    </a>
+                                    <a href="{% url 'programs:project_toggle_archive' p.pk %}" class="btn-af btn-af-danger btn-af-sm" title="Archive Project" onclick="return confirm('Archive this project? It can be restored from the Archive Portal.');">
+                                        <i data-lucide="archive"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i data-lucide="folder-x"></i>
+                                    <p>No projects found matching your criteria.</p>
+                                    <a href="{% url 'programs:project_create' %}" class="btn-af btn-af-primary btn-af-sm" style="margin-top: 10px;">Create First Project</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

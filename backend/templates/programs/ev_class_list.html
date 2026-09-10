@@ -1,0 +1,154 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Class Tracking | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='ev_classes' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Detailed EV Class Tracking</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 4 &bull; Exposure Visits, STEM Sessions, &amp; Experiential Learning</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="plus-circle"></i> Log EV Session
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Metric Cards -->
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total EV Sessions</div>
+                    <div class="metric-value">{{ total_count }}</div>
+                    <div class="metric-meta">Logged sessions</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">Total Student Beneficiaries</div>
+                    <div class="metric-value">{{ total_students }}</div>
+                    <div class="metric-meta">Hands-on STEM exposure</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">Avg Post-Session Score</div>
+                    <div class="metric-value">{{ avg_post_score|floatformat:1 }}%</div>
+                    <div class="metric-meta">Assessment outcome</div>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="filter-bar">
+                <form method="get" class="filter-form">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search session topic, code, or facilitator..." class="input-search">
+                    <select name="status" class="select-filter" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="SCHEDULED" {% if status_filter == 'SCHEDULED' %}selected{% endif %}>Scheduled</option>
+                        <option value="COMPLETED" {% if status_filter == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                        <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                    <button type="submit" class="btn-af btn-af-secondary">
+                        <i data-lucide="search"></i> Filter
+                    </button>
+                    {% if search_query or status_filter %}
+                    <a href="{% url 'programs:ev_class_list' %}" class="btn-af btn-af-secondary">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- EV Sessions Table -->
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Session Title &amp; Topic</th>
+                            <th>School &amp; Grade</th>
+                            <th>Date &amp; Time</th>
+                            <th>Venue / Route</th>
+                            <th>Attendees</th>
+                            <th>Pre &rarr; Post Score</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sessions %}
+                        <tr>
+                            <td><strong style="color: #ed1c24;">{{ s.session_code }}</strong></td>
+                            <td>
+                                <a href="{% url 'programs:ev_class_detail' s.pk %}" style="color: #0f172a; font-weight: 600; text-decoration: none;">
+                                    {{ s.session_title }}
+                                </a>
+                                <div style="font-size: 11px; color: #64748b;">{{ s.topic }} ({{ s.curriculum_module }})</div>
+                            </td>
+                            <td>
+                                <div>{{ s.school.school_name }}</div>
+                                <div style="font-size: 11px; color: #64748b;">Grade: {{ s.grade_level }}</div>
+                            </td>
+                            <td>
+                                <div>{{ s.session_date|date:"d M Y" }}</div>
+                                <div style="font-size: 11px; color: #64748b;">{{ s.start_time|time:"H:i" }} ({{ s.duration_minutes }} min)</div>
+                            </td>
+                            <td>{{ s.venue_or_route|default:"School Campus" }}</td>
+                            <td>
+                                <span class="af-badge badge-neutral">{{ s.attendee_count }} students</span>
+                            </td>
+                            <td>
+                                {% if s.pre_assessment_avg or s.post_assessment_avg %}
+                                <div style="font-weight: 600; font-size: 12px;">
+                                    {{ s.pre_assessment_avg|default:"-" }}% &rarr; <span style="color: #15803d;">{{ s.post_assessment_avg|default:"-" }}%</span>
+                                </div>
+                                {% else %}
+                                <span style="color: #94a3b8; font-size: 11px;">Not evaluated</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="af-badge badge-{{ s.status|lower }}">{{ s.get_status_display }}</span>
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 6px;">
+                                    <a href="{% url 'programs:ev_class_detail' s.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="View">
+                                        <i data-lucide="eye"></i>
+                                    </a>
+                                    <a href="{% url 'programs:ev_class_toggle_archive' s.pk %}" class="btn-af btn-af-danger btn-af-sm" title="Archive" onclick="return confirm('Archive this EV session record?');">
+                                        <i data-lucide="archive"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9">
+                                <div class="empty-state">
+                                    <i data-lucide="zap"></i>
+                                    <p>No EV class sessions found.</p>
+                                    <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-primary btn-af-sm" style="margin-top: 10px;">Log First EV Session</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
