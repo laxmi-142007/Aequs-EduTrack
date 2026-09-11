@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Master | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='locations' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Location Master</h1>
+                    <span style="font-size: 12px; color: #64748b;">Module 16 &bull; Centralized Operational Locations &amp; Hubs</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:location_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="plus-circle"></i> Add Location
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Metric Cards -->
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Locations</div>
+                    <div class="metric-value">{{ total_count }}</div>
+                    <div class="metric-meta">Operational hubs &amp; campuses</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">Active Locations</div>
+                    <div class="metric-value">{{ active_count }}</div>
+                    <div class="metric-meta">Available for multi-select</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">Districts Covered</div>
+                    <div class="metric-value">{{ districts|length }}</div>
+                    <div class="metric-meta">Belagavi, Koppal, Hubli/Dharwad</div>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="filter-bar">
+                <form method="get" class="filter-form">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search location name, code, taluk..." class="input-search">
+                    <select name="district" class="select-filter" onchange="this.form.submit()">
+                        <option value="">-- All Districts --</option>
+                        {% for d in districts %}
+                            <option value="{{ d }}" {% if selected_district == d %}selected{% endif %}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-af btn-af-secondary" style="padding: 6px 14px;">
+                        <i data-lucide="search"></i> Filter
+                    </button>
+                    {% if search_query or selected_district %}
+                        <a href="{% url 'programs:location_list' %}" class="btn-af btn-af-secondary" style="padding: 6px 12px;">
+                            <i data-lucide="x"></i> Clear
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Location Name</th>
+                            <th>Code</th>
+                            <th>District</th>
+                            <th>Taluk / Block</th>
+                            <th>Village / Town</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loc in locations %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="map-pin" style="width: 16px; height: 16px; color: #ed1c24;"></i>
+                                    {{ loc.name }}
+                                </div>
+                                {% if loc.address %}
+                                    <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">{{ loc.address|truncatechars:60 }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge" style="background: #f1f5f9; color: #334155; font-weight: 600;">{{ loc.code }}</span>
+                            </td>
+                            <td><strong>{{ loc.district }}</strong></td>
+                            <td>{{ loc.taluk|default:"—" }}</td>
+                            <td>{{ loc.village_or_town|default:"—" }}</td>
+                            <td>
+                                {% if loc.is_active %}
+                                    <span class="badge badge-active">Active</span>
+                                {% else %}
+                                    <span class="badge" style="background: #fee2e2; color: #991b1b;">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <a href="{% url 'programs:location_edit' loc.id %}" class="btn-af btn-af-secondary" style="padding: 4px 8px; font-size: 12px;" title="Edit Location">
+                                        <i data-lucide="edit-2" style="width: 13px; height: 13px;"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'programs:location_delete' loc.id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to remove {{ loc.name }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-af btn-af-danger" style="padding: 4px 8px; font-size: 12px;" title="Delete Location">
+                                            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 48px 16px; color: #64748b;">
+                                <i data-lucide="map-pin-off" style="width: 42px; height: 42px; color: #cbd5e1; margin-bottom: 8px;"></i>
+                                <div style="font-weight: 600;">No locations found</div>
+                                <div style="font-size: 12.5px;">Click "Add Location" above to create your first operational location.</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

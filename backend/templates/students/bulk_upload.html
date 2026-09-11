@@ -528,12 +528,23 @@
     color: #64748b;
 }
 
-/* Keep header compact on smaller screens */
+/* Responsive on smaller screens */
 @media (max-width: 700px) {
+    .page {
+        padding: 16px 12px;
+    }
+
     .header {
         height: auto;
-        min-height: 82px;
-        padding: 12px 18px;
+        min-height: auto;
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-left {
+        width: 100%;
     }
 
     .header .logo {
@@ -547,6 +558,51 @@
 
     .header .title-area p {
         font-size: 12px;
+    }
+
+    .header > div {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .header > div form {
+        flex: 1;
+    }
+
+    .header > div form button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .header > div a.back-btn {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .card-header, .card-body {
+        padding: 16px 14px;
+    }
+
+    .upload-box {
+        padding: 24px 12px;
+    }
+
+    .file-input {
+        max-width: 100%;
+        font-size: 12px;
+    }
+
+    .actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .actions .btn {
+        width: 100%;
+        text-align: center;
     }
 }
 </style>

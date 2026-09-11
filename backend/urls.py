@@ -47,7 +47,12 @@ urlpatterns = [
 
     # Foundation Programs, Projects, EV Classes, NGOs, Scholarships, Archive
     path("", include("programs.urls")),
+
+    # Custom 404 Page (Direct preview & error handler)
+    path("404/", views.custom_404_view, name="custom_404"),
 ]
+
+handler404 = "backend.views.custom_404_view"
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

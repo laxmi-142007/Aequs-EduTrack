@@ -44,9 +44,10 @@
                             {% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label>Project Code <span class="required-star">*</span></label>
+                            <label>Project Code <span class="badge" style="background:#fee2e2;color:#ed1c24;font-size:10.5px;padding:2px 6px;margin-left:6px;border-radius:4px;">Auto-Generated</span></label>
                             {{ form.code }}
                             {% if form.code.errors %}<div class="field-error">{{ form.code.errors }}</div>{% endif %}
+                            <span class="field-help">Auto-generated on save or enter a custom identifier</span>
                         </div>
                     </div>
 
@@ -91,16 +92,27 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Lead Coordinator</label>
-                            {{ form.lead_coordinator }}
-                            {% if form.lead_coordinator.errors %}<div class="field-error">{{ form.lead_coordinator.errors }}</div>{% endif %}
+                            <label>Operational Locations (Multi-Select)</label>
+                            {{ form.locations }}
+                            {% if form.locations.errors %}<div class="field-error">{{ form.locations.errors }}</div>{% endif %}
+                            <span class="field-help">Hold Ctrl / Cmd to multi-select hubs from Location Master</span>
                         </div>
                         <div class="form-group">
                             <label>Target Partner Schools</label>
                             {{ form.target_schools }}
                             {% if form.target_schools.errors %}<div class="field-error">{{ form.target_schools.errors }}</div>{% endif %}
+                            <span class="field-help">Hold Ctrl / Cmd to multi-select beneficiary schools</span>
                         </div>
                     </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Lead Coordinator</label>
+                            {{ form.lead_coordinator }}
+                            {% if form.lead_coordinator.errors %}<div class="field-error">{{ form.lead_coordinator.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
 
                     <div class="form-section-title">
                         <i data-lucide="indian-rupee" style="color: #10b981;"></i> Budget & Allocation

@@ -101,6 +101,9 @@ def event_list(request):
     for ev in events_list:
         ev.user_participation = user_participations_map.get(ev.id)
 
+    campaigns = [ev for ev in events_list if ev.event_type == Event.EventType.CAMPAIGN]
+    events_only = [ev for ev in events_list if ev.event_type != Event.EventType.CAMPAIGN]
+
     can_create_event = is_event_manager(request.user)
     form_links = EventFormLink.objects.filter(is_active=True)
 
@@ -110,11 +113,25 @@ def event_list(request):
     volunteer_form_url = request.build_absolute_uri(f"/volunteers/form/{vol_link.token}/")
     volunteer_qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{vol_link.token}/")
 
+    today = timezone.now().date()
+    from datetime import timedelta
+    three_days = today + timedelta(days=3)
+    due_reminder_events = [
+        ev for ev in events_list
+        if not ev.reminder_sent
+        and ev.event_date >= today
+        and ((ev.reminder_scheduled_date and ev.reminder_scheduled_date <= today) or ev.event_date <= three_days)
+    ]
+
     return render(
         request,
         "events/event_list.html",
         {
             "events": events_list,
+            "campaigns": campaigns,
+            "events_only": events_only,
+            "total_campaigns": len(campaigns),
+            "total_events_only": len(events_only),
             "q": q,
             "status_filter": status_filter,
             "my_events_filter": my_events_filter,
@@ -128,8 +145,11 @@ def event_list(request):
             "form_links": form_links,
             "volunteer_form_url": volunteer_form_url,
             "volunteer_qr_url": volunteer_qr_url,
+            "due_reminder_events": due_reminder_events,
+            "due_reminders_count": len(due_reminder_events),
         },
     )
+
 
 
 # =============================================================================
@@ -336,18 +356,27 @@ def event_remove_volunteer(request, pk, participation_id):
 
 
 # =============================================================================
-# EVENT CREATE
+# EVENT & CAMPAIGN CREATION / EDITING
 # =============================================================================
 
-@login_required
-def event_create(request):
-    if request.user.is_authenticated and not is_event_manager(request.user):
-        messages.error(request, "Permission denied. Normal volunteers are not authorized to schedule events.")
-        return redirect("events:list")
+def _save_event_or_campaign(request, is_campaign=False, pk=None):
+    event = None
+    if pk:
+        event = get_object_or_404(Event, pk=pk)
+        if request.user.is_authenticated and not is_event_manager(request.user, event):
+            messages.error(request, "Permission denied. You are not authorized to edit this record.")
+            return redirect("events:detail", pk=event.pk)
+    else:
+        if request.user.is_authenticated and not is_event_manager(request.user):
+            messages.error(request, "Permission denied. Normal volunteers are not authorized to create this record.")
+            return redirect("events:list")
+
+    entity_name = "Campaign" if is_campaign else "Event"
+    entity_type = Event.EventType.CAMPAIGN if is_campaign else Event.EventType.EVENT
 
     if request.method == "POST":
         title = request.POST.get("title")
-        status = request.POST.get("status", Event.Status.PLANNED)
+        status = request.POST.get("status", Event.Status.PLANNED if not event else event.status)
         description = request.POST.get("description", "")
         event_date = request.POST.get("event_date")
         location = request.POST.get("location", "")
@@ -355,46 +384,72 @@ def event_create(request):
 
         inventory_item_id = request.POST.get("inventory_item")
         inventory_quantity = request.POST.get("inventory_quantity")
+        reminder_scheduled_date = request.POST.get("reminder_scheduled_date") or None
+        if not reminder_scheduled_date and event_date:
+            try:
+                from datetime import timedelta
+                parsed_d = timezone.datetime.strptime(event_date, "%Y-%m-%d").date()
+                reminder_scheduled_date = parsed_d - timedelta(days=1)
+            except Exception:
+                pass
 
         with transaction.atomic():
-            event = Event.objects.create(
-                title=title,
-                status=status,
-                description=description,
-                event_date=event_date,
-                location=location,
-                organizer=organizer,
-            )
+            if not event:
+                event = Event.objects.create(
+                    title=title,
+                    event_type=entity_type,
+                    status=status,
+                    description=description,
+                    event_date=event_date,
+                    location=location,
+                    organizer=organizer,
+                    reminder_scheduled_date=reminder_scheduled_date,
+                )
+                action_text = f"{entity_name} created: {event.title}"
+                action_type = ActivityLog.ActionType.CREATE
+            else:
+                event.title = title
+                event.event_type = entity_type
+                event.status = status
+                event.description = description
+                event.event_date = event_date
+                event.location = location
+                event.organizer = organizer
+                if reminder_scheduled_date:
+                    event.reminder_scheduled_date = reminder_scheduled_date
+                event.save()
+                action_text = f"{entity_name} updated: {event.title}"
+                action_type = ActivityLog.ActionType.UPDATE
 
             if inventory_item_id and inventory_quantity:
                 try:
                     qty = int(inventory_quantity)
                     if qty > 0:
                         item = InventoryItem.objects.select_for_update().get(pk=inventory_item_id)
-                        previous_stock = item.current_stock
-                        if qty > previous_stock:
-                            qty = previous_stock
+                        prev_stock = item.current_stock
+                        deduct_qty = qty
+                        if pk and event.requested_item_id == item.id:
+                            deduct_qty = max(0, qty - (event.requested_quantity or 0))
 
-                        new_stock = previous_stock - qty
-                        item.current_stock = new_stock
-                        item.save()
-
-                        StockTransaction.objects.create(
-                            item=item,
-                            transaction_type=StockTransaction.TransactionType.STOCK_OUT,
-                            quantity=qty,
-                            previous_stock=previous_stock,
-                            new_stock=new_stock,
-                            source_destination=f"Event: {event.title}",
-                            reference_number=f"EVT-{event.pk}",
-                            notes=f"Resource requested for event: {event.title}",
-                        )
-
+                        if deduct_qty > 0:
+                            actual_deduct = min(deduct_qty, prev_stock)
+                            new_stock = max(0, prev_stock - actual_deduct)
+                            item.current_stock = new_stock
+                            item.save(update_fields=["current_stock"])
+                            StockTransaction.objects.create(
+                                item=item,
+                                transaction_type=StockTransaction.TransactionType.STOCK_OUT,
+                                quantity=actual_deduct,
+                                previous_stock=prev_stock,
+                                new_stock=new_stock,
+                                source_destination=f"{entity_name}: {event.title}",
+                                reference_number=f"EVT-{event.pk}",
+                                notes=f"Resource for {entity_name.lower()}: {event.title}",
+                            )
                         event.requested_item = item
                         event.requested_quantity = qty
-                        event.save()
-
-                        EventResource.objects.get_or_create(
+                        event.save(update_fields=["requested_item", "requested_quantity"])
+                        EventResource.objects.update_or_create(
                             event=event,
                             item=item,
                             defaults={"quantity": qty},
@@ -404,124 +459,53 @@ def event_create(request):
 
             log_activity(
                 request,
-                action=f"Event created: {event.title}",
+                action=action_text,
                 category="EVENT",
-                action_type=ActivityLog.ActionType.CREATE,
+                action_type=action_type,
                 object_type="Event",
                 object_id=event.pk,
-                details=f"Event '{event.title}' was created.",
+                details=f"{entity_name} '{event.title}' was {'updated' if pk else 'created'}.",
             )
 
-        messages.success(request, f"Event '{event.title}' scheduled successfully.")
+        messages.success(request, f"{entity_name} '{event.title}' {'updated' if pk else 'scheduled'} successfully.")
         return redirect("events:detail", pk=event.pk)
 
     inventory_items = InventoryItem.objects.filter(status="ACTIVE")
+    template_name = "events/campaign_form.html" if is_campaign else "events/event_form.html"
+
     return render(
         request,
-        "events/event_form.html",
+        template_name,
         {
-            "page_title": "Schedule New Event",
-            "form_title": "Schedule Event",
+            "event": event,
+            "is_campaign": is_campaign,
+            "page_title": f"{'Edit' if pk else 'Schedule New'} {entity_name}" + (f": {event.title}" if event else ""),
+            "form_title": f"{'Update' if pk else 'Schedule'} {entity_name} Details",
             "inventory_items": inventory_items,
             "status_choices": Event.Status.choices,
+            "is_edit": bool(pk),
         },
     )
 
 
-# =============================================================================
-# EVENT EDIT
-# =============================================================================
+@login_required
+def event_create(request):
+    return _save_event_or_campaign(request, is_campaign=False)
+
+
+@login_required
+def campaign_create(request):
+    return _save_event_or_campaign(request, is_campaign=True)
+
 
 @login_required
 def event_edit(request, pk):
-    event = get_object_or_404(Event, pk=pk)
+    return _save_event_or_campaign(request, is_campaign=False, pk=pk)
 
-    if request.user.is_authenticated and not is_event_manager(request.user, event):
-        messages.error(request, "Permission denied. Normal volunteers are not authorized to edit event details.")
-        return redirect("events:detail", pk=event.pk)
 
-    if request.method == "POST":
-        event.title = request.POST.get("title")
-        event.status = request.POST.get("status", event.status)
-        event.description = request.POST.get("description", "")
-        event.event_date = request.POST.get("event_date")
-        event.location = request.POST.get("location", "")
-        event.organizer = request.POST.get("organizer", "")
-        event.save()
-
-        # Process inventory item and quantity if provided
-        inventory_item_id = request.POST.get("inventory_item")
-        inventory_quantity = request.POST.get("inventory_quantity")
-        if inventory_item_id and inventory_quantity:
-            try:
-                qty = int(inventory_quantity)
-                if qty > 0:
-                    item = InventoryItem.objects.get(pk=inventory_item_id)
-                    if event.requested_item_id == item.id:
-                        additional_qty = max(0, qty - (event.requested_quantity or 0))
-                        if additional_qty > 0:
-                            prev_stock = item.current_stock
-                            new_stock = max(0, prev_stock - additional_qty)
-                            item.current_stock = new_stock
-                            item.save(update_fields=["current_stock"])
-                            StockTransaction.objects.create(
-                                item=item,
-                                transaction_type=StockTransaction.TransactionType.STOCK_OUT,
-                                quantity=additional_qty,
-                                previous_stock=prev_stock,
-                                new_stock=new_stock,
-                                source_destination=f"Event: {event.title}",
-                                reference_number=f"EVT-{event.pk}",
-                                notes=f"Additional quantity requested for event: {event.title}",
-                            )
-                        event.requested_quantity = qty
-                    else:
-                        prev_stock = item.current_stock
-                        new_stock = max(0, prev_stock - qty)
-                        item.current_stock = new_stock
-                        item.save(update_fields=["current_stock"])
-                        StockTransaction.objects.create(
-                            item=item,
-                            transaction_type=StockTransaction.TransactionType.STOCK_OUT,
-                            quantity=qty,
-                            previous_stock=prev_stock,
-                            new_stock=new_stock,
-                            source_destination=f"Event: {event.title}",
-                            reference_number=f"EVT-{event.pk}",
-                            notes=f"Resource allocated for event: {event.title}",
-                        )
-                        event.requested_item = item
-                        event.requested_quantity = qty
-                    event.save(update_fields=["requested_item", "requested_quantity"])
-            except (ValueError, InventoryItem.DoesNotExist):
-                pass
-
-        log_activity(
-            request,
-            action=f"Event updated: {event.title}",
-            category="EVENT",
-            action_type=ActivityLog.ActionType.UPDATE,
-            object_type="Event",
-            object_id=event.pk,
-            details=f"Event '{event.title}' was updated.",
-        )
-
-        messages.success(request, f"Event '{event.title}' updated successfully.")
-        return redirect("events:detail", pk=event.pk)
-
-    inventory_items = InventoryItem.objects.filter(status="ACTIVE")
-    return render(
-        request,
-        "events/event_form.html",
-        {
-            "event": event,
-            "page_title": "Edit Event",
-            "form_title": "Update Event Details",
-            "inventory_items": inventory_items,
-            "status_choices": Event.Status.choices,
-            "is_edit": True,
-        },
-    )
+@login_required
+def campaign_edit(request, pk):
+    return _save_event_or_campaign(request, is_campaign=True, pk=pk)
 
 
 # =============================================================================
@@ -993,5 +977,50 @@ def event_send_reminder(request, pk):
             request,
             f"Event reminder sent for '{event.title}'. Notified organizer and {vol_count} registered volunteer(s)."
         )
+    next_url = request.POST.get("next") or request.GET.get("next")
+    if next_url:
+        return redirect(next_url)
     return redirect("events:detail", pk=event.pk)
+
+
+@login_required
+def event_send_all_due_reminders(request):
+    """
+    Module 10: Dispatches reminders for all upcoming events whose reminder date has arrived
+    or is within 3 days and reminder hasn't been sent yet.
+    """
+    if request.method == "POST":
+        today = timezone.now().date()
+        from datetime import timedelta
+        three_days = today + timedelta(days=3)
+
+        due_events = Event.objects.filter(
+            reminder_sent=False,
+            event_date__gte=today,
+        ).filter(
+            Q(reminder_scheduled_date__lte=today) |
+            Q(reminder_scheduled_date__isnull=True, event_date__lte=three_days)
+        )
+
+        count = 0
+        total_volunteers = 0
+        for ev in due_events:
+            ev.reminder_sent = True
+            if not ev.reminder_scheduled_date:
+                ev.reminder_scheduled_date = today
+            ev.save(update_fields=["reminder_sent", "reminder_scheduled_date"])
+            count += 1
+            total_volunteers += ev.volunteer_participations.count()
+
+        if count > 0:
+            messages.success(
+                request,
+                f"Automated Reminders sent for {count} event(s)! Notified organizers and {total_volunteers} volunteer(s)."
+            )
+        else:
+            messages.info(request, "All upcoming event reminders are already up to date.")
+
+    next_url = request.POST.get("next") or request.GET.get("next") or "events:list"
+    return redirect(next_url)
+
 

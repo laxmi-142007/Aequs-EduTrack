@@ -294,6 +294,160 @@
            EVENT GRID & CARDS
         ========================================================= */
 
+        .two-column-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 990px) {
+            .two-column-split {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .split-col {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .col-header-campaign {
+            background: #faf5ff;
+            border-bottom-color: #ede9fe;
+        }
+
+        .col-header-event {
+            background: #f0fdf4;
+            border-bottom-color: #dcfce7;
+        }
+
+        .col-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .col-icon {
+            font-size: 22px;
+        }
+
+        .col-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .col-subtitle {
+            font-size: 11.5px;
+            color: #64748b;
+        }
+
+        .col-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .col-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-campaign {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .badge-event {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .btn-col-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .btn-col-campaign {
+            background: #7c3aed;
+            color: #ffffff;
+        }
+        .btn-col-campaign:hover {
+            background: #6d28d9;
+        }
+
+        .btn-col-event {
+            background: #16a34a;
+            color: #ffffff;
+        }
+        .btn-col-event:hover {
+            background: #15803d;
+        }
+
+        .cards-list {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: #f8fafc;
+            min-height: 280px;
+        }
+
+        .cards-list .event-card {
+            min-height: auto;
+            border: 1px solid #e2e8f0;
+            padding: 18px;
+        }
+
+        .empty-col {
+            padding: 40px 20px;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .empty-col-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .empty-col h4 {
+            margin: 0 0 6px;
+            font-size: 15px;
+            color: #475569;
+        }
+
+        .empty-col p {
+            margin: 0 0 16px;
+            font-size: 12.5px;
+            color: #64748b;
+        }
+
         .event-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -530,14 +684,17 @@
         ========================================================== -->
         <header class="events-header">
             <h1>
-                &#128197; Foundation Events
+                &#128227; Campaigns &amp; Events
             </h1>
 
             <div class="header-actions">
-                <!-- Add Event -->
+                <!-- Add Campaign & Add Event -->
                 {% if can_create_event %}
+                <a href="{% url 'events:campaign_create' %}" class="btn" style="background:#7c3aed;color:#ffffff;font-weight:700;">
+                    &#128227; + Add Campaign
+                </a>
                 <a href="{% url 'events:create' %}" class="btn btn-add">
-                    + Add Event
+                    &#128197; + Add Event
                 </a>
                 {% endif %}
 
@@ -578,6 +735,33 @@
             </div>
             {% endif %}
 
+            <!-- Event Reminders Due Alert Banner -->
+            {% if due_reminders_count > 0 %}
+            <div style="background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1.5px solid #fdba74; border-radius: 12px; padding: 16px 22px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.08);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="background: #ea580c; color: #ffffff; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                        &#128276;
+                    </div>
+                    <div>
+                        <div style="font-size: 15px; font-weight: 700; color: #9a3412;">
+                            {{ due_reminders_count }} Event Reminder{{ due_reminders_count|pluralize }} Due
+                        </div>
+                        <div style="font-size: 13px; color: #c2410c; margin-top: 2px;">
+                            Upcoming events scheduled within 3 days or matching their reminder date. Notify volunteers in 1-click.
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <form method="post" action="{% url 'events:send_due_reminders' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn" style="background: #ea580c; color: #ffffff; font-weight: 700; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);">
+                            &#128227; Send All Due Reminders ({{ due_reminders_count }})
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- =====================================================
                  EMPLOYEE EVENT FORM FEATURE (ORIGIN/MAIN)
             ====================================================== -->
@@ -605,23 +789,23 @@
             ====================================================== -->
             <div class="cards">
                 <div class="card">
-                    <h3>Total Events</h3>
-                    <div class="number">{{ total_events }}</div>
-                    <div class="sub-text">Outreach & Foundation Activities</div>
+                    <h3>CSR Campaigns</h3>
+                    <div class="number" style="color:#7c3aed;">{{ total_campaigns }}</div>
+                    <div class="sub-text">Active outreach drives</div>
+                </div>
+                <div class="card">
+                    <h3>Scheduled Events</h3>
+                    <div class="number" style="color:#2563eb;">{{ total_events_only }}</div>
+                    <div class="sub-text">Field activities &amp; workshops</div>
                 </div>
                 <div class="card">
                     <h3>Upcoming / Planned</h3>
-                    <div class="number" style="color:#2563eb;">{{ upcoming_count }}</div>
+                    <div class="number" style="color:#0284c7;">{{ upcoming_count }}</div>
                     <div class="sub-text">Ready for execution</div>
                 </div>
                 <div class="card">
-                    <h3>Completed Events</h3>
-                    <div class="number" style="color:#16a34a;">{{ completed_count }}</div>
-                    <div class="sub-text">Successfully executed</div>
-                </div>
-                <div class="card">
                     <h3>Volunteers Mobilized</h3>
-                    <div class="number" style="color:#dc2626;">{{ volunteers_mobilized }}</div>
+                    <div class="number" style="color:#16a34a;">{{ volunteers_mobilized }}</div>
                     <div class="sub-text">Distinct community volunteers</div>
                 </div>
             </div>
@@ -661,146 +845,326 @@
             </div>
 
             <!-- =====================================================
-                 EVENT GRID (COMBINING CARDS + VOLUNTEER ACTIONS)
+                 TWO-COLUMN SPLIT: CAMPAIGNS & EVENTS
             ====================================================== -->
-            <div class="event-grid">
-                {% for event in events %}
-                <div class="event-card">
-                    <div class="event-card-header">
-                        <div class="event-icon">
-                            &#128197;
+            <div class="two-column-split">
+
+                <!-- COLUMN 1: CAMPAIGNS -->
+                <div class="split-col">
+                    <div class="col-header col-header-campaign">
+                        <div class="col-header-left">
+                            <span class="col-icon">&#128227;</span>
+                            <div>
+                                <h2 class="col-title">CSR &amp; Community Campaigns</h2>
+                                <span class="col-subtitle">Strategic initiatives, literacy &amp; community outreach drives</span>
+                            </div>
                         </div>
-
-                        {% if event.status == 'PLANNED' %}
-                        <span class="status-badge status-planned">Upcoming</span>
-                        {% elif event.status == 'COMPLETED' %}
-                        <span class="status-badge status-completed">Completed</span>
-                        {% else %}
-                        <span class="status-badge status-cancelled">Cancelled</span>
-                        {% endif %}
+                        <div class="col-header-right">
+                            <span class="col-badge badge-campaign">{{ campaigns|length }}</span>
+                            {% if can_create_event %}
+                            <a href="{% url 'events:campaign_create' %}" class="btn-col-add btn-col-campaign" title="Launch New Campaign">
+                                + New Campaign
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
 
-                    <div class="event-title">
-                        <a href="{% url 'events:detail' event.id %}">{{ event.title }}</a>
-                    </div>
+                    <div class="cards-list">
+                        {% for event in campaigns %}
+                        <div class="event-card" style="border-left: 4px solid #7c3aed;">
+                            <div class="event-card-header">
+                                <div class="event-icon" style="background: #f5f3ff; color: #7c3aed;">
+                                    &#128227;
+                                </div>
 
-                    {% if event.description %}
-                    <p class="event-description">
-                        {{ event.description }}
-                    </p>
-                    {% endif %}
+                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                    {% if event.reminder_sent %}
+                                    <span class="status-badge" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;font-size:11px;" title="Reminder sent">&#10003; Reminder Sent</span>
+                                    {% elif event.reminder_scheduled_date %}
+                                    <span class="status-badge" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-size:11px;" title="Scheduled reminder date">&#128276; {{ event.reminder_scheduled_date|date:"d M" }}</span>
+                                    {% endif %}
 
-                    <!-- Date -->
-                    <div class="event-info">
-                        <strong>&#128197; Date:</strong>
-                        {{ event.event_date|date:"d M Y" }}
-                    </div>
+                                    {% if event.status == 'PLANNED' %}
+                                    <span class="status-badge status-planned">Upcoming</span>
+                                    {% elif event.status == 'COMPLETED' %}
+                                    <span class="status-badge status-completed">Completed</span>
+                                    {% else %}
+                                    <span class="status-badge status-cancelled">Cancelled</span>
+                                    {% endif %}
+                                </div>
+                            </div>
 
-                    <!-- Location -->
-                    {% if event.location %}
-                    <div class="event-info">
-                        <strong>&#128205; Location:</strong>
-                        {{ event.location }}
-                    </div>
-                    {% endif %}
+                            <div class="event-title">
+                                <a href="{% url 'events:detail' event.id %}" style="color: #4c1d95;">{{ event.title }}</a>
+                            </div>
 
-                    <!-- Organizer -->
-                    {% if event.organizer %}
-                    <div class="event-info">
-                        <strong>&#128100; Organizer:</strong>
-                        {{ event.organizer }}
-                    </div>
-                    {% endif %}
-
-                    <!-- Resources Allocated -->
-                    {% if event.total_resource_count > 1 %}
-                    <div class="event-info" style="color: #059669;">
-                        <strong>&#128230; Resources:</strong>
-                        {{ event.total_resource_count }} items ({{ event.total_resource_units }} units)
-                    </div>
-                    {% elif event.requested_item %}
-                    <div class="event-info" style="color: #059669;">
-                        <strong>&#128230; Resource:</strong>
-                        {{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}
-                    </div>
-                    {% endif %}
-
-                    <!-- Volunteers Mobilized -->
-                    <div class="event-info" style="color: #6366f1;">
-                        <strong>&#128101; Volunteers:</strong>
-                        {{ event.volunteer_count }} Registered
-                    </div>
-
-                    <!-- EVENT ACTIONS -->
-                    <div class="event-actions">
-                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                            <!-- Volunteer Self Action -->
-                            {% if current_volunteer and event.status == 'PLANNED' %}
-                                {% if not event.user_participation or event.user_participation.participation_status == 'CANCELLED' %}
-                                <form method="post" action="{% url 'events:volunteer_signup' event.id %}" style="margin:0;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn volunteer-btn" title="Choose to volunteer for this event">
-                                        &#9995; Volunteer
-                                    </button>
-                                </form>
-                                {% elif event.user_participation.participation_status == 'REQUESTED' %}
-                                <span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:4px 8px;border-radius:10px;border:1px solid #fde68a;">
-                                    Pending Approval
-                                </span>
-                                <form method="post" action="{% url 'events:volunteer_withdraw' event.id %}" style="margin:0;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn delete-btn" style="padding:4px 8px;font-size:11px;" title="Withdraw application">
-                                        Withdraw
-                                    </button>
-                                </form>
-                                {% elif event.user_participation.participation_status == 'ASSIGNED' %}
-                                <span style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:4px 8px;border-radius:10px;border:1px solid #bbf7d0;">
-                                    &#10003; Confirmed
-                                </span>
-                                <form method="post" action="{% url 'events:volunteer_withdraw' event.id %}" style="margin:0;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn delete-btn" style="padding:4px 8px;font-size:11px;" title="Withdraw participation">
-                                        Withdraw
-                                    </button>
-                                </form>
-                                {% endif %}
+                            {% if event.description %}
+                            <p class="event-description">
+                                {{ event.description }}
+                            </p>
                             {% endif %}
 
-                            <a href="{% url 'events:detail' event.id %}" class="action-btn btn-view">
-                                &#128065; View
-                            </a>
-                        </div>
+                            <!-- Date -->
+                            <div class="event-info">
+                                <strong>&#128197; Launch Date:</strong>
+                                {{ event.event_date|date:"d M Y" }}
+                            </div>
 
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <a href="{% url 'events:edit' event.pk %}" class="action-btn edit-btn" title="Edit Event">
-                                &#9998; Edit
-                            </a>
+                            <!-- Target Region -->
+                            {% if event.location %}
+                            <div class="event-info">
+                                <strong>&#128205; Target Scope:</strong>
+                                {{ event.location }}
+                            </div>
+                            {% endif %}
 
-                            <form method="post" action="{% url 'events:delete' event.pk %}" onsubmit="return confirm('Are you sure you want to delete this event?');" style="margin:0;">
-                                {% csrf_token %}
-                                <button type="submit" class="action-btn delete-btn" title="Delete Event">
-                                    &#128465; Delete
-                                </button>
-                            </form>
+                            <!-- Coordinator -->
+                            {% if event.organizer %}
+                            <div class="event-info">
+                                <strong>&#128100; Coordinator:</strong>
+                                {{ event.organizer }}
+                            </div>
+                            {% endif %}
+
+                            <!-- Resources Allocated -->
+                            {% if event.total_resource_count > 1 %}
+                            <div class="event-info" style="color: #059669;">
+                                <strong>&#128230; Requisitioned:</strong>
+                                {{ event.total_resource_count }} items ({{ event.total_resource_units }} units)
+                            </div>
+                            {% elif event.requested_item %}
+                            <div class="event-info" style="color: #059669;">
+                                <strong>&#128230; Requisitioned:</strong>
+                                {{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}
+                            </div>
+                            {% endif %}
+
+                            <!-- Volunteers Mobilized -->
+                            <div class="event-info" style="color: #6366f1;">
+                                <strong>&#128101; Volunteers:</strong>
+                                {{ event.volunteer_count }} Enrolled
+                            </div>
+
+                            <!-- CAMPAIGN ACTIONS -->
+                            <div class="event-actions">
+                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                    <a href="{% url 'events:detail' event.id %}" class="action-btn btn-view">
+                                        &#128065; View
+                                    </a>
+                                    {% if event.status == 'PLANNED' %}
+                                    <form method="post" action="{% url 'events:send_reminder' event.id %}" style="margin:0;display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="action-btn" style="background:{% if event.reminder_sent %}#f8fafc{% else %}#fff7ed{% endif %};color:{% if event.reminder_sent %}#64748b{% else %}#ea580c{% endif %};border:1px solid {% if event.reminder_sent %}#e2e8f0{% else %}#fdba74{% endif %};" title="{% if event.reminder_sent %}Resend volunteer reminder{% else %}Send volunteer reminder{% endif %}">
+                                            &#128276; {% if event.reminder_sent %}Resend{% else %}Send Reminder{% endif %}
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <a href="{% url 'events:campaign_edit' event.pk %}" class="action-btn edit-btn" style="background:#f3e8ff;color:#6b21a8;border-color:#d8b4fe;" title="Edit Campaign">
+                                        &#9998; Edit Campaign
+                                    </a>
+
+                                    <form method="post" action="{% url 'events:delete' event.pk %}" onsubmit="return confirm('Are you sure you want to delete this campaign?');" style="margin:0;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-btn delete-btn" title="Delete Campaign">
+                                            &#128465; Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
+                        {% empty %}
+                        <div class="empty-col">
+                            <div class="empty-col-icon">&#128227;</div>
+                            <h4>No Active Campaigns</h4>
+                            <p>No CSR or community outreach campaigns logged.</p>
+                            {% if can_create_event %}
+                            <a href="{% url 'events:campaign_create' %}" class="btn-col-add btn-col-campaign">
+                                + Launch First Campaign
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% empty %}
-                <div class="empty">
-                    <div class="empty-icon">
-                        &#128197;
-                    </div>
-                    <h3>No Events Found</h3>
-                    <p>No foundation events match your query or filter criteria.</p>
 
-                    <a href="{% url 'events:create' %}" class="feature-button" style="margin-right:8px;">
-                        + Create First Event
-                    </a>
-                    <a href="{% url 'events:create_form_link' %}" class="btn btn-form">
-                        &#128279; Employee Form
-                    </a>
+                <!-- COLUMN 2: EVENTS -->
+                <div class="split-col">
+                    <div class="col-header col-header-event">
+                        <div class="col-header-left">
+                            <span class="col-icon">&#128197;</span>
+                            <div>
+                                <h2 class="col-title">Scheduled Events</h2>
+                                <span class="col-subtitle">Workshops, ceremonies, science exhibitions &amp; single-day events</span>
+                            </div>
+                        </div>
+                        <div class="col-header-right">
+                            <span class="col-badge badge-event">{{ events_only|length }}</span>
+                            {% if can_create_event %}
+                            <a href="{% url 'events:create' %}" class="btn-col-add btn-col-event" title="Schedule New Event">
+                                + New Event
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="cards-list">
+                        {% for event in events_only %}
+                        <div class="event-card" style="border-left: 4px solid #2563eb;">
+                            <div class="event-card-header">
+                                <div class="event-icon" style="background: #eff6ff; color: #2563eb;">
+                                    &#128197;
+                                </div>
+
+                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                    {% if event.reminder_sent %}
+                                    <span class="status-badge" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;font-size:11px;" title="Reminder sent">&#10003; Reminder Sent</span>
+                                    {% elif event.reminder_scheduled_date %}
+                                    <span class="status-badge" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-size:11px;" title="Scheduled reminder date">&#128276; {{ event.reminder_scheduled_date|date:"d M" }}</span>
+                                    {% endif %}
+
+                                    {% if event.status == 'PLANNED' %}
+                                    <span class="status-badge status-planned">Upcoming</span>
+                                    {% elif event.status == 'COMPLETED' %}
+                                    <span class="status-badge status-completed">Completed</span>
+                                    {% else %}
+                                    <span class="status-badge status-cancelled">Cancelled</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="event-title">
+                                <a href="{% url 'events:detail' event.id %}" style="color: #1e3a8a;">{{ event.title }}</a>
+                            </div>
+
+                            {% if event.description %}
+                            <p class="event-description">
+                                {{ event.description }}
+                            </p>
+                            {% endif %}
+
+                            <!-- Date -->
+                            <div class="event-info">
+                                <strong>&#128197; Event Date:</strong>
+                                {{ event.event_date|date:"d M Y" }}
+                            </div>
+
+                            <!-- Location -->
+                            {% if event.location %}
+                            <div class="event-info">
+                                <strong>&#128205; Venue:</strong>
+                                {{ event.location }}
+                            </div>
+                            {% endif %}
+
+                            <!-- Organizer -->
+                            {% if event.organizer %}
+                            <div class="event-info">
+                                <strong>&#128100; Organizer:</strong>
+                                {{ event.organizer }}
+                            </div>
+                            {% endif %}
+
+                            <!-- Resources Allocated -->
+                            {% if event.total_resource_count > 1 %}
+                            <div class="event-info" style="color: #059669;">
+                                <strong>&#128230; Resources:</strong>
+                                {{ event.total_resource_count }} items ({{ event.total_resource_units }} units)
+                            </div>
+                            {% elif event.requested_item %}
+                            <div class="event-info" style="color: #059669;">
+                                <strong>&#128230; Resource:</strong>
+                                {{ event.requested_quantity }} &times; {{ event.requested_item.item_name }}
+                            </div>
+                            {% endif %}
+
+                            <!-- Volunteers Mobilized -->
+                            <div class="event-info" style="color: #6366f1;">
+                                <strong>&#128101; Volunteers:</strong>
+                                {{ event.volunteer_count }} Registered
+                            </div>
+
+                            <!-- EVENT ACTIONS -->
+                            <div class="event-actions">
+                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                    <!-- Volunteer Self Action -->
+                                    {% if current_volunteer and event.status == 'PLANNED' %}
+                                        {% if not event.user_participation or event.user_participation.participation_status == 'CANCELLED' %}
+                                        <form method="post" action="{% url 'events:volunteer_signup' event.id %}" style="margin:0;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="action-btn volunteer-btn" title="Choose to volunteer for this event">
+                                                &#9995; Volunteer
+                                            </button>
+                                        </form>
+                                        {% elif event.user_participation.participation_status == 'REQUESTED' %}
+                                        <span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:4px 8px;border-radius:10px;border:1px solid #fde68a;">
+                                            Pending Approval
+                                        </span>
+                                        <form method="post" action="{% url 'events:volunteer_withdraw' event.id %}" style="margin:0;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="action-btn delete-btn" style="padding:4px 8px;font-size:11px;" title="Withdraw application">
+                                                Withdraw
+                                            </button>
+                                        </form>
+                                        {% elif event.user_participation.participation_status == 'ASSIGNED' %}
+                                        <span style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:4px 8px;border-radius:10px;border:1px solid #bbf7d0;">
+                                            &#10003; Confirmed
+                                        </span>
+                                        <form method="post" action="{% url 'events:volunteer_withdraw' event.id %}" style="margin:0;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="action-btn delete-btn" style="padding:4px 8px;font-size:11px;" title="Withdraw participation">
+                                                Withdraw
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <a href="{% url 'events:detail' event.id %}" class="action-btn btn-view">
+                                        &#128065; View
+                                    </a>
+                                    {% if event.status == 'PLANNED' %}
+                                    <form method="post" action="{% url 'events:send_reminder' event.id %}" style="margin:0;display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="action-btn" style="background:{% if event.reminder_sent %}#f8fafc{% else %}#fff7ed{% endif %};color:{% if event.reminder_sent %}#64748b{% else %}#ea580c{% endif %};border:1px solid {% if event.reminder_sent %}#e2e8f0{% else %}#fdba74{% endif %};" title="{% if event.reminder_sent %}Resend volunteer reminder{% else %}Send volunteer reminder{% endif %}">
+                                            &#128276; {% if event.reminder_sent %}Resend{% else %}Send Reminder{% endif %}
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <a href="{% url 'events:edit' event.pk %}" class="action-btn edit-btn" title="Edit Event">
+                                        &#9998; Edit Event
+                                    </a>
+
+                                    <form method="post" action="{% url 'events:delete' event.pk %}" onsubmit="return confirm('Are you sure you want to delete this event?');" style="margin:0;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-btn delete-btn" title="Delete Event">
+                                            &#128465; Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-col">
+                            <div class="empty-col-icon">&#128197;</div>
+                            <h4>No Scheduled Events</h4>
+                            <p>No events found matching your query or filter criteria.</p>
+                            {% if can_create_event %}
+                            <a href="{% url 'events:create' %}" class="btn-col-add btn-col-event">
+                                + Schedule First Event
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                {% endfor %}
+
             </div>
         </div>
     </div>

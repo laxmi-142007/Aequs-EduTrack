@@ -276,7 +276,36 @@
                 width: 100%;
             }
         }
-            .download-btn {
+
+        @media (max-width: 480px) {
+            .page {
+                padding: 16px 12px;
+            }
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .logo {
+                width: 130px;
+                height: auto;
+            }
+            h1 {
+                font-size: 19px;
+            }
+            .card-header, .card-body {
+                padding: 16px 14px;
+            }
+            .upload-box {
+                padding: 24px 12px;
+            }
+            .file-input {
+                max-width: 100%;
+                font-size: 12px;
+            }
+        }
+
+        .download-btn {
             border: 1px solid #cbd5e1;
             background: white;
             color: #1f2937;
@@ -297,25 +326,37 @@
         <div class="header-left">
 
             <img
-                src="{% static 'images/Aequs-logo.png' %}"
+                src="{% static 'images/LOGO Aequs Foundation.jpg' %}"
                 alt="Aequs Foundation"
                 class="logo"
+                style="height: 48px; width: auto; max-width: 140px; object-fit: contain;"
             >
 
             <div>
-                <h1>Bulk Upload Schools</h1>
+                <h1>Bulk Upload Schools &bull; {{ target_ngo.name }}</h1>
                 <div class="subtitle">
-                    Aequs Foundation · EduTrack
+                    Aequs Foundation · EduTrack &bull; Target Module: <strong>{{ target_ngo.name }}</strong> (Isolated)
                 </div>
             </div>
 
         </div>
 
-        <a href="{% url 'schools:portal' %}" class="back-btn">
-            ← Schools
+        <a href="/schools/{{ target_slug }}/" class="back-btn">
+            ← Back to {{ target_ngo.name }} Schools
         </a>
     </div>
 
+    <!-- Switch target NGO Module -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #ffffff; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <span style="font-size: 13px; font-weight: 700; color: #475569;">Target NGO Environment:</span>
+        {% for ngo in all_ngos %}
+        <a href="{% url 'schools:bulk_upload_for_ngo' ngo.code_lower %}" 
+           style="text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid {% if ngo.code == target_ngo.code %}#0f172a; background: #0f172a; color: #ffffff;{% else %}#cbd5e1; background: #f8fafc; color: #334155;{% endif %}">
+            {% if ngo.code == 'PRATHAM' %}🔴{% elif ngo.code == 'AGASTYA' %}🔵{% else %}🟡{% endif %}
+            {{ ngo.name }}
+        </a>
+        {% endfor %}
+    </div>
 
     {% if messages %}
         {% for message in messages %}
@@ -345,28 +386,31 @@
 
     <div class="card">
 
-        <div class="card-header">
-            <h2>Upload School Records</h2>
+        <div class="card-header" style="border-left: 5px solid {% if target_ngo.code == 'PRATHAM' %}#ed1c24{% elif target_ngo.code == 'AGASTYA' %}#2563eb{% else %}#f59e0b{% endif %};">
+            <h2>Upload School Records for {{ target_ngo.name }}</h2>
 
             <p>
-                Upload an Excel .xlsx file containing multiple school records.
+                Upload an Excel .xlsx or .csv file. All schools created from this upload will strictly and solely be associated with <strong>{{ target_ngo.name }}</strong>.
             </p>
         </div>
 
         <div class="card-body">
 
-            <div style="margin: 20px 0; display:flex; gap:10px; flex-wrap:wrap;">
-    <a href="{% url 'schools:export_all_strength_csv' %}"
-   class="download-btn">
-    Download CSV
-</a>
-</div>
-<form
+            <div style="margin: 10px 0 20px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="{% url 'schools:export_all_strength_csv' %}"
+                   class="download-btn">
+                    Download Current Roster CSV
+                </a>
+            </div>
+
+            <form
                 method="post"
+                action="{% url 'schools:bulk_upload_for_ngo' target_slug %}"
                 enctype="multipart/form-data"
             >
 
                 {% csrf_token %}
+                <input type="hidden" name="ngo" value="{{ target_slug }}">
 
                 <div class="upload-box">
 
@@ -374,10 +418,10 @@
                         ↑
                     </div>
 
-                    <h3>Select Excel File</h3>
+                    <h3>Select File for {{ target_ngo.name }}</h3>
 
                     <p>
-                        Microsoft Excel (.xlsx) and CSV (.csv) files are supported.
+                        Microsoft Excel (.xlsx) and CSV (.csv) files will import schools directly into the <strong>{{ target_ngo.name }}</strong> module.
                     </p>
 
                     <input
@@ -394,7 +438,7 @@
                 <div class="actions">
 
                     <a
-                        href="{% url 'schools:portal' %}"
+                        href="/schools/{{ target_slug }}/"
                         class="btn btn-secondary"
                     >
                         Cancel
@@ -403,8 +447,9 @@
                     <button
                         type="submit"
                         class="btn btn-primary"
+                        style="background:{% if target_ngo.code == 'PRATHAM' %}#ed1c24{% elif target_ngo.code == 'AGASTYA' %}#2563eb{% else %}#f59e0b{% endif %}; border-color:{% if target_ngo.code == 'PRATHAM' %}#ed1c24{% elif target_ngo.code == 'AGASTYA' %}#2563eb{% else %}#f59e0b{% endif %};"
                     >
-                        Upload Schools
+                        Upload to {{ target_ngo.name }}
                     </button>
 
                 </div>

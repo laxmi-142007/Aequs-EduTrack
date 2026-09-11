@@ -86,7 +86,16 @@
 
                     <!-- Mandatory Location Section (Module 11 & 16) -->
                     <div class="form-section-title" style="color: #ed1c24; border-bottom: 2px solid #ed1c24;">
-                        <i data-lucide="map-pin"></i> Mandatory Program Location (Module 16 Requirement)
+                        <i data-lucide="map-pin"></i> Mandatory Program Location &amp; Location Master (Module 16)
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Operational Locations from Master (Multi-Select)</label>
+                            {{ form.locations }}
+                            {% if form.locations.errors %}<div class="field-error">{{ form.locations.errors }}</div>{% endif %}
+                            <span class="field-help">Hold Ctrl / Cmd to multi-select recognized hubs/campuses from Location Master</span>
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -96,6 +105,7 @@
                             {% if form.location_name.errors %}<div class="field-error">{{ form.location_name.errors }}</div>{% endif %}
                             <span class="field-help">E.g., Govt High School Campus / Hukkeri Field Center</span>
                         </div>
+
                         <div class="form-group">
                             <label>Village or Town <span class="required-star">*</span></label>
                             {{ form.village_or_town }}
@@ -114,6 +124,7 @@
                             <label>District <span class="required-star">*</span></label>
                             {{ form.district }}
                             {% if form.district.errors %}<div class="field-error">{{ form.district.errors }}</div>{% endif %}
+                            <span class="field-help">Options: Belagavi, Hubli/Dharwad, Koppal (Ctrl+Click / tap to multi-select)</span>
                         </div>
                     </div>
 

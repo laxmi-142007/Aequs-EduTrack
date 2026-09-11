@@ -58,10 +58,19 @@
                         <option value="{{ code }}" {% if selected_category == code %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
+                    <select name="project" class="select-filter" onchange="this.form.submit()">
+                        <option value="">All Projects</option>
+                        <option value="standalone" {% if selected_project == "standalone" %}selected{% endif %}>-- Standalone Only --</option>
+                        {% for prj in projects %}
+                        <option value="{{ prj.pk }}" {% if selected_project == prj.pk|stringformat:"i" %}selected{% endif %}>
+                            {{ prj.name }} ({{ prj.code }})
+                        </option>
+                        {% endfor %}
+                    </select>
                     <button type="submit" class="btn-af btn-af-secondary">
                         <i data-lucide="search"></i> Filter
                     </button>
-                    {% if search_query or selected_category %}
+                    {% if search_query or selected_category or selected_project %}
                     <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">Reset</a>
                     {% endif %}
                 </form>
@@ -95,11 +104,12 @@
                             <td>{{ prg.get_category_display }}</td>
                             <td>
                                 {% if prg.project %}
-                                <a href="{% url 'programs:project_detail' prg.project.pk %}" style="color: #2563eb; text-decoration: none;">
+                                <a href="{% url 'programs:project_detail' prg.project.pk %}" class="af-badge badge-neutral" style="color: #2563eb; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" title="View Parent Project">
+                                    <i data-lucide="folder" style="width: 12px; height: 12px;"></i>
                                     {{ prg.project.name }}
                                 </a>
                                 {% else %}
-                                <span style="color: #94a3b8;">Standalone</span>
+                                <span class="af-badge" style="background: #f1f5f9; color: #94a3b8; font-style: italic;">Standalone</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -121,6 +131,9 @@
                                 <div style="display: inline-flex; gap: 6px;">
                                     <a href="{% url 'programs:program_detail' prg.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="View Details">
                                         <i data-lucide="eye"></i>
+                                    </a>
+                                    <a href="{% url 'programs:program_edit' prg.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="Edit Program">
+                                        <i data-lucide="edit"></i>
                                     </a>
                                     <a href="{% url 'programs:program_toggle_archive' prg.pk %}" class="btn-af btn-af-danger btn-af-sm" title="Archive Program" onclick="return confirm('Archive this program?');">
                                         <i data-lucide="archive"></i>

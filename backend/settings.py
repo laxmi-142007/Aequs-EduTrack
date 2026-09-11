@@ -237,3 +237,4 @@ AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "accounts:dashboard_redirect"
 LOGOUT_REDIRECT_URL = "login"
+# Auto-reload trigger for newly registered NGO routes

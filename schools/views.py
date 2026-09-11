@@ -68,6 +68,8 @@ def _ensure_default_grades(school):
 
 def _school_to_dict(school):
     actual_count = school.students.count() if hasattr(school, "students") else 0
+    ngos = list(school.partner_ngos.values("id", "name", "code")) if hasattr(school, "partner_ngos") else []
+    primary_ngo = ngos[0] if ngos else None
     return {
         "id": school.id,
         "name": school.name,
@@ -90,27 +92,90 @@ def _school_to_dict(school):
         "established_date": school.established_date.strftime("%Y-%m-%d") if school.established_date else "",
         "established_year": school.established_year or "",
         "status": school.status,
+        "ngos": ngos,
+        "primary_ngo": primary_ngo,
     }
 
 
-@ensure_csrf_cookie
-def portal_view(request):
+def school_root_redirect(request):
     """
-    Main Government School Management Portal view.
+    Do not maintain a central place for schools.
+    Redirect directly to the separate Pratham school module.
     """
-    schools = School.objects.all().order_by("name")
+    return redirect("schools:portal_pratham")
 
-    for s in schools:
+
+@ensure_csrf_cookie
+def portal_view(request, ngo_slug="pratham"):
+    """
+    Separate School Management Modules for each partner NGO:
+    - Pratham (/schools/pratham/)
+    - Agastya (/schools/agastya/)
+    - Youth for Seva (/schools/yfs/)
+    Keeps each organization's schools completely isolated and separate.
+    """
+    from programs.models import NGO
+    from programs.views import ensure_default_ngos
+    ensure_default_ngos()
+
+    # Guarantee all existing schools are assigned to one of the 3 partner NGOs
+    all_schools = School.objects.all().order_by("name").prefetch_related("partner_ngos")
+    for s in all_schools:
         _ensure_default_grades(s)
 
-    from django.db.models import Sum
-    total_students = School.objects.aggregate(total=Sum("student_strength"))["total"] or 0
+    core_ngos = list(NGO.objects.filter(code__in=["PRATHAM", "AGASTYA", "YFS"]).order_by("name"))
+    # If any legacy schools are unassigned to any NGO, attach them only to Pratham
+    unassigned_schools = [s for s in all_schools if s.partner_ngos.count() == 0]
+    if unassigned_schools:
+        pratham_ngo = NGO.objects.filter(code="PRATHAM").first()
+        if pratham_ngo:
+            pratham_ngo.partner_schools.add(*unassigned_schools)
+
+    # Determine requested NGO slug
+    requested_slug = (ngo_slug or request.GET.get("ngo", "pratham")).strip().lower()
+    if requested_slug in ["all", ""]:
+        return redirect("schools:portal_pratham")
+
+    slug_to_code = {
+        "pratham": "PRATHAM",
+        "agastya": "AGASTYA",
+        "yfs": "YFS",
+        "youth-for-seva": "YFS",
+    }
+    target_code = slug_to_code.get(requested_slug, requested_slug.upper())
+
+    current_ngo = NGO.objects.filter(code__iexact=target_code).first()
+    if not current_ngo:
+        current_ngo = NGO.objects.filter(code="PRATHAM").first()
+        target_code = "PRATHAM"
+        requested_slug = "pratham"
+
+    # Fetch STRICTLY this NGO's schools (kept completely separate)
+    schools = current_ngo.partner_schools.all().order_by("name").prefetch_related("students")
+    total_students = sum(s.student_strength for s in schools)
     selected_school = schools.first()
 
+    # Build navigation modules list for quick switching between the separate NGO modules
+    ngo_nav = []
+    for ngo in core_ngos:
+        count = ngo.partner_schools.count()
+        ngo_nav.append({
+            "id": ngo.id,
+            "name": ngo.name,
+            "code": ngo.code,
+            "code_lower": ngo.code.lower(),
+            "url": f"/schools/{ngo.code.lower()}/",
+            "school_count": count,
+            "is_active": (ngo.code == target_code),
+        })
+
     context = {
+        "current_ngo": current_ngo,
         "schools": schools,
         "selected_school": selected_school,
         "total_students": total_students,
+        "ngo_nav": ngo_nav,
+        "requested_ngo": requested_slug,
         "user_authenticated": request.user.is_authenticated,
         "username": request.user.username if request.user.is_authenticated else "Admin",
     }
@@ -118,8 +183,8 @@ def portal_view(request):
 
 
 def school_list(request):
-    """Fallback view or redirect to portal"""
-    return portal_view(request)
+    """Redirect to separate Pratham school module"""
+    return redirect("schools:portal_pratham")
 
 
 def school_create(request):
@@ -228,6 +293,18 @@ def api_add_school(request):
         
         # Initialize default grades & strength
         _ensure_default_grades(school)
+
+        # Associate with selected NGO partner module (Pratham, Agastya, Youth for Seva)
+        ngo_val = data.get("ngo") or data.get("ngo_id") or data.get("ngo_code") or "PRATHAM"
+        try:
+            from programs.models import NGO
+            ngo = NGO.objects.filter(code__iexact=str(ngo_val)).first() or NGO.objects.filter(name__icontains=str(ngo_val)).first() or NGO.objects.filter(id=int(ngo_val) if str(ngo_val).isdigit() else 0).first()
+            if not ngo:
+                ngo = NGO.objects.filter(code="PRATHAM").first()
+            if ngo:
+                ngo.partner_schools.add(school)
+        except Exception:
+            pass
 
         try:
             from reports.models import log_activity
@@ -379,6 +456,18 @@ def api_edit_school(request, school_id):
                 pass
 
         school.save()
+
+        # Update NGO Partner module association if provided
+        ngo_val = data.get("ngo") or data.get("ngo_id") or data.get("ngo_code") or data.get("editNgo")
+        if ngo_val:
+            try:
+                from programs.models import NGO
+                ngo = NGO.objects.filter(code__iexact=str(ngo_val)).first() or NGO.objects.filter(name__icontains=str(ngo_val)).first() or NGO.objects.filter(id=int(ngo_val) if str(ngo_val).isdigit() else 0).first()
+                if ngo:
+                    school.partner_ngos.clear()
+                    ngo.partner_schools.add(school)
+            except Exception:
+                pass
 
         return JsonResponse({
             "success": True,
@@ -853,12 +942,47 @@ def api_logout(request):
     """Logout API"""
     logout(request)
     return JsonResponse({"success": True, "message": "Logged out successfully."})
-def bulk_upload_schools(request):
+def bulk_upload_schools(request, ngo_slug=None):
+    from programs.models import NGO
+    from programs.views import ensure_default_ngos
+    ensure_default_ngos()
+
+    target_slug = (
+        ngo_slug
+        or request.POST.get("ngo")
+        or request.GET.get("ngo")
+        or "pratham"
+    ).strip().lower()
+
+    slug_to_code = {
+        "pratham": "PRATHAM",
+        "agastya": "AGASTYA",
+        "yfs": "YFS",
+        "youth-for-seva": "YFS",
+    }
+    target_code = slug_to_code.get(target_slug, target_slug.upper())
+    target_ngo = NGO.objects.filter(code__iexact=target_code).first()
+    if not target_ngo:
+        target_ngo = NGO.objects.filter(code="PRATHAM").first()
+        target_code = "PRATHAM"
+        target_slug = "pratham"
+
+    all_ngos = list(NGO.objects.filter(code__in=["PRATHAM", "AGASTYA", "YFS"]).order_by("name"))
+    if not all_ngos:
+        all_ngos = list(NGO.objects.all().order_by("name"))
+
+    def _redirect_back():
+        return redirect("schools:bulk_upload_for_ngo", ngo_slug=target_slug)
 
     if request.method != "POST":
         return render(
             request,
             "schools/bulk_upload.html",
+            {
+                "target_ngo": target_ngo,
+                "target_slug": target_slug,
+                "all_ngos": all_ngos,
+            },
         )
 
     uploaded_file = (
@@ -873,7 +997,7 @@ def bulk_upload_schools(request):
             request,
             "Please select an Excel (.xlsx) or CSV (.csv) file."
         )
-        return redirect("schools:bulk_upload")
+        return _redirect_back()
 
     filename = uploaded_file.name.lower()
 
@@ -882,7 +1006,7 @@ def bulk_upload_schools(request):
             request,
             "Only Excel (.xlsx) and CSV (.csv) files are supported."
         )
-        return redirect("schools:bulk_upload")
+        return _redirect_back()
 
     try:
 
@@ -901,7 +1025,7 @@ def bulk_upload_schools(request):
             worksheet = workbook.active
             if worksheet is None:
                 messages.error(request, "The Excel file is empty or has no active sheet.")
-                return redirect("schools:bulk_upload")
+                return _redirect_back()
 
             rows = list(
                 worksheet.iter_rows(values_only=True)
@@ -914,7 +1038,7 @@ def bulk_upload_schools(request):
                     request,
                     "The Excel file is empty."
                 )
-                return redirect("schools:bulk_upload")
+                return _redirect_back()
 
             headers = [
                 str(value).strip().lower()
@@ -943,7 +1067,7 @@ def bulk_upload_schools(request):
                     request,
                     "The CSV file is empty."
                 )
-                return redirect("schools:bulk_upload")
+                return _redirect_back()
 
             headers = [
                 str(value).strip().lower()
@@ -975,7 +1099,7 @@ def bulk_upload_schools(request):
                 + ", ".join(sorted(missing_columns))
             )
 
-            return redirect("schools:bulk_upload")
+            return _redirect_back()
 
         # ------------------------------------------------------------
         # VALID OPTIONS
@@ -1295,13 +1419,15 @@ def bulk_upload_schools(request):
         # ------------------------------------------------------------
 
         if errors:
-
             return render(
                 request,
                 "schools/bulk_upload.html",
                 {
                     "errors": errors,
                     "upload_failed": True,
+                    "target_ngo": target_ngo,
+                    "target_slug": target_slug,
+                    "all_ngos": all_ngos,
                 },
             )
 
@@ -1320,15 +1446,16 @@ def bulk_upload_schools(request):
                 )
 
                 _ensure_default_grades(school)
+                target_ngo.partner_schools.add(school)
 
                 created_count += 1
 
         messages.success(
             request,
-            f"Successfully uploaded {created_count} school(s)."
+            f"Successfully uploaded {created_count} school(s) strictly to {target_ngo.name}."
         )
 
-        return redirect("schools:portal")
+        return redirect(f"/schools/{target_slug}/")
 
     except UnicodeDecodeError:
 
@@ -1338,7 +1465,7 @@ def bulk_upload_schools(request):
             "Please save it as UTF-8 CSV."
         )
 
-        return redirect("schools:bulk_upload")
+        return _redirect_back()
 
     except Exception as exc:
 
@@ -1347,4 +1474,4 @@ def bulk_upload_schools(request):
             f"School upload failed: {exc}"
         )
 
-        return redirect("schools:bulk_upload")
+        return _redirect_back()

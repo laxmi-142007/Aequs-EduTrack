@@ -35,6 +35,10 @@ class NGO(models.Model):
         return self.name
 
     @property
+    def code_lower(self):
+        return self.code.lower() if self.code else ""
+
+    @property
     def total_programs(self):
         return self.programs.filter(is_archived=False).count()
 
@@ -44,13 +48,44 @@ class NGO(models.Model):
 
 
 # ============================================================================
-# 2. PROJECT MODEL (Module 7: Project Tab & Project-Based Tracking)
+# 2. LOCATION MASTER MODEL (Module 16: Location Management)
+# ============================================================================
+
+class Location(models.Model):
+    """
+    Central Location Master representing clusters, campuses, hubs, and field centers.
+    Allows centralized location management and multi-select across projects & programs.
+    """
+    name = models.CharField(max_length=200, help_text="Facility, campus, school center or venue name")
+    code = models.CharField(max_length=50, unique=True, help_text="e.g. LOC-BGV-01")
+    district = models.CharField(max_length=100, default="Belagavi")
+    taluk = models.CharField(max_length=100, blank=True, default="")
+    village_or_town = models.CharField(max_length=100, blank=True, default="")
+    state = models.CharField(max_length=100, default="Karnataka")
+    pincode = models.CharField(max_length=10, blank=True, default="")
+    address = models.TextField(blank=True, default="")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["district", "name"]
+        verbose_name = "Location"
+        verbose_name_plural = "Locations"
+
+    def __str__(self):
+        parts = [self.name, self.taluk, self.district]
+        return " — ".join(p for p in parts if p)
+
+
+# ============================================================================
+# 3. PROJECT MODEL (Module 7: Project Tab & Project-Based Tracking)
 # ============================================================================
 
 class Project(models.Model):
     """
     Centralized project tracking connecting schools, cohorts, NGOs,
-    inventory, volunteers, budgets, and milestones.
+    locations, inventory, volunteers, budgets, and milestones.
     """
     class Status(models.TextChoices):
         PLANNED = "PLANNED", "Planned"
@@ -60,10 +95,11 @@ class Project(models.Model):
         ARCHIVED = "ARCHIVED", "Archived"
 
     name = models.CharField(max_length=200, help_text="e.g. STEM for Rural Schools, Digital Literacy Drive 2026")
-    code = models.CharField(max_length=50, unique=True, help_text="e.g. PRJ-STEM-2026")
+    code = models.CharField(max_length=50, unique=True, blank=True, help_text="e.g. PRJ-2026-001 (auto-generated if left blank)")
     description = models.TextField(blank=True)
     ngo = models.ForeignKey(NGO, on_delete=models.SET_NULL, null=True, blank=True, related_name="projects")
     target_schools = models.ManyToManyField(School, related_name="associated_projects", blank=True)
+    locations = models.ManyToManyField(Location, related_name="projects", blank=True, help_text="Select one or more operational locations")
     start_date = models.DateField(default=timezone.localdate)
     end_date = models.DateField(null=True, blank=True)
     allocated_budget = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Allocated CSR funding in INR")
@@ -82,11 +118,41 @@ class Project(models.Model):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
+    @classmethod
+    def generate_next_code(cls, year=None):
+        if not year:
+            year = timezone.localdate().year
+        prefix = f"PRJ-{year}-"
+        existing_codes = list(cls.objects.filter(code__startswith=prefix).values_list("code", flat=True))
+        max_seq = 0
+        for c in existing_codes:
+            try:
+                seq = int(c.split("-")[-1])
+                if seq > max_seq:
+                    max_seq = seq
+            except (ValueError, IndexError):
+                pass
+        next_seq = max_seq + 1
+        candidate = f"{prefix}{next_seq:03d}"
+        while cls.objects.filter(code=candidate).exists():
+            next_seq += 1
+            candidate = f"{prefix}{next_seq:03d}"
+        return candidate
+
+    def save(self, *args, **kwargs):
+        if not self.code or not self.code.strip():
+            year = self.start_date.year if self.start_date else timezone.localdate().year
+            self.code = self.generate_next_code(year=year)
+        else:
+            self.code = self.code.strip()
+        super().save(*args, **kwargs)
+
     @property
     def budget_utilization_pct(self):
         if self.allocated_budget > 0:
             return round((self.spent_budget / self.allocated_budget) * 100, 1)
         return 0.0
+
 
 
 # ============================================================================
@@ -127,6 +193,8 @@ class Program(models.Model):
     district = models.CharField(max_length=100, default="Belagavi", help_text="District (Mandatory)")
     state = models.CharField(max_length=100, default="Karnataka")
     gps_coordinates = models.CharField(max_length=100, blank=True, help_text="e.g. 15.8497° N, 74.4977° E")
+    locations = models.ManyToManyField(Location, related_name="programs", blank=True, help_text="Multi-select operational locations")
+
 
     participating_schools = models.ManyToManyField(School, related_name="enrolled_programs", blank=True)
     academic_year = models.CharField(max_length=20, default="2026-27")
@@ -239,6 +307,8 @@ class Scholarship(models.Model):
         ARCHIVED = "ARCHIVED", "Archived"
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="scholarships")
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name="scholarships", help_text="Linked Project (Optional)")
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name="scholarships", help_text="Linked Program (Optional)")
     category = models.CharField(max_length=30, choices=Category.choices, default=Category.FOUNDATION)
     scheme_name = models.CharField(max_length=200, help_text="e.g. Karnataka SSP Pre-Matric, National NSP, Aequs Aerospace Child Grant")
     application_number = models.CharField(max_length=100, unique=True, help_text="Portal application or internal tracking number")
@@ -312,3 +382,56 @@ class CSRGrant(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.school.name} (₹{self.grant_amount})"
+
+
+# ============================================================================
+# 7. MENTORSHIP SESSION MODEL (Mentorship Program Module)
+# ============================================================================
+
+class MentorshipSession(models.Model):
+    """
+    Connects corporate mentors, volunteer mentors, and students to Projects and Programs.
+    Tracks session goals, duration, mentorship feedback, and progress.
+    """
+    class Status(models.TextChoices):
+        SCHEDULED = "SCHEDULED", "Scheduled"
+        IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        COMPLETED = "COMPLETED", "Completed"
+        CANCELLED = "CANCELLED", "Cancelled"
+
+    session_title = models.CharField(max_length=200, help_text="e.g. 1-on-1 Engineering Mentoring, Career Guidance")
+    session_code = models.CharField(max_length=50, unique=True, blank=True, help_text="e.g. MNT-2026-001 (auto-generated)")
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name="mentorship_sessions")
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name="mentorship_sessions")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="mentorship_sessions")
+    mentor_name = models.CharField(max_length=150, help_text="Corporate mentor or Foundation advisor")
+    mentor_email = models.EmailField(blank=True)
+    mentor_designation = models.CharField(max_length=150, blank=True, default="Aequs Corporate Mentor")
+    session_date = models.DateField(default=timezone.localdate)
+    duration_minutes = models.PositiveIntegerField(default=60)
+    topic = models.CharField(max_length=200, help_text="Curriculum topic, technical guidance, career roadmap")
+    notes = models.TextField(blank=True)
+    feedback = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-session_date", "-created_at"]
+        verbose_name = "Mentorship Session"
+        verbose_name_plural = "Mentorship Sessions"
+
+    def __str__(self):
+        return f"{self.session_title} — {self.student.student_name} ({self.mentor_name})"
+
+    def save(self, *args, **kwargs):
+        if not self.session_code or not self.session_code.strip():
+            year = self.session_date.year if self.session_date else timezone.localdate().year
+            count = MentorshipSession.objects.filter(session_date__year=year).count() + 1
+            code = f"MNT-{year}-{count:03d}"
+            while MentorshipSession.objects.filter(session_code=code).exists():
+                count += 1
+                code = f"MNT-{year}-{count:03d}"
+            self.session_code = code
+        super().save(*args, **kwargs)
+

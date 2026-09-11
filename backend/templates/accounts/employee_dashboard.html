@@ -117,10 +117,10 @@
             <div class="section-title">Modules</div>
             <div class="stats-grid">
                 {% if school_count is not None %}
-                <a href="{% url 'schools:portal' %}" class="stat-card">
+                <div class="stat-card">
                     <div class="stat-header"><span class="stat-title">Active Schools</span><i data-lucide="school" style="width:18px;height:18px;color:#64748b;"></i></div>
                     <div class="stat-value">{{ school_count }}</div>
-                </a>
+                </div>
                 {% endif %}
                 {% if student_count is not None %}
                 <a href="{% url 'students:list' %}" class="stat-card">

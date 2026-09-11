@@ -80,6 +80,7 @@
                             <th>Code</th>
                             <th>Project Name</th>
                             <th>Partner NGO</th>
+                            <th>Linked Programs</th>
                             <th>Target Schools</th>
                             <th>Timeline</th>
                             <th>Budget (Allocated / Spent)</th>
@@ -109,6 +110,12 @@
                                 {% endif %}
                             </td>
                             <td>
+                                <a href="{% url 'programs:program_list' %}?project={{ p.pk }}" class="af-badge badge-neutral" style="text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" title="View sub-programs of this project">
+                                    <i data-lucide="layers" style="width: 13px; height: 13px; color: #3b82f6;"></i>
+                                    {{ p.programs.count }} programs
+                                </a>
+                            </td>
+                            <td>
                                 <span class="af-badge badge-neutral">
                                     {{ p.target_schools.count }} schools
                                 </span>
@@ -130,6 +137,9 @@
                                     <a href="{% url 'programs:project_detail' p.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="View Details">
                                         <i data-lucide="eye"></i>
                                     </a>
+                                    <a href="{% url 'programs:project_edit' p.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="Edit Project">
+                                        <i data-lucide="edit"></i>
+                                    </a>
                                     <a href="{% url 'programs:project_toggle_archive' p.pk %}" class="btn-af btn-af-danger btn-af-sm" title="Archive Project" onclick="return confirm('Archive this project? It can be restored from the Archive Portal.');">
                                         <i data-lucide="archive"></i>
                                     </a>
@@ -138,7 +148,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8">
+                            <td colspan="9">
                                 <div class="empty-state">
                                     <i data-lucide="folder-x"></i>
                                     <p>No projects found matching your criteria.</p>

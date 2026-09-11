@@ -116,7 +116,19 @@
                             </td>
                             <td>
                                 <div><strong>{{ s.scheme_name }}</strong></div>
-                                <span class="af-badge badge-neutral" style="font-size: 10.5px;">{{ s.get_category_display }}</span>
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">
+                                    <span class="af-badge badge-neutral" style="font-size: 10.5px;">{{ s.get_category_display }}</span>
+                                    {% if s.project %}
+                                    <span class="badge" style="background:#eff6ff;color:#2563eb;font-size:10.5px;padding:2px 6px;border-radius:3px;" title="Linked Project: {{ s.project.name }}">
+                                        {{ s.project.code }}
+                                    </span>
+                                    {% endif %}
+                                    {% if s.program %}
+                                    <span class="badge" style="background:#f0fdf4;color:#16a34a;font-size:10.5px;padding:2px 6px;border-radius:3px;" title="Linked Program: {{ s.program.title }}">
+                                        {{ s.program.code }}
+                                    </span>
+                                    {% endif %}
+                                </div>
                             </td>
                             <td>
                                 <div>{{ s.application_number }}</div>

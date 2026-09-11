@@ -22,7 +22,7 @@
                 </div>
             </div>
             <div class="header-actions">
-                <a href="{% url 'programs:ngo_list' %}" class="btn-af btn-af-secondary">
+                <a href="{% if is_edit and ngo %}{% url 'programs:ngo_detail' ngo.pk %}{% else %}{% url 'programs:ngo_list' %}{% endif %}" class="btn-af btn-af-secondary">
                     <i data-lucide="x"></i> Cancel
                 </a>
             </div>
@@ -113,9 +113,9 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="{% url 'programs:ngo_list' %}" class="btn-af btn-af-secondary">Cancel</a>
+                        <a href="{% if is_edit and ngo %}{% url 'programs:ngo_detail' ngo.pk %}{% else %}{% url 'programs:ngo_list' %}{% endif %}" class="btn-af btn-af-secondary">Cancel</a>
                         <button type="submit" class="btn-af btn-af-primary">
-                            <i data-lucide="save"></i> Save Partner NGO
+                            <i data-lucide="save"></i> {% if is_edit %}Save Changes{% else %}Save Partner NGO{% endif %}
                         </button>
                     </div>
                 </form>

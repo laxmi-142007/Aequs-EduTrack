@@ -6,9 +6,9 @@ from django.db.models import Q, Sum, Count
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 
-from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant
-from .forms import NGOForm, ProjectForm, ProgramForm, EVClassSessionForm, ScholarshipForm
-from schools.models import School
+from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession
+from .forms import NGOForm, ProjectForm, ProgramForm, EVClassSessionForm, ScholarshipForm, LocationForm, MentorshipSessionForm
+from schools.models import School, SchoolResource
 from students.models import Student
 from distributions.models import Distribution
 
@@ -64,17 +64,22 @@ def project_list(request):
     status_filter = request.GET.get("status")
     search_query = request.GET.get("q", "").strip()
 
-    queryset = Project.objects.filter(is_archived=False).select_related("ngo").prefetch_related("target_schools")
+    queryset = Project.objects.filter(is_archived=False).select_related("ngo").prefetch_related("target_schools", "programs", "locations")
 
     if status_filter:
         queryset = queryset.filter(status=status_filter)
     if search_query:
-        queryset = queryset.filter(Q(name__icontains=search_query) | Q(code__icontains=search_query))
+        queryset = queryset.filter(
+            Q(name__icontains=search_query) |
+            Q(code__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(lead_coordinator__icontains=search_query)
+        )
 
-    total_count = Project.objects.filter(is_archived=False).count()
-    active_count = Project.objects.filter(is_archived=False, status=Project.Status.ACTIVE).count()
-    total_budget = Project.objects.filter(is_archived=False).aggregate(Sum("allocated_budget"))["allocated_budget__sum"] or 0
-    spent_budget = Project.objects.filter(is_archived=False).aggregate(Sum("spent_budget"))["spent_budget__sum"] or 0
+    total_count = queryset.count()
+    active_count = queryset.filter(status=Project.Status.ACTIVE).count()
+    total_budget = queryset.aggregate(total=Sum("allocated_budget"))["total"] or 0
+    spent_budget = queryset.aggregate(total=Sum("spent_budget"))["total"] or 0
 
     return render(
         request,
@@ -85,17 +90,24 @@ def project_list(request):
             "active_count": active_count,
             "total_budget": total_budget,
             "spent_budget": spent_budget,
+            "status_choices": Project.Status.choices,
             "selected_status": status_filter,
             "search_query": search_query,
-            "status_choices": Project.Status.choices,
         },
     )
 
 
 def project_detail(request, pk):
-    project = get_object_or_404(Project.objects.select_related("ngo").prefetch_related("target_schools"), pk=pk)
-    programs = project.programs.filter(is_archived=False)
+    project = get_object_or_404(
+        Project.objects.select_related("ngo").prefetch_related("target_schools", "locations"),
+        pk=pk,
+    )
+    programs = project.programs.filter(is_archived=False).prefetch_related("participating_schools", "locations")
+    available_programs = Program.objects.filter(is_archived=False).exclude(project=project).order_by("title")
     csr_grants = project.csr_grants.all()
+    scholarships = project.scholarships.filter(is_archived=False).select_related("student", "student__school")
+    internships = project.internships.all().select_related("student", "school", "program")
+    mentorship_sessions = project.mentorship_sessions.all().select_related("student")
 
     return render(
         request,
@@ -103,9 +115,14 @@ def project_detail(request, pk):
         {
             "project": project,
             "programs": programs,
+            "available_programs": available_programs,
             "csr_grants": csr_grants,
+            "scholarships": scholarships,
+            "internships": internships,
+            "mentorship_sessions": mentorship_sessions,
         },
     )
+
 
 
 def project_create(request):
@@ -125,8 +142,57 @@ def project_create(request):
         {
             "form": form,
             "is_edit": False,
+            "title": "Create New Project",
         },
     )
+
+
+def project_edit(request, pk):
+    ensure_default_ngos()
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == "POST":
+        form = ProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            project = form.save()
+            messages.success(request, f"Project '{project.name}' ({project.code}) was updated successfully.")
+            return redirect("programs:project_detail", pk=project.pk)
+    else:
+        form = ProjectForm(instance=project)
+
+    return render(
+        request,
+        "programs/project_form.html",
+        {
+            "form": form,
+            "project": project,
+            "is_edit": True,
+            "title": f"Edit Project: {project.name}",
+        },
+    )
+
+
+def project_link_program(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == "POST":
+        program_id = request.POST.get("program_id")
+        if program_id:
+            program = get_object_or_404(Program, pk=program_id)
+            program.project = project
+            program.save(update_fields=["project"])
+            messages.success(request, f"Program '{program.title}' is now linked to project '{project.name}'.")
+        else:
+            messages.error(request, "Please select a program to link.")
+    return redirect("programs:project_detail", pk=project.pk)
+
+
+def project_unlink_program(request, pk, program_id):
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == "POST":
+        program = get_object_or_404(Program, pk=program_id, project=project)
+        program.project = None
+        program.save(update_fields=["project"])
+        messages.success(request, f"Program '{program.title}' unlinked from project '{project.name}'.")
+    return redirect("programs:project_detail", pk=project.pk)
 
 
 def project_toggle_archive(request, pk):
@@ -150,6 +216,7 @@ def project_toggle_archive(request, pk):
 def program_list(request):
     ensure_default_ngos()
     category_filter = request.GET.get("category")
+    project_filter = request.GET.get("project")
     taluk_filter = request.GET.get("taluk")
     search_query = request.GET.get("q", "").strip()
 
@@ -157,6 +224,11 @@ def program_list(request):
 
     if category_filter:
         queryset = queryset.filter(category=category_filter)
+    if project_filter:
+        if project_filter == "standalone":
+            queryset = queryset.filter(project__isnull=True)
+        else:
+            queryset = queryset.filter(project_id=project_filter)
     if taluk_filter:
         queryset = queryset.filter(taluk__iexact=taluk_filter)
     if search_query:
@@ -168,6 +240,7 @@ def program_list(request):
         )
 
     taluks = Program.objects.filter(is_archived=False).values_list("taluk", flat=True).distinct()
+    projects = Project.objects.filter(is_archived=False).order_by("name")
 
     return render(
         request,
@@ -177,6 +250,8 @@ def program_list(request):
             "total_count": queryset.count(),
             "category_choices": Program.Category.choices,
             "selected_category": category_filter,
+            "projects": projects,
+            "selected_project": project_filter,
             "taluks": sorted([t for t in taluks if t]),
             "selected_taluk": taluk_filter,
             "search_query": search_query,
@@ -185,8 +260,15 @@ def program_list(request):
 
 
 def program_detail(request, pk):
-    program = get_object_or_404(Program.objects.select_related("project", "ngo").prefetch_related("participating_schools"), pk=pk)
+    program = get_object_or_404(
+        Program.objects.select_related("project", "ngo").prefetch_related("participating_schools", "locations"),
+        pk=pk,
+    )
     ev_sessions = program.ev_sessions.filter(is_archived=False)
+    available_projects = Project.objects.filter(is_archived=False).order_by("name")
+    scholarships = program.scholarships.filter(is_archived=False).select_related("student", "student__school")
+    internships = program.internships.all().select_related("student", "school", "program")
+    mentorship_sessions = program.mentorship_sessions.all().select_related("student")
 
     return render(
         request,
@@ -194,12 +276,28 @@ def program_detail(request, pk):
         {
             "program": program,
             "ev_sessions": ev_sessions,
+            "available_projects": available_projects,
+            "scholarships": scholarships,
+            "internships": internships,
+            "mentorship_sessions": mentorship_sessions,
         },
     )
 
 
+
 def program_create(request):
     ensure_default_ngos()
+    preselected_project = None
+    project_id = request.GET.get("project")
+
+    initial_data = {}
+    if project_id:
+        preselected_project = Project.objects.filter(pk=project_id, is_archived=False).first()
+        if preselected_project:
+            initial_data["project"] = preselected_project.pk
+            if preselected_project.ngo:
+                initial_data["ngo"] = preselected_project.ngo.pk
+
     if request.method == "POST":
         form = ProgramForm(request.POST)
         if form.is_valid():
@@ -207,7 +305,7 @@ def program_create(request):
             messages.success(request, f"Program '{program.title}' at location '{program.location_name}' was registered successfully.")
             return redirect("programs:program_detail", pk=program.pk)
     else:
-        form = ProgramForm()
+        form = ProgramForm(initial=initial_data)
 
     return render(
         request,
@@ -215,8 +313,50 @@ def program_create(request):
         {
             "form": form,
             "is_edit": False,
+            "title": "Register Operational Program",
+            "preselected_project": preselected_project,
         },
     )
+
+
+def program_edit(request, pk):
+    ensure_default_ngos()
+    program = get_object_or_404(Program, pk=pk)
+    if request.method == "POST":
+        form = ProgramForm(request.POST, instance=program)
+        if form.is_valid():
+            program = form.save()
+            messages.success(request, f"Program '{program.title}' was updated successfully.")
+            return redirect("programs:program_detail", pk=program.pk)
+    else:
+        form = ProgramForm(instance=program)
+
+    return render(
+        request,
+        "programs/program_form.html",
+        {
+            "form": form,
+            "program": program,
+            "is_edit": True,
+            "title": f"Edit Program: {program.title}",
+        },
+    )
+
+
+def program_link_project(request, pk):
+    program = get_object_or_404(Program, pk=pk)
+    if request.method == "POST":
+        project_id = request.POST.get("project_id", "").strip()
+        if project_id:
+            project = get_object_or_404(Project, pk=project_id)
+            program.project = project
+            program.save(update_fields=["project"])
+            messages.success(request, f"Program '{program.title}' is now linked to parent project '{project.name}'.")
+        else:
+            program.project = None
+            program.save(update_fields=["project"])
+            messages.success(request, f"Program '{program.title}' is now standalone (unlinked).")
+    return redirect("programs:program_detail", pk=program.pk)
 
 
 def program_toggle_archive(request, pk):
@@ -336,16 +476,22 @@ def ngo_list(request):
 
 def ngo_detail(request, pk):
     ngo = get_object_or_404(NGO.objects.prefetch_related("partner_schools", "programs", "ev_sessions"), pk=pk)
+    schools = ngo.partner_schools.all().order_by("name")
+    total_students = sum(s.student_strength for s in schools)
     programs = ngo.programs.filter(is_archived=False)
     ev_sessions = ngo.ev_sessions.filter(is_archived=False)[:10]
+    allocated_resources = SchoolResource.objects.filter(school__in=schools).select_related("school").order_by("-updated_at")
 
     return render(
         request,
         "programs/ngo_detail.html",
         {
             "ngo": ngo,
+            "schools": schools,
+            "total_students": total_students,
             "programs": programs,
             "ev_sessions": ev_sessions,
+            "allocated_resources": allocated_resources,
         },
     )
 
@@ -366,8 +512,81 @@ def ngo_create(request):
         {
             "form": form,
             "is_edit": False,
+            "title": "Register NGO Partner",
         },
     )
+
+
+def ngo_edit(request, pk):
+    ngo = get_object_or_404(NGO, pk=pk)
+    if request.method == "POST":
+        form = NGOForm(request.POST, instance=ngo)
+        if form.is_valid():
+            ngo = form.save()
+            messages.success(request, f"NGO partner dossier for '{ngo.name}' updated successfully.")
+            return redirect("programs:ngo_detail", pk=ngo.pk)
+    else:
+        form = NGOForm(instance=ngo)
+
+    return render(
+        request,
+        "programs/ngo_form.html",
+        {
+            "form": form,
+            "is_edit": True,
+            "ngo": ngo,
+            "title": f"Edit Dossier: {ngo.name}",
+        },
+    )
+
+
+def ngo_allocate_resource(request, pk):
+    ngo = get_object_or_404(NGO, pk=pk)
+    if request.method == "POST":
+        school_id = request.POST.get("school_id")
+        resource_name = request.POST.get("resource_name", "").strip()
+        quantity_raw = request.POST.get("quantity", "1")
+        status = request.POST.get("status", "Active").strip() or "Active"
+        details = request.POST.get("details", "").strip()
+
+        school = get_object_or_404(School, pk=school_id)
+        try:
+            quantity = max(1, int(quantity_raw))
+        except (ValueError, TypeError):
+            quantity = 1
+
+        if not resource_name:
+            messages.error(request, "Resource Name is required for allocation.")
+            return redirect("programs:ngo_detail", pk=ngo.pk)
+
+        note = f"Allocated via NGO partner '{ngo.name}'"
+        full_details = f"{details} (Partner: {ngo.name})".strip() if details else note
+        SchoolResource.objects.create(
+            school=school,
+            resource_name=resource_name,
+            status=status,
+            quantity=quantity,
+            last_updated_note=note,
+            details=full_details,
+        )
+
+        try:
+            from distributions.models import BenefitType, RecipientType
+            Distribution.objects.create(
+                school=school,
+                recipient_type=RecipientType.SCHOOL,
+                benefit_type=BenefitType.SCHOOL_ESSENTIAL,
+                quantity=quantity,
+                remarks=f"NGO Allocation ({ngo.name}): {resource_name}. {details}".strip(),
+            )
+        except Exception:
+            pass
+
+        messages.success(
+            request,
+            f"Successfully allocated {quantity}x '{resource_name}' to {school.name}. Reflected in student profiles.",
+        )
+    return redirect("programs:ngo_detail", pk=ngo.pk)
 
 
 # ============================================================================
@@ -379,7 +598,7 @@ def scholarship_list(request):
     status_filter = request.GET.get("status")
     search_query = request.GET.get("q", "").strip()
 
-    queryset = Scholarship.objects.filter(is_archived=False).select_related("student", "student__school")
+    queryset = Scholarship.objects.filter(is_archived=False).select_related("student", "student__school", "project", "program")
 
     if category_tab == "government":
         queryset = queryset.filter(category=Scholarship.Category.GOVERNMENT)
@@ -396,7 +615,9 @@ def scholarship_list(request):
             Q(application_number__icontains=search_query) |
             Q(scheme_name__icontains=search_query) |
             Q(employee_name__icontains=search_query) |
-            Q(employee_code__icontains=search_query)
+            Q(employee_code__icontains=search_query) |
+            Q(project__name__icontains=search_query) |
+            Q(program__title__icontains=search_query)
         )
 
     # Aggregates
@@ -427,6 +648,12 @@ def scholarship_list(request):
 
 def scholarship_create(request):
     category = request.GET.get("category", Scholarship.Category.FOUNDATION)
+    initial = {"category": category}
+    if request.GET.get("project"):
+        initial["project"] = request.GET.get("project")
+    if request.GET.get("program"):
+        initial["program"] = request.GET.get("program")
+
     if request.method == "POST":
         form = ScholarshipForm(request.POST)
         if form.is_valid():
@@ -434,7 +661,7 @@ def scholarship_create(request):
             messages.success(request, f"Scholarship record for '{scholarship.student.student_name}' ({scholarship.scheme_name}) recorded successfully.")
             return redirect("programs:scholarship_list")
     else:
-        form = ScholarshipForm(initial={"category": category})
+        form = ScholarshipForm(initial=initial)
 
     return render(
         request,
@@ -444,6 +671,7 @@ def scholarship_create(request):
             "is_edit": False,
         },
     )
+
 
 
 def scholarship_update_status(request, pk):
@@ -597,3 +825,202 @@ def archive_restore(request, model_type, pk):
         messages.success(request, f"Student '{obj.student_name}' restored to Active status.")
 
     return redirect("programs:archive_portal")
+
+
+# ============================================================================
+# 8. LOCATION MASTER VIEWS (Module 16)
+# ============================================================================
+
+def location_list(request):
+    search_query = request.GET.get("q", "").strip()
+    district_filter = request.GET.get("district", "").strip()
+
+    queryset = Location.objects.all()
+    if district_filter:
+        queryset = queryset.filter(district=district_filter)
+    if search_query:
+        queryset = queryset.filter(
+            Q(name__icontains=search_query) |
+            Q(code__icontains=search_query) |
+            Q(taluk__icontains=search_query) |
+            Q(village_or_town__icontains=search_query)
+        )
+
+    districts = Location.objects.values_list("district", flat=True).distinct()
+
+    return render(
+        request,
+        "programs/location_list.html",
+        {
+            "locations": queryset,
+            "total_count": queryset.count(),
+            "active_count": queryset.filter(is_active=True).count(),
+            "districts": sorted([d for d in districts if d]),
+            "selected_district": district_filter,
+            "search_query": search_query,
+        },
+    )
+
+
+def location_create(request):
+    if request.method == "POST":
+        form = LocationForm(request.POST)
+        if form.is_valid():
+            loc = form.save()
+            messages.success(request, f"Location '{loc.name}' ({loc.code}) created successfully.")
+            return redirect("programs:location_list")
+    else:
+        form = LocationForm()
+
+    return render(
+        request,
+        "programs/location_form.html",
+        {
+            "form": form,
+            "is_edit": False,
+            "title": "Add New Location",
+        },
+    )
+
+
+def location_edit(request, pk):
+    loc = get_object_or_404(Location, pk=pk)
+    if request.method == "POST":
+        form = LocationForm(request.POST, instance=loc)
+        if form.is_valid():
+            loc = form.save()
+            messages.success(request, f"Location '{loc.name}' ({loc.code}) updated successfully.")
+            return redirect("programs:location_list")
+    else:
+        form = LocationForm(instance=loc)
+
+    return render(
+        request,
+        "programs/location_form.html",
+        {
+            "form": form,
+            "location": loc,
+            "is_edit": True,
+            "title": f"Edit Location: {loc.name}",
+        },
+    )
+
+
+def location_delete(request, pk):
+    loc = get_object_or_404(Location, pk=pk)
+    if request.method == "POST":
+        name = loc.name
+        loc.delete()
+        messages.success(request, f"Location '{name}' was deleted.")
+    return redirect("programs:location_list")
+
+
+# ============================================================================
+# 9. MENTORSHIP SESSION VIEWS
+# ============================================================================
+
+def mentorship_list(request):
+    status_filter = request.GET.get("status", "").strip()
+    search_query = request.GET.get("q", "").strip()
+    project_filter = request.GET.get("project", "").strip()
+    program_filter = request.GET.get("program", "").strip()
+
+    queryset = MentorshipSession.objects.select_related("project", "program", "student", "student__school").all()
+
+    if status_filter:
+        queryset = queryset.filter(status=status_filter)
+    if project_filter:
+        queryset = queryset.filter(project_id=project_filter)
+    if program_filter:
+        queryset = queryset.filter(program_id=program_filter)
+    if search_query:
+        queryset = queryset.filter(
+            Q(session_title__icontains=search_query) |
+            Q(session_code__icontains=search_query) |
+            Q(mentor_name__icontains=search_query) |
+            Q(student__student_name__icontains=search_query) |
+            Q(topic__icontains=search_query)
+        )
+
+    projects = Project.objects.filter(is_archived=False).order_by("name")
+    programs = Program.objects.filter(is_archived=False).order_by("title")
+
+    return render(
+        request,
+        "programs/mentorship_list.html",
+        {
+            "sessions": queryset,
+            "total_count": queryset.count(),
+            "scheduled_count": queryset.filter(status=MentorshipSession.Status.SCHEDULED).count(),
+            "completed_count": queryset.filter(status=MentorshipSession.Status.COMPLETED).count(),
+            "status_choices": MentorshipSession.Status.choices,
+            "selected_status": status_filter,
+            "projects": projects,
+            "selected_project": project_filter,
+            "programs": programs,
+            "selected_program": program_filter,
+            "search_query": search_query,
+        },
+    )
+
+
+def mentorship_create(request):
+    initial = {}
+    if request.GET.get("project"):
+        initial["project"] = request.GET.get("project")
+    if request.GET.get("program"):
+        initial["program"] = request.GET.get("program")
+    if request.GET.get("student"):
+        initial["student"] = request.GET.get("student")
+
+    if request.method == "POST":
+        form = MentorshipSessionForm(request.POST)
+        if form.is_valid():
+            session = form.save()
+            messages.success(request, f"Mentorship session '{session.session_title}' ({session.session_code}) created successfully.")
+            return redirect("programs:mentorship_list")
+    else:
+        form = MentorshipSessionForm(initial=initial)
+
+    return render(
+        request,
+        "programs/mentorship_form.html",
+        {
+            "form": form,
+            "is_edit": False,
+            "title": "Log Mentorship Session",
+        },
+    )
+
+
+def mentorship_edit(request, pk):
+    session = get_object_or_404(MentorshipSession, pk=pk)
+    if request.method == "POST":
+        form = MentorshipSessionForm(request.POST, instance=session)
+        if form.is_valid():
+            session = form.save()
+            messages.success(request, f"Mentorship session '{session.session_title}' ({session.session_code}) updated.")
+            return redirect("programs:mentorship_list")
+    else:
+        form = MentorshipSessionForm(instance=session)
+
+    return render(
+        request,
+        "programs/mentorship_form.html",
+        {
+            "form": form,
+            "session": session,
+            "is_edit": True,
+            "title": f"Edit Mentorship Session: {session.session_code}",
+        },
+    )
+
+
+def mentorship_delete(request, pk):
+    session = get_object_or_404(MentorshipSession, pk=pk)
+    if request.method == "POST":
+        code = session.session_code
+        session.delete()
+        messages.success(request, f"Mentorship session '{code}' deleted.")
+    return redirect("programs:mentorship_list")
+

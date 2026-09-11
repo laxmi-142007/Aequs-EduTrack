@@ -15,6 +15,7 @@ class SchoolPortalAPITests(TestCase):
             password="admin123",
             role=User.Role.ADMIN,
         )
+        self.client.force_login(self.user)
         self.school = School.objects.create(
             name="Test Govt High School",
             udise_code="29010200999",
@@ -30,9 +31,9 @@ class SchoolPortalAPITests(TestCase):
         )
 
     def test_portal_view(self):
-        response = self.client.get(reverse("schools:portal"))
+        response = self.client.get(reverse("schools:portal"), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Government School Management System")
+        self.assertContains(response, "Government Schools")
         self.assertContains(response, "Test Govt High School")
 
     def test_api_schools_list(self):

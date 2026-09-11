@@ -36,8 +36,19 @@ class Event(models.Model):
         COMPLETED = "COMPLETED", "Completed"
         CANCELLED = "CANCELLED", "Cancelled"
 
+    class EventType(models.TextChoices):
+        EVENT = "EVENT", "Event"
+        CAMPAIGN = "CAMPAIGN", "Campaign"
+
     title = models.CharField(
         max_length=200
+    )
+
+    event_type = models.CharField(
+        max_length=20,
+        choices=EventType.choices,
+        default=EventType.EVENT,
+        db_index=True,
     )
 
     status = models.CharField(

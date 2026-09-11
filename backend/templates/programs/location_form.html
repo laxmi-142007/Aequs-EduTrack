@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='locations' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Location Master &bull; Module 16 Central Location Registry</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:location_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="x"></i> Cancel
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="form-container">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-section-title">
+                        <i data-lucide="map-pin" style="color: #ed1c24;"></i> Basic Location Information
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location / Center Name <span class="required-star">*</span></label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}
+                            <span class="field-help">e.g. Belagavi SEZ Aerospace Campus, Kakati STEM Center</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Location Code</label>
+                            {{ form.code }}
+                            {% if form.code.errors %}<div class="field-error">{{ form.code.errors }}</div>{% endif %}
+                            <span class="field-help">Leave blank to auto-generate (e.g. LOC-BGV-01)</span>
+                        </div>
+                    </div>
+
+                    <div class="form-section-title">
+                        <i data-lucide="navigation" style="color: #3b82f6;"></i> Geographic Hierarchy
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>District <span class="required-star">*</span></label>
+                            {{ form.district }}
+                            {% if form.district.errors %}<div class="field-error">{{ form.district.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Taluk / Block</label>
+                            {{ form.taluk }}
+                            {% if form.taluk.errors %}<div class="field-error">{{ form.taluk.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Village or Town</label>
+                            {{ form.village_or_town }}
+                            {% if form.village_or_town.errors %}<div class="field-error">{{ form.village_or_town.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            {{ form.state }}
+                            {% if form.state.errors %}<div class="field-error">{{ form.state.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>PIN Code</label>
+                            {{ form.pincode }}
+                            {% if form.pincode.errors %}<div class="field-error">{{ form.pincode.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 24px;">
+                            {{ form.is_active }}
+                            <label for="{{ form.is_active.id_for_label }}" style="margin: 0; cursor: pointer; font-weight: 600;">Active Location</label>
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Full Address / Landmark Details</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}<div class="field-error">{{ form.address.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 24px;">
+                        <button type="submit" class="btn-af btn-af-primary">
+                            <i data-lucide="check"></i> Save Location
+                        </button>
+                        <a href="{% url 'programs:location_list' %}" class="btn-af btn-af-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

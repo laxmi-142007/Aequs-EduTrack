@@ -929,6 +929,53 @@
                 font-size: 20px !important;
             }
         }
+
+        @media (max-width: 640px) {
+            .welcome-card {
+                padding: 16px 14px !important;
+            }
+
+            .welcome-card h2 {
+                font-size: 18px !important;
+            }
+
+            .welcome-card p {
+                font-size: 13px !important;
+            }
+
+            .welcome-card div[style*="display: flex"] {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+            }
+
+            .welcome-card a,
+            .welcome-card button {
+                width: 100% !important;
+                text-align: center !important;
+                justify-content: center !important;
+            }
+
+            .topbar {
+                padding: 10px 14px !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+            }
+
+            .topbar h1 {
+                font-size: 16px !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+
+            .content {
+                padding: 12px 10px 30px !important;
+                gap: 14px !important;
+            }
+        }
     </style>
 </head>
 
@@ -982,15 +1029,6 @@
 
                 <div class="quick-actions">
 
-                    <a href="{% url 'schools:portal' %}"
-                       class="btn-shadcn btn-shadcn-outline">
-
-                        <i data-lucide="building-2"
-                           style="width: 14px; height: 14px;"></i>
-
-                        Schools Portal
-                    </a>
-
                     <a href="{% url 'students:add' %}"
                        class="btn-shadcn btn-shadcn-outline">
 
@@ -1031,8 +1069,7 @@
 
                     <!-- Schools -->
 
-                    <a href="{% url 'schools:portal' %}"
-                       class="stat-card">
+                    <div class="stat-card">
 
                         <div class="stat-header">
 
@@ -1062,7 +1099,7 @@
 
                         </div>
 
-                    </a>
+                    </div>
 
                     <!-- Students -->
 
@@ -1190,7 +1227,7 @@
 
                     <!-- Distributions -->
 
-                    <a href="{% url 'inventory:portal' %}"
+                    <a href="{% url 'distributions:list' %}"
                        class="stat-card">
 
                         <div class="stat-header">

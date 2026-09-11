@@ -1,14 +1,22 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 app_name = "schools"
 
 urlpatterns = [
     path("bulk-upload/", views.bulk_upload_schools, name="bulk_upload"),
-    # Portal View
-    path("", views.portal_view, name="portal"),
-    path("list/", views.school_list, name="school_list"),
+    path("bulk-upload/<str:ngo_slug>/", views.bulk_upload_schools, name="bulk_upload_for_ngo"),
+    # Redirect root or empty paths to separate Pratham module (no central place)
+    re_path(r"^$", views.school_root_redirect, name="portal"),
+    path("list/", views.school_root_redirect, name="school_list"),
     path("add/", views.school_create, name="school_create"),
+
+    # Clean NGO Partner Module Paths (e.g. /schools/agastya/, /schools/pratham/, /schools/yfs/)
+    path("agastya/", views.portal_view, {"ngo_slug": "agastya"}, name="portal_agastya"),
+    path("pratham/", views.portal_view, {"ngo_slug": "pratham"}, name="portal_pratham"),
+    path("yfs/", views.portal_view, {"ngo_slug": "yfs"}, name="portal_yfs"),
+    path("youth-for-seva/", views.portal_view, {"ngo_slug": "yfs"}, name="portal_youth_for_seva"),
+    path("ngo/<str:ngo_slug>/", views.portal_view, name="portal_by_ngo"),
 
     # REST APIs for Dashboard Features
     path("api/schools/", views.api_schools_list, name="api_schools_list"),

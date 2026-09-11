@@ -31,6 +31,7 @@ class PublicEventForm(forms.ModelForm):
             "title",
             "description",
             "event_date",
+            "reminder_scheduled_date",
             "location",
             "organizer",
         ]
@@ -39,6 +40,7 @@ class PublicEventForm(forms.ModelForm):
             "title": "Event Title",
             "description": "Description",
             "event_date": "Event Date",
+            "reminder_scheduled_date": "Reminder Date",
             "location": "Location",
             "organizer": "Organizer",
         }
@@ -64,6 +66,12 @@ class PublicEventForm(forms.ModelForm):
                 }
             ),
 
+            "reminder_scheduled_date": forms.DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+
             "location": forms.TextInput(
                 attrs={
                     "placeholder": "Enter event location",
@@ -76,3 +84,4 @@ class PublicEventForm(forms.ModelForm):
                 }
             ),
         }
+

@@ -26,57 +26,66 @@
         }
 
         .header {
-            background: #dd2d27;
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
             color: #ffffff;
             padding: 22px 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.20);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
         }
 
         .header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .back-button {
             background: #ffffff;
-            color: #dd2d27;
-            padding: 11px 20px;
+            color: #7c3aed;
+            padding: 10px 18px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: 700;
+            font-size: 13.5px;
+            transition: background 0.2s;
         }
 
         .back-button:hover {
-            background: #eff6ff;
+            background: #f5f3ff;
         }
 
         .container {
             max-width: 750px;
-            margin: 40px auto;
+            margin: 36px auto;
             padding: 0 20px;
         }
 
         .card {
             background: #ffffff;
-            padding: 30px;
+            padding: 32px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+            border: 1px solid #e2e8f0;
         }
 
         .card h2 {
             margin-top: 0;
-            color: #1e40af;
+            color: #5b21b6;
             font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .card-subtitle {
             color: #64748b;
-            font-size: 14px;
-            margin-bottom: 25px;
+            font-size: 13.5px;
+            margin-bottom: 24px;
+            line-height: 1.5;
         }
 
         .form-group {
@@ -85,52 +94,58 @@
 
         label {
             display: block;
-            margin-bottom: 7px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #334155;
+            font-size: 13.5px;
         }
 
         input,
-        textarea {
+        textarea,
+        select {
             width: 100%;
-            padding: 12px;
+            padding: 11px 13px;
             border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            font-size: 15px;
+            border-radius: 8px;
+            font-size: 14.5px;
             font-family: inherit;
+            background: #ffffff;
+            color: #1e293b;
         }
 
         textarea {
-            min-height: 120px;
+            min-height: 110px;
             resize: vertical;
         }
 
         input:focus,
-        textarea:focus {
+        textarea:focus,
+        select:focus {
             outline: none;
-            border-color: #dd2d27;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
         }
 
         .actions {
             display: flex;
             gap: 12px;
-            margin-top: 25px;
+            margin-top: 28px;
         }
 
         .save-button {
-            background: #dd2d27;
+            background: #7c3aed;
             color: #ffffff;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 26px;
             border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14.5px;
+            transition: background 0.2s;
         }
 
         .save-button:hover {
-            background: #b91c1c;
+            background: #6d28d9;
         }
 
         .cancel-button {
@@ -139,7 +154,11 @@
             padding: 12px 24px;
             border-radius: 8px;
             text-decoration: none;
-            font-weight: 700;
+            font-weight: 600;
+            font-size: 14.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .cancel-button:hover {
@@ -156,12 +175,12 @@
             .header {
                 padding: 18px 20px;
                 flex-direction: column;
-                gap: 15px;
+                gap: 12px;
                 align-items: stretch;
             }
 
             .header h1 {
-                font-size: 24px;
+                font-size: 22px;
             }
 
             .back-button {
@@ -192,84 +211,80 @@
     <div class="main">
 
         <div class="header">
-
             <h1>
-                &#128197; {{ page_title }}
+                &#128227; {{ page_title }}
             </h1>
-
-            <a
-                href="{% url 'events:list' %}"
-                class="back-button"
-            >
-                &#8592; Back to Events
+            <a href="{% url 'events:list' %}" class="back-button">
+                &#8592; Back to Campaigns &amp; Events
             </a>
-
         </div>
 
         <div class="container">
-
             <div class="card">
-
                 <h2>
                     {{ form_title }}
                 </h2>
-
                 <p class="card-subtitle">
                     {% if event %}
-                        Update the details of this foundation event.
+                        Update parameters, targets, and scope for this CSR/community campaign.
                     {% else %}
-                        Add a new foundation event to Aequs EduTrack.
+                        Launch a multi-stakeholder CSR drive, awareness campaign, or community outreach initiative.
                     {% endif %}
                 </p>
 
                 <form method="post">
-
                     {% csrf_token %}
 
                     <div class="form-group">
-
                         <label for="title">
-                            Event Title *
+                            Campaign Name / Title <span style="color:#dc2626;">*</span>
                         </label>
-
                         <input
                             type="text"
                             id="title"
                             name="title"
                             maxlength="200"
+                            placeholder="E.g., Read India FLN Literacy Drive 2026, STEM for Girls Week, Green Campus Cleanliness Campaign"
                             value="{{ event.title|default:'' }}"
                             required
                         >
-
                     </div>
 
                     <div class="form-group">
-
                         <label for="description">
-                            Description
+                            Campaign Strategy, Goals &amp; Outreach Scope
                         </label>
-
                         <textarea
                             id="description"
                             name="description"
+                            placeholder="Detail the target goals, beneficiary demographic, methodology, and expected impact metrics..."
                         >{{ event.description|default:'' }}</textarea>
-
                     </div>
 
-                    <div class="form-group">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="event_date">
+                                Campaign Launch Date <span style="color:#dc2626;">*</span>
+                            </label>
+                            <input
+                                type="date"
+                                id="event_date"
+                                name="event_date"
+                                value="{{ event.event_date|date:'Y-m-d' }}"
+                                required
+                            >
+                        </div>
 
-                        <label for="event_date">
-                            Event Date *
-                        </label>
-
-                        <input
-                            type="date"
-                            id="event_date"
-                            name="event_date"
-                            value="{{ event.event_date|date:'Y-m-d' }}"
-                            required
-                        >
-
+                        <div class="form-group">
+                            <label for="status">
+                                Campaign Status
+                            </label>
+                            <select id="status" name="status">
+                                {% for val, label in status_choices %}
+                                    <option value="{{ val }}" {% if event.status == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -283,90 +298,74 @@
                             value="{{ event.reminder_scheduled_date|date:'Y-m-d' }}"
                         >
                         <small style="color: #64748b; font-size: 12.5px; margin-top: 4px; display: block;">
-                            Automatic notification &amp; dashboard reminder alerts trigger on this date (defaults to 1 day prior).
+                            Automatic notification alerts trigger on this date (defaults to 1 day prior to launch).
                         </small>
                     </div>
 
                     <div class="form-group">
-
                         <label for="location">
-                            Location
+                            Target Region / Taluks / Community Clusters
                         </label>
-
                         <input
                             type="text"
                             id="location"
                             name="location"
                             maxlength="200"
+                            placeholder="E.g., Belagavi &amp; Hukkeri Taluk Government Schools, Dharwad Hub, Koppal Cluster"
                             value="{{ event.location|default:'' }}"
                         >
-
                     </div>
 
                     <div class="form-group">
-
                         <label for="organizer">
-                            Organizer
+                            Lead Campaign Coordinator / Executing Partner
                         </label>
-
                         <input
                             type="text"
                             id="organizer"
                             name="organizer"
                             maxlength="150"
+                            placeholder="E.g., Pratham Karnataka Team, Aequs CSR Steering Committee, Agastya Outreach Unit"
                             value="{{ event.organizer|default:'' }}"
                         >
-
                     </div>
 
                     {% if not is_edit %}
                     <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-                        <h3 style="margin-top:0; font-size: 16px; color: #1e293b;">&#12445; Request Inventory Resource (Optional)</h3>
+                        <h3 style="margin-top:0; font-size: 15px; color: #5b21b6;">&#128230; Allocated Inventory / Study Kit Requisition (Optional)</h3>
                         <div class="form-group">
-                            <label for="inventory_item">Inventory Item</label>
-                            <select id="inventory_item" name="inventory_item" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 15px;">
-                                <option value="">-- None (No resource requested) --</option>
+                            <label for="inventory_item">Requisitioned Inventory Item</label>
+                            <select id="inventory_item" name="inventory_item">
+                                <option value="">-- None (No central inventory requisition) --</option>
                                 {% for item in inventory_items %}
-                                    <option value="{{ item.pk }}">{{ item.item_name }} (In Stock: {{ item.current_stock }} {{ item.unit }})</option>
+                                    <option value="{{ item.pk }}">{{ item.item_name }} (Available: {{ item.current_stock }} {{ item.unit }})</option>
                                 {% endfor %}
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="inventory_quantity">Quantity Needed</label>
-                            <input type="number" id="inventory_quantity" name="inventory_quantity" min="1" placeholder="e.g. 5">
+                            <label for="inventory_quantity">Quantity Needed for Campaign</label>
+                            <input type="number" id="inventory_quantity" name="inventory_quantity" min="1" placeholder="e.g. 50">
                         </div>
                     </div>
                     {% endif %}
 
                     <div class="actions">
-
-                        <button
-                            type="submit"
-                            class="save-button"
-                        >
+                        <button type="submit" class="save-button">
                             {% if event %}
-                                Save Changes
+                                Save Campaign Changes
                             {% else %}
-                                Create Event
+                                Launch Campaign
                             {% endif %}
                         </button>
-
-                        <a
-                            href="{% url 'events:list' %}"
-                            class="cancel-button"
-                        >
+                        <a href="{% url 'events:list' %}" class="cancel-button">
                             Cancel
                         </a>
-
                     </div>
 
                 </form>
-
             </div>
-
         </div>
-
     </div>
 
 </body>

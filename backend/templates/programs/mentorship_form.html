@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='mentorship' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Connect Corporate &amp; Volunteer Mentors with Projects, Programs &amp; Students</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:mentorship_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="x"></i> Cancel
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="form-container">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-section-title">
+                        <i data-lucide="info" style="color: #ed1c24;"></i> Basic Mentorship Details
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Session Title <span class="required-star">*</span></label>
+                            {{ form.session_title }}
+                            {% if form.session_title.errors %}<div class="field-error">{{ form.session_title.errors }}</div>{% endif %}
+                            <span class="field-help">e.g. 1-on-1 Engineering Mentoring, Career Guidance &amp; Soft Skills</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Session Code</label>
+                            {{ form.session_code }}
+                            {% if form.session_code.errors %}<div class="field-error">{{ form.session_code.errors }}</div>{% endif %}
+                            <span class="field-help">Leave blank to auto-generate (e.g. MNT-2026-001)</span>
+                        </div>
+                    </div>
+
+                    <div class="form-section-title">
+                        <i data-lucide="link-2" style="color: #3b82f6;"></i> Connected Project &amp; Program
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Connected Project</label>
+                            {{ form.project }}
+                            {% if form.project.errors %}<div class="field-error">{{ form.project.errors }}</div>{% endif %}
+                            <span class="field-help">Optional: Associate this mentorship session with an active Project</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Connected Program</label>
+                            {{ form.program }}
+                            {% if form.program.errors %}<div class="field-error">{{ form.program.errors }}</div>{% endif %}
+                            <span class="field-help">Optional: Associate with a specific Foundation program</span>
+                        </div>
+                    </div>
+
+                    <div class="form-section-title">
+                        <i data-lucide="user-check" style="color: #10b981;"></i> Student &amp; Mentor Information
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student Mentee <span class="required-star">*</span></label>
+                            {{ form.student }}
+                            {% if form.student.errors %}<div class="field-error">{{ form.student.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="field-error">{{ form.status.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mentor Full Name <span class="required-star">*</span></label>
+                            {{ form.mentor_name }}
+                            {% if form.mentor_name.errors %}<div class="field-error">{{ form.mentor_name.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Mentor Designation / Department</label>
+                            {{ form.mentor_designation }}
+                            {% if form.mentor_designation.errors %}<div class="field-error">{{ form.mentor_designation.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mentor Email</label>
+                            {{ form.mentor_email }}
+                            {% if form.mentor_email.errors %}<div class="field-error">{{ form.mentor_email.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Session Date <span class="required-star">*</span></label>
+                            {{ form.session_date }}
+                            {% if form.session_date.errors %}<div class="field-error">{{ form.session_date.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Duration (Minutes)</label>
+                            {{ form.duration_minutes }}
+                            {% if form.duration_minutes.errors %}<div class="field-error">{{ form.duration_minutes.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Mentorship Topic / Focus</label>
+                            {{ form.topic }}
+                            {% if form.topic.errors %}<div class="field-error">{{ form.topic.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mentor Guidance Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label>Student Feedback / Action Items</label>
+                            {{ form.feedback }}
+                            {% if form.feedback.errors %}<div class="field-error">{{ form.feedback.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 24px;">
+                        <button type="submit" class="btn-af btn-af-primary">
+                            <i data-lucide="check"></i> Save Mentorship Record
+                        </button>
+                        <a href="{% url 'programs:mentorship_list' %}" class="btn-af btn-af-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

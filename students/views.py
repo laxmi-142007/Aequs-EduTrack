@@ -1319,6 +1319,7 @@ def student_detail(request, pk):
     eligibility_records = student.eligibility_records.all().order_by("-academic_year")
     distributions = student.distributions.all().select_related("study_kit").order_by("-distribution_date")
     internships = student.internship_placements.all().select_related("program").order_by("-created_at")
+    school_resources = student.school.resources.all().order_by("-updated_at") if student.school else []
 
     return render(
         request,
@@ -1329,6 +1330,7 @@ def student_detail(request, pk):
             "eligibility_records": eligibility_records,
             "distributions": distributions,
             "internships": internships,
+            "school_resources": school_resources,
         },
     )
 

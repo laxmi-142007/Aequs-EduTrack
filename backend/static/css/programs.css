@@ -411,6 +411,26 @@
   box-shadow: 0 0 0 2px rgba(237, 28, 36, 0.12);
 }
 
+.form-group select[multiple],
+.form-select-multi {
+  min-height: 85px !important;
+  padding: 6px !important;
+}
+
+.form-group select[multiple] option,
+.form-select-multi option {
+  padding: 6px 10px !important;
+  border-radius: 4px !important;
+  margin-bottom: 2px !important;
+}
+
+.form-group select[multiple] option:checked,
+.form-select-multi option:checked {
+  background: #fff1f1 !important;
+  color: var(--aequs-red) !important;
+  font-weight: 600 !important;
+}
+
 .form-group .field-help {
   font-size: 11.5px;
   color: var(--aequs-muted);
@@ -480,3 +500,96 @@
   display: block;
   opacity: 0.4;
 }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS FOR PROGRAMS MODULE
+   ========================================================================== */
+@media (max-width: 850px) {
+  .programs-page {
+    padding: 18px 16px 40px 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .programs-page {
+    padding: 14px 10px 30px 10px;
+  }
+
+  .programs-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .programs-header .title-area h1 {
+    font-size: 18px;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .header-actions .btn-af,
+  .btn-af {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .detail-card {
+    padding: 16px 12px !important;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-actions button,
+  .form-actions a {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .filter-bar,
+  .search-filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-bar select,
+  .filter-bar input,
+  .search-filter-bar input,
+  .search-filter-bar select {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .data-table-container,
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    display: block;
+  }
+}
+

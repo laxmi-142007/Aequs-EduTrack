@@ -918,6 +918,53 @@
                     {% endif %}
                 </div>
 
+                <!-- 6. ALLOCATED SCHOOL CAMPUS RESOURCES & INFRASTRUCTURE -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="building-2"></i>
+                            School Campus Allocated Resources & Facilities ({% if student.school %}{{ student.school.name }}{% else %}Enrolled School{% endif %})
+                        </div>
+                        <span class="card-badge">{{ school_resources|length }} Resource(s)</span>
+                    </div>
+
+                    {% if school_resources %}
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Resource / Facility / Kit</th>
+                                        <th>Allocation Status</th>
+                                        <th>Quantity</th>
+                                        <th>Partner / Allocation Notes</th>
+                                        <th>Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for res in school_resources %}
+                                        <tr>
+                                            <td><strong>{{ res.resource_name }}</strong></td>
+                                            <td>
+                                                <span class="badge-pill {% if res.status == 'Active' or res.status == 'Delivered' %}badge-green{% else %}badge-blue{% endif %}">
+                                                    {{ res.status }}
+                                                </span>
+                                            </td>
+                                            <td>{{ res.quantity }} units</td>
+                                            <td style="color:#475569; font-size:13px;">{{ res.details|default:res.last_updated_note|default:"Allocated to campus" }}</td>
+                                            <td style="color:#64748b; font-size:12px;">{{ res.updated_at|date:"M d, Y" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i data-lucide="boxes"></i>
+                            <p>No specific lab kits or facilities currently recorded for this student's campus.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
             </div>
 
         </div>

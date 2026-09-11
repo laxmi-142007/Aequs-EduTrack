@@ -77,6 +77,21 @@
                         </div>
                     </div>
 
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Linked Project (Optional)</label>
+                            {{ form.project }}
+                            {% if form.project.errors %}<div class="field-error">{{ form.project.errors }}</div>{% endif %}
+                            <span class="field-help">Connect this scholarship aid to an overarching CSR project</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Linked Program (Optional)</label>
+                            {{ form.program }}
+                            {% if form.program.errors %}<div class="field-error">{{ form.program.errors }}</div>{% endif %}
+                            <span class="field-help">Connect directly to an educational program</span>
+                        </div>
+                    </div>
+
                     <div class="form-section-title">
                         <i data-lucide="indian-rupee" style="color: #10b981;"></i> Financials &amp; Disbursement
                     </div>

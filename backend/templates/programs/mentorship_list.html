@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentorship Programs &amp; Sessions | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='mentorship' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Mentorship Programs &amp; Sessions</h1>
+                    <span style="font-size: 12px; color: #64748b;">Connected to Projects &bull; Programs &bull; Student Cohorts</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:mentorship_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="plus-circle"></i> Log Mentorship Session
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Metric Cards -->
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Mentorship Sessions</div>
+                    <div class="metric-value">{{ total_count }}</div>
+                    <div class="metric-meta">Across all projects &amp; programs</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">Scheduled / Upcoming</div>
+                    <div class="metric-value">{{ scheduled_count }}</div>
+                    <div class="metric-meta">Pending execution</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">Completed Sessions</div>
+                    <div class="metric-value">{{ completed_count }}</div>
+                    <div class="metric-meta">Successfully mentored</div>
+                </div>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div class="filter-bar">
+                <form method="get" class="filter-form">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search session, mentor, student, topic..." class="input-search">
+                    <select name="status" class="select-filter" onchange="this.form.submit()">
+                        <option value="">-- All Statuses --</option>
+                        {% for val, label in status_choices %}
+                            <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="project" class="select-filter" onchange="this.form.submit()">
+                        <option value="">-- All Projects --</option>
+                        {% for prj in projects %}
+                            <option value="{{ prj.id }}" {% if selected_project == prj.id|stringformat:"i" %}selected{% endif %}>{{ prj.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="program" class="select-filter" onchange="this.form.submit()">
+                        <option value="">-- All Programs --</option>
+                        {% for p in programs %}
+                            <option value="{{ p.id }}" {% if selected_program == p.id|stringformat:"i" %}selected{% endif %}>{{ p.title }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-af btn-af-secondary" style="padding: 6px 14px;">
+                        <i data-lucide="search"></i> Filter
+                    </button>
+                    {% if search_query or selected_status or selected_project or selected_program %}
+                        <a href="{% url 'programs:mentorship_list' %}" class="btn-af btn-af-secondary" style="padding: 6px 12px;">
+                            <i data-lucide="x"></i> Clear
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Session &amp; Code</th>
+                            <th>Student Mentee</th>
+                            <th>Mentor &amp; Role</th>
+                            <th>Connected Project / Program</th>
+                            <th>Date &amp; Duration</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sessions %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600; color: #1e293b;">{{ s.session_title }}</div>
+                                <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px;">{{ s.session_code }}</span>
+                                {% if s.topic %}
+                                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">{{ s.topic|truncatechars:45 }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ s.student.student_name }}</strong>
+                                <div style="font-size: 11.5px; color: #64748b;">{{ s.student.admission_number }} &bull; {{ s.student.current_class }}</div>
+                                {% if s.student.school %}
+                                    <div style="font-size: 11px; color: #94a3b8;">{{ s.student.school.name }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: #1e293b;">{{ s.mentor_name }}</div>
+                                <div style="font-size: 11.5px; color: #64748b;">{{ s.mentor_designation }}</div>
+                                {% if s.mentor_email %}
+                                    <div style="font-size: 11px; color: #94a3b8;">{{ s.mentor_email }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if s.project %}
+                                    <div><a href="{% url 'programs:project_detail' s.project.pk %}" style="color: #ed1c24; font-weight: 600; text-decoration: none;"><i data-lucide="folder" style="width: 12px; height: 12px; display: inline;"></i> {{ s.project.name }}</a></div>
+                                {% endif %}
+                                {% if s.program %}
+                                    <div style="margin-top: 2px;"><a href="{% url 'programs:program_detail' s.program.pk %}" style="color: #2563eb; font-size: 12px; text-decoration: none;"><i data-lucide="layers" style="width: 11px; height: 11px; display: inline;"></i> {{ s.program.title }}</a></div>
+                                {% endif %}
+                                {% if not s.project and not s.program %}
+                                    <span style="color: #94a3b8; font-size: 12px;">Direct Foundation</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ s.session_date|date:"d M Y" }}</div>
+                                <div style="font-size: 11.5px; color: #64748b;">{{ s.duration_minutes }} mins</div>
+                            </td>
+                            <td>
+                                {% if s.status == 'COMPLETED' %}
+                                    <span class="badge badge-active">Completed</span>
+                                {% elif s.status == 'SCHEDULED' %}
+                                    <span class="badge" style="background: #e0f2fe; color: #0369a1;">Scheduled</span>
+                                {% elif s.status == 'IN_PROGRESS' %}
+                                    <span class="badge" style="background: #fef3c7; color: #92400e;">In Progress</span>
+                                {% else %}
+                                    <span class="badge" style="background: #fee2e2; color: #991b1b;">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <a href="{% url 'programs:mentorship_edit' s.id %}" class="btn-af btn-af-secondary" style="padding: 4px 8px; font-size: 12px;" title="Edit Session">
+                                        <i data-lucide="edit-2" style="width: 13px; height: 13px;"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'programs:mentorship_delete' s.id %}" style="display: inline;" onsubmit="return confirm('Delete this mentorship session?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-af btn-af-danger" style="padding: 4px 8px; font-size: 12px;" title="Delete Session">
+                                            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 48px 16px; color: #64748b;">
+                                <i data-lucide="user-x" style="width: 42px; height: 42px; color: #cbd5e1; margin-bottom: 8px;"></i>
+                                <div style="font-weight: 600;">No mentorship sessions found</div>
+                                <div style="font-size: 12.5px;">Click "Log Mentorship Session" above to record guidance given to students under projects &amp; programs.</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

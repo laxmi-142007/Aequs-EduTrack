@@ -25,6 +25,9 @@
                 <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">
                     <i data-lucide="arrow-left"></i> Back to Programs
                 </a>
+                <a href="{% url 'programs:program_edit' program.pk %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="edit"></i> Edit Program
+                </a>
                 <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-primary">
                     <i data-lucide="zap"></i> Log EV Session
                 </a>
@@ -42,12 +45,118 @@
                         <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; font-weight: 600;">Verified Program Location</div>
                         <div style="font-size: 18px; font-weight: 700; color: white;">{{ program.location_name }}</div>
                         <div style="font-size: 13px; color: #cbd5e1;">{{ program.village_or_town }}, Taluk: {{ program.taluk }}, District: {{ program.district }}, {{ program.state }}</div>
+                        {% if program.locations.all %}
+                        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">Master Locations:</span>
+                            {% for loc in program.locations.all %}
+                            <span class="badge" style="background: rgba(255,255,255,0.12); color: #f8fafc; border: 1px solid rgba(255,255,255,0.25); font-size: 11px; padding: 3px 8px; border-radius: 4px;">
+                                {{ loc.name }} ({{ loc.code }}) &bull; {{ loc.district }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 {% if program.gps_coordinates %}
                 <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-family: monospace;">
                     GPS: {{ program.gps_coordinates }}
                 </div>
+                {% endif %}
+            </div>
+
+            <!-- Inter-linked Parent Project Card -->
+            <div class="detail-card" style="border-left: 4px solid #3b82f6;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
+                        <i data-lucide="folder" style="color: #3b82f6;"></i> Linked Parent Project
+                    </h3>
+                    {% if program.project %}
+                    <div style="display: inline-flex; gap: 8px;">
+                        <a href="{% url 'programs:project_detail' program.project.pk %}" class="btn-af btn-af-secondary btn-af-sm">
+                            <i data-lucide="external-link"></i> View Project Dossier
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if program.project %}
+                <div class="detail-grid" style="margin-bottom: 16px;">
+                    <div class="detail-item">
+                        <span class="label">Project Name</span>
+                        <span class="val">
+                            <a href="{% url 'programs:project_detail' program.project.pk %}" style="color: #2563eb; font-weight: 600; text-decoration: none;">
+                                {{ program.project.name }}
+                            </a>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Project Code</span>
+                        <span class="val"><strong style="color: #ed1c24;">{{ program.project.code }}</strong></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Project Status</span>
+                        <span class="val">
+                            <span class="af-badge badge-{{ program.project.status|lower }}">{{ program.project.get_status_display }}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Lead Coordinator</span>
+                        <span class="val">{{ program.project.lead_coordinator|default:"Aequs Team" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Allocated Project Budget</span>
+                        <span class="val">&#8377; {{ program.project.allocated_budget|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Partner NGO</span>
+                        <span class="val">{{ program.project.ngo.name|default:"Direct Aequs" }}</span>
+                    </div>
+                </div>
+
+                <!-- Re-link or Unlink Form -->
+                <form method="post" action="{% url 'programs:program_link_project' program.pk %}" style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+                    {% csrf_token %}
+                    <span style="font-size: 13px; font-weight: 600; color: #475569;">Change Parent Project:</span>
+                    <select name="project_id" class="select-filter" style="flex: 1; min-width: 240px; padding: 6px 10px; font-size: 13px;">
+                        {% for prj in available_projects %}
+                        <option value="{{ prj.pk }}" {% if prj.pk == program.project.pk %}selected{% endif %}>
+                            {{ prj.name }} ({{ prj.code }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-af btn-af-secondary btn-af-sm">
+                        <i data-lucide="refresh-cw"></i> Update Project
+                    </button>
+                    <button type="submit" name="project_id" value="" class="btn-af btn-af-danger btn-af-sm" onclick="return confirm('Unlink this program from {{ program.project.name|escapejs }}? It will become a standalone program.');">
+                        <i data-lucide="unlink"></i> Make Standalone
+                    </button>
+                </form>
+                {% else %}
+                <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="alert-circle" style="color: #d97706; width: 20px; height: 20px;"></i>
+                        <span style="color: #92400e; font-size: 13.5px;">This program is currently <strong>Standalone</strong> (not linked to any overarching project).</span>
+                    </div>
+                    <a href="{% url 'programs:project_create' %}" class="btn-af btn-af-secondary btn-af-sm">
+                        <i data-lucide="plus"></i> Create New Project
+                    </a>
+                </div>
+
+                <form method="post" action="{% url 'programs:program_link_project' program.pk %}" style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+                    {% csrf_token %}
+                    <span style="font-size: 13px; font-weight: 600; color: #334155; display: inline-flex; align-items: center; gap: 6px;">
+                        <i data-lucide="link" style="width: 16px; height: 16px; color: #3b82f6;"></i> Link to Parent Project:
+                    </span>
+                    <select name="project_id" class="select-filter" style="flex: 1; min-width: 250px; padding: 6px 10px; font-size: 13px;" required>
+                        <option value="">-- Select Parent Project --</option>
+                        {% for prj in available_projects %}
+                        <option value="{{ prj.pk }}">{{ prj.name }} ({{ prj.code }}) &bull; {{ prj.get_status_display }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-af btn-af-primary btn-af-sm">
+                        <i data-lucide="link"></i> Link Project
+                    </button>
+                </form>
                 {% endif %}
             </div>
 
@@ -68,11 +177,11 @@
                         <span class="label">Parent Project</span>
                         <span class="val">
                             {% if program.project %}
-                            <a href="{% url 'programs:project_detail' program.project.pk %}" style="color: #2563eb; text-decoration: none;">
+                            <a href="{% url 'programs:project_detail' program.project.pk %}" style="color: #2563eb; text-decoration: none; font-weight: 600;">
                                 {{ program.project.name }}
                             </a>
                             {% else %}
-                            Standalone
+                            <span style="color: #94a3b8;">Standalone</span>
                             {% endif %}
                         </span>
                     </div>
@@ -170,6 +279,163 @@
                             <tr>
                                 <td colspan="8" style="text-align: center; color: #94a3b8; padding: 24px;">
                                     No EV class sessions logged for this program yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Connected Scholarships -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="award" style="color: #ed1c24;"></i> Connected Scholarships ({{ scholarships.count }})
+                    </h3>
+                    <a href="{% url 'programs:scholarship_create' %}?program={{ program.pk }}" class="btn-af btn-af-secondary btn-af-sm">
+                        <i data-lucide="plus"></i> Add Scholarship
+                    </a>
+                </div>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Category / Scheme</th>
+                                <th>Application #</th>
+                                <th>Sanctioned Amount</th>
+                                <th>Disbursed Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sc in scholarships %}
+                            <tr>
+                                <td>
+                                    <strong>{{ sc.student.student_name }}</strong>
+                                    <div style="font-size: 11.5px; color: #64748b;">{{ sc.student.admission_number }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background:#fee2e2;color:#ed1c24;">{{ sc.get_category_display }}</span>
+                                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">{{ sc.scheme_name }}</div>
+                                </td>
+                                <td>{{ sc.application_number }}</td>
+                                <td style="font-weight: 600;">&#8377; {{ sc.sanctioned_amount|floatformat:0 }}</td>
+                                <td style="font-weight: 600; color: #16a34a;">&#8377; {{ sc.disbursed_amount|floatformat:0 }}</td>
+                                <td><span class="af-badge badge-{{ sc.status|lower }}">{{ sc.get_status_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">
+                                    No scholarships connected to this program yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Connected Internships -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="briefcase" style="color: #0284c7;"></i> Connected Internships ({{ internships.count }})
+                    </h3>
+                    <a href="{% url 'internships:portal' %}" class="btn-af btn-af-secondary btn-af-sm">
+                        <i data-lucide="external-link"></i> Open Internships Portal
+                    </a>
+                </div>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Intern Student</th>
+                                <th>Role / Track</th>
+                                <th>Department</th>
+                                <th>Duration</th>
+                                <th>Monthly Stipend</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ip in internships %}
+                            <tr>
+                                <td>
+                                    <strong>{{ ip.student.student_name }}</strong>
+                                    <div style="font-size: 11.5px; color: #64748b;">{{ ip.student.admission_number }}</div>
+                                </td>
+                                <td>{{ ip.project_title|default:"Aerospace Internship" }}</td>
+                                <td><span class="badge" style="background:#e0f2fe;color:#0369a1;">{{ ip.get_department_display }}</span></td>
+                                <td>{{ ip.start_date|date:"d M Y" }} &rarr; {{ ip.end_date|date:"d M Y"|default:"Ongoing" }}</td>
+                                <td style="font-weight: 600; color: #16a34a;">&#8377; {{ ip.stipend_amount|floatformat:0 }}</td>
+                                <td><span class="af-badge badge-{{ ip.status|lower }}">{{ ip.get_status_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">
+                                    No internships connected to this program yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Connected Mentorship Sessions -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="user-check" style="color: #10b981;"></i> Connected Mentorship Sessions ({{ mentorship_sessions.count }})
+                    </h3>
+                    <a href="{% url 'programs:mentorship_create' %}?program={{ program.pk }}" class="btn-af btn-af-secondary btn-af-sm">
+                        <i data-lucide="plus"></i> Log Mentorship Session
+                    </a>
+                </div>
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th>Session Code</th>
+                                <th>Session Title</th>
+                                <th>Student</th>
+                                <th>Mentor</th>
+                                <th>Date &amp; Duration</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ms in mentorship_sessions %}
+                            <tr>
+                                <td><strong>{{ ms.session_code }}</strong></td>
+                                <td>
+                                    <strong>{{ ms.session_title }}</strong>
+                                    {% if ms.topic %}<div style="font-size: 11.5px; color: #64748b;">{{ ms.topic }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    {% if ms.student %}
+                                    {{ ms.student.student_name }}
+                                    <div style="font-size: 11px; color: #64748b;">{{ ms.student.admission_number }}</div>
+                                    {% else %}
+                                    <span style="color: #94a3b8;">General</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ ms.mentor_name }}
+                                    {% if ms.mentor_designation %}<div style="font-size: 11px; color: #64748b;">{{ ms.mentor_designation }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    {{ ms.session_date|date:"d M Y" }}
+                                    <div style="font-size: 11px; color: #64748b;">{{ ms.duration_minutes }} mins</div>
+                                </td>
+                                <td><span class="af-badge badge-{{ ms.status|lower }}">{{ ms.get_status_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">
+                                    No mentorship sessions logged for this program yet.
                                 </td>
                             </tr>
                             {% endfor %}

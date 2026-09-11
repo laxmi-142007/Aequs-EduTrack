@@ -150,6 +150,10 @@ def _placement_to_dict(p):
             p.evaluation_feedback or ""
         ),
         "milestones_count": p.milestones.count(),
+        "project_id": p.project_id,
+        "project_name": p.project.name if p.project else "",
+        "linked_program_id": p.linked_program_id,
+        "linked_program_title": p.linked_program.title if p.linked_program else "",
         "created_at": p.created_at.strftime(
             "%Y-%m-%d %H:%M"
         ),
@@ -171,6 +175,10 @@ def _program_to_dict(prog):
         "enrolled_count": prog.enrolled_count,
         "available_slots": prog.available_slots,
         "academic_year": prog.academic_year,
+        "project_id": prog.project_id,
+        "project_name": prog.project.name if prog.project else "",
+        "linked_program_id": prog.linked_program_id,
+        "linked_program_title": prog.linked_program.title if prog.linked_program else "",
         "start_date": (
             prog.start_date.strftime("%Y-%m-%d")
             if prog.start_date
@@ -191,6 +199,7 @@ def _program_to_dict(prog):
             "%Y-%m-%d"
         ),
     }
+
 
 
 def _document_to_dict(document):
@@ -274,6 +283,14 @@ def internship_portal(request):
 
     program_statuses = InternshipProgram.Status.choices
 
+    try:
+        from programs.models import Project, Program as EduTrackProgram
+        projects = Project.objects.filter(is_archived=False).order_by("name")
+        edutrack_programs = EduTrackProgram.objects.filter(is_archived=False).order_by("title")
+    except Exception:
+        projects = []
+        edutrack_programs = []
+
     context = {
         "kpis": kpis,
         "programs": programs,
@@ -283,6 +300,8 @@ def internship_portal(request):
         "status_choices": status_choices,
         "grade_choices": grade_choices,
         "program_statuses": program_statuses,
+        "projects": projects,
+        "edutrack_programs": edutrack_programs,
 
         # Also make document choices available to the portal
         # in case the upload modal is located there.
@@ -296,6 +315,7 @@ def internship_portal(request):
         "internships/portal.html",
         context,
     )
+
 
 
 # =============================================================================
@@ -796,6 +816,8 @@ def api_create_internship(request):
         placement = InternshipPlacement.objects.create(
             student=student,
             program=program,
+            project_id=data.get("project_id") or data.get("project") or (program.project_id if program else None),
+            linked_program_id=data.get("linked_program_id") or data.get("linked_program") or (program.linked_program_id if program else None),
             school=school,
             department=dept,
             company_name=company,
@@ -994,6 +1016,13 @@ def api_update_internship(
             placement.evaluation_feedback = data[
                 "evaluation_feedback"
             ]
+
+        if "project_id" in data or "project" in data:
+            placement.project_id = data.get("project_id") or data.get("project") or None
+
+        if "linked_program_id" in data or "linked_program" in data:
+            placement.linked_program_id = data.get("linked_program_id") or data.get("linked_program") or None
+
 
         if (
             data.get("issue_certificate") is True
@@ -1264,6 +1293,8 @@ def api_create_program(request):
         prog = InternshipProgram.objects.create(
             title=title,
             program_code=code,
+            project_id=data.get("project_id") or data.get("project") or None,
+            linked_program_id=data.get("linked_program_id") or data.get("linked_program") or None,
             company_name=data.get(
                 "company_name",
                 "Aequs Aerospace SEZ",
@@ -1455,6 +1486,12 @@ def api_update_program(
 
         if "status" in data:
             prog.status = data["status"]
+
+        if "project_id" in data or "project" in data:
+            prog.project_id = data.get("project_id") or data.get("project") or None
+
+        if "linked_program_id" in data or "linked_program" in data:
+            prog.linked_program_id = data.get("linked_program_id") or data.get("linked_program") or None
 
         prog.save()
 

@@ -94,10 +94,10 @@
         <div>
             <div class="section-title">System Overview</div>
             <div class="stats-grid">
-                <a href="{% url 'schools:portal' %}" class="stat-card">
+                <div class="stat-card">
                     <div class="stat-header"><span class="stat-title">Active Schools</span><i data-lucide="school" style="width:18px;height:18px;color:#64748b;"></i></div>
                     <div class="stat-value">{{ school_count }}</div>
-                </a>
+                </div>
                 <a href="{% url 'students:list' %}" class="stat-card">
                     <div class="stat-header"><span class="stat-title">Total Students</span><i data-lucide="graduation-cap" style="width:18px;height:18px;color:#64748b;"></i></div>
                     <div class="stat-value">{{ student_count }}</div>
@@ -173,7 +173,6 @@
                 <a href="{% url 'accounts:user_create' %}" class="btn btn-primary"><i data-lucide="user-plus" style="width:14px;height:14px;"></i> Create User</a>
                 <a href="{% url 'accounts:user_list' %}" class="btn btn-outline"><i data-lucide="users" style="width:14px;height:14px;"></i> Manage Users</a>
                 <a href="/admin/" class="btn btn-outline"><i data-lucide="settings" style="width:14px;height:14px;"></i> Django Admin</a>
-                <a href="{% url 'schools:portal' %}" class="btn btn-outline"><i data-lucide="school" style="width:14px;height:14px;"></i> Schools</a>
                 <a href="{% url 'inventory:portal' %}" class="btn btn-outline"><i data-lucide="laptop" style="width:14px;height:14px;"></i> Inventory</a>
                 <a href="{% url 'reports:list' %}" class="btn btn-outline"><i data-lucide="bar-chart-3" style="width:14px;height:14px;"></i> Reports</a>
             </div>
