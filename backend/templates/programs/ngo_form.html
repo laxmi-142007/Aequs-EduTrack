@@ -14,13 +14,10 @@
 
     <div class="main">
         <div class="topbar">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
-                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+            <div>
                     <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ title }}</h1>
                     <span style="font-size: 12px; color: #64748b;">Module 5 &bull; Strategic NGO Partner Registration</span>
                 </div>
-            </div>
             <div class="header-actions">
                 <a href="{% if is_edit and ngo %}{% url 'programs:ngo_detail' ngo.pk %}{% else %}{% url 'programs:ngo_list' %}{% endif %}" class="btn-af btn-af-secondary">
                     <i data-lucide="x"></i> Cancel

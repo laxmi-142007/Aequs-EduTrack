@@ -47,8 +47,9 @@ urlpatterns = [
     path("send-due-reminders/", views.event_send_all_due_reminders, name="send_due_reminders"),
 
     # =========================================================================
-    # EXPORTS
+    # EXPORTS & BULK UPLOAD
     # =========================================================================
     path("export-csv/", views.event_export_csv, name="export_csv"),
     path("export-excel/", views.event_export_excel, name="export_excel"),
+    path("bulk-upload/", views.bulk_upload_events, name="bulk_upload"),
 ]

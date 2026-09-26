@@ -14,13 +14,10 @@
 
     <div class="main">
         <div class="topbar">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
-                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+            <div>
                     <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ project.name }}</h1>
                     <span style="font-size: 12px; color: #64748b;">Project Code: {{ project.code }} &bull; {{ project.get_status_display }}</span>
                 </div>
-            </div>
             <div class="header-actions">
                 <a href="{% url 'programs:project_list' %}" class="btn-af btn-af-secondary">
                     <i data-lucide="arrow-left"></i> Back to Projects
@@ -143,7 +140,6 @@
                             <tr>
                                 <th>Program Code</th>
                                 <th>Title</th>
-                                <th>Category</th>
                                 <th>Location</th>
                                 <th>Status</th>
                                 <th style="text-align: right;">Action</th>
@@ -159,9 +155,6 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <span class="af-badge badge-blue">{{ prg.get_category_display }}</span>
-                                </td>
-                                <td>
                                     {% if prg.locations.all %}
                                         {% for l in prg.locations.all %}<span class="badge" style="background:#f1f5f9;font-size:11px;">{{ l.name }}</span>{% endfor %}
                                     {% else %}
@@ -174,7 +167,7 @@
                                 <td style="text-align: right;">
                                     <form method="post" action="{% url 'programs:project_unlink_program' project.pk prg.pk %}" style="display: inline;" onsubmit="return confirm('Remove program from this project?');">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn-af btn-af-danger btn-af-sm" title="Unlink from this project">
+                                        <button type="submit" class="btn-af btn-af-danger btn-af-sm" title="Unlink from this Project">
                                             <i data-lucide="unlink"></i> Unlink
                                         </button>
                                     </form>
@@ -182,7 +175,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">
+                                <td colspan="5" style="text-align: center; color: #94a3b8; padding: 24px;">
                                     No sub-programs linked to this project yet. Use '+ Add New Sub-Program' or select an existing program above to link it.
                                 </td>
                             </tr>

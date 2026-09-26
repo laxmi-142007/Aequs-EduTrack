@@ -59,11 +59,11 @@ def _ensure_default_grades(school):
             school.student_strength = actual_count
             school.save(update_fields=["student_strength"])
     else:
-        # No students added to this school yet -> student strength stays at 0
-        school.grade_strengths.all().delete()
-        if school.student_strength != 0:
-            school.student_strength = 0
-            school.save(update_fields=["student_strength"])
+        # No students added to this school yet
+        if not school.grade_strengths.exists():
+            if school.student_strength != 0:
+                school.student_strength = 0
+                school.save(update_fields=["student_strength"])
 
 
 def _school_to_dict(school):
@@ -1022,31 +1022,33 @@ def bulk_upload_schools(request, ngo_slug=None):
                 data_only=True,
             )
 
-            worksheet = workbook.active
-            if worksheet is None:
-                messages.error(request, "The Excel file is empty or has no active sheet.")
-                return _redirect_back()
+            sheets = list(workbook.worksheets)
+            best_rows = []
 
-            rows = list(
-                worksheet.iter_rows(values_only=True)
-            )
+            # Search sheets for one containing school headers
+            for ws in sheets:
+                curr_rows = list(ws.iter_rows(values_only=True))
+                curr_rows = [r for r in curr_rows if any(c is not None and str(c).strip() != "" for c in r)]
+                if not curr_rows:
+                    continue
+                for r in curr_rows[:20]:
+                    row_text = " ".join(str(c or "").lower() for c in r)
+                    if ("school" in row_text or "name" in row_text) and ("taluk" in row_text or "udise" in row_text or "district" in row_text):
+                        best_rows = curr_rows
+                        break
+                if best_rows:
+                    break
+
+            if not best_rows and sheets:
+                for ws in sheets:
+                    curr_rows = list(ws.iter_rows(values_only=True))
+                    curr_rows = [r for r in curr_rows if any(c is not None and str(c).strip() != "" for c in r)]
+                    if curr_rows:
+                        best_rows = curr_rows
+                        break
 
             workbook.close()
-
-            if not rows:
-                messages.error(
-                    request,
-                    "The Excel file is empty."
-                )
-                return _redirect_back()
-
-            headers = [
-                str(value).strip().lower()
-                if value is not None else ""
-                for value in rows[0]
-            ]
-
-            data_rows = rows[1:]
+            rows = best_rows
 
         # ------------------------------------------------------------
         # READ CSV
@@ -1054,52 +1056,146 @@ def bulk_upload_schools(request, ngo_slug=None):
 
         else:
 
-            decoded_file = uploaded_file.read().decode("utf-8-sig")
+            content_bytes = uploaded_file.read()
+            decoded_file = ""
+            for enc in ("utf-8-sig", "utf-8", "cp1252", "iso-8859-1", "utf-16"):
+                try:
+                    decoded_file = content_bytes.decode(enc)
+                    break
+                except UnicodeDecodeError:
+                    continue
 
-            csv_file = io.StringIO(decoded_file)
-
-            reader = csv.reader(csv_file)
-
-            rows = list(reader)
-
-            if not rows:
-                messages.error(
-                    request,
-                    "The CSV file is empty."
-                )
+            if not decoded_file:
+                messages.error(request, "Could not read CSV file. Please save as UTF-8 or standard CSV.")
                 return _redirect_back()
 
-            headers = [
-                str(value).strip().lower()
-                if value is not None else ""
-                for value in rows[0]
-            ]
+            sample = decoded_file[:8192]
+            counts = {
+                "\t": sample.count("\t"),
+                ",": sample.count(","),
+                ";": sample.count(";"),
+                "|": sample.count("|"),
+            }
+            best_delim = max(counts, key=counts.get)
+            delimiter = best_delim if counts[best_delim] > 0 else ","
 
-            data_rows = rows[1:]
+            csv_file = io.StringIO(decoded_file)
+            reader = csv.reader(csv_file, delimiter=delimiter)
+            rows = list(reader)
 
-        # ------------------------------------------------------------
-        # REQUIRED COLUMNS
-        # ------------------------------------------------------------
+        rows = [r for r in rows if any(c is not None and str(c).strip() != "" for c in r)]
 
-        required_columns = {
-            "name",
-            "udise_code",
-            "district",
-        }
-
-        missing_columns = (
-            required_columns - set(headers)
-        )
-
-        if missing_columns:
-
+        if not rows:
             messages.error(
                 request,
-                "Missing required columns: "
-                + ", ".join(sorted(missing_columns))
+                "The file is empty."
             )
-
             return _redirect_back()
+
+        # ------------------------------------------------------------
+        # DETECT HEADER ROW & SUBHEADERS
+        # ------------------------------------------------------------
+
+        header_idx = -1
+        for idx, r in enumerate(rows[:20]):
+            cleaned_cells = [" ".join(str(c or "").lower().replace("_", " ").replace("-", " ").split()) for c in r]
+            has_name = any(("school" in c and "code" not in c) or c == "name" or "school name" in c for c in cleaned_cells)
+            has_taluk = any(any(k in c for k in ("taluk", "taluka", "block", "tehsil", "mandal", "district", "dist")) for c in cleaned_cells)
+            has_udise = any("udise" in c or "dise" in c or ("school" in c and "code" in c) or c == "code" for c in cleaned_cells)
+            if (has_name and has_taluk) or (has_name and has_udise) or (has_taluk and has_udise):
+                header_idx = idx
+                break
+
+        if header_idx == -1:
+            header_idx = 0
+
+        r0 = [str(c or "").strip() for c in rows[header_idx]]
+        has_subheaders = len(rows) > (header_idx + 1) and any(
+            str(c or "").strip().upper() in ("BOYS", "GIRLS") for c in rows[header_idx + 1]
+        )
+        r1 = [str(c or "").strip() for c in rows[header_idx + 1]] if has_subheaders else []
+
+        col_map = {}
+        mobile_indices = []
+        for i, raw_h in enumerate(r0):
+            h = " ".join(str(raw_h or "").lower().replace("_", " ").replace("-", " ").split())
+            if not h:
+                continue
+            if ("school" in h and "code" not in h) or h == "name" or "school name" in h:
+                col_map.setdefault("name", i)
+            elif "udise" in h or "dise" in h or ("school" in h and "code" in h) or h == "code":
+                col_map.setdefault("udise_code", i)
+            elif any(k in h for k in ("taluk", "taluka", "block", "tehsil", "mandal")):
+                col_map.setdefault("taluk", i)
+            elif "district" in h or "dist" in h:
+                col_map.setdefault("district", i)
+            elif any(k in h for k in ("division", "section", "sec")):
+                col_map.setdefault("division", i)
+            elif any(k in h for k in ("hm name", "headmaster name", "headmaster", "principal", "hm")):
+                col_map.setdefault("headmaster_name", i)
+            elif "science teacher" in h or "teacher name" in h or ("teacher" in h and "mobile" not in h and "phone" not in h):
+                col_map.setdefault("teacher_name", i)
+            elif "address" in h or "location" in h:
+                col_map.setdefault("address", i)
+            elif "village" in h:
+                col_map.setdefault("village", i)
+            elif "pincode" in h or h == "pin":
+                col_map.setdefault("pincode", i)
+            elif "email" in h:
+                col_map.setdefault("email", i)
+            elif "website" in h:
+                col_map.setdefault("website", i)
+            elif "affiliation" in h or "board" in h:
+                col_map.setdefault("affiliation", i)
+            elif "status" in h:
+                col_map.setdefault("status", i)
+            elif "remarks" in h or "remark" in h or "note" in h or "notes" in h:
+                col_map.setdefault("remarks", i)
+            elif any(k in h for k in ("student strength", "total students", "strength", "grand total")):
+                col_map.setdefault("student_strength", i)
+            elif "established date" in h:
+                col_map.setdefault("established_date", i)
+            elif "established year" in h:
+                col_map.setdefault("established_year", i)
+            elif "experience" in h:
+                col_map.setdefault("headmaster_experience", i)
+            elif "qualification" in h:
+                col_map.setdefault("headmaster_qualification", i)
+
+            if "mobile" in h or "phone" in h or "contact" in h:
+                mobile_indices.append(i)
+
+        if mobile_indices:
+            if "headmaster_phone" not in col_map:
+                col_map["headmaster_phone"] = mobile_indices[0]
+            if len(mobile_indices) > 1 and "teacher_phone" not in col_map:
+                col_map["teacher_phone"] = mobile_indices[1]
+
+        missing_columns = [req for req in ("name", "udise_code", "taluk") if req not in col_map]
+        if missing_columns:
+            detected = [f"'{c}'" for c in r0 if c]
+            detected_str = f" (Found in row {header_idx + 1}: {', '.join(detected[:6])}...)" if detected else ""
+            messages.error(
+                request,
+                f"Missing required columns: {', '.join(sorted(missing_columns))}{detected_str}"
+            )
+            return _redirect_back()
+
+        # Class columns mapping for breakdowns
+        class_cols = {}
+        if has_subheaders:
+            current_class = ""
+            for i in range(len(r0)):
+                h0 = str(r0[i] or "").strip()
+                h1 = str(r1[i] or "").strip().upper() if i < len(r1) else ""
+                if "CLASS" in h0.upper():
+                    current_class = h0
+                elif "GRAND" in h0.upper():
+                    current_class = "GRAND TOTAL"
+                elif h0 and current_class and not h1:
+                    current_class = ""
+                if current_class and h1 in ("BOYS", "GIRLS", "TOTAL"):
+                    class_cols[i] = (current_class, h1)
 
         # ------------------------------------------------------------
         # VALID OPTIONS
@@ -1115,304 +1211,147 @@ def bulk_upload_schools(request, ngo_slug=None):
             for choice in School.Status.choices
         }
 
+        data_rows = rows[header_idx + 2:] if has_subheaders else rows[header_idx + 1:]
+        start_row = header_idx + 3 if has_subheaders else header_idx + 2
+
         prepared_schools = []
+        current_school = None
         errors = []
 
         # ------------------------------------------------------------
         # PROCESS ROWS
         # ------------------------------------------------------------
 
-        for row_number, row in enumerate(
-            data_rows,
-            start=2
-        ):
+        for row_number, row in enumerate(data_rows, start=start_row):
+            def get_val(idx):
+                if idx is not None and idx < len(row):
+                    val = row[idx]
+                    if val is not None:
+                        return str(val).strip()
+                return ""
 
-            data = {}
+            name = get_val(col_map.get("name"))
+            udise_code = get_val(col_map.get("udise_code"))
+            taluk = get_val(col_map.get("taluk"))
+            division = get_val(col_map.get("division"))
 
-            for index, header in enumerate(headers):
+            # Skip empty or summary rows (e.g. totals row at bottom)
+            if not name and not udise_code and not taluk and not division:
+                continue
+            if any(get_val(i).lower() in ("total", "grand total") for i in range(min(4, len(row)))):
+                continue
 
-                if not header:
-                    continue
+            row_grades = {}
+            grand_total_row = 0
+            for c_idx, (cls, sub) in class_cols.items():
+                v_str = get_val(c_idx).replace(",", "")
+                val = 0
+                try:
+                    val = int(float(v_str)) if v_str else 0
+                except (ValueError, TypeError):
+                    val = 0
+                if cls not in row_grades:
+                    row_grades[cls] = {"boys": 0, "girls": 0, "total": 0}
+                if sub == "BOYS":
+                    row_grades[cls]["boys"] += val
+                elif sub == "GIRLS":
+                    row_grades[cls]["girls"] += val
+                elif sub == "TOTAL":
+                    row_grades[cls]["total"] += val
+                    if cls == "GRAND TOTAL":
+                        grand_total_row = val
 
-                value = (
-                    row[index]
-                    if index < len(row)
-                    else ""
-                )
-
-                if value is None:
-                    value = ""
-
-                data[header] = value
-
-            name = str(
-                data.get("name", "")
-            ).strip()
-
-            udise_code = str(
-                data.get("udise_code", "")
-            ).strip()
-
-            district = str(
-                data.get("district", "")
-            ).strip()
+            # Secondary division row for current school
+            if not name and not udise_code and division and current_school:
+                if grand_total_row:
+                    current_school["student_strength"] += grand_total_row
+                for cls, vals in row_grades.items():
+                    if cls not in current_school["grades"]:
+                        current_school["grades"][cls] = {"boys": 0, "girls": 0, "total": 0}
+                    current_school["grades"][cls]["boys"] += vals["boys"]
+                    current_school["grades"][cls]["girls"] += vals["girls"]
+                    current_school["grades"][cls]["total"] += vals["total"]
+                continue
 
             if not name:
-                errors.append(
-                    f"Row {row_number}: name is required."
-                )
-
+                errors.append(f"Row {row_number}: name is required.")
             if not udise_code:
-                errors.append(
-                    f"Row {row_number}: udise_code is required."
-                )
+                errors.append(f"Row {row_number}: udise_code is required.")
+            if not taluk:
+                errors.append(f"Row {row_number}: taluk is required.")
 
-            if not district:
-                errors.append(
-                    f"Row {row_number}: district is required."
-                )
+            district = get_val(col_map.get("district")) or taluk
 
-            if udise_code and School.objects.filter(
-                udise_code=udise_code
-            ).exists():
-
-                errors.append(
-                    f"Row {row_number}: UDISE code "
-                    f"'{udise_code}' already exists."
-                )
-
-            # --------------------------------------------------------
-            # AFFILIATION
-            # --------------------------------------------------------
-
-            affiliation = str(
-                data.get(
-                    "affiliation",
-                    "State"
-                )
-            ).strip()
-
+            affiliation = get_val(col_map.get("affiliation")) or "State"
             if affiliation not in valid_affiliations:
+                affiliation = "State"
 
-                errors.append(
-                    f"Row {row_number}: invalid affiliation "
-                    f"'{affiliation}'. Use CBSE, State or ICSE."
-                )
-
-            # --------------------------------------------------------
-            # STATUS
-            # --------------------------------------------------------
-
-            status = str(
-                data.get(
-                    "status",
-                    "ACTIVE"
-                )
-            ).strip().upper()
-
+            status = (get_val(col_map.get("status")) or "ACTIVE").upper()
             if status not in valid_statuses:
+                status = "ACTIVE"
 
-                errors.append(
-                    f"Row {row_number}: invalid status "
-                    f"'{status}'. Use ACTIVE or INACTIVE."
-                )
-
-            # --------------------------------------------------------
-            # ESTABLISHED DATE
-            # --------------------------------------------------------
-
-            established_date = None
-
-            date_value = data.get(
-                "established_date",
-                ""
-            )
-
-            if date_value:
-
-                if isinstance(date_value, datetime):
-
-                    established_date = date_value.date()
-
-                elif hasattr(date_value, "year") and hasattr(
-                    date_value, "month"
-                ):
-
-                    established_date = date_value
-
-                else:
-
-                    try:
-
-                        established_date = datetime.strptime(
-                            str(date_value).strip(),
-                            "%Y-%m-%d"
-                        ).date()
-
-                    except ValueError:
-
-                        errors.append(
-                            f"Row {row_number}: established_date "
-                            "must be YYYY-MM-DD."
-                        )
-
-            # --------------------------------------------------------
-            # ESTABLISHED YEAR
-            # --------------------------------------------------------
-
-            established_year = None
-
-            year_value = data.get(
-                "established_year",
-                ""
-            )
-
-            if year_value != "":
-
+            hm_exp = None
+            hm_exp_val = get_val(col_map.get("headmaster_experience"))
+            if hm_exp_val:
                 try:
+                    hm_exp = int(float(hm_exp_val))
+                except (ValueError, TypeError):
+                    hm_exp = None
 
-                    established_year = int(
-                        float(year_value)
-                    )
-
-                except (
-                    ValueError,
-                    TypeError
-                ):
-
-                    errors.append(
-                        f"Row {row_number}: established_year "
-                        "must be a number."
-                    )
-
-            # --------------------------------------------------------
-            # HEADMASTER EXPERIENCE
-            # --------------------------------------------------------
-
-            headmaster_experience = None
-
-            experience_value = data.get(
-                "headmaster_experience",
-                ""
-            )
-
-            if experience_value != "":
-
+            est_year = None
+            est_yr_val = get_val(col_map.get("established_year"))
+            if est_yr_val:
                 try:
+                    est_year = int(float(est_yr_val))
+                except (ValueError, TypeError):
+                    est_year = None
 
-                    headmaster_experience = int(
-                        float(experience_value)
-                    )
-
-                except (
-                    ValueError,
-                    TypeError
-                ):
-
-                    errors.append(
-                        f"Row {row_number}: headmaster_experience "
-                        "must be a number."
-                    )
-
-            # --------------------------------------------------------
-            # STUDENT STRENGTH
-            # --------------------------------------------------------
-
-            student_strength = 0
-
-            strength_value = data.get(
-                "student_strength",
-                0
-            )
-
-            if strength_value not in ("", None):
-
+            est_date = None
+            est_date_val = get_val(col_map.get("established_date"))
+            if est_date_val:
                 try:
+                    est_date = datetime.strptime(est_date_val, "%Y-%m-%d").date()
+                except (ValueError, TypeError):
+                    est_date = None
 
-                    student_strength = int(
-                        float(strength_value)
-                    )
+            student_strength = grand_total_row
+            str_val = get_val(col_map.get("student_strength"))
+            if not student_strength and str_val:
+                try:
+                    student_strength = int(float(str_val.replace(",", "")))
+                except (ValueError, TypeError):
+                    student_strength = 0
 
-                except (
-                    ValueError,
-                    TypeError
-                ):
+            hm_name = get_val(col_map.get("headmaster_name"))
+            hm_phone = get_val(col_map.get("headmaster_phone"))
+            teacher_name = get_val(col_map.get("teacher_name"))
+            teacher_phone = get_val(col_map.get("teacher_phone"))
 
-                    errors.append(
-                        f"Row {row_number}: student_strength "
-                        "must be a number."
-                    )
-
-            # --------------------------------------------------------
-            # PREPARE SCHOOL
-            # --------------------------------------------------------
-
-            prepared_schools.append(
-                {
-                    "name": name,
-                    "udise_code": udise_code,
-
-                    "address": str(
-                        data.get("address", "")
-                    ).strip(),
-
-                    "district": district,
-
-                    "taluk": str(
-                        data.get("taluk", "")
-                    ).strip(),
-
-                    "village": str(
-                        data.get("village", "")
-                    ).strip(),
-
-                    "pincode": str(
-                        data.get("pincode", "")
-                    ).strip(),
-
-                    "phone": str(
-                        data.get("phone", "")
-                    ).strip(),
-
-                    "email": str(
-                        data.get("email", "")
-                    ).strip(),
-
-                    "website": str(
-                        data.get("website", "")
-                    ).strip(),
-
-                    "headmaster_name": str(
-                        data.get("headmaster_name", "")
-                    ).strip(),
-
-                    "headmaster_phone": str(
-                        data.get("headmaster_phone", "")
-                    ).strip(),
-
-                    "headmaster_qualification": str(
-                        data.get("headmaster_qualification", "")
-                    ).strip(),
-
-                    "headmaster_experience":
-                        headmaster_experience,
-
-                    "affiliation":
-                        affiliation,
-
-                    "student_strength":
-                        student_strength,
-
-                    "established_date":
-                        established_date,
-
-                    "established_year":
-                        established_year,
-
-                    "status":
-                        status,
-                }
-            )
+            current_school = {
+                "name": name,
+                "udise_code": udise_code,
+                "district": district,
+                "taluk": taluk,
+                "village": get_val(col_map.get("village")),
+                "address": get_val(col_map.get("address")),
+                "pincode": get_val(col_map.get("pincode")),
+                "phone": hm_phone or get_val(col_map.get("phone")),
+                "email": get_val(col_map.get("email")),
+                "website": get_val(col_map.get("website")),
+                "headmaster_name": hm_name,
+                "headmaster_phone": hm_phone,
+                "headmaster_qualification": get_val(col_map.get("headmaster_qualification")),
+                "headmaster_experience": hm_exp,
+                "affiliation": affiliation,
+                "student_strength": student_strength,
+                "established_date": est_date,
+                "established_year": est_year,
+                "status": status,
+                "teacher_name": teacher_name,
+                "teacher_phone": teacher_phone,
+                "grades": row_grades,
+            }
+            prepared_schools.append(current_school)
 
         # ------------------------------------------------------------
         # VALIDATION ERRORS
@@ -1432,27 +1371,82 @@ def bulk_upload_schools(request, ngo_slug=None):
             )
 
         # ------------------------------------------------------------
-        # CREATE SCHOOLS
+        # CREATE OR UPDATE SCHOOLS
         # ------------------------------------------------------------
 
         created_count = 0
+        updated_count = 0
+        seen_batch_udises = set()
 
         with transaction.atomic():
+            for item in prepared_schools:
+                orig_udise = item["udise_code"]
+                candidate_udise = orig_udise
+                counter = 2
+                while candidate_udise in seen_batch_udises:
+                    candidate_udise = f"{orig_udise}-{counter}"
+                    counter += 1
+                seen_batch_udises.add(candidate_udise)
+                item["udise_code"] = candidate_udise
 
-            for school_data in prepared_schools:
+                teacher_name = item.pop("teacher_name", "")
+                teacher_phone = item.pop("teacher_phone", "")
+                grades_data = item.pop("grades", {})
 
-                school = School.objects.create(
-                    **school_data
-                )
+                school = School.objects.filter(udise_code=candidate_udise).first()
+                if school:
+                    for k, val in item.items():
+                        setattr(school, k, val)
+                    school.save()
+                    updated_count += 1
+                else:
+                    school = School.objects.create(**item)
+                    created_count += 1
+
+                if teacher_name:
+                    SchoolResource.objects.update_or_create(
+                        school=school,
+                        resource_name=f"Science Teacher: {teacher_name}",
+                        defaults={
+                            "status": "Active",
+                            "quantity": 1,
+                            "details": f"Mobile: {teacher_phone}" if teacher_phone else "Designated Science Teacher",
+                            "last_updated_note": "Imported from school roster",
+                        }
+                    )
+
+                if grades_data:
+                    school.grade_strengths.all().delete()
+                    order_map = {
+                        "CLASS 4": 4, "CLASS 5": 5, "CLASS 6": 6,
+                        "CLASS 7": 7, "CLASS 8": 8, "CLASS 9": 9, "CLASS 10": 10
+                    }
+                    for g_label, g_counts in grades_data.items():
+                        if g_label.upper() == "GRAND TOTAL":
+                            continue
+                        if g_counts["total"] > 0 or g_counts["boys"] > 0 or g_counts["girls"] > 0:
+                            ord_idx = 1
+                            for k, v in order_map.items():
+                                if k in g_label.upper():
+                                    ord_idx = v
+                                    break
+                            GradeStrength.objects.create(
+                                school=school,
+                                grade_level=g_label.strip(),
+                                male_students=g_counts["boys"],
+                                female_students=g_counts["girls"],
+                                total_students=g_counts["total"],
+                                change_vs_last_year="0",
+                                order=ord_idx
+                            )
 
                 _ensure_default_grades(school)
                 target_ngo.partner_schools.add(school)
 
-                created_count += 1
-
+        total_processed = created_count + updated_count
         messages.success(
             request,
-            f"Successfully uploaded {created_count} school(s) strictly to {target_ngo.name}."
+            f"Successfully processed {total_processed} school(s) strictly for {target_ngo.name}."
         )
 
         return redirect(f"/schools/{target_slug}/")

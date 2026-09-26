@@ -14,14 +14,14 @@
 
     <div class="main">
         <div class="topbar">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
-                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+            <div>
                     <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Scholarship &amp; Educational Aid Tracking</h1>
                     <span style="font-size: 12px; color: #64748b;">Module 8 &amp; 9 &bull; Foundation, Government (SSP/NSP) &amp; Employee Special Grants</span>
                 </div>
-            </div>
-            <div class="header-actions">
+            <div class="header-actions" style="display: flex; gap: 8px;">
+                <a href="{% url 'programs:scholarship_bulk_upload' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="upload-cloud"></i> Bulk Upload
+                </a>
                 <a href="{% url 'programs:scholarship_create' %}" class="btn-af btn-af-primary">
                     <i data-lucide="plus-circle"></i> Record Scholarship
                 </a>
@@ -53,13 +53,47 @@
                 </div>
             </div>
 
+            <!-- Foundation Specific Section Overview (Feature 5) -->
+            {% if selected_tab == 'foundation' %}
+            <div style="background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <h2 style="font-size: 16px; font-weight: 700; color: #1e3a8a; margin: 0 0 4px 0;">🏛️ Aequs Foundation Initiatives &amp; CSR Ecosystem</h2>
+                        <p style="font-size: 13px; color: #475569; margin: 0;">Comprehensive tracking for Foundation Scholarships, CSR Grants, and Mentorship Programs.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="{% url 'programs:mentorship_list' %}" class="btn-af btn-af-secondary" style="font-size: 12px; padding: 6px 12px;">
+                            <i data-lucide="users"></i> Mentorship Sessions ({{ mentorship_count|default:0 }})
+                        </a>
+                        <a href="{% url 'programs:ngo_list' %}" class="btn-af btn-af-secondary" style="font-size: 12px; padding: 6px 12px;">
+                            <i data-lucide="building"></i> NGO Partners
+                        </a>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 16px;">
+                    <div style="background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Foundation Grants</div>
+                        <div style="font-size: 20px; font-weight: 700; color: #1e3a8a;">{{ foundation_count|default:0 }}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Total CSR Grants</div>
+                        <div style="font-size: 20px; font-weight: 700; color: #059669;">&#8377; {{ csr_total|floatformat:0|default:"0" }}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Active Mentorships</div>
+                        <div style="font-size: 20px; font-weight: 700; color: #7c3aed;">{{ mentorship_count|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Tab Navigation (Module 8 & 9) -->
             <div class="af-tabs">
                 <a href="{% url 'programs:scholarship_list' %}" class="af-tab-item {% if not selected_tab or selected_tab == 'all' %}active{% endif %}">
                     <i data-lucide="layout-grid"></i> All Educational Aids
                 </a>
                 <a href="{% url 'programs:scholarship_list' %}?tab=foundation" class="af-tab-item {% if selected_tab == 'foundation' %}active{% endif %}">
-                    <i data-lucide="award"></i> Foundation Scholarships (Module 8)
+                    <i data-lucide="award"></i> Foundation Scholarships &amp; CSR (Module 8)
                 </a>
                 <a href="{% url 'programs:scholarship_list' %}?tab=government" class="af-tab-item {% if selected_tab == 'government' %}active{% endif %}">
                     <i data-lucide="landmark"></i> Government Schemes (SSP/NSP) (Module 9)

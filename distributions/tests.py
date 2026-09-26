@@ -417,3 +417,98 @@ class DistributionFormTests(TestCase):
         )
 
         self.assertFalse(form.is_valid())
+
+
+class BulkUploadRosterTests(TestCase):
+    def setUp(self):
+        import os
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.db.models import Sum
+
+        self.client = Client()
+        self.roster_path = os.path.join("backend", "static", "test_agastya_roster.xlsx")
+
+    def test_bulk_upload_school_profile_roster_defaults(self):
+        import os
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.db.models import Sum
+
+        if not os.path.exists(self.roster_path):
+            self.skipTest("test_agastya_roster.xlsx not found")
+
+        with open(self.roster_path, "rb") as f:
+            uploaded = SimpleUploadedFile(
+                "School_Profile_Agastya_MSL_2025_26.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+        res = self.client.post(reverse("distributions:bulk_upload"), {"file": uploaded})
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, f"{reverse('distributions:list')}?view=tabular&sheet=agastya")
+
+        dists = Distribution.objects.filter(recipient_type=RecipientType.SCHOOL)
+        self.assertEqual(dists.count(), 21)
+        total_qty = dists.aggregate(s=Sum("quantity"))["s"]
+        self.assertEqual(total_qty, 3722)
+
+        for d in dists:
+            self.assertEqual(d.benefit_type, BenefitType.STUDY_KIT)
+            self.assertEqual(d.academic_year, "2025-26")
+
+        self.assertTrue(School.objects.filter(name__icontains="GMPS").exists())
+        self.assertTrue(SchoolResource.objects.filter(resource_name__icontains="Science Teacher").exists())
+
+    def test_bulk_upload_school_profile_roster_custom_benefit(self):
+        import os
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        if not os.path.exists(self.roster_path):
+            self.skipTest("test_agastya_roster.xlsx not found")
+
+        with open(self.roster_path, "rb") as f:
+            uploaded = SimpleUploadedFile(
+                "Agastya_Roster_Workbooks.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+        res = self.client.post(
+            reverse("distributions:bulk_upload"),
+            {
+                "file": uploaded,
+                "benefit_type": BenefitType.WORKBOOK,
+                "academic_year": "2025-26",
+            },
+        )
+        self.assertEqual(res.status_code, 302)
+
+        dists = Distribution.objects.filter(recipient_type=RecipientType.SCHOOL, benefit_type=BenefitType.WORKBOOK)
+        self.assertEqual(dists.count(), 21)
+
+    def test_bulk_upload_opn_notebook_format(self):
+        import os
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.db.models import Sum
+
+        opn_path = os.path.join("backend", "static", "test_opn_roster.xlsx")
+        if not os.path.exists(opn_path):
+            self.skipTest("test_opn_roster.xlsx not found")
+
+        with open(opn_path, "rb") as f:
+            uploaded = SimpleUploadedFile(
+                "Copy of OPN 26-27 final.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+        res = self.client.post(reverse("distributions:bulk_upload"), {"file": uploaded})
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, f"{reverse('distributions:list')}?view=tabular&sheet=opn")
+
+        dists = Distribution.objects.filter(academic_year="2026-27")
+        self.assertTrue(dists.count() >= 100)
+        total_qty = dists.aggregate(s=Sum("quantity"))["s"]
+        self.assertTrue(total_qty > 100000)
+        self.assertTrue(School.objects.filter(name__icontains="Banapur").exists())
+

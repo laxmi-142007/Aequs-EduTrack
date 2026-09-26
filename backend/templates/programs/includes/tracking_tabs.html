@@ -1,0 +1,20 @@
+<div class="af-tabs" style="margin-bottom: 22px; background: #ffffff; padding: 6px 16px 0; border-radius: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
+    <a href="{% url 'programs:project_list' %}" class="af-tab-item {% if active_tab == 'projects' %}active{% endif %}">
+        <i data-lucide="folder-kanban"></i> Projects
+    </a>
+    <a href="{% url 'programs:program_list' %}" class="af-tab-item {% if active_tab == 'programs' %}active{% endif %}">
+        <i data-lucide="layers"></i> Programs
+    </a>
+    <a href="{% url 'programs:ev_class_list' %}" class="af-tab-item {% if active_tab == 'ev_classes' %}active{% endif %}">
+        <i data-lucide="zap"></i> EV Classes
+    </a>
+    <a href="{% url 'programs:industry_visit_list' %}" class="af-tab-item {% if active_tab == 'industry_visits' %}active{% endif %}">
+        <i data-lucide="factory"></i> Industry Visits
+    </a>
+    <a href="{% url 'programs:monthly_tracking' %}" class="af-tab-item {% if active_tab == 'monthly_tracking' %}active{% endif %}">
+        <i data-lucide="calendar-check"></i> Monthly Tracking
+    </a>
+    <a href="{% url 'programs:location_list' %}" class="af-tab-item {% if active_tab == 'locations' %}active{% endif %}">
+        <i data-lucide="map-pin"></i> Location Master
+    </a>
+</div>

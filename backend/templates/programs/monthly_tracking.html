@@ -14,13 +14,10 @@
 
     <div class="main">
         <div class="topbar">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
-                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+            <div>
                     <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Monthly Foundation Tracking</h1>
                     <span style="font-size: 12px; color: #64748b;">Module 6 &bull; Multi-Dimensional Monthly Metrics &amp; Executive Aggregation</span>
                 </div>
-            </div>
             <div class="header-actions">
                 <button onclick="window.print()" class="btn-af btn-af-secondary">
                     <i data-lucide="printer"></i> Print Monthly Dossier
@@ -29,6 +26,9 @@
         </div>
 
         <div class="programs-page">
+            <!-- Tracking Navigation Tabs -->
+            {% include 'programs/includes/tracking_tabs.html' with active_tab='monthly_tracking' %}
+
             <!-- Period Selector Filter -->
             <div class="filter-bar" style="background: white; border-radius: 12px; padding: 18px 22px;">
                 <form method="get" class="filter-form" style="align-items: center; gap: 14px;">
@@ -104,7 +104,7 @@
                             <tr>
                                 <td>{{ ev.session_date|date:"d M Y" }}</td>
                                 <td><strong>{{ ev.session_title }}</strong></td>
-                                <td>{{ ev.school.school_name }} (Gr {{ ev.grade_level }})</td>
+                                <td>{{ ev.school.name|default:ev.school.school_name }} (Gr {{ ev.grade_level }})</td>
                                 <td>{{ ev.topic }}</td>
                                 <td>{{ ev.facilitator_name }}</td>
                                 <td><span class="af-badge badge-neutral">{{ ev.attendee_count }}</span></td>
@@ -147,14 +147,26 @@
                             <tr>
                                 <td>{{ dist.distribution_date|date:"d M Y" }}</td>
                                 <td>
+                                    {% if dist.student %}
                                     <a href="{% url 'students:detail' dist.student.pk %}" style="font-weight: 600; color: #0f172a; text-decoration: none;">
                                         {{ dist.student.student_name }}
                                     </a>
+                                    {% else %}
+                                    <span style="color: #64748b; font-style: italic;">School-level ({{ dist.get_benefit_type_display }})</span>
+                                    {% endif %}
                                 </td>
-                                <td>{{ dist.student.school.school_name }}</td>
-                                <td>{{ dist.study_kit.name }}</td>
+                                <td>
+                                    {% if dist.student and dist.student.school %}
+                                        {{ dist.student.school.name }}
+                                    {% elif dist.school %}
+                                        {{ dist.school.name }}
+                                    {% else %}
+                                        <span style="color: #94a3b8;">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ dist.study_kit.name|default:dist.inventory_item.item_name|default:dist.get_benefit_type_display }}</td>
                                 <td>{{ dist.quantity }}</td>
-                                <td><span class="af-badge badge-completed">{{ dist.get_status_display }}</span></td>
+                                <td><span class="af-badge badge-completed">Delivered</span></td>
                             </tr>
                             {% empty %}
                             <tr>

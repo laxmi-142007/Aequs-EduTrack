@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industry Visits | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='industry_visits' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div>
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Industry Visits &amp; Plant Exposure</h1>
+                    <span style="font-size: 12px; color: #64748b;">Industrial shopfloor tours, manufacturing exposure, &amp; engineering discovery for students</span>
+                </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:industry_visit_create' %}" class="btn-af btn-af-primary">
+                    <i data-lucide="plus-circle"></i> Schedule Industry Visit
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Tracking Navigation Tabs -->
+            {% include 'programs/includes/tracking_tabs.html' with active_tab='industry_visits' %}
+
+            {% if messages %}
+                <div style="margin-bottom: 20px;">
+                    {% for message in messages %}
+                        <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; {% if message.tags == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #f87171;{% elif message.tags == 'warning' %}background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;{% else %}background: #dcfce7; color: #166534; border: 1px solid #86efac;{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Metric Cards -->
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Industry Visits</div>
+                    <div class="metric-value">{{ visits.count }}</div>
+                    <div class="metric-meta">Organized tours</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">SEZ &amp; Plant Destinations</div>
+                    <div class="metric-value">Belagavi &amp; Koppal</div>
+                    <div class="metric-meta">Industrial hubs</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">Status</div>
+                    <div class="metric-value">Active</div>
+                    <div class="metric-meta">Hands-on learning</div>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="filter-bar">
+                <form method="get" class="filter-form">
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search by visit title, code, company, or location..." class="input-search">
+                    <button type="submit" class="btn-af btn-af-secondary">
+                        <i data-lucide="search"></i> Search
+                    </button>
+                    {% if query %}
+                    <a href="{% url 'programs:industry_visit_list' %}" class="btn-af btn-af-secondary">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Visits Table -->
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Visit Code &amp; Title</th>
+                            <th>School &amp; Program</th>
+                            <th>Company / Location</th>
+                            <th>Visit Date</th>
+                            <th>Attendees</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in visits %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'programs:industry_visit_detail' v.pk %}" style="font-weight: 700; color: #0f172a; text-decoration: none;">
+                                    {{ v.title }}
+                                </a>
+                                <div style="font-size: 11px; color: #64748b;">Code: {{ v.visit_code }}</div>
+                            </td>
+                            <td>
+                                <div>{{ v.school.name|default:"General Student Group" }}</div>
+                                {% if v.program %}
+                                <div style="font-size: 11px; color: #2563eb;">{{ v.program.title }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ v.company_name }}</strong>
+                                <div style="font-size: 11.5px; color: #64748b;">📍 {{ v.location|default:"Belagavi SEZ" }}</div>
+                            </td>
+                            <td>{{ v.visit_date|date:"d M Y" }}</td>
+                            <td>
+                                <span style="font-weight: 600; color: #1e293b;">{{ v.attendee_count }} Students</span>
+                            </td>
+                            <td>
+                                <span class="af-badge badge-{{ v.status|lower }}">{{ v.get_status_display }}</span>
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 6px;">
+                                    <a href="{% url 'programs:industry_visit_detail' v.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="View Details">
+                                        <i data-lucide="eye"></i>
+                                    </a>
+                                    <a href="{% url 'programs:industry_visit_edit' v.pk %}" class="btn-af btn-af-secondary btn-af-sm" title="Edit">
+                                        <i data-lucide="edit-2"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'programs:industry_visit_toggle_archive' v.pk %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-af btn-af-danger btn-af-sm" title="Archive" onclick="return confirm('Archive this visit?');">
+                                            <i data-lucide="archive"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i data-lucide="factory"></i>
+                                    <p>No industry visits recorded yet.</p>
+                                    <a href="{% url 'programs:industry_visit_create' %}" class="btn-af btn-af-primary btn-af-sm" style="margin-top: 10px;">
+                                        Schedule First Industry Visit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

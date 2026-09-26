@@ -149,6 +149,13 @@ class Distribution(models.Model):
         blank=True,
     )
 
+    location = models.CharField(
+        max_length=200,
+        blank=True,
+        default="",
+        help_text="Distribution location e.g. Belagavi SEZ, Kittur Campus",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )

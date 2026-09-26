@@ -164,16 +164,6 @@ class Program(models.Model):
     Specific operational program under a project or NGO.
     Requires an explicit, mandatory location field across all entries.
     """
-    class Category(models.TextChoices):
-        STEM = "STEM", "Hands-on Science & STEM"
-        FLN = "FLN", "Foundational Literacy & Numeracy"
-        DIGITAL = "DIGITAL", "Digital Skills & Labs"
-        EV_CLASS = "EV_CLASS", "Exposure Visit & EV Classes"
-        HEALTH = "HEALTH", "Health, Hygiene & Nutrition"
-        SCHOLARSHIP = "SCHOLARSHIP", "Scholarship & Mentorship"
-        VOCATIONAL = "VOCATIONAL", "Vocational & Industrial Readiness"
-        OTHER = "OTHER", "Community & Social Development"
-
     class Status(models.TextChoices):
         ACTIVE = "ACTIVE", "Active"
         COMPLETED = "COMPLETED", "Completed"
@@ -183,7 +173,6 @@ class Program(models.Model):
     ngo = models.ForeignKey(NGO, on_delete=models.SET_NULL, null=True, blank=True, related_name="programs")
     title = models.CharField(max_length=200, help_text="e.g. Agastya Mobile Science Lab Program")
     code = models.CharField(max_length=50, unique=True, help_text="e.g. PROG-AGS-SCI-01")
-    category = models.CharField(max_length=30, choices=Category.choices, default=Category.STEM)
     description = models.TextField(blank=True)
 
     # MANDATORY LOCATION FIELDS (Module 11 Requirement)
@@ -433,5 +422,59 @@ class MentorshipSession(models.Model):
                 count += 1
                 code = f"MNT-{year}-{count:03d}"
             self.session_code = code
+        super().save(*args, **kwargs)
+
+
+# ============================================================================
+# 8. INDUSTRY VISIT MODEL (Industry Visits Tab)
+# ============================================================================
+
+class IndustryVisit(models.Model):
+    """
+    Tracks industry/factory visits organized for students.
+    Covers company visits, campus tours, and exposure trips.
+    """
+    class Status(models.TextChoices):
+        SCHEDULED = "SCHEDULED", "Scheduled"
+        COMPLETED = "COMPLETED", "Completed"
+        CANCELLED = "CANCELLED", "Cancelled"
+
+    title = models.CharField(max_length=200, help_text="e.g. Aequs Aerospace Factory Tour, Bosch Manufacturing Visit")
+    visit_code = models.CharField(max_length=50, unique=True, blank=True, help_text="e.g. IV-2026-001 (auto-generated)")
+    school = models.ForeignKey(School, on_delete=models.PROTECT, related_name="industry_visits")
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name="industry_visits")
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name="industry_visits")
+    company_name = models.CharField(max_length=200, help_text="e.g. Aequs Aerospace SEZ, Bosch India, Infosys Hubli")
+    location = models.CharField(max_length=200, default="Belagavi SEZ, Karnataka")
+    visit_date = models.DateField(default=timezone.localdate)
+    contact_person = models.CharField(max_length=150, blank=True)
+    contact_phone = models.CharField(max_length=20, blank=True)
+    students = models.ManyToManyField(Student, related_name="industry_visits", blank=True)
+    attendee_count = models.PositiveIntegerField(default=0)
+    transport_details = models.CharField(max_length=255, blank=True)
+    learning_outcomes = models.TextField(blank=True)
+    remarks = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
+    is_archived = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-visit_date", "-created_at"]
+        verbose_name = "Industry Visit"
+        verbose_name_plural = "Industry Visits"
+
+    def __str__(self):
+        return f"{self.visit_code} — {self.title} ({self.company_name})"
+
+    def save(self, *args, **kwargs):
+        if not self.visit_code or not self.visit_code.strip():
+            year = self.visit_date.year if self.visit_date else timezone.localdate().year
+            count = IndustryVisit.objects.filter(visit_date__year=year).count() + 1
+            code = f"IV-{year}-{count:03d}"
+            while IndustryVisit.objects.filter(visit_code=code).exists():
+                count += 1
+                code = f"IV-{year}-{count:03d}"
+            self.visit_code = code
         super().save(*args, **kwargs)
 

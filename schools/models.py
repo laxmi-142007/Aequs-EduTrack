@@ -15,6 +15,10 @@ class School(models.Model):
 
     name = models.CharField(max_length=200)
 
+    @property
+    def school_name(self):
+        return self.name
+
     udise_code = models.CharField(
         max_length=20,
         unique=True,

@@ -17,6 +17,9 @@ urlpatterns = [
     # Employee portal
     path("portal/app/dashboard/", views.employee_dashboard, name="employee_dashboard"),
 
+    # Student lookup API for dashboard modal
+    path("portal/api/student-lookup/", views.student_lookup_api, name="student_lookup_api"),
+
     # User management (admin only)
     path("portal/admin/users/", views.user_list, name="user_list"),
     path("portal/admin/users/create/", views.user_create, name="user_create"),

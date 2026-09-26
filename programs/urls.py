@@ -18,6 +18,7 @@ urlpatterns = [
     path("programs/create/", views.program_create, name="program_create"),
     path("programs/<int:pk>/", views.program_detail, name="program_detail"),
     path("programs/<int:pk>/edit/", views.program_edit, name="program_edit"),
+    path("programs/<int:pk>/upload-roster/", views.program_upload_school_roster, name="program_upload_school_roster"),
     path("programs/<int:pk>/link-project/", views.program_link_project, name="program_link_project"),
     path("programs/<int:pk>/archive/", views.program_toggle_archive, name="program_toggle_archive"),
 
@@ -51,6 +52,16 @@ urlpatterns = [
     path("mentorship/create/", views.mentorship_create, name="mentorship_create"),
     path("mentorship/<int:pk>/edit/", views.mentorship_edit, name="mentorship_edit"),
     path("mentorship/<int:pk>/delete/", views.mentorship_delete, name="mentorship_delete"),
+
+    # Industry Visits
+    path("industry-visits/", views.industry_visit_list, name="industry_visit_list"),
+    path("industry-visits/create/", views.industry_visit_create, name="industry_visit_create"),
+    path("industry-visits/<int:pk>/", views.industry_visit_detail, name="industry_visit_detail"),
+    path("industry-visits/<int:pk>/edit/", views.industry_visit_edit, name="industry_visit_edit"),
+    path("industry-visits/<int:pk>/archive/", views.industry_visit_toggle_archive, name="industry_visit_toggle_archive"),
+
+    # Scholarship Bulk Upload
+    path("scholarships/bulk-upload/", views.bulk_upload_scholarships, name="scholarship_bulk_upload"),
 
     # Monthly Tracking (Module 6)
     path("monthly-tracking/", views.monthly_tracking, name="monthly_tracking"),

@@ -1,3 +1,6 @@
+import os
+import csv
+import io
 from datetime import datetime, date
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
@@ -5,9 +8,10 @@ from django.contrib import messages
 from django.db.models import Q, Sum, Count
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+from django.db import transaction
 
-from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession
-from .forms import NGOForm, ProjectForm, ProgramForm, EVClassSessionForm, ScholarshipForm, LocationForm, MentorshipSessionForm
+from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit
+from .forms import NGOForm, ProjectForm, ProgramForm, EVClassSessionForm, ScholarshipForm, LocationForm, MentorshipSessionForm, IndustryVisitForm
 from schools.models import School, SchoolResource
 from students.models import Student
 from distributions.models import Distribution
@@ -215,15 +219,12 @@ def project_toggle_archive(request, pk):
 
 def program_list(request):
     ensure_default_ngos()
-    category_filter = request.GET.get("category")
     project_filter = request.GET.get("project")
     taluk_filter = request.GET.get("taluk")
     search_query = request.GET.get("q", "").strip()
 
     queryset = Program.objects.filter(is_archived=False).select_related("project", "ngo").prefetch_related("participating_schools")
 
-    if category_filter:
-        queryset = queryset.filter(category=category_filter)
     if project_filter:
         if project_filter == "standalone":
             queryset = queryset.filter(project__isnull=True)
@@ -248,8 +249,6 @@ def program_list(request):
         {
             "programs": queryset,
             "total_count": queryset.count(),
-            "category_choices": Program.Category.choices,
-            "selected_category": category_filter,
             "projects": projects,
             "selected_project": project_filter,
             "taluks": sorted([t for t in taluks if t]),
@@ -270,6 +269,9 @@ def program_detail(request, pk):
     internships = program.internships.all().select_related("student", "school", "program")
     mentorship_sessions = program.mentorship_sessions.all().select_related("student")
 
+    from .roster import get_program_school_roster
+    roster_data = get_program_school_roster(program)
+
     return render(
         request,
         "programs/program_detail.html",
@@ -280,9 +282,42 @@ def program_detail(request, pk):
             "scholarships": scholarships,
             "internships": internships,
             "mentorship_sessions": mentorship_sessions,
+            "roster_data": roster_data,
         },
     )
 
+
+def program_upload_school_roster(request, pk):
+    """
+    Handles uploading an Excel (.xlsx/.xls) or CSV (.csv) roster for a program,
+    persists schools, grade breakdowns, and teacher contacts, and renders
+    the updated spreadsheet immediately.
+    """
+    program = get_object_or_404(Program, pk=pk)
+    if request.method == "POST":
+        roster_file = request.FILES.get("roster_file")
+        if not roster_file:
+            messages.error(request, "Please select an Excel (.xlsx/.xls) or CSV (.csv) file to upload.")
+            return redirect("programs:program_detail", pk=program.pk)
+
+        ext = os.path.splitext(roster_file.name)[1].lower()
+        if ext not in [".xlsx", ".xls", ".csv"]:
+            messages.error(request, f"Unsupported file type '{ext}'. Please upload a valid .xlsx, .xls, or .csv file.")
+            return redirect("programs:program_detail", pk=program.pk)
+
+        try:
+            from .roster import parse_and_save_roster
+            res = parse_and_save_roster(program, roster_file)
+            school_count = len(res.get("schools", []))
+            total_students = res.get("kpis", {}).get("total_students", 0)
+            messages.success(
+                request,
+                f"Successfully parsed and rendered school roster from '{roster_file.name}': {school_count} schools and {total_students:,} students."
+            )
+        except Exception as e:
+            messages.error(request, f"Failed to parse uploaded roster: {e}")
+
+    return redirect("programs:program_detail", pk=program.pk)
 
 
 def program_create(request):
@@ -627,6 +662,16 @@ def scholarship_list(request):
     emp_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.EMPLOYEE_SPECIAL).count()
     fnd_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.FOUNDATION).count()
 
+    # Foundation section data (Feature 5)
+    foundation_stats = {}
+    if category_tab == "foundation":
+        foundation_stats = {
+            "csr_grants": CSRGrant.objects.select_related("school", "project").order_by("-created_at")[:10],
+            "csr_total": CSRGrant.objects.aggregate(Sum("grant_amount"))["grant_amount__sum"] or 0,
+            "mentorship_count": MentorshipSession.objects.count(),
+            "mentorship_recent": MentorshipSession.objects.select_related("student", "project", "program").order_by("-session_date")[:5],
+        }
+
     return render(
         request,
         "programs/scholarship_list.html",
@@ -642,6 +687,7 @@ def scholarship_list(request):
             "status_choices": Scholarship.Status.choices,
             "selected_status": status_filter,
             "search_query": search_query,
+            **foundation_stats,
         },
     )
 
@@ -1023,4 +1069,170 @@ def mentorship_delete(request, pk):
         session.delete()
         messages.success(request, f"Mentorship session '{code}' deleted.")
     return redirect("programs:mentorship_list")
+
+
+# ============================================================================
+# INDUSTRY VISITS (Feature 11)
+# ============================================================================
+
+def industry_visit_list(request):
+    q = request.GET.get("q", "").strip()
+    visits = IndustryVisit.objects.filter(is_archived=False).select_related("school", "program", "project")
+    if q:
+        visits = visits.filter(
+            Q(title__icontains=q) | Q(company_name__icontains=q) | Q(visit_code__icontains=q) | Q(location__icontains=q)
+        )
+    return render(request, "programs/industry_visit_list.html", {
+        "visits": visits,
+        "query": q,
+        "active_page": "industry_visits",
+    })
+
+
+def industry_visit_create(request):
+    if request.method == "POST":
+        form = IndustryVisitForm(request.POST)
+        if form.is_valid():
+            visit = form.save()
+            messages.success(request, f"Industry Visit '{visit.title}' ({visit.visit_code}) created.")
+            return redirect("programs:industry_visit_list")
+    else:
+        form = IndustryVisitForm()
+    return render(request, "programs/industry_visit_form.html", {
+        "form": form,
+        "is_edit": False,
+        "title": "Schedule Industry Visit",
+        "active_page": "industry_visits",
+    })
+
+
+def industry_visit_detail(request, pk):
+    visit = get_object_or_404(IndustryVisit, pk=pk)
+    return render(request, "programs/industry_visit_detail.html", {
+        "visit": visit,
+        "active_page": "industry_visits",
+    })
+
+
+def industry_visit_edit(request, pk):
+    visit = get_object_or_404(IndustryVisit, pk=pk)
+    if request.method == "POST":
+        form = IndustryVisitForm(request.POST, instance=visit)
+        if form.is_valid():
+            visit = form.save()
+            messages.success(request, f"Industry Visit '{visit.title}' updated.")
+            return redirect("programs:industry_visit_list")
+    else:
+        form = IndustryVisitForm(instance=visit)
+    return render(request, "programs/industry_visit_form.html", {
+        "form": form,
+        "visit": visit,
+        "is_edit": True,
+        "title": f"Edit: {visit.visit_code}",
+        "active_page": "industry_visits",
+    })
+
+
+def industry_visit_toggle_archive(request, pk):
+    visit = get_object_or_404(IndustryVisit, pk=pk)
+    if request.method == "POST":
+        visit.is_archived = not visit.is_archived
+        visit.save(update_fields=["is_archived"])
+        action = "archived" if visit.is_archived else "restored"
+        messages.success(request, f"Industry Visit '{visit.visit_code}' {action}.")
+    return redirect("programs:industry_visit_list")
+
+
+# ============================================================================
+# BULK UPLOAD: SCHOLARSHIPS (Feature 2 / 9)
+# ============================================================================
+
+def _normalize_header(name):
+    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def bulk_upload_scholarships(request):
+    if request.method != "POST":
+        return render(request, "programs/scholarship_bulk_upload.html", {"active_page": "scholarships"})
+
+    uploaded_file = request.FILES.get("file") or request.FILES.get("csv_file")
+    if not uploaded_file:
+        messages.error(request, "Please select a CSV or Excel (.xlsx) file.")
+        return redirect("programs:scholarship_bulk_upload")
+
+    file_name = uploaded_file.name.lower()
+    if not file_name.endswith((".csv", ".xlsx")):
+        messages.error(request, "Only CSV and Excel (.xlsx) files are supported.")
+        return redirect("programs:scholarship_bulk_upload")
+
+    try:
+        if file_name.endswith(".csv"):
+            decoded = uploaded_file.read().decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(decoded))
+            reader.fieldnames = [_normalize_header(f) for f in (reader.fieldnames or [])]
+            rows = list(reader)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(uploaded_file, read_only=True, data_only=True)
+            ws = wb.active
+            excel_rows = list(ws.iter_rows(values_only=True))
+            wb.close()
+            if not excel_rows:
+                messages.error(request, "The Excel file is empty.")
+                return redirect("programs:scholarship_bulk_upload")
+            headers = [_normalize_header(c) for c in excel_rows[0]]
+            rows = []
+            for r in excel_rows[1:]:
+                if not any(c is not None and str(c).strip() for c in r):
+                    continue
+                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+
+        created, skipped, errors = 0, 0, []
+        with transaction.atomic():
+            for idx, row in enumerate(rows, start=2):
+                admission = row.get("admission_number", "").strip()
+                if not admission:
+                    errors.append(f"Row {idx}: Missing admission_number")
+                    continue
+                student = Student.objects.filter(admission_number=admission).first()
+                if not student:
+                    errors.append(f"Row {idx}: Student '{admission}' not found")
+                    continue
+                app_num = row.get("application_number", "").strip()
+                if not app_num:
+                    app_num = f"BULK-{timezone.now().strftime('%Y%m%d')}-{idx:04d}"
+                if Scholarship.objects.filter(application_number=app_num).exists():
+                    skipped += 1
+                    continue
+                Scholarship.objects.create(
+                    student=student,
+                    category=row.get("category", "FOUNDATION").upper() or "FOUNDATION",
+                    scheme_name=row.get("scheme_name", "Bulk Upload Scholarship"),
+                    application_number=app_num,
+                    academic_year=row.get("academic_year", "2026-27") or "2026-27",
+                    sanctioned_amount=Decimal(row.get("sanctioned_amount", "0") or "0"),
+                    disbursed_amount=Decimal(row.get("disbursed_amount", "0") or "0"),
+                    status=row.get("status", "APPLIED").upper() or "APPLIED",
+                    employee_code=row.get("employee_code", ""),
+                    employee_name=row.get("employee_name", ""),
+                    employee_department=row.get("employee_department", ""),
+                    plant_location=row.get("plant_location", "Belagavi SEZ"),
+                    remarks=row.get("remarks", ""),
+                )
+                created += 1
+
+        msg = f"Bulk upload complete: {created} scholarships created"
+        if skipped:
+            msg += f", {skipped} skipped (duplicate)"
+        if errors:
+            msg += f", {len(errors)} errors"
+        messages.success(request, msg)
+        if errors:
+            for e in errors[:10]:
+                messages.warning(request, e)
+
+    except Exception as exc:
+        messages.error(request, f"Upload failed: {exc}")
+
+    return redirect("programs:scholarship_bulk_upload")
 

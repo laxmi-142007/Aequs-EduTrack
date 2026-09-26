@@ -1,5 +1,5 @@
 from django import forms
-from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession
+from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit
 from schools.models import School
 from students.models import Student
 
@@ -101,7 +101,6 @@ class ProgramForm(forms.ModelForm):
         fields = [
             "title",
             "code",
-            "category",
             "project",
             "ngo",
             "locations",
@@ -302,3 +301,38 @@ class MentorshipSessionForm(forms.ModelForm):
         self.fields["program"].queryset = Program.objects.filter(is_archived=False).order_by("title")
         self.fields["program"].empty_label = "-- No Program Assigned --"
 
+
+class IndustryVisitForm(forms.ModelForm):
+    class Meta:
+        model = IndustryVisit
+        fields = [
+            "title",
+            "visit_code",
+            "school",
+            "program",
+            "project",
+            "company_name",
+            "location",
+            "visit_date",
+            "contact_person",
+            "contact_phone",
+            "attendee_count",
+            "transport_details",
+            "learning_outcomes",
+            "remarks",
+            "status",
+        ]
+        widgets = {
+            "visit_date": forms.DateInput(attrs={"type": "date"}),
+            "visit_code": forms.TextInput(attrs={"placeholder": "Auto-generated (e.g. IV-2026-001)"}),
+            "learning_outcomes": forms.Textarea(attrs={"rows": 3}),
+            "remarks": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["visit_code"].required = False
+        self.fields["project"].queryset = Project.objects.filter(is_archived=False).order_by("name")
+        self.fields["project"].empty_label = "-- No Linked Project --"
+        self.fields["program"].queryset = Program.objects.filter(is_archived=False).order_by("title")
+        self.fields["program"].empty_label = "-- No Linked Program --"

@@ -324,21 +324,12 @@
 
     <div class="header">
         <div class="header-left">
-
-            <img
-                src="{% static 'images/LOGO Aequs Foundation.jpg' %}"
-                alt="Aequs Foundation"
-                class="logo"
-                style="height: 48px; width: auto; max-width: 140px; object-fit: contain;"
-            >
-
             <div>
                 <h1>Bulk Upload Schools &bull; {{ target_ngo.name }}</h1>
                 <div class="subtitle">
                     Aequs Foundation · EduTrack &bull; Target Module: <strong>{{ target_ngo.name }}</strong> (Isolated)
                 </div>
             </div>
-
         </div>
 
         <a href="/schools/{{ target_slug }}/" class="back-btn">
@@ -483,7 +474,7 @@
 
                     <p><code>name</code></p>
                     <p><code>udise_code</code></p>
-                    <p><code>district</code></p>
+                    <p><code>taluk</code></p>
 
                 </div>
 
@@ -493,7 +484,7 @@
                     <h3>Optional columns</h3>
 
                     <p><code>address</code></p>
-                    <p><code>taluk</code></p>
+                    <p><code>district</code></p>
                     <p><code>village</code></p>
                     <p><code>pincode</code></p>
                     <p><code>phone</code></p>

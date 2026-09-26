@@ -8,19 +8,223 @@
     <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
     <link rel="stylesheet" href="/static/css/programs.css">
     <script src="/static/js/lucide.min.js"></script>
+    <style>
+        /* Excel School Profile & Roster Component */
+        .excel-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .excel-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #ffffff;
+        }
+        .view-toggle-btn {
+            background: #ffffff;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+        .view-toggle-btn.active {
+            background: #1e293b;
+            color: #ffffff;
+        }
+        .excel-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 12px;
+            padding: 14px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .excel-kpi-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .excel-kpi-item .label {
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 3px;
+            display: block;
+        }
+        .excel-kpi-item .val {
+            font-size: 17px;
+            font-weight: 800;
+        }
+        .excel-kpi-item .sub {
+            font-size: 11.5px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .excel-toolbar {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .excel-filter-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-pill {
+            font-size: 11.5px;
+            padding: 4px 10px;
+            border-radius: 16px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .filter-pill:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .filter-pill.active {
+            background: #ed1c24;
+            color: #ffffff;
+            border-color: #ed1c24;
+        }
+        .excel-sheet-container {
+            overflow-x: auto;
+            background: #ffffff;
+            max-width: 100%;
+        }
+        .excel-sheet-header-block {
+            background: #f8fafc;
+            border-bottom: 2px solid #64748b;
+            text-align: center;
+            padding: 10px 16px;
+        }
+        .excel-sheet-header-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .excel-sheet-header-sub {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #334155;
+            margin-top: 2px;
+        }
+        .excel-sheet-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #cbd5e1;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            line-height: 1.25;
+        }
+        .excel-table th, .excel-table td {
+            border: 1px solid #94a3b8;
+            padding: 5px 6px;
+            white-space: nowrap;
+        }
+        .excel-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .excel-table .th-dlc-header {
+            background-color: #ffff00 !important;
+            color: #000000 !important;
+            font-weight: 800;
+        }
+        .excel-table td {
+            color: #1e293b;
+            vertical-align: middle;
+        }
+        .excel-table td.center {
+            text-align: center;
+        }
+        .excel-table td.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .excel-table td.mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 10.5px;
+        }
+        .excel-table .cell-zero {
+            background-color: #dbeafe !important;
+            color: #1e40af;
+            text-align: center;
+        }
+        .excel-table .cell-gt {
+            background-color: #f8fafc;
+        }
+        .excel-table .tr-grand-total td {
+            background-color: #22c55e !important;
+            color: #ffffff !important;
+            font-weight: 800;
+            border-color: #16a34a !important;
+            font-size: 12px;
+        }
+        .excel-table .school-link {
+            color: #0f172a;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .excel-table .school-link:hover {
+            color: #ed1c24;
+            text-decoration: underline;
+        }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+    </style>
 </head>
 <body>
     {% include 'includes/sidebar.html' with active_page='programs' %}
 
     <div class="main">
         <div class="topbar">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <img src="/static/images/Aequs-logo.png" alt="Aequs Foundation" style="height: 38px; width: auto; object-fit: contain;">
-                <div style="border-left: 2px solid #e2e8f0; padding-left: 14px;">
+            <div>
                     <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ program.title }}</h1>
-                    <span style="font-size: 12px; color: #64748b;">Code: {{ program.code }} &bull; {{ program.get_category_display }}</span>
+                    <span style="font-size: 12px; color: #64748b;">Code: {{ program.code }}</span>
                 </div>
-            </div>
             <div class="header-actions">
                 <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">
                     <i data-lucide="arrow-left"></i> Back to Programs
@@ -35,6 +239,17 @@
         </div>
 
         <div class="programs-page">
+            {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for message in messages %}
+                <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 13.5px; font-weight: 500; display: flex; align-items: center; gap: 10px; background: {% if message.tags == 'success' %}#f0fdf4; color: #166534; border: 1px solid #bbf7d0;{% elif message.tags == 'error' %}#fef2f2; color: #991b1b; border: 1px solid #fecaca;{% else %}#eff6ff; color: #1e40af; border: 1px solid #bfdbfe;{% endif %}">
+                    <i data-lucide="{% if message.tags == 'success' %}check-circle-2{% elif message.tags == 'error' %}alert-triangle{% else %}info{% endif %}" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <!-- Mandatory Location Banner (Module 11 & 16) -->
             <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                 <div style="display: flex; align-items: center; gap: 14px;">
@@ -170,10 +385,6 @@
                         </span>
                     </div>
                     <div class="detail-item">
-                        <span class="label">Category</span>
-                        <span class="val">{{ program.get_category_display }}</span>
-                    </div>
-                    <div class="detail-item">
                         <span class="label">Parent Project</span>
                         <span class="val">
                             {% if program.project %}
@@ -203,21 +414,290 @@
                 {% endif %}
             </div>
 
-            <!-- Participating Schools -->
+            <!-- Participating Schools & School Profile Excel Roster -->
+            {% if roster_data and roster_data.schools %}
+            <div class="excel-card" id="school-profile-section">
+                <!-- Header with Title and View Controls -->
+                <div class="excel-card-header">
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
+                            <i data-lucide="table" style="color: #ed1c24;"></i> School Profile &amp; Participating Schools Roster
+                            <span class="af-badge badge-active" style="font-size: 11.5px; padding: 2px 8px;">{{ roster_data.kpis.total_schools }} Schools</span>
+                            <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 8px;">{{ roster_data.kpis.total_students }} Students</span>
+                        </h3>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                            {{ roster_data.title_org }} &bull; Academic Year {{ roster_data.academic_year }} &bull; {{ roster_data.donor_title }}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <div class="view-toggle-group" style="display: inline-flex; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
+                            <button type="button" id="btnViewSpreadsheet" class="view-toggle-btn active" onclick="switchRosterView('spreadsheet')">
+                                <i data-lucide="grid" style="width: 14px; height: 14px;"></i> Excel Sheet
+                            </button>
+                            <button type="button" id="btnViewCards" class="view-toggle-btn" onclick="switchRosterView('cards')">
+                                <i data-lucide="layout-grid" style="width: 14px; height: 14px;"></i> Cards
+                            </button>
+                        </div>
+                        <button type="button" onclick="exportRosterCSV()" class="btn-af btn-af-secondary btn-af-sm">
+                            <i data-lucide="download"></i> Export CSV / Excel
+                        </button>
+                        <button type="button" onclick="openUploadRosterModal()" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <i data-lucide="upload"></i> Upload Excel Roster
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Demographic Summary Metric Cards -->
+                <div class="excel-kpi-grid">
+                    <div class="excel-kpi-item">
+                        <span class="label">Participating Schools</span>
+                        <div class="val" style="color: #1e293b;">{{ roster_data.kpis.total_schools }}</div>
+                        <div class="sub">Across {{ roster_data.kpis.taluks_count }} Taluks</div>
+                    </div>
+                    <div class="excel-kpi-item">
+                        <span class="label">Total Student Strength</span>
+                        <div class="val" style="color: #ed1c24;">{{ roster_data.kpis.total_students }}</div>
+                        <div class="sub">Class 4th to Class 10th</div>
+                    </div>
+                    <div class="excel-kpi-item">
+                        <span class="label">Gender Demographics</span>
+                        <div class="val" style="color: #0284c7; font-size: 16px;">
+                            {{ roster_data.kpis.total_boys }} Boys <span style="color: #94a3b8; font-size: 13px; font-weight: normal;">/</span> {{ roster_data.kpis.total_girls }} Girls
+                        </div>
+                        <div class="sub">46.9% Boys &bull; 53.1% Girls</div>
+                    </div>
+                    <div class="excel-kpi-item" style="border-left: 3px solid #eab308;">
+                        <span class="label">Class 6th (DLC Focus)</span>
+                        <div class="val" style="color: #ca8a04;">{{ roster_data.kpis.dlc_students }}</div>
+                        <div class="sub">Digital Learning Center cohort</div>
+                    </div>
+                </div>
+
+                <!-- Toolbar & Filter Pills -->
+                <div class="excel-toolbar">
+                    <div class="excel-filter-pills">
+                        <span style="font-size: 11.5px; font-weight: 600; color: #64748b; margin-right: 4px;">Taluk Filter:</span>
+                        <button type="button" class="filter-pill active" onclick="filterByTaluk('ALL', this)">All Taluks ({{ roster_data.schools|length }})</button>
+                        {% for taluk in roster_data.taluks %}
+                        <button type="button" class="filter-pill" onclick="filterByTaluk('{{ taluk|escapejs }}', this)">{{ taluk }}</button>
+                        {% endfor %}
+                    </div>
+
+                    <div style="position: relative; min-width: 240px;">
+                        <input type="text" id="rosterSearchInput" placeholder="Search schools, HMs, teachers..." oninput="filterSchoolTable()" style="width: 100%; padding: 6px 12px 6px 30px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+                        <i data-lucide="search" style="position: absolute; left: 9px; top: 7px; width: 14px; height: 14px; color: #94a3b8;"></i>
+                    </div>
+                </div>
+
+                <!-- SPREADSHEET VIEW -->
+                <div id="rosterSpreadsheetView" class="excel-sheet-container">
+                    <!-- Excel Top Banners (Identical to 1st photo) -->
+                    <div class="excel-sheet-header-block">
+                        <div class="excel-sheet-header-title">{{ roster_data.title_org }}</div>
+                        <div class="excel-sheet-header-sub">{{ roster_data.profile_title }}</div>
+                        <div class="excel-sheet-meta">
+                            <span><strong>Program:</strong> {{ roster_data.program_title }}</span>
+                            <span><strong>Donor:</strong> {{ roster_data.donor_title }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Main Spreadsheet Table -->
+                    <table class="excel-table" id="rosterMainTable">
+                        <thead>
+                            <!-- Tier 1 Header -->
+                            <tr>
+                                <th rowspan="2" style="width: 45px;">SL NO</th>
+                                <th rowspan="2" style="min-width: 170px; text-align: left;">SCHOOL NAME</th>
+                                <th rowspan="2" style="min-width: 105px;">Taluk</th>
+                                <th rowspan="2" style="min-width: 100px;">UDISE CODE</th>
+                                <th rowspan="2" style="min-width: 135px;">HM Name</th>
+                                <th rowspan="2" style="min-width: 95px;">MOBILE</th>
+                                <th rowspan="2" style="min-width: 140px;">Science Teacher Name</th>
+                                <th rowspan="2" style="min-width: 95px;">MOBILE</th>
+                                <th rowspan="2" style="width: 55px;">Division</th>
+                                <th colspan="3">CLASS 4th</th>
+                                <th colspan="3">CLASS 5th</th>
+                                <th colspan="3" class="th-dlc-header">CLASS 6th (DLC)</th>
+                                <th colspan="3">CLASS 7th</th>
+                                <th colspan="3">CLASS 8th</th>
+                                <th colspan="3">CLASS 9th</th>
+                                <th colspan="3">CLASS 10th</th>
+                                <th colspan="3" style="background-color: #e2e8f0;">GRAND Total</th>
+                            </tr>
+                            <!-- Tier 2 Header -->
+                            <tr>
+                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
+                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
+                                <th class="th-dlc-header">BOYS</th><th class="th-dlc-header">GIRLS</th><th class="th-dlc-header">TOTAL</th>
+                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
+                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
+                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
+                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
+                                <th style="background-color: #e2e8f0;">BOYS</th><th style="background-color: #e2e8f0;">GIRLS</th><th style="background-color: #e2e8f0;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in roster_data.schools %}
+                                {% for div in item.divisions %}
+                                <tr class="school-row" data-school-id="{{ item.sl }}" data-taluk="{{ item.taluk }}" data-search="{{ item.name|lower }} {{ item.taluk|lower }} {{ item.udise }} {{ item.hm|lower }} {{ item.teacher|lower }}">
+                                    {% if forloop.first %}
+                                    <td rowspan="{{ item.rowspan }}" class="center font-semibold">{{ item.sl }}</td>
+                                    <td rowspan="{{ item.rowspan }}" style="font-weight: 600; text-align: left;">
+                                        {% if item.school_obj %}
+                                        <a href="{% url 'schools:portal_agastya' %}?school={{ item.school_obj.pk }}" class="school-link" title="Open School Dossier in Agastya Portal">
+                                            {{ item.name }}
+                                        </a>
+                                        {% else %}
+                                        {{ item.name }}
+                                        {% endif %}
+                                    </td>
+                                    <td rowspan="{{ item.rowspan }}">{{ item.taluk }}</td>
+                                    <td rowspan="{{ item.rowspan }}" class="mono center">{{ item.udise }}</td>
+                                    <td rowspan="{{ item.rowspan }}">{{ item.hm|default:"—" }}</td>
+                                    <td rowspan="{{ item.rowspan }}" class="mono center">{{ item.hm_mob|default:"—" }}</td>
+                                    <td rowspan="{{ item.rowspan }}">{{ item.teacher|default:"—" }}</td>
+                                    <td rowspan="{{ item.rowspan }}" class="mono center">{{ item.teacher_mob|default:"—" }}</td>
+                                    {% endif %}
+
+                                    <td class="center font-semibold">{{ div.division|default:"—" }}</td>
+
+                                    <!-- Class 4th -->
+                                    <td class="num {% if div.c4.2 == 0 %}cell-zero{% endif %}">{% if div.c4.2 == 0 and div.c4.0 == 0 %}&nbsp;{% else %}{{ div.c4.0 }}{% endif %}</td>
+                                    <td class="num {% if div.c4.2 == 0 %}cell-zero{% endif %}">{% if div.c4.2 == 0 and div.c4.1 == 0 %}&nbsp;{% else %}{{ div.c4.1 }}{% endif %}</td>
+                                    <td class="num font-semibold {% if div.c4.2 == 0 %}cell-zero{% endif %}">{{ div.c4.2 }}</td>
+
+                                    <!-- Class 5th -->
+                                    <td class="num {% if div.c5.2 == 0 %}cell-zero{% endif %}">{% if div.c5.2 == 0 and div.c5.0 == 0 %}&nbsp;{% else %}{{ div.c5.0 }}{% endif %}</td>
+                                    <td class="num {% if div.c5.2 == 0 %}cell-zero{% endif %}">{% if div.c5.2 == 0 and div.c5.1 == 0 %}&nbsp;{% else %}{{ div.c5.1 }}{% endif %}</td>
+                                    <td class="num font-semibold {% if div.c5.2 == 0 %}cell-zero{% endif %}">{{ div.c5.2 }}</td>
+
+                                    <!-- Class 6th (DLC) -->
+                                    <td class="num {% if div.c6.2 == 0 %}cell-zero{% endif %}">{% if div.c6.2 == 0 and div.c6.0 == 0 %}&nbsp;{% else %}{{ div.c6.0 }}{% endif %}</td>
+                                    <td class="num {% if div.c6.2 == 0 %}cell-zero{% endif %}">{% if div.c6.2 == 0 and div.c6.1 == 0 %}&nbsp;{% else %}{{ div.c6.1 }}{% endif %}</td>
+                                    <td class="num font-semibold {% if div.c6.2 == 0 %}cell-zero{% endif %}">{{ div.c6.2 }}</td>
+
+                                    <!-- Class 7th -->
+                                    <td class="num {% if div.c7.2 == 0 %}cell-zero{% endif %}">{% if div.c7.2 == 0 and div.c7.0 == 0 %}&nbsp;{% else %}{{ div.c7.0 }}{% endif %}</td>
+                                    <td class="num {% if div.c7.2 == 0 %}cell-zero{% endif %}">{% if div.c7.2 == 0 and div.c7.1 == 0 %}&nbsp;{% else %}{{ div.c7.1 }}{% endif %}</td>
+                                    <td class="num font-semibold {% if div.c7.2 == 0 %}cell-zero{% endif %}">{{ div.c7.2 }}</td>
+
+                                    <!-- Class 8th -->
+                                    <td class="num {% if div.c8.2 == 0 %}cell-zero{% endif %}">{% if div.c8.2 == 0 and div.c8.0 == 0 %}&nbsp;{% else %}{{ div.c8.0 }}{% endif %}</td>
+                                    <td class="num {% if div.c8.2 == 0 %}cell-zero{% endif %}">{% if div.c8.2 == 0 and div.c8.1 == 0 %}&nbsp;{% else %}{{ div.c8.1 }}{% endif %}</td>
+                                    <td class="num font-semibold {% if div.c8.2 == 0 %}cell-zero{% endif %}">{{ div.c8.2 }}</td>
+
+                                    <!-- Class 9th -->
+                                    <td class="num {% if div.c9.2 == 0 %}cell-zero{% endif %}">{% if div.c9.2 == 0 and div.c9.0 == 0 %}&nbsp;{% else %}{{ div.c9.0 }}{% endif %}</td>
+                                    <td class="num {% if div.c9.2 == 0 %}cell-zero{% endif %}">{% if div.c9.2 == 0 and div.c9.1 == 0 %}&nbsp;{% else %}{{ div.c9.1 }}{% endif %}</td>
+                                    <td class="num font-semibold {% if div.c9.2 == 0 %}cell-zero{% endif %}">{{ div.c9.2 }}</td>
+
+                                    <!-- Class 10th -->
+                                    <td class="num {% if div.c10.2 == 0 %}cell-zero{% endif %}">{% if div.c10.2 == 0 and div.c10.0 == 0 %}&nbsp;{% else %}{{ div.c10.0 }}{% endif %}</td>
+                                    <td class="num {% if div.c10.2 == 0 %}cell-zero{% endif %}">{% if div.c10.2 == 0 and div.c10.1 == 0 %}&nbsp;{% else %}{{ div.c10.1 }}{% endif %}</td>
+                                    <td class="num font-semibold {% if div.c10.2 == 0 %}cell-zero{% endif %}">{{ div.c10.2 }}</td>
+
+                                    <!-- Grand Total -->
+                                    <td class="num font-bold cell-gt">{{ div.gt.0 }}</td>
+                                    <td class="num font-bold cell-gt">{{ div.gt.1 }}</td>
+                                    <td class="num font-bold cell-gt" style="color: #0f172a;">{{ div.gt.2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="tr-grand-total">
+                                <td colspan="9" style="text-align: right; font-weight: 800; padding-right: 12px; letter-spacing: 0.5px;">GRAND TOTAL</td>
+                                <td class="num">{{ roster_data.totals.c4.0 }}</td>
+                                <td class="num">{{ roster_data.totals.c4.1 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c4.2 }}</td>
+
+                                <td class="num">{{ roster_data.totals.c5.0 }}</td>
+                                <td class="num">{{ roster_data.totals.c5.1 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c5.2 }}</td>
+
+                                <td class="num">{{ roster_data.totals.c6.0 }}</td>
+                                <td class="num">{{ roster_data.totals.c6.1 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c6.2 }}</td>
+
+                                <td class="num">{{ roster_data.totals.c7.0 }}</td>
+                                <td class="num">{{ roster_data.totals.c7.1 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c7.2 }}</td>
+
+                                <td class="num">{{ roster_data.totals.c8.0 }}</td>
+                                <td class="num">{{ roster_data.totals.c8.1 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c8.2 }}</td>
+
+                                <td class="num">{{ roster_data.totals.c9.0 }}</td>
+                                <td class="num">{{ roster_data.totals.c9.1 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c9.2 }}</td>
+
+                                <td class="num">{{ roster_data.totals.c10.0 }}</td>
+                                <td class="num">{{ roster_data.totals.c10.1 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c10.2 }}</td>
+
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.gt.0 }}</td>
+                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.gt.1 }}</td>
+                                <td class="num" style="font-weight: 900; font-size: 13.5px; background: rgba(0,0,0,0.18);">{{ roster_data.totals.gt.2 }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- CARDS VIEW (Alternative view) -->
+                <div id="rosterCardsView" style="display: none; padding: 20px 22px; background: #f8fafc;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+                        {% for item in roster_data.schools %}
+                        <div class="school-card-item" data-taluk="{{ item.taluk }}" data-search="{{ item.name|lower }} {{ item.taluk|lower }} {{ item.udise }} {{ item.hm|lower }} {{ item.teacher|lower }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <span style="font-size: 11px; font-weight: 700; color: #ed1c24; background: #fff1f1; padding: 2px 7px; border-radius: 4px;">#{{ item.sl }}</span>
+                                <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 8px; border-radius: 4px;">{{ item.taluk }}</span>
+                            </div>
+                            <h4 style="margin: 0 0 4px 0; font-size: 14.5px; font-weight: 700;">
+                                {% if item.school_obj %}
+                                <a href="{% url 'schools:portal_agastya' %}?school={{ item.school_obj.pk }}" style="color: #0f172a; text-decoration: none;">{{ item.name }}</a>
+                                {% else %}
+                                {{ item.name }}
+                                {% endif %}
+                            </h4>
+                            <div style="font-size: 11.5px; color: #64748b; margin-bottom: 10px; font-family: monospace;">UDISE: {{ item.udise }}</div>
+                            <div style="font-size: 12px; color: #334155; line-height: 1.5; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                                <div><strong>HM:</strong> {{ item.hm|default:"—" }} {% if item.hm_mob %}<span style="color:#64748b;">({{ item.hm_mob }})</span>{% endif %}</div>
+                                <div><strong>Science Teacher:</strong> {{ item.teacher|default:"—" }} {% if item.teacher_mob %}<span style="color:#64748b;">({{ item.teacher_mob }})</span>{% endif %}</div>
+                            </div>
+                            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+                                <span style="color: #64748b;">Enrolled Strength:</span>
+                                <strong style="color: #ed1c24; font-size: 13.5px;">{{ item.total_students }} students</strong>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Fallback Participating Schools for generic programs -->
             <div class="detail-card">
-                <h3 style="font-size: 16px; font-weight: 700; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="school" style="color: #ed1c24;"></i> Participating Schools ({{ program.participating_schools.count }})
-                </h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="school" style="color: #ed1c24;"></i> Participating Schools ({{ program.participating_schools.count }})
+                    </h3>
+                    <button type="button" onclick="openUploadRosterModal()" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <i data-lucide="upload"></i> Upload School Profile (Excel / CSV)
+                    </button>
+                </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                     {% for sc in program.participating_schools.all %}
                     <span class="af-badge badge-neutral" style="font-size: 12.5px; padding: 6px 12px;">
                         {{ sc.school_name }} ({{ sc.taluk }})
                     </span>
                     {% empty %}
-                    <p style="color: #94a3b8; font-size: 13px; margin: 0;">No schools assigned yet.</p>
+                    <div style="padding: 12px 0; color: #64748b; font-size: 13.5px;">
+                        No schools assigned yet. You can upload an Excel or CSV file to import and render the school roster.
+                    </div>
                     {% endfor %}
                 </div>
             </div>
+            {% endif %}
 
             <!-- EV Sessions / Exposure Visits linked -->
             <div class="detail-card">
@@ -450,6 +930,227 @@
         if (window.lucide) {
             lucide.createIcons();
         }
+
+        let activeTalukFilter = 'ALL';
+
+        function switchRosterView(view) {
+            const sheet = document.getElementById('rosterSpreadsheetView');
+            const cards = document.getElementById('rosterCardsView');
+            const btnSheet = document.getElementById('btnViewSpreadsheet');
+            const btnCards = document.getElementById('btnViewCards');
+            if (!sheet || !cards) return;
+
+            if (view === 'spreadsheet') {
+                sheet.style.display = 'block';
+                cards.style.display = 'none';
+                if (btnSheet) btnSheet.classList.add('active');
+                if (btnCards) btnCards.classList.remove('active');
+            } else {
+                sheet.style.display = 'none';
+                cards.style.display = 'block';
+                if (btnSheet) btnSheet.classList.remove('active');
+                if (btnCards) btnCards.classList.add('active');
+            }
+        }
+
+        function filterByTaluk(taluk, btn) {
+            activeTalukFilter = taluk;
+            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            filterSchoolTable();
+        }
+
+        function filterSchoolTable() {
+            const input = document.getElementById('rosterSearchInput');
+            const q = input ? (input.value || '').trim().toLowerCase() : '';
+            const rows = document.querySelectorAll('#rosterMainTable tbody tr.school-row');
+            const cards = document.querySelectorAll('#rosterCardsView .school-card-item');
+
+            // Track matched school IDs so multiline division rows stay in sync
+            const matchedSchools = new Set();
+            rows.forEach(tr => {
+                const schoolId = tr.getAttribute('data-school-id');
+                const rowTaluk = (tr.getAttribute('data-taluk') || '').toLowerCase();
+                const rowSearch = (tr.getAttribute('data-search') || '').toLowerCase();
+                const matchesTaluk = (activeTalukFilter === 'ALL') || (rowTaluk === activeTalukFilter.toLowerCase());
+                const matchesQuery = !q || rowSearch.includes(q);
+
+                if (matchesTaluk && matchesQuery) {
+                    matchedSchools.add(schoolId);
+                }
+            });
+
+            rows.forEach(tr => {
+                const schoolId = tr.getAttribute('data-school-id');
+                if (matchedSchools.has(schoolId)) {
+                    tr.style.display = '';
+                } else {
+                    tr.style.display = 'none';
+                }
+            });
+
+            cards.forEach(card => {
+                const cardTaluk = (card.getAttribute('data-taluk') || '').toLowerCase();
+                const cardSearch = (card.getAttribute('data-search') || '').toLowerCase();
+                const matchesTaluk = (activeTalukFilter === 'ALL') || (cardTaluk === activeTalukFilter.toLowerCase());
+                const matchesQuery = !q || cardSearch.includes(q);
+
+                if (matchesTaluk && matchesQuery) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function exportRosterCSV() {
+            const table = document.getElementById('rosterMainTable');
+            if (!table) return;
+            const rows = table.querySelectorAll('tr');
+            const csvData = [];
+            
+            rows.forEach(row => {
+                if (row.style.display === 'none') return;
+                const rowData = [];
+                const cols = row.querySelectorAll('th, td');
+                cols.forEach(col => {
+                    let text = col.innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/"/g, '""').trim();
+                    rowData.push('"' + text + '"');
+                });
+                csvData.push(rowData.join(','));
+            });
+
+            const csvBlob = new Blob([csvData.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(csvBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Agastya_MSL_School_Profile_2025-26.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function openUploadRosterModal() {
+            const m = document.getElementById('uploadRosterModal');
+            if (m) {
+                m.style.display = 'flex';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function closeUploadRosterModal() {
+            const m = document.getElementById('uploadRosterModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function handleRosterFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const f = input.files[0];
+                const lbl = document.getElementById('rosterFileLabel');
+                const dropZone = document.getElementById('dropZoneRoster');
+                if (lbl) {
+                    lbl.innerHTML = `<span style="color: #15803d; font-weight: 700;">Selected:</span> ${f.name} <span style="color: #64748b; font-size: 12px;">(${(f.size / 1024).toFixed(1)} KB)</span>`;
+                }
+                if (dropZone) {
+                    dropZone.style.borderColor = '#22c55e';
+                    dropZone.style.background = '#f0fdf4';
+                }
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const m = document.getElementById('uploadRosterModal');
+            if (e.target === m) closeUploadRosterModal();
+        });
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeUploadRosterModal();
+        });
+
+        const dropZone = document.getElementById('dropZoneRoster');
+        if (dropZone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.style.borderColor = '#ed1c24';
+                    dropZone.style.background = '#fef2f2';
+                }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.style.borderColor = '#cbd5e1';
+                    dropZone.style.background = '#f8fafc';
+                }, false);
+            });
+            dropZone.addEventListener('drop', e => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files.length) {
+                    const input = document.getElementById('rosterFileInput');
+                    input.files = files;
+                    handleRosterFileSelect(input);
+                }
+            }, false);
+        }
     </script>
+
+    <!-- Upload School Roster Modal -->
+    <div id="uploadRosterModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 540px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;">
+            <!-- Modal Header -->
+            <div style="padding: 16px 20px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(237, 28, 36, 0.2); display: flex; align-items: center; justify-content: center; color: #ed1c24;">
+                        <i data-lucide="file-spreadsheet" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #ffffff;">Upload &amp; Render School Roster</h4>
+                        <div style="font-size: 11.5px; color: #94a3b8;">Import .xlsx, .xls, or .csv to update &amp; render spreadsheet</div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUploadRosterModal()" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 24px; line-height: 1; padding: 0 4px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+            </div>
+
+            <!-- Modal Form -->
+            <form method="post" action="{% url 'programs:program_upload_school_roster' program.pk %}" enctype="multipart/form-data" style="padding: 22px 24px; margin: 0;">
+                {% csrf_token %}
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 6px;">
+                        Select Excel or CSV Spreadsheet <span style="color: #ed1c24;">*</span>
+                    </label>
+                    <div id="dropZoneRoster" style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 26px 16px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s ease;" onclick="document.getElementById('rosterFileInput').click()">
+                        <i data-lucide="upload-cloud" style="width: 40px; height: 40px; color: #ed1c24; margin: 0 auto 10px;"></i>
+                        <div style="font-size: 13.5px; font-weight: 600; color: #1e293b;" id="rosterFileLabel">
+                            Click to browse or drag &amp; drop file here
+                        </div>
+                        <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                            Supports: .xlsx (Excel Workbook), .xls, .csv
+                        </div>
+                        <input type="file" id="rosterFileInput" name="roster_file" accept=".xlsx,.xls,.csv" required style="display: none;" onchange="handleRosterFileSelect(this)">
+                    </div>
+                </div>
+
+                <!-- Guidance Box -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; font-size: 12px; color: #166534; line-height: 1.5;">
+                    <strong style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px; color: #14532d;">
+                        <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Live Auto-Parsing &amp; Database Sync
+                    </strong>
+                    Parses School Name, Taluk, UDISE code, HM and Science Teacher contacts, along with Class 4th to 10th Boys, Girls, and Total demographics. Persists records to the database and re-renders the Excel spreadsheet instantly.
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeUploadRosterModal()" class="btn-af btn-af-secondary" style="padding: 8px 16px; font-size: 13px;">
+                        Cancel
+                    </button>
+                    <button type="submit" id="btnUploadSubmit" class="btn-af btn-af-primary" style="padding: 8px 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i data-lucide="upload"></i> Upload &amp; Render
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

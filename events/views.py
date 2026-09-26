@@ -1,4 +1,5 @@
 import csv
+import io
 from io import BytesIO
 
 try:
@@ -1022,5 +1023,109 @@ def event_send_all_due_reminders(request):
 
     next_url = request.POST.get("next") or request.GET.get("next") or "events:list"
     return redirect(next_url)
+
+
+# =============================================================================
+# BULK UPLOAD: EVENTS (Feature 2)
+# =============================================================================
+
+def _normalize_event_header(name):
+    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+@login_required
+def bulk_upload_events(request):
+    if not is_event_manager(request.user):
+        messages.error(request, "Permission denied. Only Event Managers can bulk upload events.")
+        return redirect("events:list")
+
+    if request.method != "POST":
+        return render(request, "events/bulk_upload.html", {"active_page": "events"})
+
+    uploaded_file = request.FILES.get("file") or request.FILES.get("csv_file")
+    if not uploaded_file:
+        messages.error(request, "Please select a CSV or Excel (.xlsx) file.")
+        return redirect("events:bulk_upload")
+
+    file_name = uploaded_file.name.lower()
+    if not file_name.endswith((".csv", ".xlsx")):
+        messages.error(request, "Only CSV and Excel (.xlsx) files are supported.")
+        return redirect("events:bulk_upload")
+
+    try:
+        if file_name.endswith(".csv"):
+            decoded = uploaded_file.read().decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(decoded))
+            reader.fieldnames = [_normalize_event_header(f) for f in (reader.fieldnames or [])]
+            rows = list(reader)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(uploaded_file, read_only=True, data_only=True)
+            ws = wb.active
+            excel_rows = list(ws.iter_rows(values_only=True))
+            wb.close()
+            if not excel_rows:
+                messages.error(request, "The Excel file is empty.")
+                return redirect("events:bulk_upload")
+            headers = [_normalize_event_header(c) for c in excel_rows[0]]
+            rows = []
+            for r in excel_rows[1:]:
+                if not any(c is not None and str(c).strip() for c in r):
+                    continue
+                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+
+        created, errors = 0, []
+        with transaction.atomic():
+            for idx, row in enumerate(rows, start=2):
+                title = row.get("title", "").strip()
+                if not title:
+                    errors.append(f"Row {idx}: Missing event title")
+                    continue
+
+                event_date_str = row.get("event_date", "").strip()
+                if not event_date_str:
+                    errors.append(f"Row {idx}: Missing event_date (YYYY-MM-DD)")
+                    continue
+
+                try:
+                    from datetime import datetime
+                    if "/" in event_date_str:
+                        event_date = datetime.strptime(event_date_str, "%d/%m/%Y").date()
+                    else:
+                        event_date = datetime.strptime(event_date_str, "%Y-%m-%d").date()
+                except Exception:
+                    errors.append(f"Row {idx}: Invalid date format for '{event_date_str}'. Use YYYY-MM-DD.")
+                    continue
+
+                event_type = row.get("event_type", "EVENT").upper() or "EVENT"
+                if event_type not in dict(Event.EventType.choices):
+                    event_type = Event.EventType.EVENT
+
+                status = row.get("status", "PLANNED").upper() or "PLANNED"
+                if status not in dict(Event.Status.choices):
+                    status = Event.Status.PLANNED
+
+                Event.objects.create(
+                    title=title,
+                    event_type=event_type,
+                    status=status,
+                    event_date=event_date,
+                    location=row.get("location", ""),
+                    organizer=row.get("organizer", request.user.get_full_name() or request.user.username),
+                    description=row.get("description", ""),
+                )
+                created += 1
+
+        msg = f"Bulk upload complete: {created} events created"
+        if errors:
+            msg += f", {len(errors)} errors"
+        messages.success(request, msg)
+        for e in errors[:10]:
+            messages.warning(request, e)
+
+    except Exception as exc:
+        messages.error(request, f"Upload failed: {exc}")
+
+    return redirect("events:bulk_upload")
 
 

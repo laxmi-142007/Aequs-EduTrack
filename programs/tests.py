@@ -1,6 +1,11 @@
+import os
+import tempfile
+import shutil
 from datetime import date, time
 from decimal import Decimal
-from django.test import TestCase, Client
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 
@@ -16,6 +21,10 @@ from programs.views import ensure_default_ngos
 
 class ProgramsAndFoundationModulesTest(TestCase):
     def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
+        self._media_override = override_settings(MEDIA_ROOT=self.test_dir)
+        self._media_override.enable()
+
         self.client = Client()
         self.user = User.objects.create_superuser(
             username="admin_test",
@@ -43,6 +52,11 @@ class ProgramsAndFoundationModulesTest(TestCase):
             consent_date=date(2026, 1, 15),
             consent_ref="CONSENT-AF-001",
         )
+
+    def tearDown(self):
+        self._media_override.disable()
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+        super().tearDown()
 
     # ------------------------------------------------------------------------
     # Module 5: NGO Management
@@ -98,7 +112,6 @@ class ProgramsAndFoundationModulesTest(TestCase):
         program = Program.objects.create(
             title="Mobile Science Discovery Lab",
             code="PRG-MSL-01",
-            category=Program.Category.STEM,
             location_name="Kakati Govt Campus",
             village_or_town="Kakati",
             taluk="Belagavi",
@@ -332,11 +345,9 @@ class ProgramsAndFoundationModulesTest(TestCase):
         response = self.client.get(reverse("programs:project_list"))
         self.assertEqual(response.status_code, 200)
 
-        # 1. Tracking Dropdown with + shortcuts
-        self.assertContains(response, "dropdownTracking")
-        self.assertContains(response, reverse("programs:project_create"))
-        self.assertContains(response, reverse("programs:program_create"))
-        self.assertContains(response, reverse("programs:monthly_tracking"))
+        # 1. Tracking Navigation
+        self.assertContains(response, reverse("programs:project_list"))
+        self.assertContains(response, "Tracking")
 
         # 2. Scholarship Dropdown with Eligibility, Internships, Mentorship
         self.assertContains(response, "dropdownScholarship")
@@ -384,7 +395,6 @@ class ProgramsAndFoundationModulesTest(TestCase):
         program = Program.objects.create(
             title="Multi Loc STEM Lab",
             code="PRG-MLOC-01",
-            category=Program.Category.STEM,
             location_name="Belagavi Main Campus",
             district="Belagavi",
         )
@@ -463,7 +473,6 @@ class ProgramsAndFoundationModulesTest(TestCase):
         program = Program.objects.create(
             title="Aero Engineering Fellowship",
             code="PRG-AERO-01",
-            category=Program.Category.SCHOLARSHIP,
             location_name="SEZ Belagavi",
             district="Belagavi",
             project=project,
@@ -564,3 +573,88 @@ class ProgramsAndFoundationModulesTest(TestCase):
         self.assertEqual(indiv_resp.status_code, 302)
         event.refresh_from_db()
         self.assertTrue(event.reminder_sent)
+
+    def test_program_detail_agastya_school_roster(self):
+        program = Program.objects.create(
+            title="Mobile Science Lab 3- Itigatti",
+            code="PRG-STM-MSL-ITI-01",
+            location_name="Mobile Science Lab 3- Itigatti (Dharwad)",
+            village_or_town="Hubballi",
+            taluk="Hubballi",
+            district="Dharwad",
+            state="Karnataka",
+            academic_year="2025-26",
+        )
+        # Empty state renders upload button
+        response = self.client.get(reverse("programs:program_detail", kwargs={"pk": program.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Upload School Profile (Excel / CSV)")
+
+        # Upload Excel file dynamically
+        sample_path = os.path.join(settings.BASE_DIR, "backend", "static", "test_agastya_roster.xlsx")
+        with open(sample_path, "rb") as f:
+            upload_file = SimpleUploadedFile(
+                "test_agastya_roster.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        resp = self.client.post(
+            reverse("programs:program_upload_school_roster", kwargs={"pk": program.pk}),
+            {"roster_file": upload_file},
+            follow=True
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "GMPS Amaragol")
+        self.assertContains(resp, "GHPS Ugginakeri")
+        self.assertContains(resp, "3722")
+        self.assertContains(resp, "1744")
+        self.assertContains(resp, "1978")
+        self.assertContains(resp, "th-dlc-header")
+        self.assertContains(resp, "tr-grand-total")
+
+    def test_program_upload_school_roster(self):
+        program = Program.objects.create(
+            title="Custom Upload Program",
+            code="PRG-CUST-001",
+            location_name="Dharwad Center",
+            academic_year="2025-26",
+        )
+        sample_path = os.path.join(settings.BASE_DIR, "backend", "static", "test_agastya_roster.xlsx")
+        self.assertTrue(os.path.exists(sample_path))
+
+        with open(sample_path, "rb") as f:
+            upload_file = SimpleUploadedFile(
+                "test_agastya_roster.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        resp = self.client.post(
+            reverse("programs:program_upload_school_roster", kwargs={"pk": program.pk}),
+            {"roster_file": upload_file},
+            follow=True
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Successfully parsed and rendered school roster")
+        self.assertContains(resp, "GMPS Amaragol")
+        self.assertContains(resp, "GHPS Ugginakeri")
+        self.assertContains(resp, "3722")
+        self.assertContains(resp, "1744")
+        self.assertContains(resp, "1978")
+
+    def test_program_upload_school_roster_invalid_file(self):
+        program = Program.objects.create(
+            title="Invalid File Upload Program",
+            code="PRG-BAD-001",
+            location_name="Test Center",
+        )
+        bad_file = SimpleUploadedFile("fake_doc.pdf", b"%PDF-1.4 fake content", content_type="application/pdf")
+        resp = self.client.post(
+            reverse("programs:program_upload_school_roster", kwargs={"pk": program.pk}),
+            {"roster_file": bad_file},
+            follow=True
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Unsupported file type")
+
+
