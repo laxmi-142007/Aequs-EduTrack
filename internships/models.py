@@ -61,6 +61,25 @@ class InternshipProgram(models.Model):
         default=Department.PRECISION_MANUFACTURING,
     )
 
+    project = models.ForeignKey(
+        "programs.Project",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internship_programs",
+        help_text="Linked Project under EduTrack Programs",
+    )
+
+    linked_program = models.ForeignKey(
+        "programs.Program",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internship_programs",
+        help_text="Linked Program under EduTrack",
+    )
+
+
     location = models.CharField(
         max_length=150,
         default="Belagavi SEZ, Karnataka",
@@ -215,6 +234,25 @@ class InternshipPlacement(models.Model):
         blank=True,
         related_name="internship_placements",
     )
+
+    project = models.ForeignKey(
+        "programs.Project",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internships",
+        help_text="Linked Project under EduTrack Programs",
+    )
+
+    linked_program = models.ForeignKey(
+        "programs.Program",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internships",
+        help_text="Linked Program under EduTrack",
+    )
+
 
     academic_year = models.CharField(
         max_length=20,

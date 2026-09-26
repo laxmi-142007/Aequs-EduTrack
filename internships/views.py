@@ -1,7 +1,10 @@
 import csv
+import io
 import json
 from decimal import Decimal
 
+from django.contrib import messages
+from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -150,6 +153,10 @@ def _placement_to_dict(p):
             p.evaluation_feedback or ""
         ),
         "milestones_count": p.milestones.count(),
+        "project_id": p.project_id,
+        "project_name": p.project.name if p.project else "",
+        "linked_program_id": p.linked_program_id,
+        "linked_program_title": p.linked_program.title if p.linked_program else "",
         "created_at": p.created_at.strftime(
             "%Y-%m-%d %H:%M"
         ),
@@ -171,6 +178,10 @@ def _program_to_dict(prog):
         "enrolled_count": prog.enrolled_count,
         "available_slots": prog.available_slots,
         "academic_year": prog.academic_year,
+        "project_id": prog.project_id,
+        "project_name": prog.project.name if prog.project else "",
+        "linked_program_id": prog.linked_program_id,
+        "linked_program_title": prog.linked_program.title if prog.linked_program else "",
         "start_date": (
             prog.start_date.strftime("%Y-%m-%d")
             if prog.start_date
@@ -191,6 +202,7 @@ def _program_to_dict(prog):
             "%Y-%m-%d"
         ),
     }
+
 
 
 def _document_to_dict(document):
@@ -274,6 +286,14 @@ def internship_portal(request):
 
     program_statuses = InternshipProgram.Status.choices
 
+    try:
+        from programs.models import Project, Program as EduTrackProgram
+        projects = Project.objects.filter(is_archived=False).order_by("name")
+        edutrack_programs = EduTrackProgram.objects.filter(is_archived=False).order_by("title")
+    except Exception:
+        projects = []
+        edutrack_programs = []
+
     context = {
         "kpis": kpis,
         "programs": programs,
@@ -283,6 +303,8 @@ def internship_portal(request):
         "status_choices": status_choices,
         "grade_choices": grade_choices,
         "program_statuses": program_statuses,
+        "projects": projects,
+        "edutrack_programs": edutrack_programs,
 
         # Also make document choices available to the portal
         # in case the upload modal is located there.
@@ -296,6 +318,7 @@ def internship_portal(request):
         "internships/portal.html",
         context,
     )
+
 
 
 # =============================================================================
@@ -796,6 +819,8 @@ def api_create_internship(request):
         placement = InternshipPlacement.objects.create(
             student=student,
             program=program,
+            project_id=data.get("project_id") or data.get("project") or (program.project_id if program else None),
+            linked_program_id=data.get("linked_program_id") or data.get("linked_program") or (program.linked_program_id if program else None),
             school=school,
             department=dept,
             company_name=company,
@@ -994,6 +1019,13 @@ def api_update_internship(
             placement.evaluation_feedback = data[
                 "evaluation_feedback"
             ]
+
+        if "project_id" in data or "project" in data:
+            placement.project_id = data.get("project_id") or data.get("project") or None
+
+        if "linked_program_id" in data or "linked_program" in data:
+            placement.linked_program_id = data.get("linked_program_id") or data.get("linked_program") or None
+
 
         if (
             data.get("issue_certificate") is True
@@ -1264,6 +1296,8 @@ def api_create_program(request):
         prog = InternshipProgram.objects.create(
             title=title,
             program_code=code,
+            project_id=data.get("project_id") or data.get("project") or None,
+            linked_program_id=data.get("linked_program_id") or data.get("linked_program") or None,
             company_name=data.get(
                 "company_name",
                 "Aequs Aerospace SEZ",
@@ -1455,6 +1489,12 @@ def api_update_program(
 
         if "status" in data:
             prog.status = data["status"]
+
+        if "project_id" in data or "project" in data:
+            prog.project_id = data.get("project_id") or data.get("project") or None
+
+        if "linked_program_id" in data or "linked_program" in data:
+            prog.linked_program_id = data.get("linked_program_id") or data.get("linked_program") or None
 
         prog.save()
 
@@ -1826,3 +1866,101 @@ def internship_list(request):
             "records": records,
         },
     )
+
+
+# =============================================================================
+# BULK UPLOAD: INTERNSHIPS (Feature 2)
+# =============================================================================
+
+def _normalize_intern_header(name):
+    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def bulk_upload_internships(request):
+    if request.method != "POST":
+        return render(request, "internships/bulk_upload.html", {"active_page": "internships"})
+
+    uploaded_file = request.FILES.get("file") or request.FILES.get("csv_file")
+    if not uploaded_file:
+        messages.error(request, "Please select a CSV or Excel (.xlsx) file.")
+        return redirect("internships:bulk_upload")
+
+    file_name = uploaded_file.name.lower()
+    if not file_name.endswith((".csv", ".xlsx")):
+        messages.error(request, "Only CSV and Excel (.xlsx) files are supported.")
+        return redirect("internships:bulk_upload")
+
+    try:
+        if file_name.endswith(".csv"):
+            decoded = uploaded_file.read().decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(decoded))
+            reader.fieldnames = [_normalize_intern_header(f) for f in (reader.fieldnames or [])]
+            rows = list(reader)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(uploaded_file, read_only=True, data_only=True)
+            ws = wb.active
+            excel_rows = list(ws.iter_rows(values_only=True))
+            wb.close()
+            if not excel_rows:
+                messages.error(request, "The Excel file is empty.")
+                return redirect("internships:bulk_upload")
+            headers = [_normalize_intern_header(c) for c in excel_rows[0]]
+            rows = []
+            for r in excel_rows[1:]:
+                if not any(c is not None and str(c).strip() for c in r):
+                    continue
+                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+
+        created, skipped, errors = 0, 0, []
+        with transaction.atomic():
+            for idx, row in enumerate(rows, start=2):
+                admission = row.get("admission_number", "").strip()
+                if not admission:
+                    errors.append(f"Row {idx}: Missing admission_number")
+                    continue
+                student = Student.objects.filter(admission_number=admission).first()
+                if not student:
+                    errors.append(f"Row {idx}: Student '{admission}' not found")
+                    continue
+
+                company_name = row.get("company_name", "Aequs SEZ").strip() or "Aequs SEZ"
+                dept = row.get("department", "AEROSPACE").upper() or "AEROSPACE"
+                if dept not in dict(Department.choices):
+                    dept = Department.AEROSPACE
+
+                status = row.get("status", "SELECTED").upper() or "SELECTED"
+                if status not in dict(InternshipPlacement.Status.choices):
+                    status = InternshipPlacement.Status.SELECTED
+
+                # Program lookup (optional)
+                prog_code = row.get("program_code", "").strip()
+                program = InternshipProgram.objects.filter(program_code__iexact=prog_code).first() if prog_code else None
+
+                placement = InternshipPlacement.objects.create(
+                    student=student,
+                    school=student.school,
+                    program=program,
+                    company_name=company_name,
+                    department=dept,
+                    project_title=row.get("project_title", "General Internship Track"),
+                    academic_year=row.get("academic_year", "2026-27") or "2026-27",
+                    stipend_amount=Decimal(row.get("stipend_amount", "0") or "0"),
+                    mentor_name=row.get("mentor_name", ""),
+                    mentor_email=row.get("mentor_email", ""),
+                    status=status,
+                    evaluation_feedback=row.get("evaluation_feedback", ""),
+                )
+                created += 1
+
+        msg = f"Bulk upload complete: {created} internships created"
+        if errors:
+            msg += f", {len(errors)} errors"
+        messages.success(request, msg)
+        for e in errors[:10]:
+            messages.warning(request, e)
+
+    except Exception as exc:
+        messages.error(request, f"Upload failed: {exc}")
+
+    return redirect("internships:bulk_upload")

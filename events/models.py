@@ -36,8 +36,19 @@ class Event(models.Model):
         COMPLETED = "COMPLETED", "Completed"
         CANCELLED = "CANCELLED", "Cancelled"
 
+    class EventType(models.TextChoices):
+        EVENT = "EVENT", "Event"
+        CAMPAIGN = "CAMPAIGN", "Campaign"
+
     title = models.CharField(
         max_length=200
+    )
+
+    event_type = models.CharField(
+        max_length=20,
+        choices=EventType.choices,
+        default=EventType.EVENT,
+        db_index=True,
     )
 
     status = models.CharField(
@@ -81,6 +92,17 @@ class Event(models.Model):
 
     requested_quantity = models.PositiveIntegerField(
         default=0,
+    )
+
+    # Event Reminder feature (Module 10)
+    reminder_sent = models.BooleanField(
+        default=False,
+        help_text="Automated reminder sent to organizers and volunteers",
+    )
+    reminder_scheduled_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Configured notification trigger date",
     )
 
     class Meta:

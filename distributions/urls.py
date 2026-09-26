@@ -30,4 +30,7 @@ urlpatterns = [
     path("api/reports/school-wise/", views.api_school_wise_report, name="api_school_wise_report"),
     path("api/reports/student-wise/", views.api_student_wise_report, name="api_student_wise_report"),
     path("api/export/csv/", views.api_export_distribution_csv, name="export_csv"),
+
+    # Bulk Upload
+    path("bulk-upload/", views.bulk_upload_distributions, name="bulk_upload"),
 ]

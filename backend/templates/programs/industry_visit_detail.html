@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ visit.title }} | Industry Visit Dossier | Aequs Foundation</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='industry_visits' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div>
+                    <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">{{ visit.title }}</h1>
+                    <span style="font-size: 12px; color: #64748b;">Code: {{ visit.visit_code }} &bull; {{ visit.get_status_display }}</span>
+                </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:industry_visit_edit' visit.pk %}" class="btn-af btn-af-primary">
+                    <i data-lucide="edit-2"></i> Edit Visit
+                </a>
+                <a href="{% url 'programs:industry_visit_list' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="arrow-left"></i> Back to Visits
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <div class="detail-card">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">Status</span>
+                        <span class="val">
+                            <span class="af-badge badge-{{ visit.status|lower }}">{{ visit.get_status_display }}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Destination Plant</span>
+                        <span class="val"><strong>{{ visit.company_name }}</strong></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Location</span>
+                        <span class="val">📍 {{ visit.location|default:"Belagavi SEZ" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Visit Date</span>
+                        <span class="val">{{ visit.visit_date|date:"D, d M Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Visiting School</span>
+                        <span class="val">{{ visit.school.name|default:"General Student Cohort" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Attendees</span>
+                        <span class="val">{{ visit.attendee_count }} Students</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Contact Person</span>
+                        <span class="val">{{ visit.contact_person|default:"N/A" }} {% if visit.contact_phone %}({{ visit.contact_phone }}){% endif %}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Linked Project</span>
+                        <span class="val">
+                            {% if visit.project %}
+                            <a href="{% url 'programs:project_detail' visit.project.pk %}" style="color: #2563eb; font-weight: 600;">
+                                {{ visit.project.name }} ({{ visit.project.code }})
+                            </a>
+                            {% else %}
+                            <span style="color: #94a3b8;">Direct Foundation Visit</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                {% if visit.transport_details %}
+                <div style="margin-top: 20px; padding: 14px 18px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">🚌 Transport &amp; Logistics</div>
+                    <p style="margin: 6px 0 0; font-size: 13.5px; color: #1e293b;">{{ visit.transport_details }}</p>
+                </div>
+                {% endif %}
+
+                {% if visit.learning_outcomes %}
+                <div style="margin-top: 14px; padding: 14px 18px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">🎯 Key Learning Outcomes &amp; Agenda</div>
+                    <p style="margin: 6px 0 0; font-size: 13.5px; color: #1e293b; white-space: pre-line;">{{ visit.learning_outcomes }}</p>
+                </div>
+                {% endif %}
+
+                {% if visit.remarks %}
+                <div style="margin-top: 14px; padding: 14px 18px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">📝 Remarks</div>
+                    <p style="margin: 6px 0 0; font-size: 13.5px; color: #1e293b;">{{ visit.remarks }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

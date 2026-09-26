@@ -106,6 +106,23 @@ class Student(models.Model):
         blank=True,
     )
 
+    # Data Protection Act Compliance (Module 18)
+    parental_consent_obtained = models.BooleanField(
+        default=False,
+        help_text="Parental/Guardian DPDP consent recorded for minor student data collection",
+    )
+
+    consent_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    consent_ref = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Physical consent form ID or digital verification reference",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -116,3 +133,10 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.student_name} ({self.admission_number})"
+
+    @property
+    def masked_phone(self):
+        phone = self.parent_phone or self.student_phone
+        if phone and len(phone) >= 7:
+            return f"XXXXXX{phone[-4:]}"
+        return "XXXXXX"

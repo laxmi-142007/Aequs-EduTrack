@@ -9,6 +9,8 @@ urlpatterns = [
     # =========================================================================
     path("", views.event_list, name="list"),
     path("add/", views.event_create, name="create"),
+    path("campaigns/create/", views.campaign_create, name="campaign_create"),
+    path("campaigns/<int:pk>/edit/", views.campaign_edit, name="campaign_edit"),
     path("<int:pk>/", views.event_detail, name="detail"),
     path("<int:pk>/edit/", views.event_edit, name="edit"),
     path("<int:pk>/delete/", views.event_delete, name="delete"),
@@ -39,8 +41,15 @@ urlpatterns = [
     path("<int:pk>/resources/<int:resource_id>/remove/", views.event_remove_resource, name="remove_resource"),
 
     # =========================================================================
-    # EXPORTS
+    # EVENT REMINDER (Module 10)
+    # =========================================================================
+    path("<int:pk>/send-reminder/", views.event_send_reminder, name="send_reminder"),
+    path("send-due-reminders/", views.event_send_all_due_reminders, name="send_due_reminders"),
+
+    # =========================================================================
+    # EXPORTS & BULK UPLOAD
     # =========================================================================
     path("export-csv/", views.event_export_csv, name="export_csv"),
     path("export-excel/", views.event_export_excel, name="export_excel"),
+    path("bulk-upload/", views.bulk_upload_events, name="bulk_upload"),
 ]

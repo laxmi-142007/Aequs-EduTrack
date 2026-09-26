@@ -625,10 +625,233 @@
 
         .hidden { display: none !important; }
 
+        /* =============================================================
+           COMPREHENSIVE MOBILE RESPONSIVE DESIGN SYSTEM
+        ============================================================= */
+
+        /* Base container & card grid styling */
+        .school-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 18px;
+        }
+
+        /* Tablet & Mobile (<= 850px) */
         @media (max-width: 850px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .school-selector-banner { flex-direction: column; align-items: stretch; }
-            .school-select { min-width: 100%; }
+            .main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .topbar {
+                padding: 12px 18px !important;
+            }
+
+            .topbar h1 {
+                font-size: 17px !important;
+            }
+
+            .content {
+                padding: 18px 16px 36px !important;
+            }
+
+            .tab-content {
+                padding: 20px 16px !important;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Phones & Small Screens (<= 640px) */
+        @media (max-width: 640px) {
+            .main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .topbar {
+                padding: 10px 12px !important;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .topbar-left {
+                width: 100%;
+            }
+
+            .topbar-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .topbar h1 {
+                font-size: 15px !important;
+            }
+
+            .content {
+                padding: 12px 10px 30px !important;
+            }
+
+            .tab-content {
+                padding: 16px 12px !important;
+            }
+
+            /* Module Header & Action Buttons */
+            .portal-module-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+            }
+
+            .portal-header-actions {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px !important;
+                width: 100%;
+            }
+
+            .portal-header-actions button,
+            .portal-header-actions a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 8px 10px !important;
+                font-size: 12px !important;
+                white-space: nowrap;
+            }
+
+            /* NGO Profile Banner */
+            .ngo-profile-banner {
+                padding: 16px 14px !important;
+                margin-bottom: 18px !important;
+            }
+
+            .ngo-banner-flex {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 14px !important;
+            }
+
+            .ngo-banner-meta {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+
+            .ngo-banner-stats-actions {
+                align-items: stretch !important;
+                width: 100% !important;
+            }
+
+            .ngo-banner-stats {
+                display: flex !important;
+                width: 100% !important;
+                gap: 8px !important;
+            }
+
+            .ngo-banner-stat-box {
+                flex: 1 !important;
+                padding: 8px 10px !important;
+            }
+
+            .ngo-banner-stat-box div:first-child {
+                font-size: 18px !important;
+            }
+
+            .ngo-banner-buttons {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 8px !important;
+            }
+
+            .ngo-banner-buttons button,
+            .ngo-banner-buttons a {
+                width: 100% !important;
+                text-align: center;
+                justify-content: center;
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+            }
+
+            /* School Cards */
+            .school-cards-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+
+            .info-card {
+                padding: 15px 14px !important;
+            }
+
+            /* Modals on Mobile */
+            .modal-card {
+                width: 95% !important;
+                max-width: 95% !important;
+                max-height: 92vh !important;
+                overflow-y: auto !important;
+                padding: 16px 12px !important;
+                border-radius: 10px !important;
+            }
+
+            .modal-header h3 {
+                font-size: 16px !important;
+            }
+
+            .modal-tab-nav {
+                display: flex !important;
+                gap: 6px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding-bottom: 8px !important;
+                flex-wrap: nowrap !important;
+                scrollbar-width: thin;
+            }
+
+            .modal-tab-btn {
+                flex-shrink: 0 !important;
+                font-size: 11.5px !important;
+                padding: 6px 10px !important;
+            }
+
+            /* Form Actions on Mobile */
+            .form-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+
+            .form-actions button,
+            .form-actions a {
+                width: 100% !important;
+                margin-left: 0 !important;
+                text-align: center;
+                justify-content: center;
+            }
+
+            /* Inputs on Mobile - prevent iOS auto-zoom */
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 14px !important;
+            }
+        }
+
+        /* Extra small devices (<= 400px) */
+        @media (max-width: 400px) {
+            .main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .portal-header-actions {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 </head>
@@ -649,7 +872,7 @@
         <header class="topbar" style="display:flex; align-items:center; width:100%; box-sizing:border-box;">
 
     <div class="topbar-left" style="flex:1;">
-        <h1>Government School Management System</h1>
+        <h1 style="font-size: 19px; font-weight: 700; color: #171717; margin: 0;">🏫 {{ current_ngo.name }} &bull; Partner Schools</h1>
     </div>
 
     <div class="topbar-right" style="display:flex; align-items:center;">
@@ -701,54 +924,87 @@
             <!-- ========================================= -->
             <div id="dashboard-content" class="{% if not user_authenticated %}hidden{% endif %}">
                 
-                <!-- School Selector Ribbon -->
-                {% if selected_school %}
-                <div class="school-selector-banner" id="schoolSelectorBanner">
-                    <div class="selector-group">
-                        <label for="activeSchoolSelect">Selected School:</label>
-                        <select id="activeSchoolSelect" class="school-select" onchange="onSelectedSchoolChange(this.value)">
-                            {% for s in schools %}
-                                <option value="{{ s.id }}" {% if s.id == selected_school.id %}selected{% endif %}>
-                                    {{ s.name }} (UDISE: {{ s.udise_code }})
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="selector-group">
-                        <span class="school-meta-pill" id="bannerSchoolLocation">{{ selected_school.village|default:selected_school.district|default:"" }}</span>
-                        <span class="school-meta-pill" id="bannerSchoolAffiliation">{{ selected_school.affiliation|default:"State Board" }}</span>
-                        <span class="school-meta-pill" id="bannerSchoolStudents">{{ selected_school.student_strength|default:0 }} Students</span>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Cards Grid Container (No bar) -->
+                <!-- Cards Grid Container -->
                 <div class="container">
                     <div id="school-cards" class="tab-content active">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <!-- Top Header & Module Title -->
+                        <div class="portal-module-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                             <div>
-                                <h2 style="margin: 0;">Partner Government Schools</h2>
-                                <p class="section-desc" style="margin: 4px 0 0;">Click on any school card below to view pop-up management options or bulk upload student details.</p>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span style="background: {% if current_ngo.code == 'PRATHAM' %}#fee2e2; color: #991b1b;{% elif current_ngo.code == 'AGASTYA' %}#dbeafe; color: #1e40af;{% else %}#fef3c7; color: #92400e;{% endif %}; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
+                                        {{ current_ngo.code }} MODULE
+                                    </span>
+                                    <span style="font-size: 12px; color: #64748b;">Autonomous NGO School Module</span>
+                                </div>
+                                <h2 style="margin: 0; font-size: 1.45rem; color: #1e293b; font-weight: 800;">
+                                    {% if current_ngo.code == 'PRATHAM' %}🔴{% elif current_ngo.code == 'AGASTYA' %}🔵{% else %}🟡{% endif %}
+                                    {{ current_ngo.name }} &bull; Partner Schools
+                                </h2>
+                                <p class="section-desc" style="margin: 4px 0 0; color: #64748b;">Dedicated school management environment for {{ current_ngo.name }} partner programs.</p>
                             </div>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button type="button" class="btn btn-primary" style="background:#231f20; border-color:#231f20; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 13px;" onclick="openAddSchoolModal()">➕ Add New School</button>
-                                <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#dd2d27; border-color:#dd2d27; text-decoration:none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px;">↑ Bulk Upload Schools</a>
+                            <div class="portal-header-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-primary" style="background:#231f20; border-color:#231f20; padding: 9px 16px; border-radius: 6px; font-weight: 600; font-size: 13px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add School</button>
+                                <a href="{% url 'schools:bulk_upload_for_ngo' current_ngo.code_lower %}" class="btn btn-primary" style="background:#dd2d27; border-color:#dd2d27; text-decoration:none; padding: 9px 16px; border-radius: 6px; font-weight: 600; font-size: 13px;" title="Bulk Upload Schools directly to {{ current_ngo.name }}">↑ Bulk Upload ({{ current_ngo.name }})</a>
+                                <a href="{% url 'programs:ngo_detail' current_ngo.id %}" class="btn btn-secondary" style="text-decoration:none; padding: 9px 14px; border-radius: 6px; font-weight: 600; font-size: 13px;">📋 NGO Dossier</a>
                                 {% if schools %}
-                                <button type="button" class="btn btn-danger" style="background:#dc2626; border-color:#dc2626; color:white; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor:pointer;" onclick="clearAllSchools()">🗑️ Clear All Schools</button>
+                                <button type="button" class="btn btn-danger" style="background:#dc2626; border-color:#dc2626; color:white; padding: 9px 14px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor:pointer;" onclick="clearAllSchools()">🗑️ Clear All</button>
                                 {% endif %}
                             </div>
                         </div>
 
-                        <div class="school-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+
+                        <!-- NGO Profile Banner Card for current module -->
+                        <div class="ngo-profile-banner" style="background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%); border: 1px solid #e2e8f0; border-left: 5px solid {% if current_ngo.code == 'PRATHAM' %}#ed1c24{% elif current_ngo.code == 'AGASTYA' %}#2563eb{% else %}#f59e0b{% endif %}; border-radius: 12px; padding: 22px 26px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 24px;">
+                            <div class="ngo-banner-flex" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                                <div class="ngo-banner-info">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                        <span style="background: #f1f5f9; color: #0f172a; font-family: monospace; font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px;">{{ current_ngo.code }}</span>
+                                        <span style="background: #ecfdf5; color: #047857; font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: 12px;">Active Strategic Partner MoU</span>
+                                    </div>
+                                    <h2 style="margin: 0 0 6px; font-size: 22px; font-weight: 800; color: #0f172a;">{{ current_ngo.name }}</h2>
+                                    <p style="margin: 0 0 12px; font-size: 13.5px; color: #475569; max-width: 750px; line-height: 1.5;">
+                                        <strong style="color: #1e293b;">Focus Areas &amp; Methodologies:</strong> {{ current_ngo.focus_areas|default:"Quality primary education, science labs, and community learning." }}
+                                    </p>
+                                    <div class="ngo-banner-meta" style="display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: #64748b;">
+                                        <span>👤 <strong>Lead Coordinator:</strong> {{ current_ngo.contact_person|default:"Field Coordinator" }}</span>
+                                        <span>📞 <strong>Contact Phone:</strong> {{ current_ngo.phone|default:"+91 80 2345 6789" }}</span>
+                                        <span>✉️ <strong>Email:</strong> {{ current_ngo.email|default:"contact@partner.org" }}</span>
+                                        <span>📍 <strong>Operations Hub:</strong> {{ current_ngo.headquarters|default:"Karnataka Regional Center" }}</span>
+                                    </div>
+                                </div>
+                                <div class="ngo-banner-stats-actions" style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
+                                    <div class="ngo-banner-stats" style="display: flex; gap: 12px;">
+                                        <div class="ngo-banner-stat-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 18px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                            <div style="font-size: 20px; font-weight: 800; color: #ed1c24;">{{ schools|length }}</div>
+                                            <div style="font-size: 11px; color: #64748b; font-weight: 600;">Partner Schools</div>
+                                        </div>
+                                        <div class="ngo-banner-stat-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 18px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                            <div style="font-size: 20px; font-weight: 800; color: #0f172a;">{{ total_students }}</div>
+                                            <div style="font-size: 11px; color: #64748b; font-weight: 600;">Enrolled Students</div>
+                                        </div>
+                                    </div>
+                                    <div class="ngo-banner-buttons" style="display: flex; gap: 8px;">
+                                        <button type="button" class="btn btn-sm btn-primary" style="background:#231f20; border-color:#231f20; padding: 7px 14px; font-size: 12px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add School to {{ current_ngo.name }}</button>
+                                        <a href="{% url 'programs:ngo_detail' current_ngo.id %}" class="btn btn-sm btn-secondary" style="padding: 7px 14px; font-size: 12px; text-decoration: none;">📋 View NGO Dossier</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schools Exclusively Belonging to Current NGO Module -->
+                        <div class="school-cards-grid">
                             {% for s in schools %}
-                            <div class="info-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">
+                            <div class="info-card" data-ngo="{{ current_ngo.code_lower }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.15s ease;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">
                                 <div>
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                                         <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #231f20;">🏫 {{ s.name }}</h3>
                                         <span class="status-badge" style="background: #f0fdf4; color: #166534; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600;">ACTIVE</span>
                                     </div>
-                                    <div style="font-size: 12.5px; color: #64748b; margin-bottom: 10px;">
-                                        🆔 UDISE Code: <strong>{{ s.udise_code }}</strong>
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                        <span style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: {% if current_ngo.code == 'PRATHAM' %}#fee2e2; color: #991b1b;{% elif current_ngo.code == 'AGASTYA' %}#dbeafe; color: #1e40af;{% else %}#fef3c7; color: #92400e;{% endif %}">
+                                            {{ current_ngo.name }}
+                                        </span>
+                                        <span style="font-size: 12px; color: #64748b;">🆔 {{ s.udise_code }}</span>
                                     </div>
                                     <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px;">
                                         <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #334155;">📍 {{ s.village|default:s.district }}</span>
@@ -757,21 +1013,17 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Card Action Buttons -->
                                 <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation();">
                                     <button type="button" class="btn btn-sm btn-primary" style="flex: 1; padding: 8px; font-size: 12px; background: #dd2d27; border-color: #dd2d27;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">⚡ Manage School Options</button>
                                     <button type="button" class="btn btn-sm btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="openSchoolModal('{{ s.id }}', 'bulk-students')">👨‍🎓 Bulk Add Students</button>
                                 </div>
                             </div>
                             {% empty %}
-                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background: #ffffff; border-radius: 12px; border: 2px dashed #cbd5e1; margin-top: 10px;">
-                                <div style="font-size: 40px; margin-bottom: 12px;">🏫</div>
-                                <h3 style="margin: 0 0 6px; color: #1e293b; font-size: 18px; font-weight: 700;">No Schools Found</h3>
-                                <p style="margin: 0 0 20px; color: #64748b; font-size: 13px;">There are currently no partner government schools in the database.</p>
-                                <div style="display: flex; gap: 12px; justify-content: center;">
-                                    <button type="button" class="btn btn-primary" style="background:#231f20; border-color:#231f20; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px;" onclick="openAddSchoolModal()">➕ Add First School</button>
-                                    <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#dd2d27; border-color:#dd2d27; text-decoration:none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px;">↑ Bulk Upload Schools</a>
-                                </div>
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background: #f8fafc; border-radius: 12px; border: 1.5px dashed #cbd5e1;">
+                                <div style="font-size: 38px; margin-bottom: 10px;">🏫</div>
+                                <h3 style="margin: 0 0 6px; color: #1e293b; font-size: 17px; font-weight: 700;">No Schools in this Module</h3>
+                                <p style="margin: 0 0 16px; color: #64748b; font-size: 13.5px;">There are currently no schools assigned to {{ current_ngo.name }}.</p>
+                                <button type="button" class="btn btn-primary btn-sm" style="background: #231f20; padding: 8px 16px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add First School to {{ current_ngo.name }}</button>
                             </div>
                             {% endfor %}
                         </div>
@@ -780,12 +1032,20 @@
                     <!-- 1. Add Government Schools Content -->
                     <div id="add-school" class="tab-content">
                         <h2>Add New School</h2>
-                        <p class="section-desc">Register a new government or government-aided school into the EduTrack network.</p>
+                        <p class="section-desc">Register a new government or government-aided school under a partner NGO module.</p>
                         <form id="addSchoolForm" onsubmit="handleAddSchool(event)">
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label for="schoolName">School Name *</label>
                                     <input type="text" id="schoolName" name="schoolName" required placeholder="e.g., Govt. Model High School">
+                                </div>
+                                <div class="form-group">
+                                    <label for="addSchoolNgo">NGO Partner Organization *</label>
+                                    <select id="addSchoolNgo" name="ngo" required>
+                                        {% for n in ngo_nav %}
+                                        <option value="{{ n.code }}" {% if n.is_active %}selected{% endif %}>{{ n.name }} ({{ n.code }})</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="udiseCode">UDISE Code (Auto-generated if left blank)</label>
@@ -814,22 +1074,30 @@
                             </div>
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary" id="addSchoolSubmitBtn">Add School</button>
-    <a href="{% url 'schools:bulk_upload' %}" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb; text-decoration:none; margin-left:8px;">Bulk Upload</a>
-    <button type="button" class="btn btn-secondary" onclick="resetForm('addSchoolForm')">Cancel</button>
-</div>
+                                <a href="{% url 'schools:bulk_upload_for_ngo' current_ngo.code_lower %}" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb; text-decoration:none; margin-left:8px;" title="Bulk Upload Schools to {{ current_ngo.name }}">Bulk Upload ({{ current_ngo.name }})</a>
+                                <button type="button" class="btn btn-secondary" onclick="activateTab('school-cards')">Cancel</button>
+                            </div>
                         </form>
                     </div>
 
                     <!-- 2. Edit School Details Content -->
                     <div id="edit-details" class="tab-content">
-                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to All School Cards</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="activateTab('school-cards')">← Back to Schools</button>
                         <h2>Edit General School Details</h2>
-                        <p class="section-desc">Update school identification, official affiliation, and principal assignment.</p>
+                        <p class="section-desc">Update school identification, official affiliation, NGO partner module, and principal assignment.</p>
                         <form id="editSchoolForm" onsubmit="handleEditSchool(event)">
                             <div class="form-grid">
                                 <div class="form-group full-width">
                                     <label for="editSchoolName">School Name *</label>
                                     <input type="text" id="editSchoolName" name="editSchoolName" required placeholder="Enter current school name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="editSchoolNgo">Assigned NGO Partner Organization *</label>
+                                    <select id="editSchoolNgo" name="editNgo" required>
+                                        {% for n in ngo_nav %}
+                                        <option value="{{ n.code }}" {% if n.is_active %}selected{% endif %}>{{ n.name }} ({{ n.code }})</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="editPrincipal">Head Teacher / Principal *</label>
@@ -1017,7 +1285,7 @@
             </div>
 
             <!-- Modal Sub-Navigation Bar -->
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin: 15px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+            <div class="modal-tab-nav" style="display: flex; gap: 6px; flex-wrap: wrap; margin: 15px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="edit-details" onclick="switchModalTab('edit-details')">✏️ Edit Details</button>
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="contact-info" onclick="switchModalTab('contact-info')">📞 Contact Info</button>
                 <button type="button" class="btn btn-sm btn-secondary modal-tab-btn" data-modaltab="headmaster-details" onclick="switchModalTab('headmaster-details')">👤 Headmaster</button>
@@ -1327,18 +1595,23 @@ async function fetchAndPopulateSchoolData(schoolId) {
             currentSchoolId = schoolId;
             currentSchoolData = data;
             
-            // Update Banner
+            // Update Banner (if present)
             const school = data.school;
             const loc = school.village || school.district || 'General';
-            document.getElementById('bannerSchoolLocation').innerText = loc;
-            document.getElementById('bannerSchoolAffiliation').innerText = school.affiliation || 'State Board';
-            document.getElementById('bannerSchoolStudents').innerText =
-                (school.student_strength || 0) + ' Students';
+            const locEl = document.getElementById('bannerSchoolLocation');
+            if (locEl) locEl.innerText = loc;
+            const affEl = document.getElementById('bannerSchoolAffiliation');
+            if (affEl) affEl.innerText = school.affiliation || 'State Board';
+            const stuEl = document.getElementById('bannerSchoolStudents');
+            if (stuEl) stuEl.innerText = (school.student_strength || 0) + ' Students';
 
             // Populate Edit Form
             document.getElementById('editSchoolName').value = school.name || '';
             document.getElementById('editPrincipal').value = school.headmaster_name || '';
             document.getElementById('editAffiliation').value = school.affiliation || 'State';
+            if (school.primary_ngo && document.getElementById('editSchoolNgo')) {
+                document.getElementById('editSchoolNgo').value = school.primary_ngo.code;
+            }
 
             // Populate Contact Form
             document.getElementById('phone').value = school.phone || '';
@@ -1505,6 +1778,7 @@ async function handleAddSchool(e) {
         state: document.getElementById('state').value.trim(),
         admissionDate: document.getElementById('admissionDate').value,
         affiliation: document.getElementById('addAffiliation').value,
+        ngo: document.getElementById('addSchoolNgo') ? document.getElementById('addSchoolNgo').value : 'PRATHAM',
     };
 
     try {
@@ -1521,13 +1795,15 @@ async function handleAddSchool(e) {
             showToast(data.message || 'School added successfully!');
             document.getElementById('addSchoolForm').reset();
             
-            // Add to dropdown and select it
+            // Add to dropdown (if present) and select it
             const select = document.getElementById('activeSchoolSelect');
-            const opt = document.createElement('option');
-            opt.value = data.school.id;
-            opt.text = `${data.school.name} (UDISE: ${data.school.udise_code})`;
-            select.appendChild(opt);
-            select.value = data.school.id;
+            if (select) {
+                const opt = document.createElement('option');
+                opt.value = data.school.id;
+                opt.text = `${data.school.name} (UDISE: ${data.school.udise_code})`;
+                select.appendChild(opt);
+                select.value = data.school.id;
+            }
             
             currentSchoolId = data.school.id;
             fetchAndPopulateSchoolData(currentSchoolId);
@@ -1556,7 +1832,8 @@ async function handleEditSchool(e) {
     const payload = {
         name: document.getElementById('editSchoolName').value.trim(),
         principal: document.getElementById('editPrincipal').value.trim(),
-        affiliation: document.getElementById('editAffiliation').value
+        affiliation: document.getElementById('editAffiliation').value,
+        ngo: document.getElementById('editSchoolNgo') ? document.getElementById('editSchoolNgo').value : '',
     };
 
     try {
@@ -1572,8 +1849,10 @@ async function handleEditSchool(e) {
         if (data.success) {
             showToast(data.message || 'School details updated!');
             const select = document.getElementById('activeSchoolSelect');
-            const opt = select.querySelector(`option[value="${currentSchoolId}"]`);
-            if (opt) opt.text = `${data.school.name} (UDISE: ${data.school.udise_code})`;
+            if (select) {
+                const opt = select.querySelector(`option[value="${currentSchoolId}"]`);
+                if (opt) opt.text = `${data.school.name} (UDISE: ${data.school.udise_code})`;
+            }
             fetchAndPopulateSchoolData(currentSchoolId);
         } else {
             showToast(data.error || 'Failed to update details', 'error');
@@ -1992,6 +2271,14 @@ async function clearAllSchools() {
 
 function openAddSchoolModal() {
     activateTab('add-school');
+}
+
+function openAddSchoolForNgo(ngoCode) {
+    activateTab('add-school');
+    const select = document.getElementById('addSchoolNgo');
+    if (select) {
+        select.value = ngoCode;
+    }
 }
 
 // Reset Form helper

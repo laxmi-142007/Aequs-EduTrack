@@ -1,0 +1,50 @@
+<USER_REQUEST>
+SL NO	SCHOOL NAME	Taluk	UDISE CODE	HM Name	MOBILE	Science Teacher Name	MOBILE	Division	CLASS 4th			CLASS 5th 			CLASS 6th (DLC)			CLASS 7th			CLASS 8th 			CLASS 9th 			CLASS 10th 			GRAND Total			Remarks
+									BOYS	GIRLS	TOTAL	BOYS	GIRLS	TOTAL	BOYS	GIRLS	TOTAL	BOYS	GIRLS	TOTAL	BOYS	GIRLS	TOTAL	BOYS	GIRLS	TOTAL	BOYS	GIRLS	TOTAL	BOYS	GIRLS	TOTAL	
+1	GMPS Amaragol	Hubli Rural	29090210101	Sri.B V Bommanavadi	6360625288	Smt.V M Patange	9482377611	A	10	20	30	20	11	31	12	11	23	10	16	26			0			0			0	52	58	110	
+								B	9	19	28	20	10	30	13	12	25	10	17	27			0			0			0	52	58	110	
+2	GMPS Tarihal	Hubli Rural	29090204801	Sri.Basavaraj Bandiwad	8867064585	Smt.M S Annigeri	8050978579	A	15	15	30	17	17	34	13	12	25	15	15	30			0			0			0	60	59	119	
+								B	17	15	32	18	19	37	10	13	23	15	18	33			0			0			0	60	65	125	
+3	GHPS Yarikoppa	Dharwad rural	29090111301	Smt.J.I. Wali	9886649360	Smt R .T.Hurigol	8105423488		15	10	25	15	10	25	6	14	20	27	17	44			0			0			0	63	51	114	
+4	GHPS Kanavi Honnapur	Dharwad Rural	29090105601	Smt.G P Ratod	9916282444	Smt.Deepa Kulakarani	9741430351		19	12	31	22	21	43	19	12	31	13	19	32	19	18	37			0			0	92	82	174	
+5	GHPS Managundi	Dharwad rural	29090107701	Smt.V M Patil	9480555238	Sri F I Kurahatti	9591317071	A	9	13	22	10	19	29	9	21	30	12	20	32			0			0			0	40	73	113	
+								B	10	14	24	9	21	30	10	20	30	11	19	30			0			0			0	40	74	114	
+6	GHS Managundi	Dharwad Rural	29090107703	Sri.Jagadish Kariyannavar	9535192324	Sri.Pramod Vadhiraj	9448837718	A			0			0			0			0	11	19	30	13	19	32			0	24	38	62	
+								B			0			0			0			0	12	21	33	12	20	32			0	24	41	65	
+7	GHPS Nigadi	Dharwad rural	29090109201	Smt. U .L.Huded	8553648476	Smt.Soumya Shiraguppi	9845538670		16	10	26	9	9	18	8	17	25	10	14	24	10	17	27			0			0	53	67	120	
+8	GHPS Itigatti	Dharwad City	29090702110	Sri.M L Pujar	9902153087	Smt .J Kanchanor	9620680336		15	10	25	21	29	50	23	22	45	19	28	47	20	29	49			0			0	98	118	216	
+9	GHS Itigatti	Dharwad City	29090702110	Sri.Rajkumar Chavhan	9901812166	Smt..A D Ambannavar	9480555342				0			0			0			0	14	23	37	14	26	40			0	28	49	77	
+10	GHPS Jodalli	Kalaghatgi	29090309101	Smt.D Geeta	9880850912	Smt.G H Hosur	9480554690		16	5	21	15	18	33	17	14	31	18	19	37	25	18	43			0			0	91	74	165	
+11	GHPS Navalur	Dharwad City	29090702105	Sri L T Dasar	9535223058	Sri. U D Kurabar	7411210023	A	15	20	35	18	19	37	16	23	39	17	30	47			0			0			0	66	92	158	
+								B	15	20	35	17	23	40	18	24	42	19	31	50			0			0			0	69	98	167	
+12	GHPS Tadasinakoppa	Dharwad City	29090702104	Sri N S Koliwad	9900680727	Sri Nagaraj Ichageri	9986982015	A	20	35	55	33	33	66	23	29	52	24	35	59	28	21	49			0			0	128	153	281	
+								B			0			0						0			0			0			0	0	0	0	
+13	MPS Dummawad	Kalaghatgi	29090302302	Smt R.F.Magi	9008453246	Smt K B Hiregoudra	9743307041		24	6	30	28	13	41	33	11	44	32	2	34	29	5	34			0			0	146	37	183	
+14	KGS Dummawad	Kalaghatgi	29090302303	Smt V K Kulakarni	8884423140	Smt.S M Walvekar	9986223131			15	15		34	34		26	26		21	21			0			0			0	0	96	96	
+15	GHS Yarikoppa	Dharwad Rural	29090111302	Smt.Kavita Tayannavar	9108590582	Smt.Bhagyajothi	9481735580	A			0			0			0			0	12	17	29	18	23	41			0	30	40	70	
+								B			0			0			0			0	10	16	26	15	25	40			0	25	41	66	
+16	GHPS Gamanagatti	Hubli Rural	29090205312	Sri.R F Bajantri	9448671450	Smt.S K Maladkar	9449925657	A	15	15	30	16	12	28	10	24	34	10	15	25	12	10	22			0			0	63	76	139	
+								B	16	16	32	17	13	30	10	25	35	12	15	27	15	19	34			0			0	70	88	158	
+17	GHPS Benakanakatti	Dharwad rural	29090101001	Sri V K Gummadi	9110295797	Smt. A Chandrgiri	9483937027		14	9	23	14	14	28	14	9	23	14	9	23			0			0			0	56	41	97	
+18	GHPS Gambyapur	Dharwad Rural	29090303001	Sri.M B Hubballi	9481009928	Smt.Diksha F Shirahattimath	9740202901		18	12	30	20	14	34	24	15	39	14	14	28	15	8	23			0			0	91	63	154	
+19	GHPS Kuruvinakoppa	Kalaghatgi	29090305301	Smt. V C Hiremath	9741067698				14	13	27	9	18	27	9	21	30	13	10	23	32	35	67			0			0	77	97	174	
+20	GHPS Kadanakoppa	Kalaghatgi	29090304602	Smt Chetana Abhi	9972807251	Smt Chetana Abhi	9972807251		12	16	28	13	17	30	14	17	31	12	19	31	13	20	33			0			0	64	89	153	
+21	GHPS Ugginakeri	Kalaghatgi	29090308501	Sri K Y Ganjigatti	9980162588	Smt. Swetharani Ibatti	6366133626		19	6	25	26	20	46	19	16	35	18	18	36			0			0			0	82	60	142	
+									333	326	659	387	414	801	330	408	738	345	421	766	277	296	573	72	113	185	0	0	0	1744	1978	3,722	
+
+my data is in this format
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-18T14:39:28+05:30.
+
+The user's current state is as follows:
+Active Document: d:\Aequs-EduTrack\schools\tests.py (LANGUAGE_PYTHON)
+Cursor is on line: 6
+Other open documents:
+- d:\Aequs-EduTrack\schools\views.py (LANGUAGE_PYTHON)
+- d:\Aequs-EduTrack\schools\tests.py (LANGUAGE_PYTHON)
+- d:\Aequs-EduTrack\backend\templates\schools\bulk_upload.html (LANGUAGE_HTML)
+Running terminal commands:
+- python manage.py runserver 8000
+ (in d:\Aequs-EduTrack, running for 17m26s)
+</ADDITIONAL_METADATA>

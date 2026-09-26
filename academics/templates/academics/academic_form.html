@@ -94,6 +94,34 @@
             color: #166534;
             border-radius: 6px;
         }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px 12px;
+            }
+            .container {
+                padding: 20px 16px;
+                border-radius: 8px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+            .cancel {
+                margin-left: 0;
+                text-align: center;
+                display: block;
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 

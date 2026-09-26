@@ -15,6 +15,7 @@ class SchoolPortalAPITests(TestCase):
             password="admin123",
             role=User.Role.ADMIN,
         )
+        self.client.force_login(self.user)
         self.school = School.objects.create(
             name="Test Govt High School",
             udise_code="29010200999",
@@ -30,9 +31,9 @@ class SchoolPortalAPITests(TestCase):
         )
 
     def test_portal_view(self):
-        response = self.client.get(reverse("schools:portal"))
+        response = self.client.get(reverse("schools:portal"), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Government School Management System")
+        self.assertContains(response, "Government Schools")
         self.assertContains(response, "Test Govt High School")
 
     def test_api_schools_list(self):
@@ -223,3 +224,103 @@ class SchoolPortalAPITests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
+
+    def test_bulk_upload_schools_with_taluk(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        csv_content = (
+            "name,udise_code,taluk\n"
+            "Taluk Test School,29999900001,Hukkeri\n"
+        ).encode("utf-8")
+        uploaded_file = SimpleUploadedFile("schools.csv", csv_content, content_type="text/csv")
+        response = self.client.post(
+            reverse("schools:bulk_upload"),
+            {"school_file": uploaded_file},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        school = School.objects.filter(udise_code="29999900001").first()
+        self.assertIsNotNone(school)
+        self.assertEqual(school.taluk, "Hukkeri")
+        self.assertEqual(school.district, "Hukkeri")
+
+    def test_bulk_upload_schools_missing_taluk_fails(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        csv_content = (
+            "name,udise_code,district\n"
+            "No Taluk School,29999900002,Belagavi\n"
+        ).encode("utf-8")
+        uploaded_file = SimpleUploadedFile("schools.csv", csv_content, content_type="text/csv")
+        response = self.client.post(
+            reverse("schools:bulk_upload"),
+            {"school_file": uploaded_file},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(School.objects.filter(udise_code="29999900002").exists())
+
+    def test_bulk_upload_user_roster_format(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        roster_data = (
+            "SL NO\tSCHOOL NAME\tTaluk\tUDISE CODE\tHM Name\tMOBILE\tScience Teacher Name\tMOBILE\tDivision\tCLASS 4th\t\t\tCLASS 5th \t\t\tCLASS 6th (DLC)\t\t\tCLASS 7th\t\t\tCLASS 8th \t\t\tCLASS 9th \t\t\tCLASS 10th \t\t\tGRAND Total\t\t\tRemarks\n"
+            "\t\t\t\t\t\t\t\t\tBOYS\tGIRLS\tTOTAL\tBOYS\tGIRLS\tTOTAL\tBOYS\tGIRLS\tTOTAL\tBOYS\tGIRLS\tTOTAL\tBOYS\tGIRLS\tTOTAL\tBOYS\tGIRLS\tTOTAL\tBOYS\tGIRLS\tTOTAL\tBOYS\tGIRLS\tTOTAL\t\n"
+            "1\tGMPS Amaragol\tHubli Rural\t29090210101\tSri.B V Bommanavadi\t6360625288\tSmt.V M Patange\t9482377611\tA\t10\t20\t30\t20\t11\t31\t12\t11\t23\t10\t16\t26\t\t\t0\t\t\t0\t\t\t0\t52\t58\t110\t\n"
+            "\t\t\t\t\t\t\t\tB\t9\t19\t28\t20\t10\t30\t13\t12\t25\t10\t17\t27\t\t\t0\t\t\t0\t\t\t0\t52\t58\t110\t\n"
+            "2\tGMPS Tarihal\tHubli Rural\t29090204801\tSri.Basavaraj Bandiwad\t8867064585\tSmt.M S Annigeri\t8050978579\tA\t15\t15\t30\t17\t17\t34\t13\t12\t25\t15\t15\t30\t\t\t0\t\t\t0\t\t\t0\t60\t59\t119\t\n"
+            "\t\t\t\t\t\t\t\tB\t17\t15\t32\t18\t19\t37\t10\t13\t23\t15\t18\t33\t\t\t0\t\t\t0\t\t\t0\t60\t65\t125\t\n"
+            "8\tGHPS Itigatti\tDharwad City\t29090702110\tSri.M L Pujar\t9902153087\tSmt .J Kanchanor\t9620680336\t\t15\t10\t25\t21\t29\t50\t23\t22\t45\t19\t28\t47\t20\t29\t49\t\t\t0\t\t\t0\t98\t118\t216\t\n"
+            "9\tGHS Itigatti\tDharwad City\t29090702110\tSri.Rajkumar Chavhan\t9901812166\tSmt..A D Ambannavar\t9480555342\t\t\t\t0\t\t\t0\t\t\t0\t\t\t0\t14\t23\t37\t14\t26\t40\t\t\t0\t28\t49\t77\t\n"
+            "\t\t\t\t\t\t\t\t\t333\t326\t659\t387\t414\t801\t330\t408\t738\t345\t421\t766\t277\t296\t573\t72\t113\t185\t0\t0\t0\t1744\t1978\t3,722\t\n"
+        ).encode("utf-8")
+        uploaded_file = SimpleUploadedFile("roster.csv", roster_data, content_type="text/csv")
+        response = self.client.post(
+            reverse("schools:bulk_upload"),
+            {"school_file": uploaded_file},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify GMPS Amaragol
+        amaragol = School.objects.filter(name="GMPS Amaragol").first()
+        self.assertIsNotNone(amaragol)
+        self.assertEqual(amaragol.taluk, "Hubli Rural")
+        self.assertEqual(amaragol.headmaster_name, "Sri.B V Bommanavadi")
+        self.assertEqual(amaragol.headmaster_phone, "6360625288")
+        # 110 (div A) + 110 (div B) = 220
+        self.assertEqual(amaragol.student_strength, 220)
+
+        # Check grade strengths for Amaragol (Class 4th: 19 boys, 39 girls = 58 total)
+        c4 = amaragol.grade_strengths.filter(grade_level__icontains="CLASS 4").first()
+        self.assertIsNotNone(c4)
+        self.assertEqual(c4.total_students, 58)
+
+        # Verify Science Teacher resource
+        teacher_res = SchoolResource.objects.filter(school=amaragol, resource_name__icontains="Patange").first()
+        self.assertIsNotNone(teacher_res)
+
+        # Verify duplicate UDISE disambiguation for GHS and GHPS Itigatti
+        ghps = School.objects.filter(name="GHPS Itigatti").first()
+        ghs = School.objects.filter(name="GHS Itigatti").first()
+        self.assertIsNotNone(ghps)
+        self.assertIsNotNone(ghs)
+        self.assertNotEqual(ghps.udise_code, ghs.udise_code)
+
+    def test_bulk_upload_with_leading_title_rows(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        csv_content = (
+            "AEQUS FOUNDATION EDUCATION PROGRAM\n"
+            "Dharwad Cluster School Details 2024-25\n"
+            "SL NO,SCHOOL NAME,Taluk,UDISE CODE,HM Name\n"
+            "1,Title Test School,Dharwad Rural,29999900088,Sri Headmaster\n"
+        ).encode("utf-8")
+        uploaded_file = SimpleUploadedFile("schools_with_title.csv", csv_content, content_type="text/csv")
+        response = self.client.post(
+            reverse("schools:bulk_upload"),
+            {"school_file": uploaded_file},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        school = School.objects.filter(udise_code="29999900088").first()
+        self.assertIsNotNone(school)
+        self.assertEqual(school.name, "Title Test School")
+        self.assertEqual(school.taluk, "Dharwad Rural")
+

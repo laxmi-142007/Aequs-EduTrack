@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "events",
     "volunteers",
     "reports",
+    "programs",
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,9 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+            "OPTIONS": {
+                "timeout": 30,
+            },
         }
     }
 
@@ -236,3 +240,4 @@ AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "accounts:dashboard_redirect"
 LOGOUT_REDIRECT_URL = "login"
+# Auto-reload trigger for newly registered NGO routes

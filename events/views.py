@@ -1,4 +1,5 @@
 import csv
+import io
 from io import BytesIO
 
 try:
@@ -12,6 +13,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from inventory.models import InventoryItem, StockTransaction
 from reports.models import ActivityLog, log_activity
@@ -100,6 +102,9 @@ def event_list(request):
     for ev in events_list:
         ev.user_participation = user_participations_map.get(ev.id)
 
+    campaigns = [ev for ev in events_list if ev.event_type == Event.EventType.CAMPAIGN]
+    events_only = [ev for ev in events_list if ev.event_type != Event.EventType.CAMPAIGN]
+
     can_create_event = is_event_manager(request.user)
     form_links = EventFormLink.objects.filter(is_active=True)
 
@@ -109,11 +114,25 @@ def event_list(request):
     volunteer_form_url = request.build_absolute_uri(f"/volunteers/form/{vol_link.token}/")
     volunteer_qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{vol_link.token}/")
 
+    today = timezone.now().date()
+    from datetime import timedelta
+    three_days = today + timedelta(days=3)
+    due_reminder_events = [
+        ev for ev in events_list
+        if not ev.reminder_sent
+        and ev.event_date >= today
+        and ((ev.reminder_scheduled_date and ev.reminder_scheduled_date <= today) or ev.event_date <= three_days)
+    ]
+
     return render(
         request,
         "events/event_list.html",
         {
             "events": events_list,
+            "campaigns": campaigns,
+            "events_only": events_only,
+            "total_campaigns": len(campaigns),
+            "total_events_only": len(events_only),
             "q": q,
             "status_filter": status_filter,
             "my_events_filter": my_events_filter,
@@ -127,8 +146,11 @@ def event_list(request):
             "form_links": form_links,
             "volunteer_form_url": volunteer_form_url,
             "volunteer_qr_url": volunteer_qr_url,
+            "due_reminder_events": due_reminder_events,
+            "due_reminders_count": len(due_reminder_events),
         },
     )
+
 
 
 # =============================================================================
@@ -335,18 +357,27 @@ def event_remove_volunteer(request, pk, participation_id):
 
 
 # =============================================================================
-# EVENT CREATE
+# EVENT & CAMPAIGN CREATION / EDITING
 # =============================================================================
 
-@login_required
-def event_create(request):
-    if request.user.is_authenticated and not is_event_manager(request.user):
-        messages.error(request, "Permission denied. Normal volunteers are not authorized to schedule events.")
-        return redirect("events:list")
+def _save_event_or_campaign(request, is_campaign=False, pk=None):
+    event = None
+    if pk:
+        event = get_object_or_404(Event, pk=pk)
+        if request.user.is_authenticated and not is_event_manager(request.user, event):
+            messages.error(request, "Permission denied. You are not authorized to edit this record.")
+            return redirect("events:detail", pk=event.pk)
+    else:
+        if request.user.is_authenticated and not is_event_manager(request.user):
+            messages.error(request, "Permission denied. Normal volunteers are not authorized to create this record.")
+            return redirect("events:list")
+
+    entity_name = "Campaign" if is_campaign else "Event"
+    entity_type = Event.EventType.CAMPAIGN if is_campaign else Event.EventType.EVENT
 
     if request.method == "POST":
         title = request.POST.get("title")
-        status = request.POST.get("status", Event.Status.PLANNED)
+        status = request.POST.get("status", Event.Status.PLANNED if not event else event.status)
         description = request.POST.get("description", "")
         event_date = request.POST.get("event_date")
         location = request.POST.get("location", "")
@@ -354,46 +385,72 @@ def event_create(request):
 
         inventory_item_id = request.POST.get("inventory_item")
         inventory_quantity = request.POST.get("inventory_quantity")
+        reminder_scheduled_date = request.POST.get("reminder_scheduled_date") or None
+        if not reminder_scheduled_date and event_date:
+            try:
+                from datetime import timedelta
+                parsed_d = timezone.datetime.strptime(event_date, "%Y-%m-%d").date()
+                reminder_scheduled_date = parsed_d - timedelta(days=1)
+            except Exception:
+                pass
 
         with transaction.atomic():
-            event = Event.objects.create(
-                title=title,
-                status=status,
-                description=description,
-                event_date=event_date,
-                location=location,
-                organizer=organizer,
-            )
+            if not event:
+                event = Event.objects.create(
+                    title=title,
+                    event_type=entity_type,
+                    status=status,
+                    description=description,
+                    event_date=event_date,
+                    location=location,
+                    organizer=organizer,
+                    reminder_scheduled_date=reminder_scheduled_date,
+                )
+                action_text = f"{entity_name} created: {event.title}"
+                action_type = ActivityLog.ActionType.CREATE
+            else:
+                event.title = title
+                event.event_type = entity_type
+                event.status = status
+                event.description = description
+                event.event_date = event_date
+                event.location = location
+                event.organizer = organizer
+                if reminder_scheduled_date:
+                    event.reminder_scheduled_date = reminder_scheduled_date
+                event.save()
+                action_text = f"{entity_name} updated: {event.title}"
+                action_type = ActivityLog.ActionType.UPDATE
 
             if inventory_item_id and inventory_quantity:
                 try:
                     qty = int(inventory_quantity)
                     if qty > 0:
                         item = InventoryItem.objects.select_for_update().get(pk=inventory_item_id)
-                        previous_stock = item.current_stock
-                        if qty > previous_stock:
-                            qty = previous_stock
+                        prev_stock = item.current_stock
+                        deduct_qty = qty
+                        if pk and event.requested_item_id == item.id:
+                            deduct_qty = max(0, qty - (event.requested_quantity or 0))
 
-                        new_stock = previous_stock - qty
-                        item.current_stock = new_stock
-                        item.save()
-
-                        StockTransaction.objects.create(
-                            item=item,
-                            transaction_type=StockTransaction.TransactionType.STOCK_OUT,
-                            quantity=qty,
-                            previous_stock=previous_stock,
-                            new_stock=new_stock,
-                            source_destination=f"Event: {event.title}",
-                            reference_number=f"EVT-{event.pk}",
-                            notes=f"Resource requested for event: {event.title}",
-                        )
-
+                        if deduct_qty > 0:
+                            actual_deduct = min(deduct_qty, prev_stock)
+                            new_stock = max(0, prev_stock - actual_deduct)
+                            item.current_stock = new_stock
+                            item.save(update_fields=["current_stock"])
+                            StockTransaction.objects.create(
+                                item=item,
+                                transaction_type=StockTransaction.TransactionType.STOCK_OUT,
+                                quantity=actual_deduct,
+                                previous_stock=prev_stock,
+                                new_stock=new_stock,
+                                source_destination=f"{entity_name}: {event.title}",
+                                reference_number=f"EVT-{event.pk}",
+                                notes=f"Resource for {entity_name.lower()}: {event.title}",
+                            )
                         event.requested_item = item
                         event.requested_quantity = qty
-                        event.save()
-
-                        EventResource.objects.get_or_create(
+                        event.save(update_fields=["requested_item", "requested_quantity"])
+                        EventResource.objects.update_or_create(
                             event=event,
                             item=item,
                             defaults={"quantity": qty},
@@ -403,124 +460,53 @@ def event_create(request):
 
             log_activity(
                 request,
-                action=f"Event created: {event.title}",
+                action=action_text,
                 category="EVENT",
-                action_type=ActivityLog.ActionType.CREATE,
+                action_type=action_type,
                 object_type="Event",
                 object_id=event.pk,
-                details=f"Event '{event.title}' was created.",
+                details=f"{entity_name} '{event.title}' was {'updated' if pk else 'created'}.",
             )
 
-        messages.success(request, f"Event '{event.title}' scheduled successfully.")
+        messages.success(request, f"{entity_name} '{event.title}' {'updated' if pk else 'scheduled'} successfully.")
         return redirect("events:detail", pk=event.pk)
 
     inventory_items = InventoryItem.objects.filter(status="ACTIVE")
+    template_name = "events/campaign_form.html" if is_campaign else "events/event_form.html"
+
     return render(
         request,
-        "events/event_form.html",
+        template_name,
         {
-            "page_title": "Schedule New Event",
-            "form_title": "Schedule Event",
+            "event": event,
+            "is_campaign": is_campaign,
+            "page_title": f"{'Edit' if pk else 'Schedule New'} {entity_name}" + (f": {event.title}" if event else ""),
+            "form_title": f"{'Update' if pk else 'Schedule'} {entity_name} Details",
             "inventory_items": inventory_items,
             "status_choices": Event.Status.choices,
+            "is_edit": bool(pk),
         },
     )
 
 
-# =============================================================================
-# EVENT EDIT
-# =============================================================================
+@login_required
+def event_create(request):
+    return _save_event_or_campaign(request, is_campaign=False)
+
+
+@login_required
+def campaign_create(request):
+    return _save_event_or_campaign(request, is_campaign=True)
+
 
 @login_required
 def event_edit(request, pk):
-    event = get_object_or_404(Event, pk=pk)
+    return _save_event_or_campaign(request, is_campaign=False, pk=pk)
 
-    if request.user.is_authenticated and not is_event_manager(request.user, event):
-        messages.error(request, "Permission denied. Normal volunteers are not authorized to edit event details.")
-        return redirect("events:detail", pk=event.pk)
 
-    if request.method == "POST":
-        event.title = request.POST.get("title")
-        event.status = request.POST.get("status", event.status)
-        event.description = request.POST.get("description", "")
-        event.event_date = request.POST.get("event_date")
-        event.location = request.POST.get("location", "")
-        event.organizer = request.POST.get("organizer", "")
-        event.save()
-
-        # Process inventory item and quantity if provided
-        inventory_item_id = request.POST.get("inventory_item")
-        inventory_quantity = request.POST.get("inventory_quantity")
-        if inventory_item_id and inventory_quantity:
-            try:
-                qty = int(inventory_quantity)
-                if qty > 0:
-                    item = InventoryItem.objects.get(pk=inventory_item_id)
-                    if event.requested_item_id == item.id:
-                        additional_qty = max(0, qty - (event.requested_quantity or 0))
-                        if additional_qty > 0:
-                            prev_stock = item.current_stock
-                            new_stock = max(0, prev_stock - additional_qty)
-                            item.current_stock = new_stock
-                            item.save(update_fields=["current_stock"])
-                            StockTransaction.objects.create(
-                                item=item,
-                                transaction_type=StockTransaction.TransactionType.STOCK_OUT,
-                                quantity=additional_qty,
-                                previous_stock=prev_stock,
-                                new_stock=new_stock,
-                                source_destination=f"Event: {event.title}",
-                                reference_number=f"EVT-{event.pk}",
-                                notes=f"Additional quantity requested for event: {event.title}",
-                            )
-                        event.requested_quantity = qty
-                    else:
-                        prev_stock = item.current_stock
-                        new_stock = max(0, prev_stock - qty)
-                        item.current_stock = new_stock
-                        item.save(update_fields=["current_stock"])
-                        StockTransaction.objects.create(
-                            item=item,
-                            transaction_type=StockTransaction.TransactionType.STOCK_OUT,
-                            quantity=qty,
-                            previous_stock=prev_stock,
-                            new_stock=new_stock,
-                            source_destination=f"Event: {event.title}",
-                            reference_number=f"EVT-{event.pk}",
-                            notes=f"Resource allocated for event: {event.title}",
-                        )
-                        event.requested_item = item
-                        event.requested_quantity = qty
-                    event.save(update_fields=["requested_item", "requested_quantity"])
-            except (ValueError, InventoryItem.DoesNotExist):
-                pass
-
-        log_activity(
-            request,
-            action=f"Event updated: {event.title}",
-            category="EVENT",
-            action_type=ActivityLog.ActionType.UPDATE,
-            object_type="Event",
-            object_id=event.pk,
-            details=f"Event '{event.title}' was updated.",
-        )
-
-        messages.success(request, f"Event '{event.title}' updated successfully.")
-        return redirect("events:detail", pk=event.pk)
-
-    inventory_items = InventoryItem.objects.filter(status="ACTIVE")
-    return render(
-        request,
-        "events/event_form.html",
-        {
-            "event": event,
-            "page_title": "Edit Event",
-            "form_title": "Update Event Details",
-            "inventory_items": inventory_items,
-            "status_choices": Event.Status.choices,
-            "is_edit": True,
-        },
-    )
+@login_required
+def campaign_edit(request, pk):
+    return _save_event_or_campaign(request, is_campaign=True, pk=pk)
 
 
 # =============================================================================
@@ -970,3 +956,176 @@ def event_success(request, pk):
             "event": event,
         },
     )
+
+
+# =============================================================================
+# EVENT REMINDER FEATURE (Module 10)
+# =============================================================================
+
+@login_required
+def event_send_reminder(request, pk):
+    """
+    Module 10: Event Reminder Feature.
+    Dispatches automated event reminder alerts to organizers and volunteers.
+    """
+    event = get_object_or_404(Event, pk=pk)
+    if request.method == "POST":
+        event.reminder_sent = True
+        event.reminder_scheduled_date = timezone.now().date()
+        event.save(update_fields=["reminder_sent", "reminder_scheduled_date"])
+        vol_count = event.volunteer_participations.count()
+        messages.success(
+            request,
+            f"Event reminder sent for '{event.title}'. Notified organizer and {vol_count} registered volunteer(s)."
+        )
+    next_url = request.POST.get("next") or request.GET.get("next")
+    if next_url:
+        return redirect(next_url)
+    return redirect("events:detail", pk=event.pk)
+
+
+@login_required
+def event_send_all_due_reminders(request):
+    """
+    Module 10: Dispatches reminders for all upcoming events whose reminder date has arrived
+    or is within 3 days and reminder hasn't been sent yet.
+    """
+    if request.method == "POST":
+        today = timezone.now().date()
+        from datetime import timedelta
+        three_days = today + timedelta(days=3)
+
+        due_events = Event.objects.filter(
+            reminder_sent=False,
+            event_date__gte=today,
+        ).filter(
+            Q(reminder_scheduled_date__lte=today) |
+            Q(reminder_scheduled_date__isnull=True, event_date__lte=three_days)
+        )
+
+        count = 0
+        total_volunteers = 0
+        for ev in due_events:
+            ev.reminder_sent = True
+            if not ev.reminder_scheduled_date:
+                ev.reminder_scheduled_date = today
+            ev.save(update_fields=["reminder_sent", "reminder_scheduled_date"])
+            count += 1
+            total_volunteers += ev.volunteer_participations.count()
+
+        if count > 0:
+            messages.success(
+                request,
+                f"Automated Reminders sent for {count} event(s)! Notified organizers and {total_volunteers} volunteer(s)."
+            )
+        else:
+            messages.info(request, "All upcoming event reminders are already up to date.")
+
+    next_url = request.POST.get("next") or request.GET.get("next") or "events:list"
+    return redirect(next_url)
+
+
+# =============================================================================
+# BULK UPLOAD: EVENTS (Feature 2)
+# =============================================================================
+
+def _normalize_event_header(name):
+    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+@login_required
+def bulk_upload_events(request):
+    if not is_event_manager(request.user):
+        messages.error(request, "Permission denied. Only Event Managers can bulk upload events.")
+        return redirect("events:list")
+
+    if request.method != "POST":
+        return render(request, "events/bulk_upload.html", {"active_page": "events"})
+
+    uploaded_file = request.FILES.get("file") or request.FILES.get("csv_file")
+    if not uploaded_file:
+        messages.error(request, "Please select a CSV or Excel (.xlsx) file.")
+        return redirect("events:bulk_upload")
+
+    file_name = uploaded_file.name.lower()
+    if not file_name.endswith((".csv", ".xlsx")):
+        messages.error(request, "Only CSV and Excel (.xlsx) files are supported.")
+        return redirect("events:bulk_upload")
+
+    try:
+        if file_name.endswith(".csv"):
+            decoded = uploaded_file.read().decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(decoded))
+            reader.fieldnames = [_normalize_event_header(f) for f in (reader.fieldnames or [])]
+            rows = list(reader)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(uploaded_file, read_only=True, data_only=True)
+            ws = wb.active
+            excel_rows = list(ws.iter_rows(values_only=True))
+            wb.close()
+            if not excel_rows:
+                messages.error(request, "The Excel file is empty.")
+                return redirect("events:bulk_upload")
+            headers = [_normalize_event_header(c) for c in excel_rows[0]]
+            rows = []
+            for r in excel_rows[1:]:
+                if not any(c is not None and str(c).strip() for c in r):
+                    continue
+                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+
+        created, errors = 0, []
+        with transaction.atomic():
+            for idx, row in enumerate(rows, start=2):
+                title = row.get("title", "").strip()
+                if not title:
+                    errors.append(f"Row {idx}: Missing event title")
+                    continue
+
+                event_date_str = row.get("event_date", "").strip()
+                if not event_date_str:
+                    errors.append(f"Row {idx}: Missing event_date (YYYY-MM-DD)")
+                    continue
+
+                try:
+                    from datetime import datetime
+                    if "/" in event_date_str:
+                        event_date = datetime.strptime(event_date_str, "%d/%m/%Y").date()
+                    else:
+                        event_date = datetime.strptime(event_date_str, "%Y-%m-%d").date()
+                except Exception:
+                    errors.append(f"Row {idx}: Invalid date format for '{event_date_str}'. Use YYYY-MM-DD.")
+                    continue
+
+                event_type = row.get("event_type", "EVENT").upper() or "EVENT"
+                if event_type not in dict(Event.EventType.choices):
+                    event_type = Event.EventType.EVENT
+
+                status = row.get("status", "PLANNED").upper() or "PLANNED"
+                if status not in dict(Event.Status.choices):
+                    status = Event.Status.PLANNED
+
+                Event.objects.create(
+                    title=title,
+                    event_type=event_type,
+                    status=status,
+                    event_date=event_date,
+                    location=row.get("location", ""),
+                    organizer=row.get("organizer", request.user.get_full_name() or request.user.username),
+                    description=row.get("description", ""),
+                )
+                created += 1
+
+        msg = f"Bulk upload complete: {created} events created"
+        if errors:
+            msg += f", {len(errors)} errors"
+        messages.success(request, msg)
+        for e in errors[:10]:
+            messages.warning(request, e)
+
+    except Exception as exc:
+        messages.error(request, f"Upload failed: {exc}")
+
+    return redirect("events:bulk_upload")
+
+

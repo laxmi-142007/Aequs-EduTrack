@@ -17,6 +17,7 @@ class DistributionForm(forms.ModelForm):
             "academic_year",
             "quantity",
             "issued_by",
+            "location",
             "remarks",
         ]
         widgets = {
@@ -27,6 +28,7 @@ class DistributionForm(forms.ModelForm):
             "academic_year": forms.TextInput(attrs={"class": "form-control", "placeholder": "Example: 2026-27"}),
             "quantity": forms.NumberInput(attrs={"class": "form-control", "min": 1, "value": 1}),
             "issued_by": forms.TextInput(attrs={"class": "form-control", "placeholder": "Staff / Coordinator name"}),
+            "location": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Belagavi SEZ, Kittur Campus"}),
             "remarks": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Distribution notes..."}),
         }
 

@@ -3,6 +3,7 @@ Views for RBAC: admin portal, employee dashboard, user management.
 """
 import csv
 import json
+from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -11,12 +12,15 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 
 from academics.models import AcademicRecord
 from distributions.models import Distribution
 from eligibility.models import EligibilityRecord
 from internships.models import InternshipPlacement
 from inventory.models import Laptop, LaptopAssignment
+from programs.models import MentorshipSession
 from schools.models import School
 from students.models import Student
 from volunteers.models import Volunteer
@@ -73,10 +77,78 @@ def dashboard_redirect(request):
 # ADMIN DASHBOARD
 # ================================================================
 
+@login_required
+def student_lookup_api(request):
+    """API endpoint to lookup student details by admission number, id, or name for dashboard modal."""
+    q = request.GET.get("id_search", "").strip() or request.GET.get("q", "").strip()
+    if not q:
+        return JsonResponse({"success": False, "error": "Please enter an admission number, student ID, or name."})
+
+    query = Q(admission_number__iexact=q)
+    if q.isdigit():
+        query |= Q(pk=int(q))
+
+    student = Student.objects.filter(query).select_related("school").first()
+    if not student:
+        student = Student.objects.filter(Q(admission_number__icontains=q) | Q(student_name__icontains=q)).select_related("school").first()
+
+    if not student:
+        return JsonResponse({"success": False, "error": f"No student found matching '{q}'."})
+
+    school_name = getattr(student.school, "school_name", "") or getattr(student.school, "name", "Unassigned School")
+    school_udise = getattr(student.school, "udise_code", "")
+
+    return JsonResponse({
+        "success": True,
+        "student": {
+            "id": student.pk,
+            "name": student.student_name,
+            "admission_number": student.admission_number,
+            "school_name": school_name,
+            "school_udise": school_udise,
+            "current_class": student.current_class,
+            "section": student.section or "-",
+            "gender": student.get_gender_display() if hasattr(student, "get_gender_display") else student.gender,
+            "dob": student.date_of_birth.strftime("%d %b %Y") if student.date_of_birth else "-",
+            "parent_name": student.parent_name or "-",
+            "parent_phone": student.parent_phone or "-",
+            "student_phone": student.student_phone or "-",
+            "status": student.get_status_display() if hasattr(student, "get_status_display") else student.status,
+            "address": student.address or "-",
+            "detail_url": reverse("students:detail", kwargs={"pk": student.pk}),
+            "edit_url": reverse("students:edit", kwargs={"pk": student.pk}),
+        }
+    })
+
+
 @admin_required
 def admin_dashboard(request):
     """Admin Executive Dashboard with full system overview."""
+    searched_student = None
+    id_search = request.GET.get("id_search", "").strip()
+    if id_search:
+        query = Q(admission_number__iexact=id_search)
+        if id_search.isdigit():
+            query |= Q(pk=int(id_search))
+        searched_student = Student.objects.filter(query).select_related("school").first()
+        if not searched_student:
+            searched_student = Student.objects.filter(Q(admission_number__icontains=id_search) | Q(student_name__icontains=id_search)).select_related("school").first()
+            if not searched_student:
+                messages.warning(request, f"No student found with ID/Admission '{id_search}'.")
+
+    # Feature 7: Upcoming Activities
+    today = timezone.localdate()
+    week_ahead = today + timedelta(days=7)
+    upcoming_events = Event.objects.filter(
+        event_date__gte=today, event_date__lte=week_ahead, status="PLANNED"
+    ).order_by("event_date")[:5]
+    upcoming_mentorships = MentorshipSession.objects.filter(
+        session_date__gte=today, session_date__lte=week_ahead, status="SCHEDULED"
+    ).select_related("student").order_by("session_date")[:5]
+
     context = {
+        "searched_student": searched_student,
+        "search_query_id": id_search,
         "total_users": User.objects.count(),
         "active_users": User.objects.filter(is_active=True).count(),
         "users_pending_password": User.objects.filter(
@@ -125,6 +197,8 @@ def admin_dashboard(request):
         ).order_by("-distribution_date", "-created_at")[:10],
         "recent_users": User.objects.order_by("-date_joined")[:10],
         "groups": Group.objects.annotate(user_count=Count("user")).order_by("name"),
+        "upcoming_events": upcoming_events,
+        "upcoming_mentorships": upcoming_mentorships,
     }
     return render(request, "accounts/admin_dashboard.html", context)
 
@@ -137,9 +211,36 @@ def admin_dashboard(request):
 def employee_dashboard(request):
     """Employee Dashboard - dynamically tailored based on permissions."""
     user = request.user
+
+    searched_student = None
+    id_search = request.GET.get("id_search", "").strip()
+    if id_search:
+        query = Q(admission_number__iexact=id_search)
+        if id_search.isdigit():
+            query |= Q(pk=int(id_search))
+        searched_student = Student.objects.filter(query).select_related("school").first()
+        if not searched_student:
+            searched_student = Student.objects.filter(Q(admission_number__icontains=id_search) | Q(student_name__icontains=id_search)).select_related("school").first()
+            if not searched_student:
+                messages.warning(request, f"No student found with ID/Admission '{id_search}'.")
+
+    # Feature 7: Upcoming Activities
+    today = timezone.localdate()
+    week_ahead = today + timedelta(days=7)
+    upcoming_events = Event.objects.filter(
+        event_date__gte=today, event_date__lte=week_ahead, status="PLANNED"
+    ).order_by("event_date")[:5]
+    upcoming_mentorships = MentorshipSession.objects.filter(
+        session_date__gte=today, session_date__lte=week_ahead, status="SCHEDULED"
+    ).select_related("student").order_by("session_date")[:5]
+
     context = {
         "user": user,
+        "searched_student": searched_student,
+        "search_query_id": id_search,
         "user_permissions": user.get_all_permissions(),
+        "upcoming_events": upcoming_events,
+        "upcoming_mentorships": upcoming_mentorships,
     }
 
     if user.has_perm("schools.view_school") or user.is_admin:

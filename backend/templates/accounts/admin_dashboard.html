@@ -69,6 +69,71 @@
         </div>
         {% endif %}
 
+        <!-- Feature 6: Quick ID Search Bar with In-Dashboard Modal -->
+        <div class="card" style="background: #fff; border-left: 4px solid #2563eb;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <span class="section-title" style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="search" style="width: 18px; height: 18px; color: #2563eb;"></i> Quick Student ID / Admission Search
+                    </span>
+                    <p style="font-size: 12px; color: #64748b; margin-top: 2px;">Enter an Admission Number or Student ID for instant modal overview.</p>
+                </div>
+                <form id="studentSearchForm" method="GET" action="{% url 'accounts:admin_dashboard' %}" style="display: flex; gap: 8px; flex: 1; max-width: 420px;" onsubmit="handleStudentLookup(event);">
+                    <input type="text" id="studentSearchInput" name="id_search" value="{{ search_query_id|default:'' }}" placeholder="e.g. ADM-2026-001 or ID..." style="flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;" required>
+                    <button type="submit" id="studentSearchBtn" class="btn btn-primary" style="background: #2563eb; padding: 8px 14px;">
+                        <i data-lucide="search" style="width: 14px; height: 14px;"></i> Lookup
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Feature 7: Upcoming Activities -->
+        <div class="card">
+            <div class="card-header">
+                <span class="section-title" style="display: flex; align-items: center; gap: 6px;">
+                    <i data-lucide="calendar-clock" style="width: 18px; height: 18px; color: #dd2d27;"></i> Upcoming Activities (Next 7 Days)
+                </span>
+                <div style="display: flex; gap: 8px;">
+                    <a href="{% url 'events:list' %}" class="btn btn-outline btn-sm">Events Directory</a>
+                    <a href="{% url 'programs:mentorship_list' %}" class="btn btn-outline btn-sm">Mentorships</a>
+                </div>
+            </div>
+            <div class="two-col">
+                <div>
+                    <h4 style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px;">Scheduled Events &amp; Drives</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        {% for ev in upcoming_events %}
+                        <div style="padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <a href="{% url 'events:detail' ev.id %}" style="font-weight: 600; font-size: 13px; color: #1e293b; text-decoration: none;">{{ ev.title }}</a>
+                                <div style="font-size: 11px; color: #64748b;">📍 {{ ev.location|default:"Aequs SEZ" }} &bull; {{ ev.event_date|date:"D, d M Y" }}</div>
+                            </div>
+                            <span class="stat-badge badge-blue" style="font-size: 10.5px;">{{ ev.get_event_type_display }}</span>
+                        </div>
+                        {% empty %}
+                        <p style="font-size: 12px; color: #94a3b8; font-style: italic;">No events scheduled for the next 7 days.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <h4 style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px;">Scheduled Mentorship Sessions</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        {% for ms in upcoming_mentorships %}
+                        <div style="padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 13px; color: #1e293b;">{{ ms.session_title|default:ms.session_code }}</div>
+                                <div style="font-size: 11px; color: #64748b;">Student: {{ ms.student.student_name }} &bull; Mentor: {{ ms.mentor_name }}</div>
+                            </div>
+                            <span class="stat-badge badge-green" style="font-size: 10.5px;">{{ ms.session_date|date:"d M" }}</span>
+                        </div>
+                        {% empty %}
+                        <p style="font-size: 12px; color: #94a3b8; font-style: italic;">No mentorship sessions scheduled this week.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- User Management -->
         <div>
             <div class="section-title">User Management</div>
@@ -94,10 +159,10 @@
         <div>
             <div class="section-title">System Overview</div>
             <div class="stats-grid">
-                <a href="{% url 'schools:portal' %}" class="stat-card">
+                <div class="stat-card">
                     <div class="stat-header"><span class="stat-title">Active Schools</span><i data-lucide="school" style="width:18px;height:18px;color:#64748b;"></i></div>
                     <div class="stat-value">{{ school_count }}</div>
-                </a>
+                </div>
                 <a href="{% url 'students:list' %}" class="stat-card">
                     <div class="stat-header"><span class="stat-title">Total Students</span><i data-lucide="graduation-cap" style="width:18px;height:18px;color:#64748b;"></i></div>
                     <div class="stat-value">{{ student_count }}</div>
@@ -173,13 +238,185 @@
                 <a href="{% url 'accounts:user_create' %}" class="btn btn-primary"><i data-lucide="user-plus" style="width:14px;height:14px;"></i> Create User</a>
                 <a href="{% url 'accounts:user_list' %}" class="btn btn-outline"><i data-lucide="users" style="width:14px;height:14px;"></i> Manage Users</a>
                 <a href="/admin/" class="btn btn-outline"><i data-lucide="settings" style="width:14px;height:14px;"></i> Django Admin</a>
-                <a href="{% url 'schools:portal' %}" class="btn btn-outline"><i data-lucide="school" style="width:14px;height:14px;"></i> Schools</a>
                 <a href="{% url 'inventory:portal' %}" class="btn btn-outline"><i data-lucide="laptop" style="width:14px;height:14px;"></i> Inventory</a>
                 <a href="{% url 'reports:list' %}" class="btn btn-outline"><i data-lucide="bar-chart-3" style="width:14px;height:14px;"></i> Reports</a>
             </div>
         </div>
     </div>
 </div>
-<script>if(window.lucide) lucide.createIcons();</script>
+
+<!-- =========================================================================
+     STUDENT DETAILS IN-DASHBOARD MODAL (Feature 6 Enhanced)
+========================================================================== -->
+<div id="studentDetailModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+    <div class="modal-card" style="background: #ffffff; border-radius: 14px; max-width: 600px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; border: 1px solid #e2e8f0; animation: modalFadeIn 0.2s ease-out;">
+        <!-- Modal Header -->
+        <div style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                    🎓
+                </div>
+                <div>
+                    <h3 id="modalStudentName" style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">Student Details</h3>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                        Admission No: <strong id="modalAdmissionNo" style="color: #2563eb;">-</strong>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeStudentModal()" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px;">&times;</button>
+        </div>
+
+        <!-- Modal Body -->
+        <div style="padding: 24px; max-height: 70vh; overflow-y: auto;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">School</div>
+                    <div id="modalSchoolName" style="font-size: 13.5px; font-weight: 600; color: #1e293b; margin-top: 2px;">-</div>
+                    <div id="modalSchoolUdise" style="font-size: 11px; color: #94a3b8;"></div>
+                </div>
+                <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Current Class &amp; Section</div>
+                    <div id="modalClassSection" style="font-size: 13.5px; font-weight: 600; color: #1e293b; margin-top: 2px;">-</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Gender &amp; DOB</div>
+                    <div id="modalGenderDob" style="font-size: 13px; color: #1e293b; margin-top: 2px;">-</div>
+                </div>
+                <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Enrollment Status</div>
+                    <div id="modalStatus" style="font-size: 13px; font-weight: 600; color: #16a34a; margin-top: 2px;">Active</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Parent / Guardian</div>
+                    <div id="modalParentName" style="font-size: 13px; color: #1e293b; margin-top: 2px;">-</div>
+                </div>
+                <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Contact Number</div>
+                    <div id="modalContact" style="font-size: 13px; color: #1e293b; margin-top: 2px;">-</div>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Address / Village</div>
+                <div id="modalAddress" style="font-size: 13px; color: #475569; margin-top: 2px;">-</div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" onclick="closeStudentModal()" class="btn btn-outline btn-sm">Close</button>
+            <div style="display: flex; gap: 8px;">
+                <a id="modalEditBtn" href="#" class="btn btn-outline btn-sm" style="color: #c2410c; border-color: #fed7aa; background: #fff7ed;">
+                    ✏️ Edit Student (Student Tab)
+                </a>
+                <a id="modalDetailBtn" href="#" class="btn btn-primary btn-sm" style="background: #2563eb;">
+                    📋 View Full Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    if(window.lucide) lucide.createIcons();
+
+    function openStudentModal(student) {
+        document.getElementById('modalStudentName').textContent = student.name || 'Student Details';
+        document.getElementById('modalAdmissionNo').textContent = student.admission_number || '-';
+        document.getElementById('modalSchoolName').textContent = student.school_name || 'Unassigned';
+        document.getElementById('modalSchoolUdise').textContent = student.school_udise ? ('UDISE: ' + student.school_udise) : '';
+        document.getElementById('modalClassSection').textContent = (student.current_class || '-') + ' (' + (student.section || 'A') + ')';
+        document.getElementById('modalGenderDob').textContent = (student.gender || '-') + ' • ' + (student.dob || '-');
+        document.getElementById('modalStatus').textContent = student.status || 'Active';
+        document.getElementById('modalParentName').textContent = student.parent_name || '-';
+        document.getElementById('modalContact').textContent = (student.parent_phone || student.student_phone || '-');
+        document.getElementById('modalAddress').textContent = student.address || 'No address recorded';
+        
+        document.getElementById('modalEditBtn').href = student.edit_url || '#';
+        document.getElementById('modalDetailBtn').href = student.detail_url || '#';
+
+        var modal = document.getElementById('studentDetailModal');
+        modal.style.display = 'flex';
+    }
+
+    function closeStudentModal() {
+        document.getElementById('studentDetailModal').style.display = 'none';
+    }
+
+    // Dismiss modal on backdrop click or Escape key
+    window.addEventListener('click', function(e) {
+        var modal = document.getElementById('studentDetailModal');
+        if (e.target === modal) {
+            closeStudentModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeStudentModal();
+        }
+    });
+
+    function handleStudentLookup(e) {
+        e.preventDefault();
+        var input = document.getElementById('studentSearchInput');
+        var val = input.value.trim();
+        if (!val) return;
+
+        var btn = document.getElementById('studentSearchBtn');
+        var origHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Searching...';
+
+        fetch("{% url 'accounts:student_lookup_api' %}?id_search=" + encodeURIComponent(val), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            if (data.success && data.student) {
+                openStudentModal(data.student);
+            } else {
+                alert(data.error || 'No student found with that ID or Admission number.');
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            alert('Lookup failed: ' + err);
+        });
+    }
+
+    {% if searched_student %}
+    document.addEventListener('DOMContentLoaded', function() {
+        openStudentModal({
+            id: "{{ searched_student.pk }}",
+            name: "{{ searched_student.student_name|escapejs }}",
+            admission_number: "{{ searched_student.admission_number|escapejs }}",
+            school_name: "{{ searched_student.school.school_name|default:searched_student.school.name|default:'Unassigned'|escapejs }}",
+            school_udise: "{{ searched_student.school.udise_code|default:''|escapejs }}",
+            current_class: "{{ searched_student.current_class|escapejs }}",
+            section: "{{ searched_student.section|default:'-'|escapejs }}",
+            gender: "{{ searched_student.get_gender_display|default:searched_student.gender|escapejs }}",
+            dob: "{{ searched_student.date_of_birth|date:'d M Y'|default:'-' }}",
+            parent_name: "{{ searched_student.parent_name|default:'-'|escapejs }}",
+            parent_phone: "{{ searched_student.parent_phone|default:searched_student.student_phone|default:'-'|escapejs }}",
+            status: "{{ searched_student.get_status_display|default:searched_student.status|escapejs }}",
+            address: "{{ searched_student.address|default:'-'|escapejs }}",
+            detail_url: "{% url 'students:detail' searched_student.pk %}",
+            edit_url: "{% url 'students:edit' searched_student.pk %}"
+        });
+    });
+    {% endif %}
+</script>
 </body>
 </html>

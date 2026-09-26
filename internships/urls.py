@@ -148,4 +148,10 @@ urlpatterns = [
         views.api_export_csv,
         name="export_csv",
     ),
+
+    path(
+        "bulk-upload/",
+        views.bulk_upload_internships,
+        name="bulk_upload",
+    ),
 ]
