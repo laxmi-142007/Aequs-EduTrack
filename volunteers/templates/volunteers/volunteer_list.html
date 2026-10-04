@@ -269,13 +269,16 @@
             <div class="breadcrumb">
                 <a href="{% url 'dashboard' %}">EduTrack</a>
                 <span>/</span>
-                <span>Foundation Programs</span>
+                <span>AEQATRA</span>
                 <span>/</span>
-                <span>Volunteers</span>
+                <span>Employee Volunteering</span>
             </div>
-            <h1><i data-lucide="users" style="width:20px;height:20px;color:var(--aequs-red);"></i> Volunteers Directory & Community Roster</h1>
+            <h1><i data-lucide="heart-handshake" style="width:22px;height:22px;color:var(--aequs-red);"></i> AEQATRA — Employee Volunteering Portal</h1>
         </div>
         <div class="topbar-actions">
+            <button type="button" class="btn btn-outline" onclick="openTestimonialModal()" style="color:#0284c7;border-color:#bae6fd;background:#f0f9ff;">
+                <i data-lucide="video" style="width:14px;height:14px;color:#0284c7;"></i> + Add Video Testimonial
+            </button>
             <a href="{% url 'volunteers:export_excel' %}{% if q %}?q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-outline" style="color:#15803d;border-color:#bbf7d0;background:#f0fdf4;" title="Export volunteers to Excel">
                 <i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#16a34a;"></i> Export Excel
             </a>
@@ -283,7 +286,7 @@
                 <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
             </a>
             <button type="button" class="btn btn-primary" id="volunteer-form-btn" onclick="openVolunteerRegistrationModal()" title="Generate and Share Volunteer Registration Form">
-                <i data-lucide="qr-code" style="width:14px;height:14px;"></i> Volunteer Registration
+                <i data-lucide="qr-code" style="width:14px;height:14px;"></i> Forms &amp; Registration
             </button>
             <a href="{% url 'dashboard' %}" class="btn btn-secondary" title="Return to Dashboard">
                 <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Dashboard
@@ -303,27 +306,172 @@
         </div>
         {% endif %}
 
-        <!-- KPI Metrics -->
-        <div class="cards">
-            <div class="card">
-                <h3>Total Volunteers</h3>
-                <div class="number">{{ total_volunteers }}</div>
-                <div class="sub-text">Registered community members</div>
+        <!-- CURRENT YEAR VS HISTORICAL DATA (Excel Volunteering Specification) -->
+        <div style="background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.03);border-left:4px solid var(--aequs-red);">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+                <div>
+                    <h2 style="font-size:16px;font-weight:700;color:var(--slate-900);display:flex;align-items:center;gap:8px;margin:0;">
+                        <i data-lucide="history" style="width:18px;height:18px;color:var(--aequs-red);"></i> Volunteering Participation: Current Year vs. Historical Data
+                    </h2>
+                    <p style="font-size:12px;color:var(--slate-500);margin-top:2px;">Track employee engagement, service hours, and volunteer retention across corporate CSR chapters.</p>
+                </div>
+                <form method="GET" style="display:flex;gap:8px;align-items:center;">
+                    <select name="ay" onchange="this.form.submit()" style="padding:6px 12px;font-size:12px;border:1px solid var(--slate-200);border-radius:6px;font-weight:600;color:var(--slate-800);background:#fff;">
+                        {% for code, label in academic_years %}
+                        <option value="{{ code }}" {% if selected_ay == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
             </div>
-            <div class="card">
-                <h3>Active Volunteers</h3>
-                <div class="number" style="color:#16a34a;">{{ active_count }}</div>
-                <div class="sub-text">Available for assignments</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;">
+                <!-- Current Year Volunteers -->
+                <div style="padding:14px;background:#fff1f1;border:1px solid #fee2e2;border-radius:8px;">
+                    <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;">Current Year Volunteers</div>
+                    <div style="font-size:24px;font-weight:800;color:#991b1b;margin:4px 0;">{{ vol_curr.no_of_volunteers }}</div>
+                    <div style="font-size:11.5px;color:#b91c1c;">Active in 2026-27 drives</div>
+                </div>
+                <!-- Current Year Hours -->
+                <div style="padding:14px;background:#fef2f2;border:1px solid #fee2e2;border-radius:8px;">
+                    <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;">Volunteering Hrs Participated (Current)</div>
+                    <div style="font-size:24px;font-weight:800;color:var(--aequs-red);margin:4px 0;">{{ vol_curr.volunteering_hrs_participated }} hrs</div>
+                    <div style="font-size:11.5px;color:#b91c1c;">Logged community service</div>
+                </div>
+                <!-- Historical Volunteers -->
+                <div style="padding:14px;background:#f8fafc;border:1px solid var(--slate-200);border-radius:8px;">
+                    <div style="font-size:11px;font-weight:700;color:var(--slate-600);text-transform:uppercase;">Historical Volunteers (All Years)</div>
+                    <div style="font-size:24px;font-weight:800;color:var(--slate-900);margin:4px 0;">{{ vol_hist.no_of_volunteers }}</div>
+                    <div style="font-size:11.5px;color:var(--slate-500);">Cumulative volunteer mobilization</div>
+                </div>
+                <!-- Historical Hours -->
+                <div style="padding:14px;background:#f8fafc;border:1px solid var(--slate-200);border-radius:8px;">
+                    <div style="font-size:11px;font-weight:700;color:var(--slate-600);text-transform:uppercase;">Volunteering Hrs Participated (Historical)</div>
+                    <div style="font-size:24px;font-weight:800;color:#2563eb;margin:4px 0;">{{ vol_hist.volunteering_hrs_participated }} hrs</div>
+                    <div style="font-size:11.5px;color:var(--slate-500);">Total CSR service hours rendered</div>
+                </div>
             </div>
-            <div class="card">
-                <h3>Total Hours Contributed</h3>
-                <div class="number" style="color:var(--aequs-red);">{{ total_hours }} hrs</div>
-                <div class="sub-text">Community service recorded</div>
+        </div>
+
+        <!-- LIST OF ACTIVITIES FOR YEAR: COMPLETED, ONGOING, UPCOMING -->
+        <div style="background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                <h3 style="font-size:15px;font-weight:700;color:var(--slate-900);display:flex;align-items:center;gap:6px;margin:0;">
+                    <i data-lucide="calendar-check-2" style="width:18px;height:18px;color:#16a34a;"></i> List of Activities for Year (Lifecycle Tracker)
+                </h3>
+                <span style="font-size:12px;color:var(--slate-500);">Completed &bull; Ongoing &bull; Upcoming CSR Engagements</span>
             </div>
-            <div class="card">
-                <h3>Event Participations</h3>
-                <div class="number" style="color:#2563eb;">{{ total_participations }}</div>
-                <div class="sub-text">Completed event mobilizations</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;">
+                <!-- Completed Activities -->
+                <div style="border:1px solid #dcfce7;background:#f0fdf4;border-radius:8px;padding:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:12.5px;font-weight:700;color:#166534;display:flex;align-items:center;gap:5px;">
+                            <i data-lucide="check-circle-2" style="width:15px;height:15px;color:#16a34a;"></i> Completed
+                        </span>
+                        <span style="background:#bbf7d0;color:#14532d;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;">
+                            {{ completed_activities.count }}
+                        </span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        {% for act in completed_activities %}
+                        <div style="background:#fff;padding:10px 12px;border-radius:6px;border:1px solid #bbf7d0;">
+                            <div style="font-size:13px;font-weight:700;color:#14532d;">{{ act.activity_name }}</div>
+                            <div style="font-size:11px;color:#475569;margin-top:2px;">{{ act.description|truncatewords:15 }}</div>
+                            <div style="font-size:11px;color:#16a34a;margin-top:4px;">📅 {{ act.activity_date|date:"d M Y" }}</div>
+                        </div>
+                        {% empty %}
+                        <p style="font-size:12px;color:#64748b;font-style:italic;">No completed activities logged for this period.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Ongoing Activities -->
+                <div style="border:1px solid #fed7aa;background:#fff7ed;border-radius:8px;padding:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:12.5px;font-weight:700;color:#9a3412;display:flex;align-items:center;gap:5px;">
+                            <i data-lucide="clock" style="width:15px;height:15px;color:#ea580c;"></i> Ongoing
+                        </span>
+                        <span style="background:#ffedd5;color:#7c2d12;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;">
+                            {{ ongoing_activities.count }}
+                        </span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        {% for act in ongoing_activities %}
+                        <div style="background:#fff;padding:10px 12px;border-radius:6px;border:1px solid #fed7aa;">
+                            <div style="font-size:13px;font-weight:700;color:#7c2d12;">{{ act.activity_name }}</div>
+                            <div style="font-size:11px;color:#475569;margin-top:2px;">{{ act.description|truncatewords:15 }}</div>
+                            <div style="font-size:11px;color:#ea580c;margin-top:4px;">⏱️ In Progress &bull; {{ act.activity_date|date:"d M Y" }}</div>
+                        </div>
+                        {% empty %}
+                        <p style="font-size:12px;color:#64748b;font-style:italic;">No ongoing campaigns at this time.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Upcoming Activities -->
+                <div style="border:1px solid #bfdbfe;background:#eff6ff;border-radius:8px;padding:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:12.5px;font-weight:700;color:#1e40af;display:flex;align-items:center;gap:5px;">
+                            <i data-lucide="calendar" style="width:15px;height:15px;color:#2563eb;"></i> Upcoming
+                        </span>
+                        <span style="background:#dbeafe;color:#1e3a8a;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;">
+                            {{ upcoming_activities.count }}
+                        </span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        {% for act in upcoming_activities %}
+                        <div style="background:#fff;padding:10px 12px;border-radius:6px;border:1px solid #bfdbfe;">
+                            <div style="font-size:13px;font-weight:700;color:#1e3a8a;">{{ act.activity_name }}</div>
+                            <div style="font-size:11px;color:#475569;margin-top:2px;">{{ act.description|truncatewords:15 }}</div>
+                            <div style="font-size:11px;color:#2563eb;margin-top:4px;">📌 Scheduled: {{ act.activity_date|date:"d M Y" }}</div>
+                        </div>
+                        {% empty %}
+                        <p style="font-size:12px;color:#64748b;font-style:italic;">No upcoming activities scheduled.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMPLOYEE TESTIMONIALS - VIDEO GALLERY (Excel Spec) -->
+        <div style="background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <h3 style="font-size:15px;font-weight:700;color:var(--slate-900);display:flex;align-items:center;gap:6px;margin:0;">
+                        <i data-lucide="video" style="width:18px;height:18px;color:#ed1c24;"></i> Employee Testimonials — Video Gallery
+                    </h3>
+                    <p style="font-size:12px;color:var(--slate-500);margin-top:2px;">Inspiring reflections from Aequs corporate volunteers across aerospace, machining, and engineering.</p>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" onclick="openTestimonialModal()" style="color:#0284c7;border-color:#0284c7;">
+                    <i data-lucide="plus" style="width:13px;height:13px;"></i> Share Your Testimonial
+                </button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:16px;">
+                {% for t in testimonials %}
+                <div style="background:#f8fafc;border:1px solid var(--slate-200);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+                    <div style="position:relative;background:#0f172a;height:140px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="playTestimonialVideo('{{ t.embeddable_video_url|escapejs }}', '{{ t.employee_name|escapejs }}')">
+                        <div style="width:48px;height:48px;border-radius:50%;background:rgba(237,28,36,0.9);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.4);transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            <i data-lucide="play" style="width:20px;height:20px;color:#fff;margin-left:3px;"></i>
+                        </div>
+                        <span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.75);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;">
+                            Watch Video
+                        </span>
+                    </div>
+                    <div style="padding:14px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+                        <div>
+                            <div style="font-size:13.5px;font-weight:700;color:var(--slate-900);">{{ t.employee_name }}</div>
+                            <div style="font-size:11.5px;color:var(--slate-500);margin-top:1px;">{{ t.employee_role }} &bull; {{ t.department }}</div>
+                            <p style="font-size:12px;color:var(--slate-700);margin-top:8px;font-style:italic;line-height:1.4;">
+                                "{{ t.quote }}"
+                            </p>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--slate-200);font-size:11px;color:var(--slate-400);">
+                            <span>📍 {{ t.plant_location }}</span>
+                            <span style="font-weight:600;color:#2563eb;">{{ t.academic_year }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="font-size:12px;color:#64748b;font-style:italic;">No employee testimonials added yet.</p>
+                {% endfor %}
             </div>
         </div>
 
@@ -553,10 +701,108 @@
             });
     }
 
-    window.addEventListener('click', function(e) {
+        window.addEventListener('click', function(e) {
         const m = document.getElementById('volunteerRegModal');
         if (e.target === m) closeVolunteerRegistrationModal();
+
+        const vm = document.getElementById('videoPlayerModal');
+        if (e.target === vm) closeTestimonialVideo();
+
+        const tm = document.getElementById('addTestimonialModal');
+        if (e.target === tm) closeTestimonialModal();
     });
+
+    function playTestimonialVideo(videoUrl, employeeName) {
+        const modal = document.getElementById('videoPlayerModal');
+        const frame = document.getElementById('testimonialVideoFrame');
+        const title = document.getElementById('videoModalEmployeeTitle');
+        if (modal && frame) {
+            title.innerText = employeeName ? 'Testimonial: ' + employeeName : 'Employee Testimonial Video';
+            frame.src = videoUrl;
+            modal.classList.add('open');
+        }
+    }
+
+    function closeTestimonialVideo() {
+        const modal = document.getElementById('videoPlayerModal');
+        const frame = document.getElementById('testimonialVideoFrame');
+        if (frame) frame.src = '';
+        if (modal) modal.classList.remove('open');
+    }
+
+    function openTestimonialModal() {
+        const modal = document.getElementById('addTestimonialModal');
+        if (modal) modal.classList.add('open');
+    }
+
+    function closeTestimonialModal() {
+        const modal = document.getElementById('addTestimonialModal');
+        if (modal) modal.classList.remove('open');
+    }
 </script>
+
+<!-- VIDEO PLAYER MODAL -->
+<div id="videoPlayerModal" class="modal-backdrop">
+    <div class="modal-window" style="max-width: 680px; width: 100%; padding: 0; overflow: hidden; background: #000; border-radius: 12px;">
+        <div style="background: #1e293b; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;">
+            <span id="videoModalEmployeeTitle" style="color: #fff; font-weight: 700; font-size: 13.5px;">Employee Testimonial Video</span>
+            <button type="button" onclick="closeTestimonialVideo()" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; line-height: 1;">&times;</button>
+        </div>
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+            <iframe id="testimonialVideoFrame" src="" style="position: absolute; top:0; left: 0; width: 100%; height: 100%; border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- ADD TESTIMONIAL MODAL -->
+<div id="addTestimonialModal" class="modal-backdrop">
+    <div class="modal-window" style="max-width: 520px; width: 100%;">
+        <div class="modal-header">
+            <h3><i data-lucide="video" style="width: 18px; height: 18px; color: var(--aequs-red);"></i> Share Employee Video Testimonial</h3>
+            <button type="button" class="modal-close" onclick="closeTestimonialModal()">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'volunteers:testimonial_create' %}">
+            {% csrf_token %}
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--slate-700); margin-bottom: 4px; display: block;">Employee Full Name *</label>
+                    <input type="text" name="employee_name" required placeholder="e.g. Rohit Patil" style="width: 100%; padding: 8px 12px; border: 1px solid var(--slate-200); border-radius: 6px; font-size: 13px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--slate-700); margin-bottom: 4px; display: block;">Designation / Role</label>
+                        <input type="text" name="employee_role" placeholder="e.g. Senior CNC Specialist" style="width: 100%; padding: 8px 12px; border: 1px solid var(--slate-200); border-radius: 6px; font-size: 13px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--slate-700); margin-bottom: 4px; display: block;">Department</label>
+                        <input type="text" name="department" placeholder="e.g. Aerospace Machining" style="width: 100%; padding: 8px 12px; border: 1px solid var(--slate-200); border-radius: 6px; font-size: 13px;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--slate-700); margin-bottom: 4px; display: block;">Plant Location</label>
+                        <input type="text" name="plant_location" value="Belagavi SEZ" style="width: 100%; padding: 8px 12px; border: 1px solid var(--slate-200); border-radius: 6px; font-size: 13px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--slate-700); margin-bottom: 4px; display: block;">Academic Year</label>
+                        <input type="text" name="academic_year" value="2026-27" style="width: 100%; padding: 8px 12px; border: 1px solid var(--slate-200); border-radius: 6px; font-size: 13px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--slate-700); margin-bottom: 4px; display: block;">Video Link (YouTube, Vimeo, or MP4 URL)</label>
+                    <input type="text" name="video_url" placeholder="https://www.youtube.com/watch?v=..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--slate-200); border-radius: 6px; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--slate-700); margin-bottom: 4px; display: block;">Testimonial Quote / Impact Reflection *</label>
+                    <textarea name="quote" rows="3" required placeholder="What was your experience mentoring students or participating in Aequs Foundation drives?" style="width: 100%; padding: 8px 12px; border: 1px solid var(--slate-200); border-radius: 6px; font-size: 13px; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+                <button type="button" class="btn btn-secondary" onclick="closeTestimonialModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Testimonial</button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>

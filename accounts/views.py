@@ -20,7 +20,13 @@ from distributions.models import Distribution
 from eligibility.models import EligibilityRecord
 from internships.models import InternshipPlacement
 from inventory.models import Laptop, LaptopAssignment
-from programs.models import MentorshipSession
+from programs.models import MentorshipSession, Project
+from programs.metrics import (
+    get_reach_matrix,
+    get_volunteering_kpis,
+    get_one_precious_notebook_kpis,
+    get_budget_vs_actual,
+)
 from schools.models import School
 from students.models import Student
 from volunteers.models import Volunteer
@@ -146,9 +152,48 @@ def admin_dashboard(request):
         session_date__gte=today, session_date__lte=week_ahead, status="SCHEDULED"
     ).select_related("student").order_by("session_date")[:5]
 
+    # Reach Matrix & Historical Filters
+    selected_ay = request.GET.get("ay", "2026-27").strip()
+    selected_proj_id = request.GET.get("project_id", "").strip()
+    proj_id_int = int(selected_proj_id) if selected_proj_id.isdigit() else None
+
+    # Compute Reach Matrix for selected filter
+    reach_matrix = get_reach_matrix(academic_year=selected_ay, project_id=proj_id_int)
+    reach_matrix_hist = get_reach_matrix(academic_year="all", project_id=proj_id_int)
+
+    # Volunteering KPIs (Current Year & Historical)
+    volunteering_curr = get_volunteering_kpis(academic_year="2026-27")
+    volunteering_hist = get_volunteering_kpis(academic_year="all")
+
+    # One Precious Notebook KPIs (Current Year & Historical)
+    opn_curr = get_one_precious_notebook_kpis(academic_year="2026-27")
+    opn_hist = get_one_precious_notebook_kpis(academic_year="all")
+
+    # Budget vs Actual expenditure
+    budget_data = get_budget_vs_actual(project_id=proj_id_int)
+
+    available_projects = Project.objects.filter(is_archived=False).order_by("name")
+    academic_years = [
+        ("2026-27", "Current Year (2026-27)"),
+        ("2025-26", "Academic Year 2025-26"),
+        ("2024-25", "Academic Year 2024-25"),
+        ("all", "All Years (Consolidated)"),
+    ]
+
     context = {
         "searched_student": searched_student,
         "search_query_id": id_search,
+        "selected_ay": selected_ay,
+        "selected_proj_id": proj_id_int,
+        "academic_years": academic_years,
+        "available_projects": available_projects,
+        "reach_matrix": reach_matrix,
+        "reach_matrix_hist": reach_matrix_hist,
+        "volunteering_curr": volunteering_curr,
+        "volunteering_hist": volunteering_hist,
+        "opn_curr": opn_curr,
+        "opn_hist": opn_hist,
+        "budget_data": budget_data,
         "total_users": User.objects.count(),
         "active_users": User.objects.filter(is_active=True).count(),
         "users_pending_password": User.objects.filter(

@@ -1,0 +1,462 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mike Propen Scholarship | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <link rel="stylesheet" href="/static/css/programs.css">
+    <script src="/static/js/lucide.min.js"></script>
+    <style>
+        .propen-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 22px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .propen-tab {
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #475569;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+        }
+        .propen-tab:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        .propen-tab.active {
+            background: #ed1c24;
+            color: #ffffff;
+            border-color: #ed1c24;
+            box-shadow: 0 4px 10px rgba(237, 28, 36, 0.25);
+        }
+        .propen-tab.active i {
+            color: #ffffff !important;
+        }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 24px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='scholarships' %}
+
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <h1 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="award" style="color: #ed1c24;"></i> Mike Propen Scholarship Scheme
+                </h1>
+                <span style="font-size: 12px; color: #64748b;">Special Excellence Award Program &bull; Application, Analysis &amp; Data Details</span>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'programs:propen_export_csv' %}" class="btn-af btn-af-secondary">
+                    <i data-lucide="download"></i> Export CSV
+                </a>
+                <a href="?tab=apply" class="btn-af btn-af-primary">
+                    <i data-lucide="plus-circle"></i> New Application
+                </a>
+            </div>
+        </div>
+
+        <div class="programs-page">
+            <!-- Master Scholarship Category Tabs -->
+            <div class="af-tabs" style="margin-bottom: 22px;">
+                <a href="{% url 'programs:scholarship_list' %}" class="af-tab-item">
+                    <i data-lucide="layout-grid"></i> All Educational Aids
+                </a>
+                <a href="{% url 'programs:scholarship_list' %}?tab=foundation" class="af-tab-item">
+                    <i data-lucide="award"></i> Foundation Scholarships &amp; CSR
+                </a>
+                <a href="{% url 'programs:scholarship_list' %}?tab=government" class="af-tab-item">
+                    <i data-lucide="landmark"></i> Government Schemes (SSP/NSP)
+                </a>
+                <a href="{% url 'programs:scholarship_list' %}?tab=employee_special" class="af-tab-item">
+                    <i data-lucide="briefcase"></i> Employee Special Tab
+                </a>
+                <a href="{% url 'programs:propen_portal' %}" class="af-tab-item active" style="font-weight: 700;">
+                    <i data-lucide="award" style="color: #ed1c24;"></i> Mike Propen Scheme
+                </a>
+            </div>
+
+            <!-- Navigation Tabs (Analysis, Data Details, Application Form) -->
+            <div class="propen-tabs">
+                <a href="?tab=analysis&ay={{ selected_ay }}" class="propen-tab {% if active_tab == 'analysis' %}active{% endif %}">
+                    <i data-lucide="bar-chart-3" style="color: #2563eb;"></i> 1. Analysis
+                </a>
+                <a href="?tab=details&ay={{ selected_ay }}" class="propen-tab {% if active_tab == 'details' %}active{% endif %}">
+                    <i data-lucide="table" style="color: #16a34a;"></i> 2. Data Details
+                </a>
+                <a href="?tab=apply&ay={{ selected_ay }}" class="propen-tab {% if active_tab == 'apply' %}active{% endif %}">
+                    <i data-lucide="file-plus-2" style="color: #ea580c;"></i> 3. Application Form
+                </a>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div style="margin-bottom: 18px;">
+                {% for message in messages %}
+                <div style="padding: 10px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 500; margin-bottom: 8px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- ======================================================== -->
+            <!-- TAB 1: ANALYSIS                                          -->
+            <!-- ======================================================== -->
+            {% if active_tab == 'analysis' %}
+            <!-- KPI Summary Cards -->
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Applications</div>
+                    <div class="metric-value">{{ total_applicants }}</div>
+                    <div class="metric-meta">{{ under_review_count }} under active review</div>
+                </div>
+                <div class="metric-card accent-green">
+                    <div class="metric-label">Awarded Scholars</div>
+                    <div class="metric-value">{{ awarded_count }}</div>
+                    <div class="metric-meta">{{ disbursed_count }} disbursed &bull; {{ acceptance_rate }}% acceptance</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-label">Sanctioned Amount</div>
+                    <div class="metric-value">&#8377; {{ total_sanctioned|floatformat:0 }}</div>
+                    <div class="metric-meta">Disbursed: &#8377; {{ total_disbursed|floatformat:0 }}</div>
+                </div>
+                <div class="metric-card accent-amber">
+                    <div class="metric-label">Avg. Academic Score</div>
+                    <div class="metric-value">{{ avg_academic_pct }}%</div>
+                    <div class="metric-meta">Candidate merit threshold</div>
+                </div>
+            </div>
+
+            <!-- Analysis Breakdown Charts/Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-top: 20px;">
+                <!-- Gender Distribution -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="pie-chart" style="width: 17px; height: 17px; color: #2563eb;"></i> Gender Equity &amp; Inclusivity
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px;">
+                                <span>Female Scholars</span>
+                                <span>{{ female_count }} ({{ female_pct }}%)</span>
+                            </div>
+                            <div style="height: 8px; width: 100%; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: {{ female_pct }}%; background: #ec4899;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px;">
+                                <span>Male Scholars</span>
+                                <span>{{ male_count }} ({{ male_pct }}%)</span>
+                            </div>
+                            <div style="height: 8px; width: 100%; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: {{ male_pct }}%; background: #3b82f6;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Level Distribution -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="layers" style="width: 17px; height: 17px; color: #16a34a;"></i> Academic Cohort Breakdown
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        {% for g in grade_distribution %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                            <span style="font-size: 12.5px; font-weight: 600; color: #1e293b;">{{ g.grade_level }}</span>
+                            <span style="background: #eff6ff; color: #1d4ed8; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 12px;">{{ g.count }} applicants</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Status Pipeline -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="git-commit" style="width: 17px; height: 17px; color: #ea580c;"></i> Workflow Status Pipeline
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        {% for s in status_distribution %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                            <span style="font-size: 12.5px; font-weight: 600; color: #1e293b;">{{ s.status }}</span>
+                            <span style="background: #f1f5f9; color: #475569; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 12px;">{{ s.count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- TAB 2: DATA DETAILS                                      -->
+            <!-- ======================================================== -->
+            {% elif active_tab == 'details' %}
+            <div class="filter-bar">
+                <form method="get" class="filter-form">
+                    <input type="hidden" name="tab" value="details">
+                    <input type="text" name="q" value="{{ search_q }}" placeholder="Search by student, app #, school, phone..." class="input-search">
+                    <select name="status" class="select-filter" onchange="this.form.submit()">
+                        <option value="">All Workflow Statuses</option>
+                        {% for code, label in status_choices %}
+                        <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="ay" class="select-filter" onchange="this.form.submit()">
+                        {% for code, label in academic_years %}
+                        <option value="{{ code }}" {% if selected_ay == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-af btn-af-secondary">
+                        <i data-lucide="search"></i> Filter
+                    </button>
+                    {% if search_q or status_filter or selected_ay != '2026-27' %}
+                    <a href="?tab=details" class="btn-af btn-af-secondary">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>App No.</th>
+                            <th>Student Candidate</th>
+                            <th>School &amp; Grade</th>
+                            <th>Academic %</th>
+                            <th>Annual Income</th>
+                            <th>Scholarship (INR)</th>
+                            <th>Status</th>
+                            <th>Timeline</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td><strong style="color: #ed1c24;">{{ app.application_number }}</strong></td>
+                            <td>
+                                <div style="font-weight: 700; color: #0f172a;">{{ app.student_name }}</div>
+                                <div style="font-size: 11px; color: #64748b;">{{ app.gender }} &bull; {{ app.contact_phone|default:"—" }}</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px; color: #1e293b; font-weight: 600;">{{ app.school_name }}</div>
+                                <span style="font-size: 11px; color: #64748b;">{{ app.grade_level }}</span>
+                            </td>
+                            <td><strong style="color: #16a34a;">{{ app.academic_percentage }}%</strong></td>
+                            <td>&#8377; {{ app.annual_family_income|floatformat:0 }}</td>
+                            <td><strong>&#8377; {{ app.scholarship_amount|floatformat:0 }}</strong></td>
+                            <td>
+                                <span class="status-badge status-{{ app.status|lower }}">{{ app.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <div style="font-size: 11px; color: #64748b;">Applied: {{ app.application_date|date:"d M Y" }}</div>
+                                {% if app.disbursement_date %}
+                                <div style="font-size: 11px; color: #16a34a; font-weight: 600;">Disbursed: {{ app.disbursement_date|date:"d M Y" }}</div>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <button type="button" class="btn-af btn-af-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="openStatusModal('{{ app.id }}', '{{ app.application_number|escapejs }}', '{{ app.student_name|escapejs }}', '{{ app.status }}', '{{ app.reviewer_notes|escapejs }}')">
+                                    <i data-lucide="edit-3"></i> Status
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 36px; color: #94a3b8;">
+                                <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 8px;"></i>
+                                <p>No scholarship applications found matching your criteria.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- TAB 3: APPLICATION FORM                                  -->
+            <!-- ======================================================== -->
+            {% elif active_tab == 'apply' %}
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+                <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="file-text" style="color: #ed1c24;"></i> Mike Propen Scholarship Application Form
+                    </h2>
+                    <p style="font-size: 12.5px; color: #64748b; margin-top: 3px;">
+                        Submit student application for review by the Aequs Foundation scholarship committee.
+                    </p>
+                </div>
+
+                <form method="POST" action="{% url 'programs:propen_apply' %}" style="display: flex; flex-direction: column; gap: 16px;">
+                    {% csrf_token %}
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Student Full Name *</label>
+                            <input type="text" name="student_name" required placeholder="e.g. Aishwarya Kulkarni" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Gender *</label>
+                            <select name="gender" required style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
+                                <option value="FEMALE">Female</option>
+                                <option value="MALE">Male</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Partner School *</label>
+                            <select name="school" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
+                                <option value="">-- Select from Registered Schools --</option>
+                                {% for s in schools %}
+                                <option value="{{ s.id }}">{{ s.name }} ({{ s.city_or_town|default:s.district }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Or School Name (If Unlisted)</label>
+                            <input type="text" name="school_name" placeholder="e.g. Govt High School" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Grade Level *</label>
+                            <input type="text" name="grade_level" value="Class 10" required placeholder="e.g. Class 10, 1st PUC" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Academic Score (%) *</label>
+                            <input type="number" step="0.01" name="academic_percentage" required placeholder="e.g. 92.5" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Annual Family Income (&#8377;)</label>
+                            <input type="number" step="1000" name="annual_family_income" placeholder="e.g. 75000" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Parent / Student Phone *</label>
+                            <input type="text" name="contact_phone" required placeholder="+91 98450 00000" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Email Address</label>
+                            <input type="email" name="email" placeholder="student@example.com" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Scholarship Award Amount (&#8377;)</label>
+                            <input type="number" step="1000" name="scholarship_amount" value="25000" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Academic Year</label>
+                            <input type="text" name="academic_year" value="2026-27" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Statement of Purpose &amp; Academic Aspirations</label>
+                        <textarea name="statement_of_purpose" rows="4" placeholder="Describe candidate background, higher education plans in STEM, and family financial circumstances..." style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                        <a href="?tab=details" class="btn-af btn-af-secondary">Cancel</a>
+                        <button type="submit" class="btn-af btn-af-primary">
+                            <i data-lucide="send"></i> Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- STATUS UPDATE MODAL -->
+    <div id="statusUpdateModal" class="modal-backdrop">
+        <div class="modal-window">
+            <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0;">
+                Update Status: <span id="modalAppNumber" style="color: #ed1c24;"></span>
+            </h3>
+            <p id="modalStudentName" style="font-size: 13px; color: #64748b; margin-bottom: 16px;"></p>
+            <form id="statusUpdateForm" method="POST" action="">
+                {% csrf_token %}
+                <div style="margin-bottom: 14px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #334155; display: block; margin-bottom: 4px;">Application Status</label>
+                    <select id="modalStatusSelect" name="status" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
+                        {% for code, label in status_choices %}
+                        <option value="{{ code }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #334155; display: block; margin-bottom: 4px;">Reviewer Notes</label>
+                    <textarea id="modalNotesText" name="reviewer_notes" rows="3" placeholder="Committee evaluation remarks..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button type="button" class="btn-af btn-af-secondary" onclick="closeStatusModal()">Cancel</button>
+                    <button type="submit" class="btn-af btn-af-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) lucide.createIcons();
+
+        function openStatusModal(id, appNum, studentName, status, notes) {
+            const modal = document.getElementById('statusUpdateModal');
+            const form = document.getElementById('statusUpdateForm');
+            document.getElementById('modalAppNumber').innerText = appNum;
+            document.getElementById('modalStudentName').innerText = 'Candidate: ' + studentName;
+            document.getElementById('modalStatusSelect').value = status;
+            document.getElementById('modalNotesText').value = notes || '';
+            form.action = '/scholarships/mike-propen/' + id + '/status/';
+            modal.classList.add('open');
+        }
+
+        function closeStatusModal() {
+            const modal = document.getElementById('statusUpdateModal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('statusUpdateModal');
+            if (e.target === modal) closeStatusModal();
+        });
+    </script>
+</body>
+</html>

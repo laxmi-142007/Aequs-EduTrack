@@ -22,7 +22,7 @@
                 <a href="{% url 'programs:scholarship_bulk_upload' %}" class="btn-af btn-af-secondary">
                     <i data-lucide="upload-cloud"></i> Bulk Upload
                 </a>
-                <a href="{% url 'programs:scholarship_create' %}" class="btn-af btn-af-primary">
+                <a href="{% url 'programs:scholarship_create' %}{% if selected_tab and selected_tab != 'all' %}?category={{ selected_tab }}{% endif %}" class="btn-af btn-af-primary">
                     <i data-lucide="plus-circle"></i> Record Scholarship
                 </a>
             </div>
@@ -33,7 +33,7 @@
             <div class="metric-grid">
                 <div class="metric-card">
                     <div class="metric-label">Total Applications</div>
-                    <div class="metric-value">{{ total_count }}</div>
+                    <div class="metric-value">{{ filtered_count|default:total_count }}</div>
                     <div class="metric-meta">Logged in portal</div>
                 </div>
                 <div class="metric-card accent-blue">
@@ -48,7 +48,7 @@
                 </div>
                 <div class="metric-card accent-amber">
                     <div class="metric-label">Pending Verification</div>
-                    <div class="metric-value">{{ pending_count }}</div>
+                    <div class="metric-value">{{ pending_count|default:0 }}</div>
                     <div class="metric-meta">Under review / docs pending</div>
                 </div>
             </div>
@@ -91,15 +91,23 @@
             <div class="af-tabs">
                 <a href="{% url 'programs:scholarship_list' %}" class="af-tab-item {% if not selected_tab or selected_tab == 'all' %}active{% endif %}">
                     <i data-lucide="layout-grid"></i> All Educational Aids
+                    <span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: #f1f5f9; color: #475569; font-weight: 700; margin-left: 6px;">{{ total_count|default:0 }}</span>
                 </a>
                 <a href="{% url 'programs:scholarship_list' %}?tab=foundation" class="af-tab-item {% if selected_tab == 'foundation' %}active{% endif %}">
-                    <i data-lucide="award"></i> Foundation Scholarships &amp; CSR (Module 8)
+                    <i data-lucide="award"></i> Foundation Scholarships &amp; CSR
+                    <span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: #eff6ff; color: #1e40af; font-weight: 700; margin-left: 6px;">{{ fnd_count|default:0 }}</span>
                 </a>
                 <a href="{% url 'programs:scholarship_list' %}?tab=government" class="af-tab-item {% if selected_tab == 'government' %}active{% endif %}">
-                    <i data-lucide="landmark"></i> Government Schemes (SSP/NSP) (Module 9)
+                    <i data-lucide="landmark"></i> Government Schemes (SSP/NSP)
+                    <span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: #f0fdf4; color: #166534; font-weight: 700; margin-left: 6px;">{{ gov_count|default:0 }}</span>
                 </a>
                 <a href="{% url 'programs:scholarship_list' %}?tab=employee_special" class="af-tab-item {% if selected_tab == 'employee_special' %}active{% endif %}">
-                    <i data-lucide="briefcase"></i> Employee Special Tab (Module 9)
+                    <i data-lucide="briefcase"></i> Employee Special Tab
+                    <span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: #faf5ff; color: #6b21a8; font-weight: 700; margin-left: 6px;">{{ emp_count|default:0 }}</span>
+                </a>
+                <a href="{% url 'programs:propen_portal' %}" class="af-tab-item {% if selected_tab == 'propen' or selected_tab == 'mike_propen' %}active{% endif %}">
+                    <i data-lucide="award" style="color: #ed1c24;"></i> Mike Propen Scheme
+                    <span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: #fef2f2; color: #b91c1c; font-weight: 700; margin-left: 6px;">{{ propen_count|default:0 }}</span>
                 </a>
             </div>
 

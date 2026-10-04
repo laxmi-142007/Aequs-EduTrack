@@ -212,3 +212,52 @@ class VolunteerFormLink(models.Model):
     def __str__(self):
         return f"Volunteer Form - {self.token}"
 
+
+class EmployeeTestimonial(models.Model):
+    """
+    AEQATRA Employee Volunteering Testimonial model.
+    Stores employee quotes, video URLs/embeds, and departmental attribution.
+    """
+    employee_name = models.CharField(max_length=150)
+    employee_role = models.CharField(max_length=150, blank=True, default="Aequs Volunteer")
+    department = models.CharField(max_length=150, blank=True, default="Aerospace Operations")
+    plant_location = models.CharField(max_length=150, blank=True, default="Belagavi SEZ")
+    quote = models.TextField(help_text="Personal reflection or impact statement about volunteering")
+    video_url = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="YouTube embed, Vimeo, or direct MP4 link"
+    )
+    video_file = models.FileField(upload_to="testimonials/videos/", blank=True, null=True)
+    thumbnail_url = models.CharField(max_length=500, blank=True, default="")
+    academic_year = models.CharField(max_length=20, default="2026-27")
+    is_featured = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-is_featured", "-created_at"]
+        verbose_name = "Employee Testimonial"
+        verbose_name_plural = "Employee Testimonials"
+
+    def __str__(self):
+        return f"{self.employee_name} ({self.department}) - {self.academic_year}"
+
+    @property
+    def embeddable_video_url(self):
+        """Converts standard YouTube or Vimeo URLs to embeddable player URLs."""
+        url = self.video_url.strip()
+        if not url:
+            return ""
+        if "youtube.com/watch?v=" in url:
+            vid_id = url.split("watch?v=")[-1].split("&")[0]
+            return f"https://www.youtube.com/embed/{vid_id}"
+        elif "youtu.be/" in url:
+            vid_id = url.split("youtu.be/")[-1].split("?")[0]
+            return f"https://www.youtube.com/embed/{vid_id}"
+        elif "vimeo.com/" in url and "player.vimeo.com" not in url:
+            vid_id = url.split("vimeo.com/")[-1].split("?")[0]
+            return f"https://player.vimeo.com/video/{vid_id}"
+        return url
+
+

@@ -87,6 +87,151 @@
             </div>
         </div>
 
+        <!-- REACH MATRIX & HISTORICAL TRACKER (Excel Task Spec) -->
+        <div class="card" style="background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;">
+                <div>
+                    <h2 class="section-title" style="margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; color: #0f172a;">
+                        <i data-lucide="crosshair" style="width: 20px; height: 20px; color: #ed1c24;"></i> Reach Matrix &amp; Operational Impact
+                    </h2>
+                    <p style="font-size: 12px; color: #64748b; margin-top: 3px;">
+                        Live dynamic aggregation across Student cohorts, EV Classes, Partner Schools, and CSR Programs.
+                    </p>
+                </div>
+                <!-- Filter Form with Academic Year and Project Dropdowns -->
+                <form method="GET" action="{% url 'accounts:admin_dashboard' %}" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <select name="ay" onchange="this.form.submit()" style="padding: 6px 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #1e293b; background: #fff;">
+                        {% for ay_code, ay_label in academic_years %}
+                        <option value="{{ ay_code }}" {% if selected_ay == ay_code %}selected{% endif %}>{{ ay_label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="project_id" onchange="this.form.submit()" style="padding: 6px 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 500; color: #1e293b; background: #fff;">
+                        <option value="">All Projects (Consolidated)</option>
+                        {% for p in available_projects %}
+                        <option value="{{ p.id }}" {% if selected_proj_id == p.id %}selected{% endif %}>{{ p.name }} ({{ p.code }})</option>
+                        {% endfor %}
+                    </select>
+
+                    {% if selected_ay != '2026-27' or selected_proj_id %}
+                    <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline btn-sm" style="padding: 6px 10px;">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Reach Matrix Grid (5 Columns) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+                <!-- Students Reached -->
+                <div style="padding: 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3.5px solid #ed1c24;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">No. of Students</div>
+                    <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 4px 0;">{{ reach_matrix.no_of_students|stringformat:",d" }}</div>
+                    <div style="font-size: 11px; color: #64748b;">Consolidated: <strong>{{ reach_matrix_hist.no_of_students|stringformat:",d" }}</strong></div>
+                </div>
+
+                <!-- Schools Reached -->
+                <div style="padding: 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3.5px solid #2563eb;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">No. of Schools</div>
+                    <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 4px 0;">{{ reach_matrix.no_of_schools }}</div>
+                    <div style="font-size: 11px; color: #64748b;">Consolidated: <strong>{{ reach_matrix_hist.no_of_schools }}</strong></div>
+                </div>
+
+                <!-- Locations Reached -->
+                <div style="padding: 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3.5px solid #0891b2;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">No. of Locations</div>
+                    <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 4px 0;">{{ reach_matrix.no_of_locations }}</div>
+                    <div style="font-size: 11px; color: #64748b;">Consolidated: <strong>{{ reach_matrix_hist.no_of_locations }}</strong></div>
+                </div>
+
+                <!-- Learning Hours -->
+                <div style="padding: 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3.5px solid #16a34a;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Learning Hours</div>
+                    <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 4px 0;">{{ reach_matrix.no_of_learning_hrs|floatformat:1 }} hrs</div>
+                    <div style="font-size: 11px; color: #64748b;">Consolidated: <strong>{{ reach_matrix_hist.no_of_learning_hrs|floatformat:1 }} hrs</strong></div>
+                </div>
+
+                <!-- Scholarship Holders -->
+                <div style="padding: 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3.5px solid #d97706;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Scholarship Holders</div>
+                    <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 4px 0;">{{ reach_matrix.no_of_scholarship_holders }}</div>
+                    <div style="font-size: 11px; color: #64748b;">Consolidated: <strong>{{ reach_matrix_hist.no_of_scholarship_holders }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VOLUNTEERING, ONE PRECIOUS NOTEBOOK & BUDGET TRACKER -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+            <!-- Volunteering Card -->
+            <div class="card" style="border-left: 4px solid #9333ea;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span class="section-title" style="margin: 0; font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="heart-handshake" style="width: 17px; height: 17px; color: #9333ea;"></i> AEQATRA Volunteering
+                    </span>
+                    <a href="{% url 'volunteers:list' %}" class="btn btn-outline btn-sm">Portal &rarr;</a>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: #faf5ff; padding: 12px; border-radius: 8px; border: 1px solid #f3e8ff;">
+                        <div style="font-size: 11px; color: #7e22ce; font-weight: 700;">Current Year (2026-27)</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #581c87; margin-top: 2px;">{{ volunteering_curr.no_of_volunteers }}</div>
+                        <div style="font-size: 11px; color: #6b21a8;">{{ volunteering_curr.volunteering_hrs_participated }} hrs logged</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #475569; font-weight: 700;">Historical (All Years)</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #1e293b; margin-top: 2px;">{{ volunteering_hist.no_of_volunteers }}</div>
+                        <div style="font-size: 11px; color: #64748b;">{{ volunteering_hist.volunteering_hrs_participated }} hrs logged</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- One Precious Notebook Card -->
+            <div class="card" style="border-left: 4px solid #16a34a;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span class="section-title" style="margin: 0; font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="book-copy" style="width: 17px; height: 17px; color: #16a34a;"></i> One Precious Notebook (OPN)
+                    </span>
+                    <a href="{% url 'distributions:list' %}" class="btn btn-outline btn-sm">Distributions &rarr;</a>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #dcfce7;">
+                        <div style="font-size: 11px; color: #15803d; font-weight: 700;">Current Year (2026-27)</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #14532d; margin-top: 2px;">{{ opn_curr.notebooks_donated|stringformat:",d" }}</div>
+                        <div style="font-size: 11px; color: #166534;">{{ opn_curr.no_of_students|stringformat:",d" }} students</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #475569; font-weight: 700;">Historical (All Years)</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #1e293b; margin-top: 2px;">{{ opn_hist.notebooks_donated|stringformat:",d" }}</div>
+                        <div style="font-size: 11px; color: #64748b;">{{ opn_hist.no_of_students|stringformat:",d" }} students</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget vs Actual Expenditure Card -->
+            <div class="card" style="border-left: 4px solid #0284c7;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span class="section-title" style="margin: 0; font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="pie-chart" style="width: 17px; height: 17px; color: #0284c7;"></i> Budget vs. Actual CSR Spend
+                    </span>
+                    <a href="{% url 'programs:project_list' %}" class="btn btn-outline btn-sm">Projects &rarr;</a>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;">
+                    <div>
+                        <div style="font-size: 11px; color: #64748b;">Allocated CSR Budget</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #0f172a;">&#8377; {{ budget_data.allocated_total|floatformat:0 }}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: #64748b;">Spent (Actual)</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #0284c7;">&#8377; {{ budget_data.spent_total|floatformat:0 }}</div>
+                    </div>
+                </div>
+                <div style="width: 100%; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px;">
+                    <div style="background: linear-gradient(90deg, #0284c7, #10b981); height: 100%; width: {{ budget_data.utilization_pct }}%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 5px;">
+                    <span>Fund Utilization</span>
+                    <span style="font-weight: 700; color: #0284c7;">{{ budget_data.utilization_pct }}%</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Feature 7: Upcoming Activities -->
         <div class="card">
             <div class="card-header">

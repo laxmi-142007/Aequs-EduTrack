@@ -10,7 +10,7 @@ from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import transaction
 
-from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit
+from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit, MikePropenScholarshipApplication
 from .forms import NGOForm, ProjectForm, ProgramForm, EVClassSessionForm, ScholarshipForm, LocationForm, MentorshipSessionForm, IndustryVisitForm
 from schools.models import School, SchoolResource
 from students.models import Student
@@ -629,11 +629,21 @@ def ngo_allocate_resource(request, pk):
 # ============================================================================
 
 def scholarship_list(request):
-    category_tab = request.GET.get("category", "all")
+    category_tab = request.GET.get("tab") or request.GET.get("category") or "all"
+    if category_tab in ["propen", "mike_propen"]:
+        return redirect("programs:propen_portal")
+
     status_filter = request.GET.get("status")
     search_query = request.GET.get("q", "").strip()
 
-    queryset = Scholarship.objects.filter(is_archived=False).select_related("student", "student__school", "project", "program")
+    all_queryset = Scholarship.objects.filter(is_archived=False)
+    gov_count = all_queryset.filter(category=Scholarship.Category.GOVERNMENT).count()
+    emp_count = all_queryset.filter(category=Scholarship.Category.EMPLOYEE_SPECIAL).count()
+    fnd_count = all_queryset.filter(category=Scholarship.Category.FOUNDATION).count()
+    propen_count = MikePropenScholarshipApplication.objects.count()
+    all_count = all_queryset.count()
+
+    queryset = all_queryset.select_related("student", "student__school", "project", "program")
 
     if category_tab == "government":
         queryset = queryset.filter(category=Scholarship.Category.GOVERNMENT)
@@ -658,9 +668,6 @@ def scholarship_list(request):
     # Aggregates
     total_sanctioned = queryset.aggregate(Sum("sanctioned_amount"))["sanctioned_amount__sum"] or 0
     total_disbursed = queryset.aggregate(Sum("disbursed_amount"))["disbursed_amount__sum"] or 0
-    gov_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.GOVERNMENT).count()
-    emp_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.EMPLOYEE_SPECIAL).count()
-    fnd_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.FOUNDATION).count()
 
     # Foundation section data (Feature 5)
     foundation_stats = {}
@@ -678,12 +685,17 @@ def scholarship_list(request):
         {
             "scholarships": queryset,
             "active_tab": category_tab,
-            "total_count": queryset.count(),
+            "selected_tab": category_tab,
+            "active_page": "scholarships",
+            "total_count": all_count,
+            "filtered_count": queryset.count(),
             "total_sanctioned": total_sanctioned,
             "total_disbursed": total_disbursed,
             "gov_count": gov_count,
             "emp_count": emp_count,
             "fnd_count": fnd_count,
+            "propen_count": propen_count,
+            "foundation_count": fnd_count,
             "status_choices": Scholarship.Status.choices,
             "selected_status": status_filter,
             "search_query": search_query,
@@ -693,7 +705,8 @@ def scholarship_list(request):
 
 
 def scholarship_create(request):
-    category = request.GET.get("category", Scholarship.Category.FOUNDATION)
+    raw_cat = request.GET.get("category", Scholarship.Category.FOUNDATION).upper()
+    category = raw_cat if raw_cat in dict(Scholarship.Category.choices) else Scholarship.Category.FOUNDATION
     initial = {"category": category}
     if request.GET.get("project"):
         initial["project"] = request.GET.get("project")

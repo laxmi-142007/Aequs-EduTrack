@@ -10,14 +10,17 @@ from .models import (
     VolunteerActivity,
     EventParticipation,
     VolunteerFormLink,
+    EmployeeTestimonial,
 )
 from events.models import Event
+from programs.metrics import get_volunteering_kpis
 
 
 def volunteer_list(request):
     q = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "").strip()
     gender_filter = request.GET.get("gender", "").strip()
+    selected_ay = request.GET.get("ay", "2026-27").strip()
 
     volunteers = Volunteer.objects.all()
 
@@ -26,6 +29,10 @@ def volunteer_list(request):
     active_count = volunteers.filter(status="ACTIVE").count()
     total_hours_aggregated = EventParticipation.objects.aggregate(Sum("hours_contributed"))["hours_contributed__sum"] or 0
     total_participations = EventParticipation.objects.count()
+
+    # Excel Spec: Current Year vs Historical Volunteering metrics
+    vol_curr = get_volunteering_kpis(academic_year="2026-27")
+    vol_hist = get_volunteering_kpis(academic_year="all")
 
     if q:
         volunteers = volunteers.filter(
@@ -50,12 +57,27 @@ def volunteer_list(request):
         event_count=Count("event_participations"),
     )
 
+    # Excel Spec: Activities Pipeline for the year (Completed, Ongoing, Upcoming)
+    completed_activities = VolunteerActivity.objects.filter(status="COMPLETED").select_related("volunteer")
+    ongoing_activities = VolunteerActivity.objects.filter(status="ONGOING").select_related("volunteer")
+    upcoming_activities = VolunteerActivity.objects.filter(status="ASSIGNED").select_related("volunteer")
+
+    # Excel Spec: Employee Testimonials with Video
+    testimonials = EmployeeTestimonial.objects.all()
+
     # Get or generate active unique form link
     form_link = VolunteerFormLink.objects.filter(is_active=True).order_by("-created_at").first()
     if not form_link:
         form_link = VolunteerFormLink.objects.create()
     form_url = request.build_absolute_uri(f"/volunteers/form/{form_link.token}/")
     qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{form_link.token}/")
+
+    academic_years = [
+        ("2026-27", "Current Year (2026-27)"),
+        ("2025-26", "Academic Year 2025-26"),
+        ("2024-25", "Academic Year 2024-25"),
+        ("all", "All Years (Consolidated)"),
+    ]
 
     return render(
         request,
@@ -65,17 +87,52 @@ def volunteer_list(request):
             "q": q,
             "status_filter": status_filter,
             "gender_filter": gender_filter,
+            "selected_ay": selected_ay,
+            "academic_years": academic_years,
             "status_choices": Volunteer.STATUS_CHOICES,
             "gender_choices": Volunteer.GENDER_CHOICES,
             "total_volunteers": total_volunteers,
             "active_count": active_count,
             "total_hours": round(total_hours_aggregated, 1),
             "total_participations": total_participations,
+            "vol_curr": vol_curr,
+            "vol_hist": vol_hist,
+            "completed_activities": completed_activities,
+            "ongoing_activities": ongoing_activities,
+            "upcoming_activities": upcoming_activities,
+            "testimonials": testimonials,
             "form_link": form_link,
             "form_url": form_url,
             "qr_url": qr_url,
         },
     )
+
+
+def testimonial_create(request):
+    """View to submit a new employee volunteer video testimonial."""
+    if request.method == "POST":
+        name = request.POST.get("employee_name", "").strip()
+        role = request.POST.get("employee_role", "").strip()
+        dept = request.POST.get("department", "").strip()
+        loc = request.POST.get("plant_location", "Belagavi SEZ").strip()
+        quote = request.POST.get("quote", "").strip()
+        url = request.POST.get("video_url", "").strip()
+        ay = request.POST.get("academic_year", "2026-27").strip()
+
+        if name and quote:
+            EmployeeTestimonial.objects.create(
+                employee_name=name,
+                employee_role=role,
+                department=dept,
+                plant_location=loc,
+                quote=quote,
+                video_url=url,
+                academic_year=ay,
+            )
+            messages.success(request, f"Employee testimonial from {name} added successfully!")
+        else:
+            messages.error(request, "Please enter both employee name and reflection quote.")
+    return redirect("volunteers:list")
 
 
 def volunteer_create(request):
