@@ -407,6 +407,24 @@
 
                 <!-- Personal & Professional info -->
                 <div class="info-grid">
+                    {% if volunteer.employee_code %}
+                    <div class="info-block">
+                        <span class="info-label">Employee ID</span>
+                        <span class="info-value" style="color: var(--aequs-red); font-weight: 700;">{{ volunteer.employee_code }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-block">
+                        <span class="info-label">Department</span>
+                        <span class="info-value">{{ volunteer.department|default:"Aerospace Operations" }}</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Plant Location</span>
+                        <span class="info-value">{{ volunteer.plant_location|default:"Belagavi SEZ" }}</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Academic Year</span>
+                        <span class="info-value">{{ volunteer.academic_year|default:"2026-27" }}</span>
+                    </div>
                     <div class="info-block">
                         <span class="info-label">Email</span>
                         <span class="info-value">

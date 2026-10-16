@@ -13,6 +13,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from inventory.models import InventoryItem, StockTransaction
@@ -199,6 +200,13 @@ def event_detail(request, pk):
     event_resources = event.resources.select_related("item").all()
     inventory_items = InventoryItem.objects.filter(status="ACTIVE")
 
+    # Event-specific volunteer registration form link and QR code
+    event_vol_link = VolunteerFormLink.objects.filter(event=event, is_active=True).order_by("-created_at").first()
+    if not event_vol_link:
+        event_vol_link = VolunteerFormLink.objects.create(event=event, role="Volunteer")
+    event_vol_url = request.build_absolute_uri(reverse("volunteers:public_form_by_token", kwargs={"token": event_vol_link.token}))
+    event_vol_qr_url = request.build_absolute_uri(reverse("volunteers:form_qr_by_token", kwargs={"token": event_vol_link.token}))
+
     return render(
         request,
         "events/event_detail.html",
@@ -217,6 +225,9 @@ def event_detail(request, pk):
             "inventory_items": inventory_items,
             "event_resources": event_resources,
             "participation_status_choices": EventParticipation.STATUS_CHOICES,
+            "event_vol_link": event_vol_link,
+            "event_vol_url": event_vol_url,
+            "event_vol_qr_url": event_vol_qr_url,
         },
     )
 

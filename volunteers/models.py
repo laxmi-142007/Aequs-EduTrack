@@ -60,6 +60,36 @@ class Volunteer(models.Model):
         default="ACTIVE"
     )
 
+    # AEQATRA Employee Volunteering specific fields
+    employee_code = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Aequs Employee ID / Badge Code (e.g. AEQ-1042)"
+    )
+    department = models.CharField(
+        max_length=150,
+        blank=True,
+        default="Aerospace Operations",
+        help_text="Corporate Department or Unit"
+    )
+    plant_location = models.CharField(
+        max_length=150,
+        blank=True,
+        default="Belagavi SEZ",
+        help_text="Plant or Facility Location"
+    )
+    academic_year = models.CharField(
+        max_length=20,
+        blank=True,
+        default="2026-27",
+        help_text="Academic Year of enrollment"
+    )
+    is_employee = models.BooleanField(
+        default=True,
+        help_text="Is an Aequs employee volunteer"
+    )
+
     registration_date = models.DateField(auto_now_add=True)
     remarks = models.TextField(blank=True)
 
@@ -197,6 +227,20 @@ class VolunteerFormLink(models.Model):
         db_index=True,
         editable=False,
     )
+    event = models.ForeignKey(
+        "events.Event",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="volunteer_form_links",
+        help_text="The specific event this volunteer registration form is created for."
+    )
+    role = models.CharField(
+        max_length=150,
+        blank=True,
+        default="Volunteer",
+        help_text="Default role assigned to volunteers registering via this link"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True
     )
@@ -210,6 +254,8 @@ class VolunteerFormLink(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
+        if self.event:
+            return f"Volunteer Form - {self.event.title} ({self.token})"
         return f"Volunteer Form - {self.token}"
 
 

@@ -139,6 +139,23 @@
 <div class="page">
     <div class="card">
         <div class="success-icon">&#10003;</div>
+        {% if event %}
+        <h1>Enrolled for {{ event.title }}!</h1>
+        <p class="subtitle">Thank you for registering to volunteer for <strong>{{ event.title }}</strong>. Your participation request has been successfully recorded exclusively for this event.</p>
+
+        <div class="info-box" style="border-left: 4px solid #dd2d27;">
+            <p style="margin:0 0 10px;font-size:14px;font-weight:700;color:#1e293b;">🎯 Event Participation Summary</p>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <div>📅 <strong>Date:</strong> {{ event.event_date|date:"l, F d, Y" }}</div>
+                {% if event.location %}<div>📍 <strong>Location / Venue:</strong> {{ event.location }}</div>{% endif %}
+                {% if event.organizer %}<div>👤 <strong>Event Lead:</strong> {{ event.organizer }}</div>{% endif %}
+                <div>📋 <strong>Status:</strong> Requested (Pending coordinator confirmation)</div>
+            </div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px dashed #cbd5e1;font-size:12px;color:#64748b;">
+                The event coordinator has received your enrollment. You will receive notifications and updates regarding event reporting times and responsibilities.
+            </div>
+        </div>
+        {% else %}
         <h1>Registration Submitted!</h1>
         <p class="subtitle">Thank you for registering with the Aequs Foundation Volunteer Program. Your details have been successfully recorded in EduTrack.</p>
 
@@ -149,6 +166,7 @@
                 <li>You will be contacted via email or phone regarding orientation sessions and event scheduling.</li>
             </ul>
         </div>
+        {% endif %}
 
         <div class="actions">
             <a href="{% url 'volunteers:public_registration' %}" class="btn btn-secondary">

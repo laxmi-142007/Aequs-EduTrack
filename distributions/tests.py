@@ -156,19 +156,6 @@ class DistributionServicesAndRulesTests(TestCase):
         top_students = get_top_puc_students(limit=10)
         self.assertEqual(len(top_students), 1)
         self.assertEqual(top_students[0]["student_name"], "Aditi Hegde")
-        print("DEBUG ALL ACADEMIC RECORDS:")
-        for r in AcademicRecord.objects.all():
-            print(
-                "  ID=", r.id,
-                "STUDENT=", r.student.student_name,
-                "YEAR=", r.academic_year,
-                "COURSE=", repr(r.class_or_course),
-                "PERCENTAGE=", repr(r.percentage),
-                "MARKS=", repr(r.marks_obtained),
-                "TOTAL=", repr(r.total_marks),
-            )
-
-        print("DEBUG TOP STUDENTS:", top_students)
         self.assertEqual(top_students[0]["percentage"], 96.5)
         self.assertFalse(top_students[0]["has_laptop"])
 
