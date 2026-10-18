@@ -1803,7 +1803,7 @@
                                 type="file"
                                 name="document"
                                 id="document"
-                                accept=".pdf,.jpg,.jpeg,.png"
+                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                 required
                             >
 
@@ -1819,7 +1819,7 @@
                                 </div>
 
                                 <div class="upload-subtitle">
-                                    PDF, JPG, JPEG or PNG
+                                    PDF, Word (.doc, .docx), JPG, JPEG or PNG
                                 </div>
 
                                 <div
@@ -2615,7 +2615,9 @@
                     ".pdf",
                     ".jpg",
                     ".jpeg",
-                    ".png"
+                    ".png",
+                    ".doc",
+                    ".docx"
                 ];
 
 
@@ -2637,7 +2639,7 @@
 
                     alert(
                         "Invalid file type. " +
-                        "Please upload PDF, JPG, JPEG or PNG."
+                        "Please upload PDF, Word (.doc, .docx), JPG, JPEG or PNG."
                     );
 
                     fileInput.value = "";

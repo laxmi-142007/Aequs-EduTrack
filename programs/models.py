@@ -478,3 +478,68 @@ class IndustryVisit(models.Model):
             self.visit_code = code
         super().save(*args, **kwargs)
 
+
+# ============================================================================
+# 9. MIKE PROPEN SCHOLARSHIP MODEL (Special Excellence Scholarship Program)
+# ============================================================================
+
+class MikePropenScholarshipApplication(models.Model):
+    """
+    Dedicated application and lifecycle tracking for the prestigious
+    Mike Propen Scholarship Scheme supporting high-potential students.
+    """
+    class Status(models.TextChoices):
+        SUBMITTED = "SUBMITTED", "Application Submitted"
+        UNDER_REVIEW = "UNDER_REVIEW", "Under Review"
+        INTERVIEW_SCHEDULED = "INTERVIEW_SCHEDULED", "Interview Scheduled"
+        AWARDED = "AWARDED", "Awarded / Sanctioned"
+        DISBURSED = "DISBURSED", "Disbursed"
+        REJECTED = "REJECTED", "Rejected / Ineligible"
+
+    application_number = models.CharField(max_length=50, unique=True, blank=True, help_text="e.g. MPS-2026-001")
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name="mike_propen_applications")
+    student_name = models.CharField(max_length=150)
+    gender = models.CharField(max_length=20, blank=True, default="Other")
+    school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name="mike_propen_applications")
+    school_name = models.CharField(max_length=200, blank=True)
+    grade_level = models.CharField(max_length=50, default="Class 10")
+    academic_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, help_text="Academic % or aggregate score")
+    annual_family_income = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Annual family income in INR")
+    contact_phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    statement_of_purpose = models.TextField(blank=True, help_text="Academic aspirations, leadership, or hardship statement")
+    scholarship_amount = models.DecimalField(max_digits=10, decimal_places=2, default=25000.00, help_text="Sanctioned award amount in INR")
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.SUBMITTED)
+    academic_year = models.CharField(max_length=20, default="2026-27")
+    application_date = models.DateField(default=timezone.localdate)
+    disbursement_date = models.DateField(null=True, blank=True)
+    reviewer_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-application_date", "-created_at"]
+        verbose_name = "Mike Propen Scholarship Application"
+        verbose_name_plural = "Mike Propen Scholarship Applications"
+
+    def __str__(self):
+        return f"{self.application_number or 'MPS'} — {self.student_name} ({self.get_status_display()})"
+
+    def save(self, *args, **kwargs):
+        if not self.application_number or not self.application_number.strip():
+            year = self.application_date.year if self.application_date else timezone.localdate().year
+            count = MikePropenScholarshipApplication.objects.filter(application_date__year=year).count() + 1
+            code = f"MPS-{year}-{count:03d}"
+            while MikePropenScholarshipApplication.objects.filter(application_number=code).exists():
+                count += 1
+                code = f"MPS-{year}-{count:03d}"
+            self.application_number = code
+        if self.student and not self.student_name:
+            self.student_name = self.student.student_name
+        if self.student and not self.gender:
+            self.gender = getattr(self.student, "gender", "Other")
+        if self.school and not self.school_name:
+            self.school_name = self.school.name
+        super().save(*args, **kwargs)
+
+

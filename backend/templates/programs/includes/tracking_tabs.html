@@ -1,4 +1,7 @@
 <div class="af-tabs" style="margin-bottom: 22px; background: #ffffff; padding: 6px 16px 0; border-radius: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
+    <a href="{% url 'programs:tracking_dashboard' %}" class="af-tab-item {% if active_tab == 'tracking_dashboard' %}active{% endif %}" style="font-weight: 700;">
+        <i data-lucide="trending-up" style="color: #ed1c24;"></i> Tracking Dashboard
+    </a>
     <a href="{% url 'programs:project_list' %}" class="af-tab-item {% if active_tab == 'projects' %}active{% endif %}">
         <i data-lucide="folder-kanban"></i> Projects
     </a>

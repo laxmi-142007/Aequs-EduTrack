@@ -56,3 +56,21 @@ class EventInventoryRequestTest(TestCase):
         self.assertEqual(tx.previous_stock, 50)
         self.assertEqual(tx.new_stock, 45)
         self.assertIn("Annual Science Fair", tx.source_destination)
+
+    def test_bulk_upload_events_with_formatted_dates_and_aliases(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        csv_content = (
+            "Event Name,Date,Type,Venue,Coordinator,Details\n"
+            "Science Workshop,15/10/2026,Campaign,Hubballi,Admin,Interactive workshop\n"
+            "Robotics Expo,2026-11-01 00:00:00,Event,Belagavi,Admin,STEM expo\n"
+        ).encode("utf-8")
+        uploaded = SimpleUploadedFile("events.csv", csv_content, content_type="text/csv")
+        res = self.client.post(reverse("events:bulk_upload"), {"file": uploaded})
+        self.assertEqual(res.status_code, 302)
+        self.assertTrue(Event.objects.filter(title="Science Workshop").exists())
+        self.assertTrue(Event.objects.filter(title="Robotics Expo").exists())
+        evt1 = Event.objects.get(title="Science Workshop")
+        self.assertEqual(str(evt1.event_date), "2026-10-15")
+        self.assertEqual(evt1.location, "Hubballi")
+        evt2 = Event.objects.get(title="Robotics Expo")
+        self.assertEqual(str(evt2.event_date), "2026-11-01")

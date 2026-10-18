@@ -313,6 +313,40 @@ import io
 from decimal import Decimal, InvalidOperation
 
 
+INVENTORY_HEADER_ALIASES = {
+    "item": "item_name",
+    "item_name": "item_name",
+    "name": "item_name",
+    "title": "item_name",
+    "sku": "sku",
+    "code": "sku",
+    "item_code": "sku",
+    "category": "category",
+    "item_category": "category",
+    "unit": "unit",
+    "units": "unit",
+    "uom": "unit",
+    "stock": "current_stock",
+    "current_stock": "current_stock",
+    "qty": "current_stock",
+    "quantity": "current_stock",
+    "threshold": "low_stock_threshold",
+    "low_stock_threshold": "low_stock_threshold",
+    "min_stock": "low_stock_threshold",
+    "reorder_level": "low_stock_threshold",
+    "cost": "unit_cost",
+    "unit_cost": "unit_cost",
+    "price": "unit_cost",
+    "unit_price": "unit_cost",
+    "rate": "unit_cost",
+    "location": "location",
+    "warehouse": "location",
+    "storage_location": "location",
+    "description": "description",
+    "details": "description",
+    "status": "status",
+}
+
 INVENTORY_IMPORT_COLUMNS = [
     "item_name",
     "sku",
@@ -334,14 +368,16 @@ def _bulk_clean_value(value):
 
 
 def _bulk_parse_non_negative_int(value, field_name, row_number):
-    value = _bulk_clean_value(value)
-
-    if value == "":
+    from backend.utils import parse_decimal_clean
+    cleaned = _bulk_clean_value(value)
+    if cleaned == "":
         return 0
-
     try:
-        number = int(float(value))
-    except (ValueError, TypeError):
+        dec = parse_decimal_clean(cleaned, default=None)
+        if dec is None:
+            raise ValueError()
+        number = int(dec)
+    except Exception:
         raise ValidationError(
             f"Row {row_number}: {field_name} must be a whole number."
         )
@@ -355,14 +391,16 @@ def _bulk_parse_non_negative_int(value, field_name, row_number):
 
 
 def _bulk_parse_decimal(value, field_name, row_number):
-    value = _bulk_clean_value(value)
-
-    if value == "":
+    from backend.utils import parse_decimal_clean
+    cleaned = _bulk_clean_value(value)
+    if cleaned == "":
         return Decimal("0.00")
 
     try:
-        number = Decimal(value)
-    except (InvalidOperation, ValueError, TypeError):
+        number = parse_decimal_clean(cleaned, default=None)
+        if number is None:
+            raise ValueError()
+    except Exception:
         raise ValidationError(
             f"Row {row_number}: {field_name} must be a valid number."
         )
@@ -376,12 +414,13 @@ def _bulk_parse_decimal(value, field_name, row_number):
 
 
 def _bulk_validate_row(row, row_number, existing_skus, uploaded_skus):
+    import hashlib
 
     item_name = _bulk_clean_value(row.get("item_name"))
     sku = _bulk_clean_value(row.get("sku")).upper()
     category = _bulk_clean_value(row.get("category")).upper()
     unit = _bulk_clean_value(row.get("unit")) or "Pieces"
-    location = _bulk_clean_value(row.get("location"))
+    location = _bulk_clean_value(row.get("location")) or "Main Warehouse"
     description = _bulk_clean_value(row.get("description"))
     status = _bulk_clean_value(row.get("status")).upper() or "ACTIVE"
 
@@ -391,9 +430,13 @@ def _bulk_validate_row(row, row_number, existing_skus, uploaded_skus):
         )
 
     if not sku:
-        raise ValidationError(
-            f"Row {row_number}: sku is required."
-        )
+        h = hashlib.md5(item_name.encode("utf-8")).hexdigest()[:6].upper()
+        candidate = f"SKU-{h}"
+        counter = 1
+        while candidate in existing_skus or candidate in uploaded_skus:
+            candidate = f"SKU-{h}-{counter}"
+            counter += 1
+        sku = candidate
 
     if sku in existing_skus:
         raise ValidationError(
@@ -410,16 +453,16 @@ def _bulk_validate_row(row, row_number, existing_skus, uploaded_skus):
     }
 
     if category not in valid_categories:
-        raise ValidationError(
-            f"Row {row_number}: invalid category '{category}'. "
-            f"Allowed values: {', '.join(sorted(valid_categories))}."
-        )
+        # Fallback to closest match or BOOKS
+        matched = None
+        for vc in valid_categories:
+            if vc in category or category in vc:
+                matched = vc
+                break
+        category = matched or InventoryCategory.BOOKS
 
     if status not in {"ACTIVE", "INACTIVE"}:
-        raise ValidationError(
-            f"Row {row_number}: invalid status '{status}'. "
-            f"Allowed values: ACTIVE, INACTIVE."
-        )
+        status = "ACTIVE"
 
     current_stock = _bulk_parse_non_negative_int(
         row.get("current_stock"),
@@ -455,6 +498,8 @@ def _bulk_validate_row(row, row_number, existing_skus, uploaded_skus):
 
 def _bulk_read_csv(file_obj):
 
+    from backend.utils import normalize_header
+
     raw_data = file_obj.read()
 
     if isinstance(raw_data, bytes):
@@ -468,23 +513,14 @@ def _bulk_read_csv(file_obj):
     if not reader.fieldnames:
         raise ValidationError("The CSV file is empty.")
 
-    headers = [
-        str(header).strip()
+    reader.fieldnames = [
+        normalize_header(header, INVENTORY_HEADER_ALIASES)
         for header in reader.fieldnames
         if header is not None
     ]
 
-    missing_columns = [
-        column
-        for column in INVENTORY_IMPORT_COLUMNS
-        if column not in headers
-    ]
-
-    if missing_columns:
-        raise ValidationError(
-            "Missing required columns: " +
-            ", ".join(missing_columns)
-        )
+    if "item_name" not in reader.fieldnames:
+        raise ValidationError("Missing required column: 'item_name' (or 'Item Name').")
 
     rows = []
 
@@ -508,6 +544,7 @@ def _bulk_read_csv(file_obj):
 
 
 def _bulk_read_excel(file_obj):
+    from backend.utils import normalize_header
 
     try:
         import openpyxl
@@ -539,22 +576,13 @@ def _bulk_read_excel(file_obj):
         raise ValidationError("The Excel file is empty.")
 
     headers = [
-        _bulk_clean_value(value)
+        normalize_header(_bulk_clean_value(value), INVENTORY_HEADER_ALIASES)
         for value in header_row
     ]
 
-    missing_columns = [
-        column
-        for column in INVENTORY_IMPORT_COLUMNS
-        if column not in headers
-    ]
-
-    if missing_columns:
+    if "item_name" not in headers:
         workbook.close()
-        raise ValidationError(
-            "Missing required columns: " +
-            ", ".join(missing_columns)
-        )
+        raise ValidationError("Missing required column: 'item_name' (or 'Item Name').")
 
     rows = []
 
@@ -601,7 +629,7 @@ def bulk_import_inventory(
 
         rows = _bulk_read_csv(file_obj)
 
-    elif filename_lower.endswith(".xlsx"):
+    elif filename_lower.endswith((".xlsx", ".xls")):
 
         rows = _bulk_read_excel(file_obj)
 
@@ -609,7 +637,7 @@ def bulk_import_inventory(
 
         raise ValidationError(
             "Unsupported file format. "
-            "Please upload a CSV or XLSX file."
+            "Please upload a CSV or Excel (.xlsx, .xls) file."
         )
 
     if not rows:

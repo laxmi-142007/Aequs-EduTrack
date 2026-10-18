@@ -198,9 +198,35 @@
         <!-- HEADER -->
         <div class="header">
             <div class="logo-icon">&#129309;</div>
-            <h1>Volunteer Registration Form</h1>
-            <p>Join the Aequs Foundation community volunteer network. Please fill out your details below to register.</p>
+            {% if event %}
+            <h1>Volunteer Registration for {{ event.title }}</h1>
+            <p>You are registering specifically for <strong>{{ event.title }}</strong> scheduled on <strong>{{ event.event_date|date:"l, F d, Y" }}</strong>{% if event.location %} at <strong>{{ event.location }}</strong>{% endif %}.</p>
+            {% else %}
+            <h1>AEQATRA — Employee Volunteer Registration</h1>
+            <p>Join AEQATRA, the Aequs employee volunteering initiative. Fill out your details below to participate in student mentorship, STEM fairs, and community outreach.</p>
+            {% endif %}
         </div>
+
+        {% if event %}
+        <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1.5px solid #fdba74; border-radius: 14px; padding: 18px 22px; margin-bottom: 22px; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.08);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+                <span style="background:#ea580c;color:white;font-size:11px;font-weight:800;letter-spacing:0.5px;padding:3px 9px;border-radius:20px;text-transform:uppercase;">Event Volunteer Enrollment</span>
+                <span style="font-size:12.5px;color:#9a3412;font-weight:700;">📅 {{ event.event_date|date:"M d, Y" }}</span>
+                {% if form_link.role %}
+                <span style="font-size:12.5px;color:#c2410c;font-weight:700;">• Role: {{ form_link.role }}</span>
+                {% endif %}
+            </div>
+            <div style="font-size:17px;font-weight:800;color:#9a3412;margin-bottom:4px;">{{ event.title }}</div>
+            {% if event.description %}
+            <div style="font-size:13px;color:#7c2d12;margin-bottom:8px;line-height:1.5;">{{ event.description|truncatewords:35 }}</div>
+            {% endif %}
+            <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#9a3412;padding-top:8px;border-top:1px dashed #fed7aa;">
+                {% if event.location %}<span>📍 <strong>Venue:</strong> {{ event.location }}</span>{% endif %}
+                {% if event.organizer %}<span>👤 <strong>Lead:</strong> {{ event.organizer }}</span>{% endif %}
+                <span>✨ <em>Registration directly enrolls you exclusively for this specific event.</em></span>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- FORM CARD -->
         <div class="form-card">
@@ -217,6 +243,50 @@
 
             <form method="post" action="{% if form_link %}{% url 'volunteers:public_form_by_token' form_link.token %}{% else %}{% url 'volunteers:public_registration' %}{% endif %}">
                 {% csrf_token %}
+                {% if form_link and form_link.role %}
+                <input type="hidden" name="role" value="{{ form_link.role }}">
+                {% endif %}
+                {% if event %}
+                <input type="hidden" name="event_id" value="{{ event.id }}">
+                {% endif %}
+
+                <!-- AEQATRA EMPLOYEE AFFILIATION -->
+                <div class="section-title">&#127970; Aequs Employee Affiliation</div>
+
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="employee_code">Employee Code / Badge ID</label>
+                        <input type="text" id="employee_code" name="employee_code" placeholder="e.g. AEQ-1042 (if Aequs employee)" value="{{ form_data.employee_code|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department / Functional Unit</label>
+                        <select id="department" name="department">
+                            <option value="">-- Select Department --</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept }}" {% if form_data.department == dept %}selected{% endif %}>{{ dept }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="plant_location">Plant / Facility Location</label>
+                        <select id="plant_location" name="plant_location">
+                            {% for plant in plants %}
+                            <option value="{{ plant }}" {% if form_data.plant_location == plant or not form_data.plant_location and 'Belagavi' in plant %}selected{% endif %}>{{ plant }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="academic_year">Academic Year</label>
+                        <select id="academic_year" name="academic_year">
+                            {% for ay in academic_years %}
+                            <option value="{{ ay }}" {% if form_data.academic_year == ay or not form_data.academic_year and ay == '2026-27' %}selected{% endif %}>{{ ay }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
 
                 <!-- PERSONAL INFO -->
                 <div class="section-title">&#128100; Personal Information</div>
@@ -227,8 +297,8 @@
                         <input type="text" id="first_name" name="first_name" required placeholder="e.g. Priya" value="{{ form_data.first_name|default:'' }}">
                     </div>
                     <div class="form-group">
-                        <label for="last_name">Last Name <span class="required">*</span></label>
-                        <input type="text" id="last_name" name="last_name" required placeholder="e.g. Sharma" value="{{ form_data.last_name|default:'' }}">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" placeholder="e.g. Sharma" value="{{ form_data.last_name|default:'' }}">
                     </div>
                 </div>
 
@@ -308,7 +378,7 @@
 
                 <!-- SUBMIT -->
                 <button type="submit" class="submit-btn">
-                    &#10003; Submit Volunteer Registration
+                    {% if event %}&#10003; Register & Enroll for {{ event.title|truncatechars:28 }}{% else %}&#10003; Submit Volunteer Registration{% endif %}
                 </button>
 
                 <p class="privacy-note">

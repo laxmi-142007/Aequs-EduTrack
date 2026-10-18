@@ -13,6 +13,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from inventory.models import InventoryItem, StockTransaction
@@ -199,6 +200,13 @@ def event_detail(request, pk):
     event_resources = event.resources.select_related("item").all()
     inventory_items = InventoryItem.objects.filter(status="ACTIVE")
 
+    # Event-specific volunteer registration form link and QR code
+    event_vol_link = VolunteerFormLink.objects.filter(event=event, is_active=True).order_by("-created_at").first()
+    if not event_vol_link:
+        event_vol_link = VolunteerFormLink.objects.create(event=event, role="Volunteer")
+    event_vol_url = request.build_absolute_uri(reverse("volunteers:public_form_by_token", kwargs={"token": event_vol_link.token}))
+    event_vol_qr_url = request.build_absolute_uri(reverse("volunteers:form_qr_by_token", kwargs={"token": event_vol_link.token}))
+
     return render(
         request,
         "events/event_detail.html",
@@ -217,6 +225,9 @@ def event_detail(request, pk):
             "inventory_items": inventory_items,
             "event_resources": event_resources,
             "participation_status_choices": EventParticipation.STATUS_CHOICES,
+            "event_vol_link": event_vol_link,
+            "event_vol_url": event_vol_url,
+            "event_vol_qr_url": event_vol_qr_url,
         },
     )
 
@@ -1029,12 +1040,43 @@ def event_send_all_due_reminders(request):
 # BULK UPLOAD: EVENTS (Feature 2)
 # =============================================================================
 
+EVENT_HEADER_ALIASES = {
+    "event_title": "title",
+    "event_name": "title",
+    "name": "title",
+    "event": "title",
+    "campaign": "title",
+    "campaign_name": "title",
+    "date": "event_date",
+    "event_date": "event_date",
+    "schedule_date": "event_date",
+    "scheduled_date": "event_date",
+    "type": "event_type",
+    "event_type": "event_type",
+    "category": "event_type",
+    "venue": "location",
+    "place": "location",
+    "plant": "location",
+    "location": "location",
+    "coordinator": "organizer",
+    "organizer": "organizer",
+    "organized_by": "organizer",
+    "details": "description",
+    "desc": "description",
+    "notes": "description",
+    "remarks": "description",
+    "status": "status",
+}
+
+
 def _normalize_event_header(name):
-    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+    from backend.utils import normalize_header
+    return normalize_header(name, EVENT_HEADER_ALIASES)
 
 
 @login_required
 def bulk_upload_events(request):
+    from backend.utils import parse_date_flexible
     if not is_event_manager(request.user):
         messages.error(request, "Permission denied. Only Event Managers can bulk upload events.")
         return redirect("events:list")
@@ -1048,8 +1090,8 @@ def bulk_upload_events(request):
         return redirect("events:bulk_upload")
 
     file_name = uploaded_file.name.lower()
-    if not file_name.endswith((".csv", ".xlsx")):
-        messages.error(request, "Only CSV and Excel (.xlsx) files are supported.")
+    if not file_name.endswith((".csv", ".xlsx", ".xls")):
+        messages.error(request, "Only CSV and Excel (.xlsx, .xls) files are supported.")
         return redirect("events:bulk_upload")
 
     try:
@@ -1072,36 +1114,31 @@ def bulk_upload_events(request):
             for r in excel_rows[1:]:
                 if not any(c is not None and str(c).strip() for c in r):
                     continue
-                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+                row_dict = {}
+                for i in range(len(headers)):
+                    if headers[i]:
+                        row_dict[headers[i]] = r[i] if i < len(r) and r[i] is not None else ""
+                rows.append(row_dict)
 
         created, errors = 0, []
         with transaction.atomic():
             for idx, row in enumerate(rows, start=2):
-                title = row.get("title", "").strip()
+                title = str(row.get("title") or row.get("event_name") or row.get("name") or "").strip()
                 if not title:
                     errors.append(f"Row {idx}: Missing event title")
                     continue
 
-                event_date_str = row.get("event_date", "").strip()
-                if not event_date_str:
-                    errors.append(f"Row {idx}: Missing event_date (YYYY-MM-DD)")
+                raw_date = row.get("event_date")
+                event_date = parse_date_flexible(raw_date)
+                if not event_date:
+                    errors.append(f"Row {idx}: Missing or invalid event_date '{raw_date}'. Use YYYY-MM-DD or DD/MM/YYYY.")
                     continue
 
-                try:
-                    from datetime import datetime
-                    if "/" in event_date_str:
-                        event_date = datetime.strptime(event_date_str, "%d/%m/%Y").date()
-                    else:
-                        event_date = datetime.strptime(event_date_str, "%Y-%m-%d").date()
-                except Exception:
-                    errors.append(f"Row {idx}: Invalid date format for '{event_date_str}'. Use YYYY-MM-DD.")
-                    continue
-
-                event_type = row.get("event_type", "EVENT").upper() or "EVENT"
+                event_type = str(row.get("event_type") or "EVENT").strip().upper() or "EVENT"
                 if event_type not in dict(Event.EventType.choices):
                     event_type = Event.EventType.EVENT
 
-                status = row.get("status", "PLANNED").upper() or "PLANNED"
+                status = str(row.get("status") or "PLANNED").strip().upper() or "PLANNED"
                 if status not in dict(Event.Status.choices):
                     status = Event.Status.PLANNED
 
@@ -1110,9 +1147,9 @@ def bulk_upload_events(request):
                     event_type=event_type,
                     status=status,
                     event_date=event_date,
-                    location=row.get("location", ""),
-                    organizer=row.get("organizer", request.user.get_full_name() or request.user.username),
-                    description=row.get("description", ""),
+                    location=str(row.get("location") or "").strip(),
+                    organizer=str(row.get("organizer") or request.user.get_full_name() or request.user.username).strip(),
+                    description=str(row.get("description") or "").strip(),
                 )
                 created += 1
 

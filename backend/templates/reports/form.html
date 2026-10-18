@@ -279,7 +279,7 @@
                 <div class="form-group">
                     <label for="id_attachment">{% if report and report.has_attachment %}Upload New File to Replace Current Attachment{% else %}Upload Supporting Document / PDF{% endif %}</label>
                     {{ form.attachment }}
-                    <span class="help-text">Accepted formats: .pdf, .docx, .xlsx, .csv, .png, .jpg (Max 25 MB)</span>
+                    <span class="help-text">Accepted formats: .pdf, .docx, .doc, .xlsx, .csv, .png, .jpg (Max 25 MB)</span>
                     {% for err in form.attachment.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
                 </div>
             </div>

@@ -172,8 +172,19 @@
             <div class="card">
                 <div class="heading">
                     <div class="heading-icon">✅</div>
+                    {% if event %}
+                    <h2>Event Volunteer Form Generated</h2>
+                    <p>This registration form is specifically tied to <strong>{{ event.title }}</strong>.</p>
+                    <div style="display:inline-flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;padding:6px 14px;border-radius:20px;font-size:12.5px;color:#c2410c;font-weight:700;margin-top:10px;">
+                        <span>🎯 Event: {{ event.title }}</span>
+                        <span>•</span>
+                        <span>📅 {{ event.event_date|date:"M d, Y" }}</span>
+                        {% if form_link.role %}<span>• Role: {{ form_link.role }}</span>{% endif %}
+                    </div>
+                    {% else %}
                     <h2>Unique Volunteer Form Generated</h2>
                     <p>Share this unique registration link with volunteers using the URL or QR code below.</p>
+                    {% endif %}
                 </div>
 
                 <div class="share-grid">
@@ -189,11 +200,11 @@
                         <div class="section">
                             <h3 class="section-title">📋 How to use</h3>
                             <div class="instructions">
-                                <p><strong>1.</strong> Copy the unique form URL and send it to the volunteer candidate.</p>
+                                <p><strong>1.</strong> Copy the unique form URL and send it to prospective volunteers.</p>
                                 <p><strong>2.</strong> Or display the QR code on a screen, poster, or kiosk.</p>
                                 <p><strong>3.</strong> The volunteer scans the QR code or clicks the link on their mobile device.</p>
-                                <p><strong>4.</strong> They submit their contact details, skills, and availability.</p>
-                                <p><strong>5.</strong> Their active volunteer profile is automatically created in EduTrack.</p>
+                                <p><strong>4.</strong> They submit their contact details, employee code, and availability.</p>
+                                <p><strong>5.</strong> {% if event %}They are directly registered and enrolled exclusively for <strong>{{ event.title }}</strong>!{% else %}Their active volunteer profile is automatically created in EduTrack.{% endif %}</p>
                             </div>
                         </div>
 

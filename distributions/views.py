@@ -2354,8 +2354,49 @@ def api_export_distribution_csv(request):
 # BULK UPLOAD: DISTRIBUTIONS (Feature 2)
 # ============================================================================
 
+DISTRIBUTION_HEADER_ALIASES = {
+    "admission_no": "admission_number",
+    "adm_no": "admission_number",
+    "admission_num": "admission_number",
+    "roll_no": "admission_number",
+    "student_id": "admission_number",
+    "student": "student_name",
+    "student_name": "student_name",
+    "name": "student_name",
+    "school": "school_name",
+    "school_name": "school_name",
+    "name_of_the_school": "school_name",
+    "name_of_school": "school_name",
+    "institution": "school_name",
+    "benefit": "benefit_type",
+    "benefit_type": "benefit_type",
+    "type": "benefit_type",
+    "item": "benefit_type",
+    "material": "benefit_type",
+    "item_type": "benefit_type",
+    "qty": "quantity",
+    "quantity": "quantity",
+    "total": "quantity",
+    "count": "quantity",
+    "units": "quantity",
+    "year": "academic_year",
+    "academic_year": "academic_year",
+    "location": "location",
+    "place": "location",
+    "taluk": "location",
+    "district": "location",
+    "team": "issued_by",
+    "issued_by": "issued_by",
+    "issuer": "issued_by",
+    "coordinator": "issued_by",
+    "remarks": "remarks",
+    "notes": "remarks",
+}
+
+
 def _normalize_dist_header(name):
-    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+    from backend.utils import normalize_header
+    return normalize_header(name, DISTRIBUTION_HEADER_ALIASES)
 
 
 def _is_school_roster_format(raw_rows):
@@ -2933,12 +2974,13 @@ def bulk_upload_distributions(request):
                     errors.append(f"Row {idx}: No student or school specified")
                     continue
 
+                from backend.utils import parse_decimal_clean
                 qty_str = (
                     row.get("quantity") or row.get("total") or
                     row.get("qty") or row.get("count") or "1"
                 ) or "1"
                 try:
-                    qty = int(float(str(qty_str).replace(",", "").strip()))
+                    qty = int(parse_decimal_clean(qty_str, default=Decimal("1")))
                 except (ValueError, TypeError):
                     qty = 1
 

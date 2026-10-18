@@ -2274,7 +2274,7 @@
   <!-- Header -->
   <div class="sidebar-header">
 
-    <div class="brand-logo"><img src="{% static 'images/LOGO Aequs Foundation.jpg' %}" alt="Aequs Foundation"></div>
+    <div class="brand-logo"><img src="{% static 'images/LOGO Aequs Foundation.jpg' %}" alt="Aequs Foundation"><img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs" style="display:none;"></div>
 
     <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar"
       aria-label="Toggle Sidebar">
@@ -2418,40 +2418,68 @@
 
     <ul class="nav-list">
       <li class="nav-item {% if active_page == 'tracking' or active_page == 'projects' or active_page == 'programs' or active_page == 'ev_classes' or active_page == 'industry_visits' or active_page == 'monthly_tracking' or active_page == 'locations' %}active{% endif %}">
-        <a href="{% url 'programs:project_list' %}" title="Tracking &amp; Operations">
+        <a href="{% url 'programs:tracking_dashboard' %}" title="Project-Wise Tracking Dashboard">
           <i data-lucide="trending-up"></i>
           <span class="label">Tracking</span>
         </a>
       </li>
     </ul>
 
-    <!-- 2. Scholarship Dropdown (Scholarships, Eligibility, Internships, Mentorship) -->
+    <!-- 2. Scholarship Dropdown (Scholarships, Mike Propen, Eligibility, Internships, Mentorship) -->
     <div class="nav-section-title">
       Scholarships &amp; Grants
     </div>
 
     <ul class="nav-list">
       <li
-        class="nav-dropdown {% if active_page == 'scholarships' or active_page == 'eligibility' or active_page == 'internships' or active_page == 'mentorship' %}open{% endif %}"
+        class="nav-dropdown {% if active_page == 'scholarships' or active_page == 'propen_scholarship' or active_page == 'eligibility' or active_page == 'internships' or active_page == 'mentorship' %}open{% endif %}"
         id="dropdownScholarship">
         <button type="button" class="dropdown-trigger" onclick="toggleNavDropdown('dropdownScholarship')"
           title="Scholarships">
           <div class="dropdown-trigger-left">
             <i data-lucide="award"></i>
-            <span class="label">Scholarship</span>
+            <span class="label">Scholarships</span>
           </div>
           <i data-lucide="chevron-down" class="dropdown-arrow"></i>
         </button>
 
         <ul class="sub-nav-list">
-          <li class="sub-nav-item {% if active_page == 'scholarships' %}active{% endif %}">
-            <a href="{% url 'programs:scholarship_list' %}" class="sub-link" title="Scholarship Directory">
+          <li class="sub-nav-item {% if active_page == 'scholarships' and not selected_tab or selected_tab == 'all' %}active{% endif %}">
+            <a href="{% url 'programs:scholarship_list' %}" class="sub-link" title="All Educational Aids">
               <i data-lucide="badge-percent"></i>
-              <span class="label">Scholarships</span>
+              <span class="label">All Scholarships</span>
             </a>
             <a href="{% url 'programs:scholarship_create' %}" class="sub-add-btn" title="Record Scholarship"
               onclick="event.stopPropagation();">
               <i data-lucide="plus"></i>
+            </a>
+          </li>
+
+          <li class="sub-nav-item {% if active_page == 'scholarships' and selected_tab == 'foundation' %}active{% endif %}">
+            <a href="{% url 'programs:scholarship_list' %}?tab=foundation" class="sub-link" title="Foundation Scholarships &amp; CSR">
+              <i data-lucide="award"></i>
+              <span class="label">Foundation &amp; CSR</span>
+            </a>
+          </li>
+
+          <li class="sub-nav-item {% if active_page == 'scholarships' and selected_tab == 'government' %}active{% endif %}">
+            <a href="{% url 'programs:scholarship_list' %}?tab=government" class="sub-link" title="Government Schemes (SSP/NSP)">
+              <i data-lucide="landmark"></i>
+              <span class="label">Government Schemes</span>
+            </a>
+          </li>
+
+          <li class="sub-nav-item {% if active_page == 'scholarships' and selected_tab == 'employee_special' %}active{% endif %}">
+            <a href="{% url 'programs:scholarship_list' %}?tab=employee_special" class="sub-link" title="Employee Special Tab">
+              <i data-lucide="briefcase"></i>
+              <span class="label">Employee Special Tab</span>
+            </a>
+          </li>
+
+          <li class="sub-nav-item {% if active_page == 'propen_scholarship' %}active{% endif %}">
+            <a href="{% url 'programs:propen_portal' %}" class="sub-link" title="Mike Propen Scholarship Scheme">
+              <i data-lucide="award" style="color: #ed1c24;"></i>
+              <span class="label">Mike Propen Scheme</span>
             </a>
           </li>
 
@@ -2487,19 +2515,19 @@
       </li>
     </ul>
 
-    <!-- 3. Ekatra Dropdown (Volunteer, Campaign & Events, NGOs, Archive) -->
+    <!-- 3. AEQATRA Dropdown (Employee Volunteering, Campaign & Events, Reports, Archive) -->
     <div class="nav-section-title">
-      Ekatra
+      AEQATRA &bull; Volunteering
     </div>
 
     <ul class="nav-list">
       <li
         class="nav-dropdown {% if active_page == 'volunteers' or active_page == 'events' or active_page == 'reports' or active_page == 'archive' %}open{% endif %}"
         id="dropdownEkatra">
-        <button type="button" class="dropdown-trigger" onclick="toggleNavDropdown('dropdownEkatra')" title="Ekatra">
+        <button type="button" class="dropdown-trigger" onclick="toggleNavDropdown('dropdownEkatra')" title="AEQATRA - Employee Volunteering">
           <div class="dropdown-trigger-left">
             <i data-lucide="heart-handshake"></i>
-            <span class="label">Ekatra</span>
+            <span class="label">AEQATRA</span>
           </div>
           <i data-lucide="chevron-down" class="dropdown-arrow"></i>
         </button>
@@ -2507,9 +2535,9 @@
         <ul class="sub-nav-list">
           {% if perms.volunteers.view_volunteer or request.user.is_admin %}
           <li class="sub-nav-item {% if active_page == 'volunteers' %}active{% endif %}">
-            <a href="{% url 'volunteers:list' %}" class="sub-link" title="Volunteers">
+            <a href="{% url 'volunteers:list' %}" class="sub-link" title="AEQATRA Employee Volunteering">
               <i data-lucide="users"></i>
-              <span class="label">Volunteer</span>
+              <span class="label">AEQATRA Volunteering</span>
             </a>
             <a href="{% url 'volunteers:create' %}" class="sub-add-btn" title="Add Volunteer"
               onclick="event.stopPropagation();">

@@ -458,3 +458,18 @@ class LaptopServiceTests(TestCase):
             replacement.status,
             Laptop.Status.ISSUED,
         )
+
+    def test_bulk_import_inventory_with_friendly_headers_and_currency(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from inventory.services import bulk_import_inventory
+        csv_data = (
+            'Item Name,Category,Unit,Current Stock,Unit Cost\n'
+            'Robotics Experiment Kit,SCIENCE_EQUIPMENT,Kits,25,"₹ 1,500.00"\n'
+        ).encode("utf-8")
+        uploaded = SimpleUploadedFile("items.csv", csv_data, content_type="text/csv")
+        res = bulk_import_inventory(uploaded, "items.csv", performed_by="tester")
+        self.assertEqual(res["created"], 1)
+        item = InventoryItem.objects.get(item_name="Robotics Experiment Kit")
+        self.assertEqual(item.current_stock, 25)
+        self.assertEqual(item.unit_cost, Decimal("1500.00"))
+        self.assertTrue(item.sku.startswith("SKU-"))

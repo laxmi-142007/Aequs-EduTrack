@@ -1303,11 +1303,11 @@ def inventory_bulk_upload(request):
     filename = uploaded_file.name.lower()
 
     if not filename.endswith(
-        (".csv", ".xlsx")
+        (".csv", ".xlsx", ".xls")
     ):
         messages.error(
             request,
-            "Invalid file format. Please upload CSV or XLSX."
+            "Invalid file format. Please upload CSV or Excel (.xlsx, .xls)."
         )
         return redirect("inventory:bulk_upload")
 

@@ -947,8 +947,8 @@ def academic_bulk_upload(request):
         return redirect("academics:bulk_upload")
 
     filename = uploaded_file.name.lower()
-    if not (filename.endswith(".csv") or filename.endswith(".xlsx")):
-        messages.error(request, "Only CSV (.csv) and Excel (.xlsx) files are supported.")
+    if not (filename.endswith(".csv") or filename.endswith(".xlsx") or filename.endswith(".xls")):
+        messages.error(request, "Only CSV (.csv) and Excel (.xlsx, .xls) files are supported.")
         return redirect("academics:bulk_upload")
 
     try:
@@ -1021,14 +1021,16 @@ def academic_bulk_upload(request):
                     if not class_or_course:
                         class_or_course = student.current_class or "General"
 
+                    from backend.utils import parse_decimal_clean
+
                     def clean_decimal(field_name):
-                        val = str(row.get(field_name) or "").strip()
-                        if not val or val == "-":
+                        val = row.get(field_name)
+                        if val is None or str(val).strip() in ("", "-", "na", "n/a"):
                             return None
-                        try:
-                            return Decimal(val)
-                        except (InvalidOperation, ValueError):
+                        dec = parse_decimal_clean(val, default=None)
+                        if dec is None:
                             raise ValueError(f"Invalid {field_name}: '{val}'.")
+                        return dec
 
                     marks_obtained = clean_decimal("marks_obtained")
                     total_marks = clean_decimal("total_marks")

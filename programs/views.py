@@ -10,7 +10,7 @@ from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import transaction
 
-from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit
+from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit, MikePropenScholarshipApplication
 from .forms import NGOForm, ProjectForm, ProgramForm, EVClassSessionForm, ScholarshipForm, LocationForm, MentorshipSessionForm, IndustryVisitForm
 from schools.models import School, SchoolResource
 from students.models import Student
@@ -629,11 +629,21 @@ def ngo_allocate_resource(request, pk):
 # ============================================================================
 
 def scholarship_list(request):
-    category_tab = request.GET.get("category", "all")
+    category_tab = request.GET.get("tab") or request.GET.get("category") or "all"
+    if category_tab in ["propen", "mike_propen"]:
+        return redirect("programs:propen_portal")
+
     status_filter = request.GET.get("status")
     search_query = request.GET.get("q", "").strip()
 
-    queryset = Scholarship.objects.filter(is_archived=False).select_related("student", "student__school", "project", "program")
+    all_queryset = Scholarship.objects.filter(is_archived=False)
+    gov_count = all_queryset.filter(category=Scholarship.Category.GOVERNMENT).count()
+    emp_count = all_queryset.filter(category=Scholarship.Category.EMPLOYEE_SPECIAL).count()
+    fnd_count = all_queryset.filter(category=Scholarship.Category.FOUNDATION).count()
+    propen_count = MikePropenScholarshipApplication.objects.count()
+    all_count = all_queryset.count()
+
+    queryset = all_queryset.select_related("student", "student__school", "project", "program")
 
     if category_tab == "government":
         queryset = queryset.filter(category=Scholarship.Category.GOVERNMENT)
@@ -658,9 +668,6 @@ def scholarship_list(request):
     # Aggregates
     total_sanctioned = queryset.aggregate(Sum("sanctioned_amount"))["sanctioned_amount__sum"] or 0
     total_disbursed = queryset.aggregate(Sum("disbursed_amount"))["disbursed_amount__sum"] or 0
-    gov_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.GOVERNMENT).count()
-    emp_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.EMPLOYEE_SPECIAL).count()
-    fnd_count = Scholarship.objects.filter(is_archived=False, category=Scholarship.Category.FOUNDATION).count()
 
     # Foundation section data (Feature 5)
     foundation_stats = {}
@@ -678,12 +685,17 @@ def scholarship_list(request):
         {
             "scholarships": queryset,
             "active_tab": category_tab,
-            "total_count": queryset.count(),
+            "selected_tab": category_tab,
+            "active_page": "scholarships",
+            "total_count": all_count,
+            "filtered_count": queryset.count(),
             "total_sanctioned": total_sanctioned,
             "total_disbursed": total_disbursed,
             "gov_count": gov_count,
             "emp_count": emp_count,
             "fnd_count": fnd_count,
+            "propen_count": propen_count,
+            "foundation_count": fnd_count,
             "status_choices": Scholarship.Status.choices,
             "selected_status": status_filter,
             "search_query": search_query,
@@ -693,7 +705,8 @@ def scholarship_list(request):
 
 
 def scholarship_create(request):
-    category = request.GET.get("category", Scholarship.Category.FOUNDATION)
+    raw_cat = request.GET.get("category", Scholarship.Category.FOUNDATION).upper()
+    category = raw_cat if raw_cat in dict(Scholarship.Category.choices) else Scholarship.Category.FOUNDATION
     initial = {"category": category}
     if request.GET.get("project"):
         initial["project"] = request.GET.get("project")
@@ -1147,11 +1160,55 @@ def industry_visit_toggle_archive(request, pk):
 # BULK UPLOAD: SCHOLARSHIPS (Feature 2 / 9)
 # ============================================================================
 
+SCHOLARSHIP_HEADER_ALIASES = {
+    "admission_no": "admission_number",
+    "adm_no": "admission_number",
+    "admission_num": "admission_number",
+    "student_id": "admission_number",
+    "student": "student_name",
+    "student_name": "student_name",
+    "name": "student_name",
+    "amount": "sanctioned_amount",
+    "sanctioned": "sanctioned_amount",
+    "sanctioned_amount": "sanctioned_amount",
+    "scholarship_amount": "sanctioned_amount",
+    "disbursed": "disbursed_amount",
+    "disbursed_amount": "disbursed_amount",
+    "paid_amount": "disbursed_amount",
+    "category": "category",
+    "scholarship_type": "category",
+    "type": "category",
+    "scheme": "scheme_name",
+    "scheme_name": "scheme_name",
+    "scholarship": "scheme_name",
+    "scholarship_name": "scheme_name",
+    "year": "academic_year",
+    "academic_year": "academic_year",
+    "application_no": "application_number",
+    "application_number": "application_number",
+    "app_no": "application_number",
+    "emp_code": "employee_code",
+    "employee_code": "employee_code",
+    "emp_name": "employee_name",
+    "employee_name": "employee_name",
+    "emp_dept": "employee_department",
+    "employee_department": "employee_department",
+    "department": "employee_department",
+    "plant": "plant_location",
+    "location": "plant_location",
+    "plant_location": "plant_location",
+    "status": "status",
+    "remarks": "remarks",
+}
+
+
 def _normalize_header(name):
-    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+    from backend.utils import normalize_header
+    return normalize_header(name, SCHOLARSHIP_HEADER_ALIASES)
 
 
 def bulk_upload_scholarships(request):
+    from backend.utils import parse_decimal_clean
     if request.method != "POST":
         return render(request, "programs/scholarship_bulk_upload.html", {"active_page": "scholarships"})
 
@@ -1161,8 +1218,8 @@ def bulk_upload_scholarships(request):
         return redirect("programs:scholarship_bulk_upload")
 
     file_name = uploaded_file.name.lower()
-    if not file_name.endswith((".csv", ".xlsx")):
-        messages.error(request, "Only CSV and Excel (.xlsx) files are supported.")
+    if not file_name.endswith((".csv", ".xlsx", ".xls")):
+        messages.error(request, "Only CSV and Excel (.xlsx, .xls) files are supported.")
         return redirect("programs:scholarship_bulk_upload")
 
     try:
@@ -1185,39 +1242,55 @@ def bulk_upload_scholarships(request):
             for r in excel_rows[1:]:
                 if not any(c is not None and str(c).strip() for c in r):
                     continue
-                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+                row_dict = {}
+                for i in range(len(headers)):
+                    if headers[i]:
+                        row_dict[headers[i]] = str(r[i]).strip() if i < len(r) and r[i] is not None else ""
+                rows.append(row_dict)
 
         created, skipped, errors = 0, 0, []
         with transaction.atomic():
             for idx, row in enumerate(rows, start=2):
-                admission = row.get("admission_number", "").strip()
-                if not admission:
-                    errors.append(f"Row {idx}: Missing admission_number")
-                    continue
-                student = Student.objects.filter(admission_number=admission).first()
+                admission = str(row.get("admission_number") or "").strip()
+                s_name = str(row.get("student_name") or "").strip()
+
+                student = None
+                if admission:
+                    student = Student.objects.filter(admission_number__iexact=admission).first()
+                if not student and s_name:
+                    student = Student.objects.filter(student_name__iexact=s_name).first() or Student.objects.filter(student_name__icontains=s_name).first()
+
                 if not student:
-                    errors.append(f"Row {idx}: Student '{admission}' not found")
+                    errors.append(f"Row {idx}: Student '{admission or s_name}' not found")
                     continue
-                app_num = row.get("application_number", "").strip()
+
+                app_num = str(row.get("application_number") or "").strip()
                 if not app_num:
                     app_num = f"BULK-{timezone.now().strftime('%Y%m%d')}-{idx:04d}"
                 if Scholarship.objects.filter(application_number=app_num).exists():
                     skipped += 1
                     continue
+
+                sanctioned = parse_decimal_clean(row.get("sanctioned_amount"), default=Decimal("0"))
+                disbursed = parse_decimal_clean(row.get("disbursed_amount"), default=Decimal("0"))
+
+                category = str(row.get("category") or "FOUNDATION").strip().upper() or "FOUNDATION"
+                status = str(row.get("status") or "APPLIED").strip().upper() or "APPLIED"
+
                 Scholarship.objects.create(
                     student=student,
-                    category=row.get("category", "FOUNDATION").upper() or "FOUNDATION",
-                    scheme_name=row.get("scheme_name", "Bulk Upload Scholarship"),
+                    category=category,
+                    scheme_name=str(row.get("scheme_name") or "Bulk Upload Scholarship").strip(),
                     application_number=app_num,
-                    academic_year=row.get("academic_year", "2026-27") or "2026-27",
-                    sanctioned_amount=Decimal(row.get("sanctioned_amount", "0") or "0"),
-                    disbursed_amount=Decimal(row.get("disbursed_amount", "0") or "0"),
-                    status=row.get("status", "APPLIED").upper() or "APPLIED",
-                    employee_code=row.get("employee_code", ""),
-                    employee_name=row.get("employee_name", ""),
-                    employee_department=row.get("employee_department", ""),
-                    plant_location=row.get("plant_location", "Belagavi SEZ"),
-                    remarks=row.get("remarks", ""),
+                    academic_year=str(row.get("academic_year") or "2026-27").strip() or "2026-27",
+                    sanctioned_amount=sanctioned,
+                    disbursed_amount=disbursed,
+                    status=status,
+                    employee_code=str(row.get("employee_code") or "").strip(),
+                    employee_name=str(row.get("employee_name") or "").strip(),
+                    employee_department=str(row.get("employee_department") or "").strip(),
+                    plant_location=str(row.get("plant_location") or "Belagavi SEZ").strip(),
+                    remarks=str(row.get("remarks") or "").strip(),
                 )
                 created += 1
 

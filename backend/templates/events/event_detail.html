@@ -501,11 +501,16 @@
                     </div>
                     <div class="card-subtitle">Manage roles, track volunteer attendance, and record contributed hours</div>
                 </div>
-                {% if is_coordinator_or_admin and available_volunteers %}
-                <button type="button" class="btn btn-primary btn-sm" onclick="openAssignModal()">
-                    <i data-lucide="user-plus" style="width:13px;height:13px;"></i> Assign Volunteer
-                </button>
-                {% endif %}
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="openEventVolunteerShareModal()" title="Share volunteer registration link & QR code for this event">
+                        <i data-lucide="qr-code" style="width:13px;height:13px;color:var(--aequs-red);"></i> Share Volunteer Form & QR
+                    </button>
+                    {% if is_coordinator_or_admin and available_volunteers %}
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openAssignModal()">
+                        <i data-lucide="user-plus" style="width:13px;height:13px;"></i> Assign Volunteer
+                    </button>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="table-wrap">
@@ -693,6 +698,47 @@
 </div>
 {% endif %}
 
+<!-- Event Volunteer Share Form & QR Modal -->
+<div class="modal-backdrop" id="eventVolunteerShareModal">
+    <div class="modal-window" style="max-width: 520px;">
+        <div class="modal-header">
+            <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="qr-code" style="width:18px;height:18px;color:var(--aequs-red);"></i>
+                Volunteer Registration for {{ event.title|truncatechars:26 }}
+            </div>
+            <button type="button" class="modal-close" onclick="closeEventVolunteerShareModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;margin-bottom:14px;text-align:left;font-size:12.5px;color:#9a3412;">
+                <strong>🎯 Event-Exclusive Link:</strong> Prospective volunteers who register with this link or QR code will be automatically and exclusively enrolled for <strong>{{ event.title }}</strong> on <strong>{{ event.event_date|date:"M d, Y" }}</strong>.
+            </div>
+
+            <!-- QR Code display -->
+            <div style="background: #fafbfc; border: 1px solid var(--slate-200); border-radius: 12px; padding: 18px; margin-bottom: 16px; display: inline-block;">
+                <img src="{{ event_vol_qr_url }}" alt="Event Volunteer QR Code" style="width: 175px; height: 175px; border-radius: 8px; border: 1px solid #cbd5e1; display: block; margin: 0 auto 10px;">
+                <div style="font-size: 11.5px; color: var(--slate-500);">Scan with smartphone camera to open registration form</div>
+            </div>
+
+            <!-- URL Copy Box -->
+            <div style="text-align: left; margin-bottom: 10px;">
+                <label style="font-size: 12px; font-weight: 700; color: var(--slate-700); margin-bottom: 6px; display: block;">Registration URL</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="event-vol-url-input" class="form-control" value="{{ event_vol_url }}" readonly style="font-family: monospace; font-size: 12px; background: #f8fafc;">
+                    <button type="button" class="btn btn-primary btn-sm" id="btn-copy-event-vol" onclick="copyEventVolUrl()" style="white-space: nowrap;">
+                        <i data-lucide="copy" style="width:13px;height:13px;"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+            <a href="{{ event_vol_url }}" target="_blank" class="btn btn-outline btn-sm">
+                <i data-lucide="external-link" style="width:13px;height:13px;"></i> Open Form
+            </a>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeEventVolunteerShareModal()">Close</button>
+        </div>
+    </div>
+</div>
+
 <script>
     if (window.lucide) lucide.createIcons();
 
@@ -712,6 +758,36 @@
     function closeResourceModal() {
         const m = document.getElementById('resourceModal');
         if (m) m.classList.remove('open');
+    }
+
+    function openEventVolunteerShareModal() {
+        const m = document.getElementById('eventVolunteerShareModal');
+        if (m) m.classList.add('open');
+        if (window.lucide) lucide.createIcons();
+    }
+    function closeEventVolunteerShareModal() {
+        const m = document.getElementById('eventVolunteerShareModal');
+        if (m) m.classList.remove('open');
+    }
+
+    function copyEventVolUrl() {
+        const inp = document.getElementById('event-vol-url-input');
+        const btn = document.getElementById('btn-copy-event-vol');
+        if (inp) {
+            navigator.clipboard.writeText(inp.value).then(() => {
+                btn.innerHTML = '<i data-lucide="check" style="width:13px;height:13px;"></i> Copied!';
+                if (window.lucide) lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = '<i data-lucide="copy" style="width:13px;height:13px;"></i> Copy Link';
+                    if (window.lucide) lucide.createIcons();
+                }, 2000);
+            }).catch(() => {
+                inp.select();
+                document.execCommand('copy');
+                btn.innerHTML = '<i data-lucide="check" style="width:13px;height:13px;"></i> Copied!';
+                if (window.lucide) lucide.createIcons();
+            });
+        }
     }
 
     window.onclick = function(event) {

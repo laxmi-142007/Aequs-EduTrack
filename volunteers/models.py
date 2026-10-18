@@ -60,6 +60,36 @@ class Volunteer(models.Model):
         default="ACTIVE"
     )
 
+    # AEQATRA Employee Volunteering specific fields
+    employee_code = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Aequs Employee ID / Badge Code (e.g. AEQ-1042)"
+    )
+    department = models.CharField(
+        max_length=150,
+        blank=True,
+        default="Aerospace Operations",
+        help_text="Corporate Department or Unit"
+    )
+    plant_location = models.CharField(
+        max_length=150,
+        blank=True,
+        default="Belagavi SEZ",
+        help_text="Plant or Facility Location"
+    )
+    academic_year = models.CharField(
+        max_length=20,
+        blank=True,
+        default="2026-27",
+        help_text="Academic Year of enrollment"
+    )
+    is_employee = models.BooleanField(
+        default=True,
+        help_text="Is an Aequs employee volunteer"
+    )
+
     registration_date = models.DateField(auto_now_add=True)
     remarks = models.TextField(blank=True)
 
@@ -197,6 +227,20 @@ class VolunteerFormLink(models.Model):
         db_index=True,
         editable=False,
     )
+    event = models.ForeignKey(
+        "events.Event",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="volunteer_form_links",
+        help_text="The specific event this volunteer registration form is created for."
+    )
+    role = models.CharField(
+        max_length=150,
+        blank=True,
+        default="Volunteer",
+        help_text="Default role assigned to volunteers registering via this link"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True
     )
@@ -210,5 +254,56 @@ class VolunteerFormLink(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
+        if self.event:
+            return f"Volunteer Form - {self.event.title} ({self.token})"
         return f"Volunteer Form - {self.token}"
+
+
+class EmployeeTestimonial(models.Model):
+    """
+    AEQATRA Employee Volunteering Testimonial model.
+    Stores employee quotes, video URLs/embeds, and departmental attribution.
+    """
+    employee_name = models.CharField(max_length=150)
+    employee_role = models.CharField(max_length=150, blank=True, default="Aequs Volunteer")
+    department = models.CharField(max_length=150, blank=True, default="Aerospace Operations")
+    plant_location = models.CharField(max_length=150, blank=True, default="Belagavi SEZ")
+    quote = models.TextField(help_text="Personal reflection or impact statement about volunteering")
+    video_url = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="YouTube embed, Vimeo, or direct MP4 link"
+    )
+    video_file = models.FileField(upload_to="testimonials/videos/", blank=True, null=True)
+    thumbnail_url = models.CharField(max_length=500, blank=True, default="")
+    academic_year = models.CharField(max_length=20, default="2026-27")
+    is_featured = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-is_featured", "-created_at"]
+        verbose_name = "Employee Testimonial"
+        verbose_name_plural = "Employee Testimonials"
+
+    def __str__(self):
+        return f"{self.employee_name} ({self.department}) - {self.academic_year}"
+
+    @property
+    def embeddable_video_url(self):
+        """Converts standard YouTube or Vimeo URLs to embeddable player URLs."""
+        url = self.video_url.strip()
+        if not url:
+            return ""
+        if "youtube.com/watch?v=" in url:
+            vid_id = url.split("watch?v=")[-1].split("&")[0]
+            return f"https://www.youtube.com/embed/{vid_id}"
+        elif "youtu.be/" in url:
+            vid_id = url.split("youtu.be/")[-1].split("?")[0]
+            return f"https://www.youtube.com/embed/{vid_id}"
+        elif "vimeo.com/" in url and "player.vimeo.com" not in url:
+            vid_id = url.split("vimeo.com/")[-1].split("?")[0]
+            return f"https://player.vimeo.com/video/{vid_id}"
+        return url
+
 

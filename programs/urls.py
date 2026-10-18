@@ -1,9 +1,20 @@
 from django.urls import path
 from . import views
+from . import views_tracking
+from . import views_propen
 
 app_name = "programs"
 
 urlpatterns = [
+    # Project-wise Tracking Dashboard (Excel Tracking Specification)
+    path("tracking/dashboard/", views_tracking.tracking_dashboard, name="tracking_dashboard"),
+
+    # Mike Propen Scholarship Portal (Application, Analysis, Data Details)
+    path("scholarships/mike-propen/", views_propen.propen_portal, name="propen_portal"),
+    path("scholarships/mike-propen/apply/", views_propen.propen_apply, name="propen_apply"),
+    path("scholarships/mike-propen/export/", views_propen.propen_export_csv, name="propen_export_csv"),
+    path("scholarships/mike-propen/<int:pk>/status/", views_propen.propen_update_status, name="propen_update_status"),
+
     # Projects (Module 7)
     path("projects/", views.project_list, name="project_list"),
     path("projects/create/", views.project_create, name="project_create"),

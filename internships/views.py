@@ -1872,11 +1872,50 @@ def internship_list(request):
 # BULK UPLOAD: INTERNSHIPS (Feature 2)
 # =============================================================================
 
+INTERNSHIP_HEADER_ALIASES = {
+    "admission_no": "admission_number",
+    "adm_no": "admission_number",
+    "admission_num": "admission_number",
+    "student_id": "admission_number",
+    "reg_no": "admission_number",
+    "roll_no": "admission_number",
+    "student": "student_name",
+    "student_name": "student_name",
+    "name": "student_name",
+    "candidate_name": "student_name",
+    "company": "company_name",
+    "company_name": "company_name",
+    "organization": "company_name",
+    "dept": "department",
+    "department": "department",
+    "project": "project_title",
+    "project_title": "project_title",
+    "title": "project_title",
+    "year": "academic_year",
+    "academic_year": "academic_year",
+    "stipend": "stipend_amount",
+    "stipend_amount": "stipend_amount",
+    "amount": "stipend_amount",
+    "mentor": "mentor_name",
+    "mentor_name": "mentor_name",
+    "mentor_email": "mentor_email",
+    "email": "mentor_email",
+    "status": "status",
+    "program_code": "program_code",
+    "program": "program_code",
+    "feedback": "evaluation_feedback",
+    "evaluation_feedback": "evaluation_feedback",
+    "remarks": "evaluation_feedback",
+}
+
+
 def _normalize_intern_header(name):
-    return str(name or "").strip().lower().replace(" ", "_").replace("-", "_")
+    from backend.utils import normalize_header
+    return normalize_header(name, INTERNSHIP_HEADER_ALIASES)
 
 
 def bulk_upload_internships(request):
+    from backend.utils import parse_decimal_clean
     if request.method != "POST":
         return render(request, "internships/bulk_upload.html", {"active_page": "internships"})
 
@@ -1886,8 +1925,8 @@ def bulk_upload_internships(request):
         return redirect("internships:bulk_upload")
 
     file_name = uploaded_file.name.lower()
-    if not file_name.endswith((".csv", ".xlsx")):
-        messages.error(request, "Only CSV and Excel (.xlsx) files are supported.")
+    if not file_name.endswith((".csv", ".xlsx", ".xls")):
+        messages.error(request, "Only CSV and Excel (.xlsx, .xls) files are supported.")
         return redirect("internships:bulk_upload")
 
     try:
@@ -1910,46 +1949,56 @@ def bulk_upload_internships(request):
             for r in excel_rows[1:]:
                 if not any(c is not None and str(c).strip() for c in r):
                     continue
-                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+                row_dict = {}
+                for i in range(len(headers)):
+                    if headers[i]:
+                        row_dict[headers[i]] = str(r[i]).strip() if i < len(r) and r[i] is not None else ""
+                rows.append(row_dict)
 
         created, skipped, errors = 0, 0, []
         with transaction.atomic():
             for idx, row in enumerate(rows, start=2):
-                admission = row.get("admission_number", "").strip()
-                if not admission:
-                    errors.append(f"Row {idx}: Missing admission_number")
-                    continue
-                student = Student.objects.filter(admission_number=admission).first()
+                admission = str(row.get("admission_number") or "").strip()
+                s_name = str(row.get("student_name") or "").strip()
+
+                student = None
+                if admission:
+                    student = Student.objects.filter(admission_number__iexact=admission).first()
+                if not student and s_name:
+                    student = Student.objects.filter(student_name__iexact=s_name).first() or Student.objects.filter(student_name__icontains=s_name).first()
+
                 if not student:
-                    errors.append(f"Row {idx}: Student '{admission}' not found")
+                    errors.append(f"Row {idx}: Student '{admission or s_name}' not found")
                     continue
 
-                company_name = row.get("company_name", "Aequs SEZ").strip() or "Aequs SEZ"
-                dept = row.get("department", "AEROSPACE").upper() or "AEROSPACE"
+                company_name = str(row.get("company_name") or "Aequs SEZ").strip() or "Aequs SEZ"
+                dept = str(row.get("department") or "AEROSPACE").strip().upper() or "AEROSPACE"
                 if dept not in dict(Department.choices):
                     dept = Department.AEROSPACE
 
-                status = row.get("status", "SELECTED").upper() or "SELECTED"
+                status = str(row.get("status") or "SELECTED").strip().upper() or "SELECTED"
                 if status not in dict(InternshipPlacement.Status.choices):
                     status = InternshipPlacement.Status.SELECTED
 
                 # Program lookup (optional)
-                prog_code = row.get("program_code", "").strip()
+                prog_code = str(row.get("program_code") or "").strip()
                 program = InternshipProgram.objects.filter(program_code__iexact=prog_code).first() if prog_code else None
 
-                placement = InternshipPlacement.objects.create(
+                stipend = parse_decimal_clean(row.get("stipend_amount"), default=Decimal("0"))
+
+                InternshipPlacement.objects.create(
                     student=student,
                     school=student.school,
                     program=program,
                     company_name=company_name,
                     department=dept,
-                    project_title=row.get("project_title", "General Internship Track"),
-                    academic_year=row.get("academic_year", "2026-27") or "2026-27",
-                    stipend_amount=Decimal(row.get("stipend_amount", "0") or "0"),
-                    mentor_name=row.get("mentor_name", ""),
-                    mentor_email=row.get("mentor_email", ""),
+                    project_title=str(row.get("project_title") or "General Internship Track").strip(),
+                    academic_year=str(row.get("academic_year") or "2026-27").strip() or "2026-27",
+                    stipend_amount=stipend,
+                    mentor_name=str(row.get("mentor_name") or "").strip(),
+                    mentor_email=str(row.get("mentor_email") or "").strip(),
                     status=status,
-                    evaluation_feedback=row.get("evaluation_feedback", ""),
+                    evaluation_feedback=str(row.get("evaluation_feedback") or "").strip(),
                 )
                 created += 1
 
