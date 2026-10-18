@@ -265,7 +265,9 @@ def parse_and_save_roster(program, uploaded_file):
             idx = col_map.get(k)
             if idx is not None and idx < len(r):
                 val = r[idx]
-                return str(val).strip() if val is not None else ""
+                if val is not None:
+                    from backend.utils import clean_str_value
+                    return clean_str_value(val)
             return ""
 
         sl = _get_val("sl")

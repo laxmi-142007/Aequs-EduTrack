@@ -50,7 +50,7 @@ class ReportForm(forms.ModelForm):
             "status": forms.Select(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Purpose, methodology, or audience for this report..."}),
             "summary_notes": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Executive summary, key audit findings, observations, or recommendations..."}),
-            "attachment": forms.FileInput(attrs={"class": "form-control", "accept": ".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg", "id": "id_attachment"}),
+            "attachment": forms.FileInput(attrs={"class": "form-control", "accept": ".pdf,.docx,.doc,.xlsx,.csv,.png,.jpg,.jpeg", "id": "id_attachment"}),
             "academic_year": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. 2024-2025 (or blank for all)"}),
             "category_filter": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. LAPTOP or Belagavi (optional)"}),
             "date_from": forms.DateInput(attrs={"class": "form-control", "type": "date"}),

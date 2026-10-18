@@ -404,11 +404,11 @@ def bulk_upload_students(request):
     # VALIDATE FILE TYPE
     # ---------------------------------------------------------
 
-    if not file_name.endswith((".csv", ".xlsx")):
+    if not file_name.endswith((".csv", ".xlsx", ".xls")):
 
         messages.error(
             request,
-            "Only CSV and Excel (.xlsx) files are supported."
+            "Only CSV and Excel (.xlsx, .xls) files are supported."
         )
 
         return redirect(
@@ -837,60 +837,15 @@ def bulk_upload_students(request):
                 ""
             )
 
+            from backend.utils import parse_date_flexible, clean_str_value
+
             if dob_value:
-
-                if isinstance(
-                    dob_value,
-                    datetime
-                ):
-
-                    date_of_birth = (
-                        dob_value.date()
+                date_of_birth = parse_date_flexible(dob_value)
+                if date_of_birth is None:
+                    errors.append(
+                        f"Row {row_number}: "
+                        "Invalid date_of_birth format."
                     )
-
-                elif hasattr(
-                    dob_value,
-                    "date"
-                ):
-
-                    date_of_birth = (
-                        dob_value.date()
-                    )
-
-                else:
-
-                    dob_string = str(
-                        dob_value
-                    ).strip()
-
-                    for fmt in (
-                        "%Y-%m-%d",
-                        "%d/%m/%Y",
-                        "%m/%d/%Y",
-                        "%d-%m-%Y",
-                    ):
-
-                        try:
-
-                            date_of_birth = (
-                                datetime.strptime(
-                                    dob_string,
-                                    fmt
-                                ).date()
-                            )
-
-                            break
-
-                        except ValueError:
-
-                            pass
-
-                    if date_of_birth is None:
-
-                        errors.append(
-                            f"Row {row_number}: "
-                            "Invalid date_of_birth format."
-                        )
 
             # -------------------------------------------------
             # ADMISSION DATE
@@ -904,59 +859,12 @@ def bulk_upload_students(request):
             )
 
             if admission_date_value:
-
-                if isinstance(
-                    admission_date_value,
-                    datetime
-                ):
-
-                    admission_date = (
-                        admission_date_value.date()
+                admission_date = parse_date_flexible(admission_date_value)
+                if admission_date is None:
+                    errors.append(
+                        f"Row {row_number}: "
+                        "Invalid admission_date format."
                     )
-
-                elif hasattr(
-                    admission_date_value,
-                    "date"
-                ):
-
-                    admission_date = (
-                        admission_date_value.date()
-                    )
-
-                else:
-
-                    admission_date_string = str(
-                        admission_date_value
-                    ).strip()
-
-                    for fmt in (
-                        "%Y-%m-%d",
-                        "%d/%m/%Y",
-                        "%m/%d/%Y",
-                        "%d-%m-%Y",
-                    ):
-
-                        try:
-
-                            admission_date = (
-                                datetime.strptime(
-                                    admission_date_string,
-                                    fmt
-                                ).date()
-                            )
-
-                            break
-
-                        except ValueError:
-
-                            pass
-
-                    if admission_date is None:
-
-                        errors.append(
-                            f"Row {row_number}: "
-                            "Invalid admission_date format."
-                        )
 
             # -------------------------------------------------
             # STATUS
@@ -1002,7 +910,7 @@ def bulk_upload_students(request):
                         school,
 
                     "current_class":
-                        current_class,
+                        clean_str_value(current_class) or "General",
 
                     "section":
                         str(
@@ -1013,23 +921,21 @@ def bulk_upload_students(request):
                         ).strip(),
 
                     "roll_number":
-                        str(
+                        clean_str_value(
                             row.get(
                                 "roll_number"
                             )
-                            or ""
-                        ).strip(),
+                        ),
 
                     "parent_name":
                         parent_name,
 
                     "parent_phone":
-                        str(
+                        clean_str_value(
                             row.get(
                                 "parent_phone"
                             )
-                            or ""
-                        ).strip(),
+                        ),
 
                     "parent_email":
                         str(
@@ -1048,12 +954,11 @@ def bulk_upload_students(request):
                         ).strip(),
 
                     "student_phone":
-                        str(
+                        clean_str_value(
                             row.get(
                                 "student_phone"
                             )
-                            or ""
-                        ).strip(),
+                        ),
 
                     "email":
                         str(

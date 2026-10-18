@@ -1001,10 +1001,10 @@ def bulk_upload_schools(request, ngo_slug=None):
 
     filename = uploaded_file.name.lower()
 
-    if not filename.endswith((".xlsx", ".csv")):
+    if not filename.endswith((".xlsx", ".csv", ".xls")):
         messages.error(
             request,
-            "Only Excel (.xlsx) and CSV (.csv) files are supported."
+            "Only Excel (.xlsx, .xls) and CSV (.csv) files are supported."
         )
         return _redirect_back()
 
@@ -1306,13 +1306,12 @@ def bulk_upload_schools(request, ngo_slug=None):
                 except (ValueError, TypeError):
                     est_year = None
 
+            from backend.utils import parse_date_flexible, clean_str_value
+
             est_date = None
             est_date_val = get_val(col_map.get("established_date"))
             if est_date_val:
-                try:
-                    est_date = datetime.strptime(est_date_val, "%Y-%m-%d").date()
-                except (ValueError, TypeError):
-                    est_date = None
+                est_date = parse_date_flexible(est_date_val)
 
             student_strength = grand_total_row
             str_val = get_val(col_map.get("student_strength"))
@@ -1323,9 +1322,10 @@ def bulk_upload_schools(request, ngo_slug=None):
                     student_strength = 0
 
             hm_name = get_val(col_map.get("headmaster_name"))
-            hm_phone = get_val(col_map.get("headmaster_phone"))
+            hm_phone = clean_str_value(get_val(col_map.get("headmaster_phone")))
             teacher_name = get_val(col_map.get("teacher_name"))
-            teacher_phone = get_val(col_map.get("teacher_phone"))
+            teacher_phone = clean_str_value(get_val(col_map.get("teacher_phone")))
+            pincode_clean = clean_str_value(get_val(col_map.get("pincode")))
 
             current_school = {
                 "name": name,
@@ -1334,8 +1334,8 @@ def bulk_upload_schools(request, ngo_slug=None):
                 "taluk": taluk,
                 "village": get_val(col_map.get("village")),
                 "address": get_val(col_map.get("address")),
-                "pincode": get_val(col_map.get("pincode")),
-                "phone": hm_phone or get_val(col_map.get("phone")),
+                "pincode": pincode_clean,
+                "phone": hm_phone or clean_str_value(get_val(col_map.get("phone"))),
                 "email": get_val(col_map.get("email")),
                 "website": get_val(col_map.get("website")),
                 "headmaster_name": hm_name,
