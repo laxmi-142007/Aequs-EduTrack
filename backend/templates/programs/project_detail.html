@@ -1,4 +1,4 @@
-{% load static %}
+{% load static humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -177,6 +177,88 @@
                             <tr>
                                 <td colspan="5" style="text-align: center; color: #94a3b8; padding: 24px;">
                                     No sub-programs linked to this project yet. Use '+ Add New Sub-Program' or select an existing program above to link it.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Weekly Session Tracking Logs (Matching Schools Weekly Tracking) -->
+            <div class="detail-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="activity" style="color: #2563eb;"></i> Field Activity Tracking Logs
+                            <span class="af-badge badge-active" style="font-size: 11.5px; padding: 2px 8px;">{{ project_sessions_count }} Sessions</span>
+                            <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 8px;">{{ project_exposures_sum|intcomma }} Exposures</span>
+                        </h3>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                            Live field session logs across all sub-programs under this project
+                        </div>
+                    </div>
+                    {% if project.ngo %}
+                    <a href="{% url 'trackers:ngo_session_list' project.ngo.code_lower %}" class="btn-af btn-af-secondary btn-af-sm">
+                        <i data-lucide="external-link"></i> Open Full Tracker
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="af-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th>Date</th>
+                                <th>Programme</th>
+                                <th>School / Location</th>
+                                <th>STD &amp; Div</th>
+                                <th>Topic Covered</th>
+                                <th>Instructor</th>
+                                <th>Type</th>
+                                <th style="text-align: right;">Boys</th>
+                                <th style="text-align: right;">Girls</th>
+                                <th style="text-align: right;">Exposures</th>
+                                <th style="text-align: center;">Teacher</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in project_sessions %}
+                            <tr>
+                                <td style="color: #94a3b8; font-size: 11px;">{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ s.date_display }}</strong>
+                                </td>
+                                <td>
+                                    <span class="af-badge badge-neutral" style="font-size: 11px;">{{ s.programme }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ s.school_name }}</strong>
+                                </td>
+                                <td>{{ s.standard }}</td>
+                                <td style="max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ s.topic }}">
+                                    {{ s.topic }}
+                                </td>
+                                <td>{{ s.instructor }}</td>
+                                <td>
+                                    <span style="font-size: 11.5px; color: #64748b;">{{ s.session_type }}</span>
+                                </td>
+                                <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.boys }}</td>
+                                <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.girls }}</td>
+                                <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ s.exposures|intcomma }}</td>
+                                <td style="text-align: center;">
+                                    {% if s.teacher_present %}
+                                        <span style="color: #16a34a; font-weight: 700;">✓ Yes</span>
+                                    {% else %}
+                                        <span style="color: #94a3b8;">✗ No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="12" style="text-align: center; color: #94a3b8; padding: 24px;">
+                                    No weekly tracking activity logged for this project's sub-programs yet.
                                 </td>
                             </tr>
                             {% endfor %}

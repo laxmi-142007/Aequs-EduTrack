@@ -3010,3 +3010,95 @@ def bulk_upload_distributions(request):
         messages.error(request, f"Upload failed: {exc}")
         return redirect("distributions:bulk_upload")
 
+
+def remove_spreadsheet(request):
+    """
+    Removes an uploaded distribution spreadsheet and its associated records.
+    Targets:
+      - 'agastya' / 'school_profile': removes School Profile (Agastya MSL Roster)
+      - 'opn' / 'operation_notebook': removes Operation Notebook (OPN)
+      - 'all': removes both
+    """
+    import os
+    from django.conf import settings
+
+    sheet = (request.POST.get("sheet") or request.GET.get("sheet") or "").strip().lower()
+    if not sheet or sheet == "current":
+        sheet = request.session.get("last_distribution_sheet", "agastya")
+        if sheet == "agastya" and not _get_distribution_roster_data():
+            sheet = "opn"
+
+    removed_items = []
+    dist_media_dir = os.path.join(getattr(settings, "MEDIA_ROOT", "media"), "distributions")
+
+    with transaction.atomic():
+        if sheet in ("agastya", "school_profile", "all"):
+            # 1. Distribution records matching School Profile
+            sp_dists = Distribution.objects.filter(
+                recipient_type=RecipientType.SCHOOL,
+                remarks__icontains="School profile material distribution",
+            )
+            count_sp = sp_dists.count()
+            sp_dists.delete()
+
+            # 2. Grade strengths for schools that had them
+            part_schools = list(
+                School.objects.filter(grade_strengths__isnull=False).distinct()
+            )
+            count_gs = GradeStrength.objects.filter(school__in=part_schools).count()
+            GradeStrength.objects.filter(school__in=part_schools).delete()
+
+            # 3. Science teacher resources imported from this roster
+            count_res = SchoolResource.objects.filter(
+                Q(resource_name__icontains="Science Teacher")
+                | Q(last_updated_note__icontains="Imported from school profile distribution")
+            ).count()
+            SchoolResource.objects.filter(
+                Q(resource_name__icontains="Science Teacher")
+                | Q(last_updated_note__icontains="Imported from school profile distribution")
+            ).delete()
+
+            # 4. Remove any saved file in media
+            if os.path.exists(dist_media_dir):
+                for fname in os.listdir(dist_media_dir):
+                    if "agastya" in fname.lower() or "school_profile" in fname.lower():
+                        try:
+                            os.remove(os.path.join(dist_media_dir, fname))
+                        except Exception:
+                            pass
+
+            removed_items.append(
+                f"School Profile (Agastya MSL Roster) [{count_sp} distribution records, {count_gs} grade records across {len(part_schools)} schools]"
+            )
+            request.session["last_distribution_sheet"] = "opn"
+
+        if sheet in ("opn", "operation_notebook", "all"):
+            # 1. Distribution records matching OPN
+            opn_dists = Distribution.objects.filter(
+                recipient_type=RecipientType.SCHOOL,
+                remarks__icontains="Operation Notebook",
+            )
+            count_opn = opn_dists.count()
+            opn_dists.delete()
+
+            # 2. Remove any saved file in media
+            if os.path.exists(dist_media_dir):
+                for fname in os.listdir(dist_media_dir):
+                    if "opn" in fname.lower() or "notebook" in fname.lower():
+                        try:
+                            os.remove(os.path.join(dist_media_dir, fname))
+                        except Exception:
+                            pass
+
+            removed_items.append(
+                f"Operation Notebook (OPN Sheet) [{count_opn} distribution records]"
+            )
+            request.session["last_distribution_sheet"] = "agastya"
+
+    if removed_items:
+        messages.success(request, f"Successfully removed {'; '.join(removed_items)}.")
+    else:
+        messages.info(request, "No matching uploaded spreadsheet found to remove.")
+
+    return redirect(f"{reverse('distributions:list')}?view=tabular")
+

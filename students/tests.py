@@ -100,7 +100,7 @@ class StudentModuleTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "students/student_list.html")
         content = response.content.decode("utf-8")
-        self.assertIn("Aequs-logo.png", content)
+        self.assertIn("Aequs Foundation", content)
         self.assertIn("Student Directory", content)
 
     def test_student_detail_view_loads_successfully(self):
@@ -121,7 +121,7 @@ class StudentModuleTests(TestCase):
         content = response.content.decode("utf-8")
         self.assertIn("Priya Patil", content)
         self.assertIn("AEQ-STU-101", content)
-        self.assertIn("Aequs-logo.png", content)
+        self.assertIn("Aequs Foundation", content)
         self.assertIn("Student ID Card", content)
         self.assertIn("Edit Profile", content)
 

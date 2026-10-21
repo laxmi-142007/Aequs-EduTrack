@@ -115,7 +115,7 @@ def event_list(request):
     volunteer_form_url = request.build_absolute_uri(f"/volunteers/form/{vol_link.token}/")
     volunteer_qr_url = request.build_absolute_uri(f"/volunteers/form/qr/{vol_link.token}/")
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     from datetime import timedelta
     three_days = today + timedelta(days=3)
     due_reminder_events = [
@@ -1002,7 +1002,7 @@ def event_send_all_due_reminders(request):
     or is within 3 days and reminder hasn't been sent yet.
     """
     if request.method == "POST":
-        today = timezone.now().date()
+        today = timezone.localdate()
         from datetime import timedelta
         three_days = today + timedelta(days=3)
 

@@ -1,0 +1,240 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload {{ current_ngo.name }} Tracker Excel | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <script src="/static/js/lucide.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        /* NGO Top Switcher Tabs */
+        .ngo-tabs-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin: 0 auto 24px;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            flex-wrap: wrap;
+        }
+        .ngo-tabs-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding-left: 4px;
+            white-space: nowrap;
+        }
+        .ngo-tabs-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        .ngo-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #334155;
+            transition: all 0.15s ease;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .ngo-tab-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .ngo-tab-btn.active {
+            background: var(--ngo-bg-light);
+            border-color: var(--ngo-color);
+            color: #0f172a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .upload-container {
+            max-width: 600px;
+            margin: 0 auto 40px;
+            padding: 32px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+        .dropzone-box {
+            border: 2px dashed #93c5fd;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 20px 0;
+        }
+        .dropzone-box:hover, .dropzone-box.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+        .btn-action-primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        .btn-action-primary:hover {
+            background: #1d4ed8;
+        }
+        .btn-action-outline {
+            background: #fff;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+        .filter-input {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0 12px;
+            font-size: 14px;
+            background: #fff;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='trackers' requested_ngo=requested_ngo %}
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <h1 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="file-spreadsheet" style="width: 22px; height: 22px; color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#f59e0b{% endif %};"></i>
+                    Upload {{ current_ngo.name }} Tracker Excel
+                </h1>
+                <span style="font-size: 12px; color: #64748b;">
+                    Ingest multi-sheet tracker workbook (.xlsx) strictly for {{ current_ngo.name }} ({{ current_ngo.code }})
+                </span>
+            </div>
+            <div>
+                <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}" class="btn-action btn-action-outline">
+                    <i data-lucide="arrow-left"></i> Back to Trackers
+                </a>
+            </div>
+        </header>
+
+        <div style="padding: 24px 32px;">
+            {% if messages %}
+            <div style="max-width: 600px; margin: 0 auto 20px;">
+                {% for message in messages %}
+                <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 13.5px; font-weight: 500; {% if message.tags == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #f87171;{% else %}background: #dcfce7; color: #166534; border: 1px solid #86efac;{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- TOP NGO SWITCHER TABS -->
+            <div class="ngo-tabs-container">
+                <div class="ngo-tabs-label">TARGET NGO:</div>
+                <div class="ngo-tabs-list">
+                    {% for tab in ngo_nav %}
+                    <a href="{% url 'trackers:ngo_upload_workbook' tab.slug %}"
+                       class="ngo-tab-btn {% if tab.is_active %}active{% endif %}"
+                       style="--ngo-color: {{ tab.color }}; --ngo-bg-light: {{ tab.bg_light }};">
+                        <span>{{ tab.badge }}</span>
+                        <span>{{ tab.short_name }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="upload-container">
+                <div style="font-size: 13px; padding: 10px 14px; background: {% if current_ngo.code == 'AGASTYA' %}#dbeafe; color: #1e40af; border: 1px solid #93c5fd;{% elif current_ngo.code == 'PRATHAM' %}#fee2e2; color: #991b1b; border: 1px solid #fca5a5;{% else %}#fef3c7; color: #92400e; border: 1px solid #fcd34d;{% endif %} border-radius: 8px; margin-bottom: 20px;">
+                    Uploading for <strong>{{ current_ngo.name }} ({{ current_ngo.code }})</strong>. Ingestion replaces records only for this NGO and academic year, keeping other NGOs' data completely separate.
+                </div>
+
+                <form method="POST" action="{% url 'trackers:ngo_upload_workbook' current_ngo.code_lower %}" enctype="multipart/form-data" id="uploadForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="ngo_code" value="{{ current_ngo.code }}">
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                            Academic Year
+                        </label>
+                        <select name="academic_year" id="academicYearSelect" class="filter-input" required>
+                            <option value="2025-26">2025-26 (21 sheets)</option>
+                            <option value="2026-27">2026-27 (20 sheets)</option>
+                        </select>
+                    </div>
+
+                    <div class="dropzone-box" id="dropzoneBox" onclick="document.getElementById('excelFileInput').click()">
+                        <i data-lucide="upload-cloud" style="width: 48px; height: 48px; color: #2563eb; margin: 0 auto 12px; display: block;"></i>
+                        <div style="font-size: 15px; font-weight: 600; color: #1e293b;" id="dropzoneFilename">
+                            Click to browse or drag &amp; drop Excel file (.xlsx)
+                        </div>
+                        <div style="font-size: 12.5px; color: #64748b; margin-top: 6px;">
+                            Idempotent ingestion: Re-uploading cleanly replaces previous records for {{ current_ngo.name }} for the selected year.
+                        </div>
+                        <input type="file" name="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;" onchange="handleFileSelect(this)" required>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                        <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}" class="btn-action btn-action-outline">Cancel</a>
+                        <button type="submit" class="btn-action btn-action-primary" id="submitUploadBtn" style="background: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#d97706{% endif %}; border-color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#d97706{% endif %};">
+                            <i data-lucide="upload"></i> Ingest &amp; Normalize
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) { lucide.createIcons(); }
+        });
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                var file = input.files[0];
+                document.getElementById('dropzoneFilename').innerHTML = '<strong>' + file.name + '</strong> (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+                var yearSelect = document.getElementById('academicYearSelect');
+                if (file.name.indexOf('2026-27') !== -1) {
+                    yearSelect.value = '2026-27';
+                } else if (file.name.indexOf('2025-26') !== -1) {
+                    yearSelect.value = '2025-26';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

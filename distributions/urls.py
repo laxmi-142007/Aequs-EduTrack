@@ -31,6 +31,8 @@ urlpatterns = [
     path("api/reports/student-wise/", views.api_student_wise_report, name="api_student_wise_report"),
     path("api/export/csv/", views.api_export_distribution_csv, name="export_csv"),
 
-    # Bulk Upload
+    # Bulk Upload & Spreadsheet Removal
     path("bulk-upload/", views.bulk_upload_distributions, name="bulk_upload"),
+    path("remove-spreadsheet/", views.remove_spreadsheet, name="remove_spreadsheet"),
+    path("remove-file/", views.remove_spreadsheet, name="remove_file"),
 ]

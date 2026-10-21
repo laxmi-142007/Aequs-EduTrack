@@ -504,6 +504,15 @@
             <h1>📦 Student &amp; School Distributions</h1>
 
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                {% if roster_data or opn_data %}
+                <form method="POST" action="{% url 'distributions:remove_spreadsheet' %}" onsubmit="return confirm('Are you sure you want to remove the current spreadsheet file?');" style="display: inline; margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="sheet" id="topHeaderRemoveSheet" value="{% if active_sheet == 'opn' or not roster_data %}opn{% else %}agastya{% endif %}">
+                    <button type="submit" class="btn-outline" style="border-color: #f87171; color: #dc2626; display: inline-flex; align-items: center; gap: 5px;" title="Remove current spreadsheet file">
+                        🗑️ Remove File
+                    </button>
+                </form>
+                {% endif %}
                 <a href="{% url 'distributions:bulk_upload' %}" class="btn-outline">
                     📤 Bulk Upload
                 </a>
@@ -544,14 +553,37 @@
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <span style="font-size: 13px; color: #64748b; font-weight: 600;">Active Spreadsheet:</span>
                 {% if roster_data %}
-                <button type="button" class="excel-subtab-btn {% if active_sheet != 'opn' %}active{% endif %}" id="btnTabAgastya" onclick="switchTabularSheet('agastya')">
-                    🏫 School Profile (Agastya MSL Roster - {{ roster_data.kpis.total_schools }} Schools)
-                </button>
+                <div id="groupTabAgastya" class="sheet-pill-group" style="display: inline-flex; align-items: center; border-radius: 8px; border: 1px solid {% if active_sheet != 'opn' %}#2563eb{% else %}#cbd5e1{% endif %}; background: {% if active_sheet != 'opn' %}#2563eb{% else %}#fff{% endif %}; overflow: hidden;">
+                    <button type="button" class="excel-subtab-btn {% if active_sheet != 'opn' %}active{% endif %}" id="btnTabAgastya" onclick="switchTabularSheet('agastya')" style="border: none; border-radius: 0; box-shadow: none;">
+                        🏫 School Profile (Agastya MSL Roster - {{ roster_data.kpis.total_schools }} Schools)
+                    </button>
+                    <form method="POST" action="{% url 'distributions:remove_spreadsheet' %}" onsubmit="return confirm('Are you sure you want to remove the School Profile (Agastya MSL Roster) spreadsheet file and its associated distribution records?');" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="sheet" value="agastya">
+                        <button type="submit" title="Remove School Profile (Agastya) spreadsheet file" style="border: none; background: transparent; color: {% if active_sheet != 'opn' %}#fee2e2{% else %}#ef4444{% endif %}; font-weight: bold; font-size: 14px; padding: 6px 10px; cursor: pointer; border-left: 1px solid {% if active_sheet != 'opn' %}rgba(255,255,255,0.3){% else %}#e2e8f0{% endif %}; display: flex; align-items: center;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='transparent'">✕</button>
+                    </form>
+                </div>
                 {% endif %}
                 {% if opn_data %}
-                <button type="button" class="excel-subtab-btn {% if active_sheet == 'opn' or not roster_data %}active{% endif %}" id="btnTabOPN" onclick="switchTabularSheet('opn')">
-                    📚 Operation Notebook (OPN Sheet - {{ opn_data.total_schools }} Schools)
-                </button>
+                <div id="groupTabOPN" class="sheet-pill-group" style="display: inline-flex; align-items: center; border-radius: 8px; border: 1px solid {% if active_sheet == 'opn' or not roster_data %}#2563eb{% else %}#cbd5e1{% endif %}; background: {% if active_sheet == 'opn' or not roster_data %}#2563eb{% else %}#fff{% endif %}; overflow: hidden;">
+                    <button type="button" class="excel-subtab-btn {% if active_sheet == 'opn' or not roster_data %}active{% endif %}" id="btnTabOPN" onclick="switchTabularSheet('opn')" style="border: none; border-radius: 0; box-shadow: none;">
+                        📚 Operation Notebook (OPN Sheet - {{ opn_data.total_schools }} Schools)
+                    </button>
+                    <form method="POST" action="{% url 'distributions:remove_spreadsheet' %}" onsubmit="return confirm('Are you sure you want to remove the Operation Notebook (OPN) spreadsheet file and its associated distribution records?');" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="sheet" value="opn">
+                        <button type="submit" title="Remove Operation Notebook (OPN) spreadsheet file" style="border: none; background: transparent; color: {% if active_sheet == 'opn' or not roster_data %}#fee2e2{% else %}#ef4444{% endif %}; font-weight: bold; font-size: 14px; padding: 6px 10px; cursor: pointer; border-left: 1px solid {% if active_sheet == 'opn' or not roster_data %}rgba(255,255,255,0.3){% else %}#e2e8f0{% endif %}; display: flex; align-items: center;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='transparent'">✕</button>
+                    </form>
+                </div>
+                {% endif %}
+                {% if roster_data or opn_data %}
+                <form method="POST" action="{% url 'distributions:remove_spreadsheet' %}" id="formRemoveActiveSheet" onsubmit="return confirm('Are you sure you want to remove the currently active spreadsheet file?');" style="display: inline; margin-left: 4px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="sheet" id="activeSheetRemoveInput" value="{% if active_sheet == 'opn' or not roster_data %}opn{% else %}agastya{% endif %}">
+                    <button type="submit" class="btn-outline" style="border-color: #fca5a5; color: #dc2626; background: #fff; padding: 6px 12px; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; cursor: pointer;" title="Remove the current active spreadsheet file and clear its records" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">
+                        🗑️ Remove Current File
+                    </button>
+                </form>
                 {% endif %}
             </div>
             {% endif %}
@@ -993,17 +1025,40 @@
             const opnSec = document.getElementById('sheetOPN');
             const btnAgastya = document.getElementById('btnTabAgastya');
             const btnOPN = document.getElementById('btnTabOPN');
+            const groupAgastya = document.getElementById('groupTabAgastya');
+            const groupOPN = document.getElementById('groupTabOPN');
+            const activeSheetRemoveInput = document.getElementById('activeSheetRemoveInput');
+            const topHeaderRemoveSheet = document.getElementById('topHeaderRemoveSheet');
+
+            if (activeSheetRemoveInput) activeSheetRemoveInput.value = sheet;
+            if (topHeaderRemoveSheet) topHeaderRemoveSheet.value = sheet;
 
             if (sheet === 'agastya') {
                 if (agastyaSec) agastyaSec.style.display = 'block';
                 if (opnSec) opnSec.style.display = 'none';
                 if (btnAgastya) btnAgastya.classList.add('active');
                 if (btnOPN) btnOPN.classList.remove('active');
+                if (groupAgastya) {
+                    groupAgastya.style.borderColor = '#2563eb';
+                    groupAgastya.style.background = '#2563eb';
+                }
+                if (groupOPN) {
+                    groupOPN.style.borderColor = '#cbd5e1';
+                    groupOPN.style.background = '#fff';
+                }
             } else {
                 if (agastyaSec) agastyaSec.style.display = 'none';
                 if (opnSec) opnSec.style.display = 'block';
                 if (btnAgastya) btnAgastya.classList.remove('active');
                 if (btnOPN) btnOPN.classList.add('active');
+                if (groupAgastya) {
+                    groupAgastya.style.borderColor = '#cbd5e1';
+                    groupAgastya.style.background = '#fff';
+                }
+                if (groupOPN) {
+                    groupOPN.style.borderColor = '#2563eb';
+                    groupOPN.style.background = '#2563eb';
+                }
             }
             try {
                 const url = new URL(window.location);

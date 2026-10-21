@@ -13,7 +13,13 @@ class School(models.Model):
         ("ICSE", "ICSE"),
     ]
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, db_index=True)
+
+    code_aliases = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Alternative names or abbreviations for canonical matching",
+    )
 
     @property
     def school_name(self):

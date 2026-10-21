@@ -1,0 +1,774 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_ngo.name }} Weekly Trackers | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <script src="/static/js/lucide.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --danger: #dc2626;
+            --danger-light: #fef2f2;
+            --success: #16a34a;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg-light: #f8fafc;
+        }
+
+        .tracker-page {
+            padding: 24px 32px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* NGO Top Switcher Tabs */
+        .ngo-tabs-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            flex-wrap: wrap;
+        }
+        .ngo-tabs-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding-left: 4px;
+            white-space: nowrap;
+        }
+        .ngo-tabs-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        .ngo-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 16px;
+            border-radius: 9px;
+            text-decoration: none;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #334155;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .ngo-tab-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .ngo-tab-btn.active {
+            background: var(--ngo-bg-light);
+            border-color: var(--ngo-color);
+            color: #0f172a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            font-weight: 600;
+        }
+        .ngo-tab-badge {
+            font-size: 18px;
+            line-height: 1;
+        }
+        .ngo-tab-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .ngo-tab-name {
+            font-size: 13.5px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .ngo-tab-meta {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .ngo-tab-btn.active .ngo-tab-meta {
+            color: #1e293b;
+        }
+        .ngo-tab-indicator {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--ngo-color);
+            color: #ffffff;
+            margin-left: 4px;
+        }
+
+        /* Top Action Buttons */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+        .btn-action-primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        .btn-action-primary:hover {
+            background: #1d4ed8;
+        }
+        .btn-action-outline {
+            background: #fff;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+        .btn-action-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .kpi-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .kpi-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .kpi-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+        }
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* View Nav Switcher */
+        .view-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .view-nav-link {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-muted);
+            background: transparent;
+            transition: all 0.15s ease;
+        }
+        .view-nav-link.active {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* Filter Box */
+        .filter-panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-group label {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 7px 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-dark);
+            background: #fff;
+            outline: none;
+            transition: border-color 0.15s;
+            box-sizing: border-box;
+        }
+        .filter-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
+        }
+
+        /* Table Card & Responsive Table */
+        .table-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+        table.tracker-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        table.tracker-table thead th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+            padding: 11px 14px;
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+            user-select: none;
+        }
+        table.tracker-table thead th.sortable {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        table.tracker-table thead th.sortable:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+        table.tracker-table thead th a.sort-link {
+            color: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+        }
+        table.tracker-table tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+        table.tracker-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge-prog {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .badge-chaap-jr { background: #dbeafe; color: #1e40af; }
+        .badge-chaap-yuva { background: #e0e7ff; color: #3730a3; }
+        .badge-sep { background: #fef3c7; color: #92400e; }
+        .badge-ignite { background: #fce7f3; color: #9d174d; }
+        .badge-nmms { background: #dcfce7; color: #166534; }
+        .badge-camp { background: #ffedd5; color: #9a3412; }
+        .badge-sap { background: #ede9fe; color: #5b21b6; }
+        .badge-others { background: #f1f5f9; color: #475569; }
+
+        /* Modal Backdrop & Content */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-card {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 540px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .dropzone-box {
+            border: 2px dashed #93c5fd;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 16px 0;
+        }
+        .dropzone-box:hover, .dropzone-box.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page=active_page requested_ngo=requested_ngo %}
+
+    <main class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div>
+                <h1 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="calendar-check-2" style="width: 22px; height: 22px; color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#f59e0b{% endif %};"></i>
+                    {{ current_ngo.name }} &bull; Weekly Trackers
+                </h1>
+                <span style="font-size: 12px; color: #64748b;">
+                    Autonomous NGO module: session logs, exposure KPIs, instructor activity, and class enrollments
+                </span>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" onclick="openUploadModal()" class="btn-action btn-action-primary" style="background: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#d97706{% endif %}; border-color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#d97706{% endif %};">
+                    <i data-lucide="upload"></i> Upload Tracker ({{ current_ngo.code }})
+                </button>
+                <a href="{% url 'trackers:ngo_export_csv' current_ngo.code_lower %}?{{ base_query_string }}" class="btn-action btn-action-outline">
+                    <i data-lucide="download"></i> Export CSV
+                </a>
+                <a href="/schools/{{ current_ngo.code_lower }}/" class="btn-action btn-action-outline">
+                    <i data-lucide="school"></i> {{ current_ngo.code }} Schools
+                </a>
+                <a href="{% url 'programs:tracking_dashboard' %}" class="btn-action btn-action-outline">
+                    <i data-lucide="arrow-left"></i> Project Dashboard
+                </a>
+            </div>
+        </header>
+
+        <div class="tracker-page">
+            {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for message in messages %}
+                <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 13.5px; font-weight: 500; {% if message.tags == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #f87171;{% elif message.tags == 'warning' %}background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;{% else %}background: #dcfce7; color: #166534; border: 1px solid #86efac;{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- FOUNDATION MODULE NAVIGATION: PARTNER SWITCHER & INDIVIDUAL SECTION TABS -->
+            {% include 'includes/foundation_tabs.html' with foundation_subtab='trackers' %}
+
+            <!-- LIVE AGGREGATED KPI METRICS -->
+            <div class="kpi-grid">
+                <div class="kpi-card" style="border-left: 4px solid #2563eb;">
+                    <div class="kpi-title">
+                        <span>Total Sessions</span>
+                        <i data-lucide="calendar" style="width: 16px; height: 16px; color: #2563eb;"></i>
+                    </div>
+                    <div class="kpi-value">{{ total_sessions|intcomma }}</div>
+                    <div class="kpi-sub">Across {{ active_schools_count }} schools</div>
+                </div>
+
+                <div class="kpi-card" style="border-left: 4px solid #0284c7;">
+                    <div class="kpi-title">
+                        <span>Boys Present</span>
+                        <i data-lucide="user" style="width: 16px; height: 16px; color: #0284c7;"></i>
+                    </div>
+                    <div class="kpi-value" style="color: #0284c7;">{{ total_boys|intcomma }}</div>
+                    <div class="kpi-sub">Student attendees</div>
+                </div>
+
+                <div class="kpi-card" style="border-left: 4px solid #ec4899;">
+                    <div class="kpi-title">
+                        <span>Girls Present</span>
+                        <i data-lucide="user-check" style="width: 16px; height: 16px; color: #ec4899;"></i>
+                    </div>
+                    <div class="kpi-value" style="color: #db2777;">{{ total_girls|intcomma }}</div>
+                    <div class="kpi-sub">Student attendees</div>
+                </div>
+
+                <div class="kpi-card" style="border-left: 4px solid #16a34a;">
+                    <div class="kpi-title">
+                        <span>Total Exposures</span>
+                        <i data-lucide="sparkles" style="width: 16px; height: 16px; color: #16a34a;"></i>
+                    </div>
+                    <div class="kpi-value" style="color: #16a34a;">{{ total_exposures|intcomma }}</div>
+                    <div class="kpi-sub">Aggregated student touchpoints</div>
+                </div>
+
+                <div class="kpi-card" style="border-left: 4px solid #8b5cf6;">
+                    <div class="kpi-title">
+                        <span>Faculty / Facilitators</span>
+                        <i data-lucide="users" style="width: 16px; height: 16px; color: #8b5cf6;"></i>
+                    </div>
+                    <div class="kpi-value" style="color: #7c3aed;">{{ active_instructors_count }}</div>
+                    <div class="kpi-sub">Unique instructors active</div>
+                </div>
+            </div>
+
+            <!-- VIEW NAV SWITCHER -->
+            <div class="view-nav">
+                <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}{% if request.GET.academic_year %}?academic_year={{ request.GET.academic_year }}{% endif %}" class="view-nav-link active">
+                    📋 Weekly Tracker Sessions ({{ total_sessions|intcomma }})
+                </a>
+                <a href="{% url 'trackers:ngo_enrollment_list' current_ngo.code_lower %}{% if request.GET.academic_year %}?academic_year={{ request.GET.academic_year }}{% endif %}" class="view-nav-link">
+                    🏫 School Class Enrollments Data
+                </a>
+            </div>
+
+            <!-- FILTER & SEARCH PANEL -->
+            <div class="filter-panel">
+                <form method="GET" action="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}" id="trackerFilterForm">
+                    <input type="hidden" name="sort_by" value="{{ current_sort }}">
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label>Academic Year</label>
+                            <select name="academic_year" class="filter-input" onchange="document.getElementById('trackerFilterForm').submit()">
+                                <option value="">All Academic Years</option>
+                                {% for ay in academic_years %}
+                                <option value="{{ ay }}" {% if request.GET.academic_year == ay %}selected{% endif %}>{{ ay }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Programme</label>
+                            <select name="programme" class="filter-input" onchange="document.getElementById('trackerFilterForm').submit()">
+                                <option value="">All Programmes</option>
+                                {% for code, label in programmes %}
+                                <option value="{{ code }}" {% if request.GET.programme == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Search School</label>
+                            <input type="text" name="school_name" class="filter-input" value="{{ request.GET.school_name|default:'' }}" placeholder="e.g. Yamakanamaradi, GHS...">
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Instructor</label>
+                            <input type="text" name="instructor_name" class="filter-input" value="{{ request.GET.instructor_name|default:'' }}" placeholder="Instructor name...">
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Session Type</label>
+                            <input type="text" name="session_type" class="filter-input" value="{{ request.GET.session_type|default:'' }}" placeholder="Theory, Practical, Camp...">
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Teacher Present</label>
+                            <select name="teacher_present" class="filter-input">
+                                <option value="">Any</option>
+                                <option value="true" {% if request.GET.teacher_present == 'true' %}selected{% endif %}>Yes (Present)</option>
+                                <option value="false" {% if request.GET.teacher_present == 'false' %}selected{% endif %}>No (Absent)</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Date From</label>
+                            <input type="date" name="date_from" class="filter-input" value="{{ request.GET.date_from|default:'' }}">
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Date To</label>
+                            <input type="date" name="date_to" class="filter-input" value="{{ request.GET.date_to|default:'' }}">
+                        </div>
+
+                        <div style="display: flex; gap: 6px;">
+                            <button type="submit" class="btn-action btn-action-primary" style="padding: 8px 16px;">
+                                <i data-lucide="filter"></i> Apply
+                            </button>
+                            <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}" class="btn-action btn-action-outline" style="padding: 8px 12px;" title="Reset Filters">
+                                Reset
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SESSIONS DATA TABLE -->
+            <div class="table-card">
+                <div class="table-wrapper">
+                    <table class="tracker-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th class="sortable">
+                                    <a href="?{% if current_sort == 'date' %}sort_by=-date{% else %}sort_by=date{% endif %}&{{ base_query_string }}" class="sort-link">
+                                        Date {% if current_sort == 'date' %}▲{% elif current_sort == '-date' or current_sort == '-session_date' %}▼{% endif %}
+                                    </a>
+                                </th>
+                                <th class="sortable">
+                                    <a href="?{% if current_sort == 'programme' %}sort_by=-programme{% else %}sort_by=programme{% endif %}&{{ base_query_string }}" class="sort-link">
+                                        Programme {% if current_sort == 'programme' %}▲{% elif current_sort == '-programme' %}▼{% endif %}
+                                    </a>
+                                </th>
+                                <th class="sortable">
+                                    <a href="?{% if current_sort == 'school' %}sort_by=-school{% else %}sort_by=school{% endif %}&{{ base_query_string }}" class="sort-link">
+                                        School / Location {% if current_sort == 'school' %}▲{% elif current_sort == '-school' %}▼{% endif %}
+                                    </a>
+                                </th>
+                                <th>STD &amp; Div</th>
+                                <th>Topic Covered</th>
+                                <th class="sortable">
+                                    <a href="?{% if current_sort == 'instructor' %}sort_by=-instructor{% else %}sort_by=instructor{% endif %}&{{ base_query_string }}" class="sort-link">
+                                        Instructor {% if current_sort == 'instructor' %}▲{% elif current_sort == '-instructor' %}▼{% endif %}
+                                    </a>
+                                </th>
+                                <th>Session Type</th>
+                                <th class="sortable" style="text-align: right;">
+                                    <a href="?{% if current_sort == 'boys' %}sort_by=-boys{% else %}sort_by=boys{% endif %}&{{ base_query_string }}" class="sort-link" style="justify-content: flex-end;">
+                                        Boys {% if current_sort == 'boys' %}▲{% elif current_sort == '-boys' %}▼{% endif %}
+                                    </a>
+                                </th>
+                                <th class="sortable" style="text-align: right;">
+                                    <a href="?{% if current_sort == 'girls' %}sort_by=-girls{% else %}sort_by=girls{% endif %}&{{ base_query_string }}" class="sort-link" style="justify-content: flex-end;">
+                                        Girls {% if current_sort == 'girls' %}▲{% elif current_sort == '-girls' %}▼{% endif %}
+                                    </a>
+                                </th>
+                                <th class="sortable" style="text-align: right;">
+                                    <a href="?{% if current_sort == 'exposures' %}sort_by=-exposures{% else %}sort_by=exposures{% endif %}&{{ base_query_string }}" class="sort-link" style="justify-content: flex-end;">
+                                        Exposures {% if current_sort == 'exposures' %}▲{% elif current_sort == '-exposures' or current_sort == '-total_exposures' %}▼{% endif %}
+                                    </a>
+                                </th>
+                                <th style="text-align: center;">Teacher</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in sessions %}
+                            <tr>
+                                <td style="color: #94a3b8; font-size: 11px;">{{ forloop.counter0|add:page_obj.start_index }}</td>
+                                <td>
+                                    {% if s.session_date %}
+                                        <span style="font-weight: 600; color: #0f172a;">{{ s.session_date|date:"d M Y" }}</span>
+                                    {% else %}
+                                        <span style="color: #94a3b8;">{{ s.month_name }} {{ s.day_number|default:"" }}</span>
+                                    {% endif %}
+                                    <div style="font-size: 11px; color: #94a3b8;">{{ s.academic_year }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge-prog {% if s.programme == 'CHAAP_JR' %}badge-chaap-jr{% elif s.programme == 'CHAAP_YUVA' %}badge-chaap-yuva{% elif s.programme == 'SEP' %}badge-sep{% elif 'IGNITE' in s.programme %}badge-ignite{% elif s.programme == 'NMMS' %}badge-nmms{% elif s.programme == 'CAMP' %}badge-camp{% elif s.programme == 'SAP' %}badge-sap{% else %}badge-others{% endif %}">
+                                        {{ s.get_programme_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if s.school %}
+                                        <span style="font-weight: 600; color: #1e293b;">{{ s.school.name }}</span>
+                                        {% if s.school.taluk or s.school.district %}
+                                            <div style="font-size: 11px; color: #64748b;">{{ s.school.taluk|default:s.school.district }}</div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span style="color: #475569; font-style: italic;">{{ s.raw_location_or_activity }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span style="font-weight: 600;">{{ s.standard|default:"—" }}</span>
+                                    {% if s.division %}<span style="color: #64748b;">(Sec {{ s.division }})</span>{% endif %}
+                                </td>
+                                <td style="max-width: 240px; overflow: hidden; text-overflow: ellipsis;" title="{{ s.topic }}">
+                                    {{ s.topic|default:"—" }}
+                                </td>
+                                <td>
+                                    <span style="font-weight: 500; color: #334155;">{{ s.instructor_name|default:"—" }}</span>
+                                </td>
+                                <td>
+                                    <span style="font-size: 11.5px; color: #64748b;">{{ s.session_type|default:"Session" }}</span>
+                                </td>
+                                <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.boys_present }}</td>
+                                <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.girls_present }}</td>
+                                <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ s.total_exposures|intcomma }}</td>
+                                <td style="text-align: center;">
+                                    {% if s.teacher_present %}
+                                        <span style="color: #16a34a; font-weight: 700;" title="Teacher Present">✓ Yes</span>
+                                    {% else %}
+                                        <span style="color: #94a3b8;" title="No teacher logged">✗ No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="12" style="text-align: center; padding: 48px 16px; color: #64748b;">
+                                    <i data-lucide="file-question" style="width: 38px; height: 38px; color: #cbd5e1; margin-bottom: 8px;"></i>
+                                    <div style="font-size: 15px; font-weight: 600; color: #334155;">No Weekly Tracker sessions found matching criteria</div>
+                                    <p style="margin-top: 4px; font-size: 13px;">Upload the Excel tracker workbook using the button above or clear active filters.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINATION FOOTER -->
+                {% if page_obj.has_other_pages %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid var(--border); background: #f8fafc; font-size: 13px;">
+                    <div style="color: #64748b;">
+                        Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} ({{ total_sessions|intcomma }} total sessions)
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        {% if page_obj.has_previous %}
+                        <a href="?page=1&sort_by={{ current_sort }}&{{ base_query_string }}" class="btn-action btn-action-outline" style="padding: 4px 8px;">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&sort_by={{ current_sort }}&{{ base_query_string }}" class="btn-action btn-action-outline" style="padding: 4px 8px;">&lsaquo; Prev</a>
+                        {% endif %}
+
+                        <span style="padding: 4px 10px; font-weight: 600; color: #1e293b;">{{ page_obj.number }}</span>
+
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&sort_by={{ current_sort }}&{{ base_query_string }}" class="btn-action btn-action-outline" style="padding: 4px 8px;">Next &rsaquo;</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&sort_by={{ current_sort }}&{{ base_query_string }}" class="btn-action btn-action-outline" style="padding: 4px 8px;">Last &raquo;</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- UPLOAD TRACKER MODAL -->
+    <div id="uploadModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="file-spreadsheet" style="width: 20px; height: 20px; color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#f59e0b{% endif %};"></i>
+                    Upload {{ current_ngo.name }} Tracker Excel
+                </h3>
+                <button type="button" onclick="closeUploadModal()" style="background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
+            <div style="font-size: 12.5px; padding: 8px 12px; background: {% if current_ngo.code == 'AGASTYA' %}#dbeafe; color: #1e40af; border: 1px solid #93c5fd;{% elif current_ngo.code == 'PRATHAM' %}#fee2e2; color: #991b1b; border: 1px solid #fca5a5;{% else %}#fef3c7; color: #92400e; border: 1px solid #fcd34d;{% endif %} border-radius: 6px; margin-bottom: 14px;">
+                Ingesting records for <strong>{{ current_ngo.name }} ({{ current_ngo.code }})</strong>. Other partner NGOs' records will remain isolated and untouched.
+            </div>
+
+            <form method="POST" action="{% url 'trackers:ngo_upload_workbook' current_ngo.code_lower %}" enctype="multipart/form-data" id="uploadTrackerForm">
+                {% csrf_token %}
+                <input type="hidden" name="ngo_code" value="{{ current_ngo.code }}">
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">Academic Year</label>
+                    <select name="academic_year" class="filter-input" required>
+                        <option value="2025-26" selected>2025-26 (Academic Year 2025-26)</option>
+                        <option value="2026-27">2026-27 (Academic Year 2026-27)</option>
+                    </select>
+                </div>
+
+                <div class="dropzone-box" id="dropzoneBox" onclick="document.getElementById('trackerFileInput').click()">
+                    <i data-lucide="upload-cloud" style="width: 36px; height: 36px; color: #3b82f6; margin-bottom: 8px;"></i>
+                    <div style="font-size: 14px; font-weight: 600; color: #1e293b;" id="dropzoneText">Click to select or drag &amp; drop workbook</div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Supports multi-sheet .xlsx files</div>
+                    <input type="file" name="file" id="trackerFileInput" accept=".xlsx,.xls" style="display: none;" onchange="handleFileSelect(this)">
+                </div>
+
+                <div id="uploadProgress" style="display: none; margin-bottom: 14px; text-align: center; color: #2563eb; font-size: 13px; font-weight: 600;">
+                    <i data-lucide="loader-2" class="spin" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Ingesting workbook sheets... Please wait.
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button type="button" onclick="closeUploadModal()" class="btn-action btn-action-outline">Cancel</button>
+                    <button type="submit" class="btn-action btn-action-primary" id="btnSubmitUpload">
+                        <i data-lucide="check"></i> Ingest &amp; Normalize
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('dropzoneText').innerText = input.files[0].name;
+            }
+        }
+
+        // Drag and drop support
+        const dropzone = document.getElementById('dropzoneBox');
+        ['dragenter', 'dragover'].forEach(name => {
+            dropzone.addEventListener(name, (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+        });
+        ['dragleave', 'drop'].forEach(name => {
+            dropzone.addEventListener(name, (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+            });
+        });
+        dropzone.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                const file = e.dataTransfer.files[0];
+                document.getElementById('trackerFileInput').files = e.dataTransfer.files;
+                document.getElementById('dropzoneText').innerText = file.name;
+            }
+        });
+
+        document.getElementById('uploadTrackerForm').addEventListener('submit', function() {
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('btnSubmitUpload').disabled = true;
+        });
+    </script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import io
 from datetime import datetime, date
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 from django.db.models import Q, Sum, Count
 from django.http import JsonResponse, HttpResponse
@@ -101,6 +102,42 @@ def project_list(request):
     )
 
 
+def resolve_tracker_programme(program):
+    """
+    Maps a Program to its corresponding WeeklyTrackerSession Programme choice.
+    """
+    if not program:
+        return None
+    t = f"{program.code or ''} {program.title or ''}".upper()
+    if "NMMS" in t:
+        return "NMMS"
+    if "STEP" in t or "SEP" in t or "STUDENT EXCEL" in t:
+        return "SEP"
+    if "IGNITE" in t and ("HUBBALLI" in t or "HBL" in t):
+        return "IGNITE_HBL"
+    if "IGNITE" in t:
+        return "IGNITE_BGM"
+    if "MSL" in t or "MOBILE SCIENCE" in t:
+        return "MSL"
+    if "AVISHKAR" in t:
+        return "AVISHKAR"
+    if "VASANTHA" in t:
+        return "VASANTHA"
+    if "YUVACHARYA" in t:
+        return "YUVACHARYA"
+    if "HEALTH" in t or "HHP" in t or "CHAAP" in t:
+        return "CHAAP_JR"
+    if "AHAP" in t:
+        return "CHAAP_YUVA"
+    if "NOTEBOOK" in t or "OPN" in t:
+        return "OPN"
+    if "CAMP" in t:
+        return "CAMP"
+    if "READING" in t:
+        return "READING"
+    return None
+
+
 def project_detail(request, pk):
     project = get_object_or_404(
         Project.objects.select_related("ngo").prefetch_related("target_schools", "locations"),
@@ -113,6 +150,34 @@ def project_detail(request, pk):
     internships = project.internships.all().select_related("student", "school", "program")
     mentorship_sessions = project.mentorship_sessions.all().select_related("student")
 
+    from trackers.models import WeeklyTrackerSession
+    project_program_keys = set()
+    for prg in programs:
+        k = resolve_tracker_programme(prg)
+        if k:
+            project_program_keys.add(k)
+
+    project_sessions = []
+    if project_program_keys:
+        ws_qs = WeeklyTrackerSession.objects.filter(programme__in=project_program_keys).select_related("school", "ngo").order_by("-session_date", "-id")[:60]
+        for ws in ws_qs:
+            project_sessions.append({
+                "date": ws.session_date,
+                "date_display": ws.session_date.strftime("%d %b %Y") if ws.session_date else f"{ws.month_name} {ws.day_number or ''}".strip(),
+                "programme": ws.get_programme_display(),
+                "school_name": ws.school.name if ws.school else (ws.raw_location_or_activity or "—"),
+                "standard": ws.standard or "All",
+                "topic": ws.topic or ws.raw_location_or_activity or "Module Session",
+                "instructor": ws.instructor_name or "Faculty Facilitator",
+                "session_type": ws.session_type or "Practical",
+                "boys": ws.boys_present,
+                "girls": ws.girls_present,
+                "exposures": ws.total_exposures,
+                "teacher_present": ws.teacher_present,
+            })
+    project_sessions_count = len(project_sessions)
+    project_exposures_sum = sum(s["exposures"] for s in project_sessions)
+
     return render(
         request,
         "programs/project_detail.html",
@@ -124,6 +189,9 @@ def project_detail(request, pk):
             "scholarships": scholarships,
             "internships": internships,
             "mentorship_sessions": mentorship_sessions,
+            "project_sessions": project_sessions,
+            "project_sessions_count": project_sessions_count,
+            "project_exposures_sum": project_exposures_sum,
         },
     )
 
@@ -233,11 +301,18 @@ def program_list(request):
     if taluk_filter:
         queryset = queryset.filter(taluk__iexact=taluk_filter)
     if search_query:
+        norm_q = search_query.replace("tt", "t").replace("ii", "i")
         queryset = queryset.filter(
             Q(title__icontains=search_query) |
+            Q(title__icontains=norm_q) |
             Q(code__icontains=search_query) |
             Q(location_name__icontains=search_query) |
-            Q(village_or_town__icontains=search_query)
+            Q(location_name__icontains=norm_q) |
+            Q(description__icontains=search_query) |
+            Q(description__icontains=norm_q) |
+            Q(village_or_town__icontains=search_query) |
+            Q(taluk__icontains=search_query) |
+            Q(district__icontains=search_query)
         )
 
     taluks = Program.objects.filter(is_archived=False).values_list("taluk", flat=True).distinct()
@@ -263,7 +338,7 @@ def program_detail(request, pk):
         Program.objects.select_related("project", "ngo").prefetch_related("participating_schools", "locations"),
         pk=pk,
     )
-    ev_sessions = program.ev_sessions.filter(is_archived=False)
+    ev_sessions = program.ev_sessions.filter(is_archived=False).select_related("school")
     available_projects = Project.objects.filter(is_archived=False).order_by("name")
     scholarships = program.scholarships.filter(is_archived=False).select_related("student", "student__school")
     internships = program.internships.all().select_related("student", "school", "program")
@@ -272,19 +347,151 @@ def program_detail(request, pk):
     from .roster import get_program_school_roster
     roster_data = get_program_school_roster(program)
 
-    return render(
-        request,
-        "programs/program_detail.html",
-        {
-            "program": program,
-            "ev_sessions": ev_sessions,
-            "available_projects": available_projects,
-            "scholarships": scholarships,
-            "internships": internships,
-            "mentorship_sessions": mentorship_sessions,
-            "roster_data": roster_data,
-        },
-    )
+    from trackers.models import WeeklyTrackerSession
+    prog_key = resolve_tracker_programme(program)
+
+    weekly_sessions_qs = WeeklyTrackerSession.objects.none()
+    if prog_key:
+        weekly_sessions_qs = WeeklyTrackerSession.objects.filter(programme=prog_key).select_related("school", "ngo")
+    elif program.participating_schools.exists():
+        weekly_sessions_qs = WeeklyTrackerSession.objects.filter(school__in=program.participating_schools.all()).select_related("school", "ngo")
+    elif program.ngo:
+        weekly_sessions_qs = WeeklyTrackerSession.objects.filter(ngo=program.ngo).select_related("school", "ngo")
+
+    combined_sessions = []
+    # Add WeeklyTrackerSessions
+    for ws in weekly_sessions_qs.order_by("-session_date", "-id")[:250]:
+        combined_sessions.append({
+            "source": "weekly_tracker",
+            "date": ws.session_date,
+            "date_display": ws.session_date.strftime("%d %b %Y") if ws.session_date else f"{ws.month_name} {ws.day_number or ''}".strip(),
+            "code": f"SES-{ws.id:04d}",
+            "title": ws.topic or ws.raw_location_or_activity or "Field Session",
+            "school_name": ws.school.name if ws.school else (ws.raw_location_or_activity or "—"),
+            "school_id": ws.school_id,
+            "standard": ws.standard or "All",
+            "division": ws.division or "",
+            "timing": ws.timing or "—",
+            "topic": ws.topic or ws.raw_location_or_activity or "Curriculum Session",
+            "instructor": ws.instructor_name or "Faculty Facilitator",
+            "session_type": ws.session_type or "Practical",
+            "boys": ws.boys_present,
+            "girls": ws.girls_present,
+            "total_exposures": ws.total_exposures,
+            "teacher_present": ws.teacher_present,
+            "status": "COMPLETED",
+        })
+
+    # Add EVClassSessions
+    for ev in ev_sessions.order_by("-session_date", "-id"):
+        combined_sessions.append({
+            "source": "ev_class",
+            "date": ev.session_date,
+            "date_display": ev.session_date.strftime("%d %b %Y") if ev.session_date else "—",
+            "code": ev.session_code,
+            "title": ev.session_title,
+            "school_name": ev.school.school_name if ev.school else "—",
+            "school_id": ev.school_id,
+            "standard": f"Grade {ev.grade_level}" if ev.grade_level else "All",
+            "division": "",
+            "timing": f"{ev.duration_minutes} min" if ev.duration_minutes else "—",
+            "topic": ev.topic or "Science Workshop",
+            "instructor": ev.facilitator_name or "Facilitator",
+            "session_type": "EV Session",
+            "boys": int(ev.attendee_count / 2) if ev.attendee_count else 0,
+            "girls": int(ev.attendee_count / 2) if ev.attendee_count else 0,
+            "total_exposures": ev.attendee_count or 0,
+            "teacher_present": True,
+            "status": ev.get_status_display(),
+            "pk": ev.pk,
+        })
+
+    total_sessions_count = len(combined_sessions)
+    total_exposures_sum = sum(s["total_exposures"] for s in combined_sessions)
+    total_boys_sum = sum(s["boys"] for s in combined_sessions)
+    total_girls_sum = sum(s["girls"] for s in combined_sessions)
+
+    # Clean schools list
+    schools_list = []
+    if roster_data and roster_data.get("schools"):
+        for sc in roster_data["schools"]:
+            b = sc.get("total_boys")
+            if b is None and sc.get("divisions"):
+                b = sum(d.get("gt", [0, 0, 0])[0] for d in sc["divisions"])
+            g = sc.get("total_girls")
+            if g is None and sc.get("divisions"):
+                g = sum(d.get("gt", [0, 0, 0])[1] for d in sc["divisions"])
+            tot_st = sc.get("total_students")
+            if not tot_st and sc.get("divisions"):
+                tot_st = sum(d.get("gt", [0, 0, 0])[2] for d in sc["divisions"])
+
+            schools_list.append({
+                "sl": sc.get("sl"),
+                "name": sc.get("name"),
+                "taluk": sc.get("taluk") or "—",
+                "udise": sc.get("udise") or "—",
+                "hm": sc.get("hm") or "",
+                "hm_mob": sc.get("hm_mob") or "",
+                "teacher": sc.get("teacher") or "",
+                "teacher_mob": sc.get("teacher_mob") or "",
+                "total_students": tot_st or 0,
+                "boys": b or 0,
+                "girls": g or 0,
+                "school_obj": sc.get("school_obj"),
+            })
+    elif program.participating_schools.exists():
+        for idx, sc in enumerate(program.participating_schools.all(), start=1):
+            schools_list.append({
+                "sl": idx,
+                "name": sc.school_name,
+                "taluk": sc.taluk or sc.district or "—",
+                "udise": sc.udise_code or "—",
+                "hm": sc.headmaster_name or "",
+                "hm_mob": sc.headmaster_phone or "",
+                "teacher": "",
+                "teacher_mob": "",
+                "total_students": getattr(sc, "student_strength", 0) or 0,
+                "boys": int((getattr(sc, "student_strength", 0) or 0) / 2),
+                "girls": int((getattr(sc, "student_strength", 0) or 0) / 2),
+                "school_obj": sc,
+            })
+
+    total_schools_count = len(schools_list) or program.participating_schools.count()
+    total_students_enrolled = sum(sc["total_students"] for sc in schools_list)
+    enrolled_boys = sum(sc["boys"] for sc in schools_list)
+    enrolled_girls = sum(sc["girls"] for sc in schools_list)
+    if roster_data and roster_data.get("kpis"):
+        k = roster_data["kpis"]
+        if k.get("total_students"):
+            total_students_enrolled = k["total_students"]
+        if k.get("total_boys"):
+            enrolled_boys = k["total_boys"]
+        if k.get("total_girls"):
+            enrolled_girls = k["total_girls"]
+
+    taluks = sorted(list(set(sc["taluk"] for sc in schools_list if sc["taluk"] and sc["taluk"] != "—")))
+
+    context = {
+        "program": program,
+        "ev_sessions": ev_sessions,
+        "combined_sessions": combined_sessions,
+        "total_sessions_count": total_sessions_count,
+        "total_exposures_sum": total_exposures_sum,
+        "total_boys_sum": total_boys_sum,
+        "total_girls_sum": total_girls_sum,
+        "schools_list": schools_list,
+        "total_schools_count": total_schools_count,
+        "total_students_enrolled": total_students_enrolled,
+        "enrolled_boys": enrolled_boys,
+        "enrolled_girls": enrolled_girls,
+        "taluks": taluks,
+        "available_projects": available_projects,
+        "scholarships": scholarships,
+        "internships": internships,
+        "mentorship_sessions": mentorship_sessions,
+        "roster_data": roster_data,
+    }
+    return render(request, "programs/program_detail.html", context)
 
 
 def program_upload_school_roster(request, pk):
@@ -318,6 +525,153 @@ def program_upload_school_roster(request, pk):
             messages.error(request, f"Failed to parse uploaded roster: {e}")
 
     return redirect("programs:program_detail", pk=program.pk)
+
+
+def program_remove_school_roster(request, pk):
+    """
+    Removes the uploaded school roster file, clears participating schools,
+    and removes weekly session logs for this program.
+    """
+    program = get_object_or_404(Program, pk=pk)
+    if request.method == "POST":
+        from .roster import _get_roster_file_path, _get_roster_cleared_marker_path
+        roster_path = _get_roster_file_path(program.pk)
+        if os.path.exists(roster_path):
+            try:
+                os.remove(roster_path)
+            except Exception:
+                pass
+
+        marker_path = _get_roster_cleared_marker_path(program.pk)
+        try:
+            with open(marker_path, "w", encoding="utf-8") as f:
+                f.write("cleared")
+        except Exception:
+            pass
+
+        cleared_schools = program.participating_schools.count()
+        program.participating_schools.clear()
+
+        from trackers.models import WeeklyTrackerSession
+        prog_key = resolve_tracker_programme(program)
+        deleted_sessions = 0
+        if prog_key:
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
+                programme=prog_key,
+                academic_year=program.academic_year
+            ).delete()
+        elif program.ngo:
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
+                ngo=program.ngo,
+                academic_year=program.academic_year
+            ).delete()
+
+        details = []
+        if cleared_schools:
+            details.append(f"{cleared_schools} schools detached")
+        if deleted_sessions:
+            details.append(f"{deleted_sessions} weekly sessions cleared")
+        detail_msg = f" ({', '.join(details)})" if details else ""
+
+        messages.success(request, f"Successfully removed uploaded tracking data for '{program.title}'{detail_msg}.")
+    return redirect("programs:program_detail", pk=program.pk)
+
+
+def program_remove_session_logs(request, pk):
+    """
+    Removes uploaded weekly session logs specifically for this program.
+    """
+    program = get_object_or_404(Program, pk=pk)
+    if request.method == "POST":
+        from trackers.models import WeeklyTrackerSession
+        prog_key = resolve_tracker_programme(program)
+        deleted_sessions = 0
+        if prog_key:
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
+                programme=prog_key,
+                academic_year=program.academic_year
+            ).delete()
+        elif program.participating_schools.exists():
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
+                school__in=program.participating_schools.all(),
+                academic_year=program.academic_year
+            ).delete()
+        elif program.ngo:
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
+                ngo=program.ngo,
+                academic_year=program.academic_year
+            ).delete()
+
+        messages.success(request, f"Successfully removed {deleted_sessions:,} weekly session logs for program '{program.title}'.")
+
+    return redirect(f"{reverse('programs:program_detail', kwargs={'pk': program.pk})}#sessions")
+
+
+def program_upload_session_log(request, pk):
+    """
+    Handles Weekly Session Log Excel file upload (.xlsx/.xls) specifically for an individual program.
+    Parses session records, persists them to WeeklyTrackerSession, associates them with the program's
+    participating schools and partner NGO, and redirects back to the program detail page.
+    """
+    program = get_object_or_404(
+        Program.objects.select_related("ngo", "project").prefetch_related("participating_schools"),
+        pk=pk
+    )
+    if request.method != "POST":
+        return redirect("programs:program_detail", pk=program.pk)
+
+    uploaded_file = request.FILES.get("session_log_file") or request.FILES.get("file")
+    academic_year = request.POST.get("academic_year", program.academic_year).strip()
+    target_ngo = program.ngo or (program.project.ngo if program.project else None)
+    target_ngo_code = request.POST.get("ngo_code", "").strip() or (target_ngo.code if target_ngo else None)
+
+    if not uploaded_file:
+        messages.error(request, "Please select an Excel (.xlsx or .xls) file containing weekly session logs to upload.")
+        return redirect(f"{reverse('programs:program_detail', kwargs={'pk': program.pk})}#sessions")
+
+    ext = os.path.splitext(uploaded_file.name)[1].lower()
+    if ext not in [".xlsx", ".xls"]:
+        messages.error(request, f"Unsupported file type '{ext}'. Please upload a valid .xlsx or .xls Excel file.")
+        return redirect(f"{reverse('programs:program_detail', kwargs={'pk': program.pk})}#sessions")
+
+    try:
+        from .roster import _get_roster_cleared_marker_path
+        marker_path = _get_roster_cleared_marker_path(program.pk)
+        if os.path.exists(marker_path):
+            try:
+                os.remove(marker_path)
+            except Exception:
+                pass
+
+        from trackers.services.excel_importer import import_yfs_workbook
+        prog_key = resolve_tracker_programme(program)
+
+        res = import_yfs_workbook(
+            uploaded_file,
+            academic_year=academic_year,
+            ngo_code=target_ngo_code,
+            target_program=program,
+            target_programme=prog_key,
+        )
+
+        sess_count = res.get("sessions_imported", 0)
+        if sess_count > 0:
+            messages.success(
+                request,
+                f"Successfully added {sess_count:,} weekly session logs from '{uploaded_file.name}' "
+                f"for program '{program.title}' ({res.get('total_exposures', 0):,} student exposures across {res.get('schools_count', 0)} schools)."
+            )
+        else:
+            messages.warning(
+                request,
+                f"Uploaded workbook '{uploaded_file.name}' was parsed for AY {academic_year}, but no weekly session rows could be extracted. "
+                "Ensure the sheet contains standard weekly session columns (Month, Day, School/Venue, Standard, Topic, Instructor, Boys, Girls, Total Exposures)."
+            )
+    except Exception as e:
+        messages.error(request, f"Failed to ingest Weekly Session Log Excel file: {e}")
+
+    return redirect(f"{reverse('programs:program_detail', kwargs={'pk': program.pk})}#sessions")
+
 
 
 def program_create(request):
@@ -517,18 +871,22 @@ def ngo_detail(request, pk):
     ev_sessions = ngo.ev_sessions.filter(is_archived=False)[:10]
     allocated_resources = SchoolResource.objects.filter(school__in=schools).select_related("school").order_by("-updated_at")
 
-    return render(
-        request,
-        "programs/ngo_detail.html",
-        {
-            "ngo": ngo,
-            "schools": schools,
-            "total_students": total_students,
-            "programs": programs,
-            "ev_sessions": ev_sessions,
-            "allocated_resources": allocated_resources,
-        },
-    )
+    context = {
+        "ngo": ngo,
+        "current_ngo": ngo,
+        "requested_ngo": ngo.code.lower(),
+        "schools": schools,
+        "total_students": total_students,
+        "programs": programs,
+        "ev_sessions": ev_sessions,
+        "allocated_resources": allocated_resources,
+        "foundation_subtab": "dossier",
+    }
+    if ngo.code in ["PRATHAM", "AGASTYA", "YFS"]:
+        from trackers.views import get_ngo_nav
+        context["ngo_nav"] = get_ngo_nav(ngo)
+
+    return render(request, "programs/ngo_detail.html", context)
 
 
 def ngo_create(request):

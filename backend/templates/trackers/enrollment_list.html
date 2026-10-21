@@ -1,0 +1,745 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_ngo.name }} School Class Enrollments | Aequs Foundation EduTrack</title>
+    <link rel="icon" type="image/jpeg" href="/static/images/cropped-Aequs-Lines-01-32x32.jpg">
+    <script src="/static/js/lucide.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --danger: #dc2626;
+            --danger-light: #fef2f2;
+            --success: #16a34a;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg-light: #f8fafc;
+        }
+
+        .tracker-page {
+            padding: 24px 32px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* NGO Top Switcher Tabs */
+        .ngo-tabs-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            flex-wrap: wrap;
+        }
+        .ngo-tabs-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding-left: 4px;
+            white-space: nowrap;
+        }
+        .ngo-tabs-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        .ngo-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 16px;
+            border-radius: 9px;
+            text-decoration: none;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #334155;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .ngo-tab-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .ngo-tab-btn.active {
+            background: var(--ngo-bg-light);
+            border-color: var(--ngo-color);
+            color: #0f172a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            font-weight: 600;
+        }
+        .ngo-tab-badge {
+            font-size: 18px;
+            line-height: 1;
+        }
+        .ngo-tab-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .ngo-tab-name {
+            font-size: 13.5px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .ngo-tab-meta {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .ngo-tab-btn.active .ngo-tab-meta {
+            color: #1e293b;
+        }
+        .ngo-tab-indicator {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--ngo-color);
+            color: #ffffff;
+            margin-left: 4px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+        .btn-action-primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        .btn-action-primary:hover {
+            background: #1d4ed8;
+        }
+        .btn-action-outline {
+            background: #fff;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+        .btn-action-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .kpi-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .kpi-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .kpi-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+        }
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* View Nav Switcher */
+        .view-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 2px;
+        }
+        .view-nav-link {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -4px;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .view-nav-link:hover {
+            color: var(--primary);
+        }
+        .view-nav-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Filter Panel */
+        .filter-panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) auto;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .filter-group label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        .filter-input {
+            width: 100%;
+            height: 38px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 13px;
+            background: #fff;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+        .filter-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+        }
+
+        /* Table Styles */
+        .table-container {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        .data-table thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .data-table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .badge-prog {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-year {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        .badge-std {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 700;
+        }
+
+        /* Pagination */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .page-links {
+            display: flex;
+            gap: 4px;
+        }
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            border-radius: 6px;
+            font-size: 12.5px;
+            color: #334155;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .page-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            font-weight: 700;
+        }
+        .page-btn:hover:not(.active) {
+            background: #f1f5f9;
+        }
+
+        /* Upload Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-card {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 540px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .dropzone-box {
+            border: 2px dashed #93c5fd;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 16px 0;
+        }
+        .dropzone-box:hover, .dropzone-box.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/sidebar.html' with active_page='trackers_enrollments' requested_ngo=requested_ngo %}
+
+    <main class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div>
+                <h1 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="book-open-check" style="width: 22px; height: 22px; color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#f59e0b{% endif %};"></i>
+                    {{ current_ngo.name }} &bull; Class Enrollments
+                </h1>
+                <span style="font-size: 12px; color: #64748b;">
+                    Normalized standard-wise student headcount (Boys, Girls, Total) across {{ current_ngo.name }} partner schools
+                </span>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" onclick="openUploadModal()" class="btn-action btn-action-primary" style="background: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#d97706{% endif %}; border-color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#d97706{% endif %};">
+                    <i data-lucide="upload"></i> Upload Tracker ({{ current_ngo.code }})
+                </button>
+                <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}" class="btn-action btn-action-outline">
+                    <i data-lucide="calendar-check"></i> Weekly Sessions Log
+                </a>
+                <a href="/schools/{{ current_ngo.code_lower }}/" class="btn-action btn-action-outline">
+                    <i data-lucide="school"></i> {{ current_ngo.code }} Schools
+                </a>
+            </div>
+        </header>
+
+        <div class="tracker-page">
+            {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for message in messages %}
+                <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 13.5px; font-weight: 500; {% if message.tags == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #f87171;{% elif message.tags == 'warning' %}background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;{% else %}background: #dcfce7; color: #166534; border: 1px solid #86efac;{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- FOUNDATION MODULE NAVIGATION: PARTNER SWITCHER & INDIVIDUAL SECTION TABS -->
+            {% include 'includes/foundation_tabs.html' with foundation_subtab='enrollments' %}
+
+            <!-- SPREADSHEET ROSTER VIEW (Identical to School Profile Roster in Program Detail) -->
+            {% if roster_data and roster_data.schools %}
+                {% include 'includes/roster_spreadsheet.html' with roster_data=roster_data current_ngo=current_ngo %}
+            {% endif %}
+
+            <!-- SECTION TOGGLE: RAW COHORT ENTRIES LOG -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 14px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
+                <div>
+                    <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="layers" style="width: 16px; height: 16px; color: #64748b;"></i> Raw Normalized Class Cohort Records ({{ page_obj.paginator.count|intcomma }})
+                    </h3>
+                    <p style="margin: 2px 0 0; font-size: 12px; color: #64748b;">Granular individual standard headcount entries with pagination</p>
+                </div>
+                <button type="button" class="btn-action btn-action-outline" onclick="toggleRawCohortSection()" style="font-size: 12px; padding: 6px 12px;">
+                    <span id="rawCohortToggleText">Hide Raw Entries</span>
+                </button>
+            </div>
+
+            <div id="rawCohortSection">
+                <!-- KPI SUMMARY CARDS -->
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left: 4px solid #2563eb;">
+                        <div class="kpi-title">
+                            <span>Total Students Enrolled</span>
+                            <i data-lucide="users" style="width: 16px; height: 16px; color: #2563eb;"></i>
+                        </div>
+                        <div class="kpi-value">{{ total_students|intcomma }}</div>
+                        <div class="kpi-sub">Across filtered standards &amp; schools</div>
+                    </div>
+
+                    <div class="kpi-card" style="border-left: 4px solid #0284c7;">
+                        <div class="kpi-title">
+                            <span>Boys Enrolled</span>
+                            <i data-lucide="user" style="width: 16px; height: 16px; color: #0284c7;"></i>
+                        </div>
+                        <div class="kpi-value" style="color: #0284c7;">{{ total_boys|intcomma }}</div>
+                        <div class="kpi-sub">Male student headcount</div>
+                    </div>
+
+                    <div class="kpi-card" style="border-left: 4px solid #ec4899;">
+                        <div class="kpi-title">
+                            <span>Girls Enrolled</span>
+                            <i data-lucide="user" style="width: 16px; height: 16px; color: #ec4899;"></i>
+                        </div>
+                        <div class="kpi-value" style="color: #db2777;">{{ total_girls|intcomma }}</div>
+                        <div class="kpi-sub">Female student headcount</div>
+                    </div>
+
+                    <div class="kpi-card" style="border-left: 4px solid #16a34a;">
+                        <div class="kpi-title">
+                            <span>Class Cohorts</span>
+                            <i data-lucide="layers" style="width: 16px; height: 16px; color: #16a34a;"></i>
+                        </div>
+                        <div class="kpi-value" style="color: #16a34a;">{{ page_obj.paginator.count|intcomma }}</div>
+                        <div class="kpi-sub">Unpivoted school/std entries</div>
+                    </div>
+                </div>
+
+                <!-- VIEW NAV SWITCHER -->
+                <div class="view-nav">
+                    <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}{% if selected_ay %}?academic_year={{ selected_ay }}{% endif %}" class="view-nav-link">
+                        📋 Weekly Tracker Sessions Log
+                    </a>
+                    <a href="{% url 'trackers:ngo_enrollment_list' current_ngo.code_lower %}{% if selected_ay %}?academic_year={{ selected_ay }}{% endif %}" class="view-nav-link active">
+                        🏫 School Class Enrollments Data ({{ page_obj.paginator.count|intcomma }})
+                    </a>
+                </div>
+
+            <!-- FILTER PANEL -->
+            <div class="filter-panel">
+                <form method="GET" action="{% url 'trackers:ngo_enrollment_list' current_ngo.code_lower %}" id="enrollmentFilterForm">
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label>Academic Year</label>
+                            <select name="academic_year" class="filter-input" onchange="document.getElementById('enrollmentFilterForm').submit()">
+                                <option value="">All Academic Years</option>
+                                {% for ay in academic_years %}
+                                <option value="{{ ay }}" {% if selected_ay == ay %}selected{% endif %}>{{ ay }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Programme</label>
+                            <select name="programme" class="filter-input" onchange="document.getElementById('enrollmentFilterForm').submit()">
+                                <option value="">All Programmes</option>
+                                {% for code, label in programmes %}
+                                <option value="{{ code }}" {% if selected_prog == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Search School / Standard</label>
+                            <input type="text" name="q" class="filter-input" value="{{ search_q|default:'' }}" placeholder="e.g. Yamakanamaradi, 8th STD...">
+                        </div>
+
+                        <div style="display: flex; gap: 6px;">
+                            <button type="submit" class="btn-action btn-action-primary" style="padding: 8px 16px;">
+                                <i data-lucide="filter"></i> Filter
+                            </button>
+                            <a href="{% url 'trackers:ngo_enrollment_list' current_ngo.code_lower %}" class="btn-action btn-action-outline" style="padding: 8px 12px;">
+                                Reset
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ENROLLMENTS TABLE -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Academic Year</th>
+                            <th>Programme</th>
+                            <th>School Name</th>
+                            <th>Standard</th>
+                            <th style="text-align: right;">Boys</th>
+                            <th style="text-align: right;">Girls</th>
+                            <th style="text-align: right;">Total Students</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enr in enrollments %}
+                        <tr>
+                            <td>
+                                <span class="badge badge-year">{{ enr.academic_year }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-prog">{{ enr.get_programme_display }}</span>
+                            </td>
+                            <td>
+                                <strong style="color: #0f172a;">{{ enr.school.name }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-std">{{ enr.standard }}</span>
+                            </td>
+                            <td style="text-align: right; color: #0284c7; font-weight: 600;">
+                                {{ enr.boys|intcomma }}
+                            </td>
+                            <td style="text-align: right; color: #db2777; font-weight: 600;">
+                                {{ enr.girls|intcomma }}
+                            </td>
+                            <td style="text-align: right; font-weight: 700; color: #0f172a;">
+                                {{ enr.total|intcomma }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 48px 16px; color: var(--text-muted);">
+                                <i data-lucide="info" style="width: 32px; height: 32px; stroke-width: 1.5; margin-bottom: 8px; display: inline-block;"></i>
+                                <div style="font-weight: 600; font-size: 15px;">No school enrollment records found</div>
+                                <p style="font-size: 13px; margin: 6px 0 0;">Upload an Excel tracker file or adjust your filter selection.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- PAGINATION -->
+                {% if page_obj.has_other_pages %}
+                <div class="pagination-bar">
+                    <div>
+                        Showing <strong>{{ page_obj.start_index }}</strong> to <strong>{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> enrollment cohorts
+                    </div>
+                    <div class="page-links">
+                        {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if selected_ay %}&academic_year={{ selected_ay }}{% endif %}{% if selected_prog %}&programme={{ selected_prog }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" class="page-btn">Previous</a>
+                        {% endif %}
+
+                        <span class="page-btn active">{{ page_obj.number }}</span>
+
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if selected_ay %}&academic_year={{ selected_ay }}{% endif %}{% if selected_prog %}&programme={{ selected_prog }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" class="page-btn">Next</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- UPLOAD MODAL -->
+    <div class="modal-overlay" id="uploadModal" onclick="if(event.target === this) closeUploadModal()">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="file-spreadsheet" style="color: {% if current_ngo.code == 'AGASTYA' %}#2563eb{% elif current_ngo.code == 'PRATHAM' %}#dc2626{% else %}#f59e0b{% endif %};"></i> Upload {{ current_ngo.name }} Tracker Excel
+                </h3>
+                <button type="button" onclick="closeUploadModal()" style="border: none; background: transparent; cursor: pointer; color: #64748b; font-size: 18px;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div style="font-size: 12.5px; padding: 8px 12px; background: {% if current_ngo.code == 'AGASTYA' %}#dbeafe; color: #1e40af; border: 1px solid #93c5fd;{% elif current_ngo.code == 'PRATHAM' %}#fee2e2; color: #991b1b; border: 1px solid #fca5a5;{% else %}#fef3c7; color: #92400e; border: 1px solid #fcd34d;{% endif %} border-radius: 6px; margin-bottom: 14px;">
+                Ingesting records for <strong>{{ current_ngo.name }} ({{ current_ngo.code }})</strong>. Other partner NGOs' records will remain isolated and untouched.
+            </div>
+
+            <form method="POST" action="{% url 'trackers:ngo_upload_workbook' current_ngo.code_lower %}" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                <input type="hidden" name="ngo_code" value="{{ current_ngo.code }}">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                        Target Academic Year
+                    </label>
+                    <select name="academic_year" id="modalAcademicYear" class="filter-input" required>
+                        <option value="2025-26">2025-26 (21 sheets)</option>
+                        <option value="2026-27">2026-27 (20 sheets)</option>
+                    </select>
+                </div>
+
+                <div class="dropzone-box" id="dropzoneBox" onclick="document.getElementById('excelFileInput').click()">
+                    <i data-lucide="upload-cloud" style="width: 42px; height: 42px; color: #2563eb; margin: 0 auto 10px; display: block;"></i>
+                    <div style="font-size: 14px; font-weight: 600; color: #1e293b;" id="dropzoneFilename">
+                        Click to browse or drag &amp; drop Excel file
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Supports .xlsx, .xls (up to 50MB)</div>
+                    <input type="file" name="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;" onchange="handleFileSelect(this)" required>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
+                    <button type="button" onclick="closeUploadModal()" class="btn-action btn-action-outline">Cancel</button>
+                    <button type="submit" class="btn-action btn-action-primary" id="submitUploadBtn">
+                        <i data-lucide="check"></i> Ingest &amp; Normalize
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+            if (window.lucide) { lucide.createIcons(); }
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                var file = input.files[0];
+                document.getElementById('dropzoneFilename').innerHTML = '<strong>' + file.name + '</strong> (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+                var yearSelect = document.getElementById('modalAcademicYear');
+                if (file.name.indexOf('2026-27') !== -1) {
+                    yearSelect.value = '2026-27';
+                } else if (file.name.indexOf('2025-26') !== -1) {
+                    yearSelect.value = '2025-26';
+                }
+            }
+        }
+
+        function toggleRawCohortSection() {
+            var sec = document.getElementById('rawCohortSection');
+            var txt = document.getElementById('rawCohortToggleText');
+            if (!sec) return;
+            if (sec.style.display === 'none') {
+                sec.style.display = 'block';
+                if (txt) txt.textContent = 'Hide Raw Entries';
+            } else {
+                sec.style.display = 'none';
+                if (txt) txt.textContent = 'Show Raw Entries';
+            }
+        }
+
+        if (dropzone) {
+            ['dragenter', 'dragover'].forEach(function(evt) {
+                dropzone.addEventListener(evt, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function(evt) {
+                dropzone.addEventListener(evt, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('dragover');
+                });
+            });
+            dropzone.addEventListener('drop', function(e) {
+                var dt = e.dataTransfer;
+                var files = dt.files;
+                if (files && files.length > 0) {
+                    var input = document.getElementById('excelFileInput');
+                    input.files = files;
+                    handleFileSelect(input);
+                }
+            });
+        }
+
+        var uploadForm = document.getElementById('uploadForm');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function() {
+                var btn = document.getElementById('submitUploadBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Processing sheets...';
+                if (window.lucide) { lucide.createIcons(); }
+            });
+        }
+    </script>
+</body>
+</html>

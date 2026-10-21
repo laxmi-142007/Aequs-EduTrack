@@ -8,6 +8,8 @@ app_name = "programs"
 urlpatterns = [
     # Project-wise Tracking Dashboard (Excel Tracking Specification)
     path("tracking/dashboard/", views_tracking.tracking_dashboard, name="tracking_dashboard"),
+    path("tracking/upload-excel/", views_tracking.upload_tracking_excel, name="tracking_upload_excel"),
+    path("tracking/sample-template/", views_tracking.download_session_log_template, name="tracking_sample_template"),
 
     # Mike Propen Scholarship Portal (Application, Analysis, Data Details)
     path("scholarships/mike-propen/", views_propen.propen_portal, name="propen_portal"),
@@ -30,6 +32,9 @@ urlpatterns = [
     path("programs/<int:pk>/", views.program_detail, name="program_detail"),
     path("programs/<int:pk>/edit/", views.program_edit, name="program_edit"),
     path("programs/<int:pk>/upload-roster/", views.program_upload_school_roster, name="program_upload_school_roster"),
+    path("programs/<int:pk>/upload-session-log/", views.program_upload_session_log, name="program_upload_session_log"),
+    path("programs/<int:pk>/remove-roster/", views.program_remove_school_roster, name="program_remove_school_roster"),
+    path("programs/<int:pk>/remove-session-logs/", views.program_remove_session_logs, name="program_remove_session_logs"),
     path("programs/<int:pk>/link-project/", views.program_link_project, name="program_link_project"),
     path("programs/<int:pk>/archive/", views.program_toggle_archive, name="program_toggle_archive"),
 
