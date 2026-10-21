@@ -1,4 +1,4 @@
-{% load static %}
+{% load static humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,17 +9,17 @@
     <link rel="stylesheet" href="/static/css/programs.css">
     <script src="/static/js/lucide.min.js"></script>
     <style>
-        /* Excel School Profile & Roster Component */
-        .excel-card {
+        /* Unified Tracking & School Network Component (Matching Schools Weekly Tracking) */
+        .tracker-section-card {
             background: #ffffff;
             border-radius: 12px;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
             margin-bottom: 24px;
             overflow: hidden;
         }
-        .excel-card-header {
-            padding: 16px 20px;
+        .tracker-header {
+            padding: 18px 22px;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
@@ -28,67 +28,90 @@
             gap: 12px;
             background: #ffffff;
         }
-        .view-toggle-btn {
+        .view-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 22px;
             background: #ffffff;
-            border: none;
-            padding: 6px 12px;
-            font-size: 12px;
+        }
+        .view-nav-link {
+            padding: 12px 18px;
+            font-size: 13.5px;
             font-weight: 600;
-            color: #475569;
+            color: #64748b;
+            text-decoration: none;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             transition: all 0.15s ease;
+            margin-bottom: -1px;
         }
-        .view-toggle-btn.active {
-            background: #1e293b;
-            color: #ffffff;
+        .view-nav-link:hover {
+            color: #2563eb;
         }
-        .excel-kpi-grid {
+        .view-nav-link.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            font-weight: 700;
+            background: #f8fafc;
+        }
+        .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 12px;
-            padding: 14px 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            padding: 18px 22px;
             background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
         }
-        .excel-kpi-item {
+        .kpi-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 14px 18px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        .excel-kpi-item .label {
-            font-size: 10.5px;
+        .kpi-title {
+            font-size: 11.5px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-weight: 700;
             color: #64748b;
-            margin-bottom: 3px;
-            display: block;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .excel-kpi-item .val {
-            font-size: 17px;
+        .kpi-value {
+            font-size: 24px;
             font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
         }
-        .excel-kpi-item .sub {
+        .kpi-sub {
             font-size: 11.5px;
             color: #64748b;
-            margin-top: 2px;
+            margin-top: 4px;
         }
-        .excel-toolbar {
-            padding: 10px 20px;
+        .filter-panel {
+            padding: 12px 22px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            background: #ffffff;
             border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
         }
-        .excel-filter-pills {
+        .filter-pills {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
@@ -110,106 +133,68 @@
             color: #0f172a;
         }
         .filter-pill.active {
-            background: #ed1c24;
+            background: #2563eb;
             color: #ffffff;
-            border-color: #ed1c24;
+            border-color: #2563eb;
         }
-        .excel-sheet-container {
+        .table-wrapper {
             overflow-x: auto;
-            background: #ffffff;
-            max-width: 100%;
+            width: 100%;
         }
-        .excel-sheet-header-block {
-            background: #f8fafc;
-            border-bottom: 2px solid #64748b;
-            text-align: center;
-            padding: 10px 16px;
-        }
-        .excel-sheet-header-title {
-            font-size: 13.5px;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .excel-sheet-header-sub {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #334155;
-            margin-top: 2px;
-        }
-        .excel-sheet-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            font-weight: 600;
-            color: #334155;
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px dashed #cbd5e1;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .excel-table {
+        table.tracker-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
-            line-height: 1.25;
-        }
-        .excel-table th, .excel-table td {
-            border: 1px solid #94a3b8;
-            padding: 5px 6px;
+            font-size: 12.5px;
+            text-align: left;
             white-space: nowrap;
         }
-        .excel-table th {
-            background-color: #f1f5f9;
-            color: #0f172a;
+        table.tracker-table thead th {
+            background: #f8fafc;
+            color: #334155;
             font-weight: 700;
-            text-align: center;
-            vertical-align: middle;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 11px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            user-select: none;
         }
-        .excel-table .th-dlc-header {
-            background-color: #ffff00 !important;
-            color: #000000 !important;
-            font-weight: 800;
-        }
-        .excel-table td {
+        table.tracker-table tbody td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #f1f5f9;
             color: #1e293b;
             vertical-align: middle;
         }
-        .excel-table td.center {
-            text-align: center;
+        table.tracker-table tbody tr:hover {
+            background: #f8fafc;
         }
-        .excel-table td.num {
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-        }
-        .excel-table td.mono {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 10.5px;
-        }
-        .excel-table .cell-zero {
-            background-color: #dbeafe !important;
-            color: #1e40af;
-            text-align: center;
-        }
-        .excel-table .cell-gt {
-            background-color: #f8fafc;
-        }
-        .excel-table .tr-grand-total td {
-            background-color: #22c55e !important;
-            color: #ffffff !important;
+        table.tracker-table tfoot td {
+            background: #f1f5f9;
+            color: #0f172a;
             font-weight: 800;
-            border-color: #16a34a !important;
-            font-size: 12px;
+            padding: 12px 14px;
+            border-top: 2px solid #cbd5e1;
         }
-        .excel-table .school-link {
+        .badge-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .badge-prog-blue { background: #dbeafe; color: #1e40af; }
+        .badge-prog-green { background: #dcfce7; color: #15803d; }
+        .badge-prog-amber { background: #fef3c7; color: #92400e; }
+        .school-link {
             color: #0f172a;
             font-weight: 600;
             text-decoration: none;
         }
-        .excel-table .school-link:hover {
-            color: #ed1c24;
+        .school-link:hover {
+            color: #2563eb;
             text-decoration: underline;
         }
         .font-semibold { font-weight: 600; }
@@ -414,356 +399,331 @@
                 {% endif %}
             </div>
 
-            <!-- Participating Schools & School Profile Excel Roster -->
-            {% if roster_data and roster_data.schools %}
-            <div class="excel-card" id="school-profile-section">
-                <!-- Header with Title and View Controls -->
-                <div class="excel-card-header">
+                        <!-- Unified Field Tracking & Partner Schools (Matching Schools Weekly Tracking) -->
+            <div class="tracker-section-card" id="program-tracking-section">
+                <!-- Section Header with Meta & Actions -->
+                <div class="tracker-header">
                     <div>
                         <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
-                            <i data-lucide="table" style="color: #ed1c24;"></i> School Profile &amp; Participating Schools Roster
-                            <span class="af-badge badge-active" style="font-size: 11.5px; padding: 2px 8px;">{{ roster_data.kpis.total_schools }} Schools</span>
-                            <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 8px;">{{ roster_data.kpis.total_students }} Students</span>
+                            <i data-lucide="activity" style="color: #2563eb;"></i> Field Tracking &amp; Partner Schools
+                            <span class="af-badge badge-active" style="font-size: 11.5px; padding: 2px 8px;">{{ total_sessions_count }} Sessions</span>
+                            <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 8px;">{{ total_schools_count }} Schools</span>
                         </h3>
                         <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
-                            {{ roster_data.title_org }} &bull; Academic Year {{ roster_data.academic_year }} &bull; {{ roster_data.donor_title }}
+                            {% if program.ngo %}{{ program.ngo.name }}{% elif program.project %}{{ program.project.name }}{% else %}Aequs Foundation{% endif %} &bull; Program Tracking Dossier
                         </div>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <div class="view-toggle-group" style="display: inline-flex; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
-                            <button type="button" id="btnViewSpreadsheet" class="view-toggle-btn active" onclick="switchRosterView('spreadsheet')">
-                                <i data-lucide="grid" style="width: 14px; height: 14px;"></i> Excel Sheet
-                            </button>
-                            <button type="button" id="btnViewCards" class="view-toggle-btn" onclick="switchRosterView('cards')">
-                                <i data-lucide="layout-grid" style="width: 14px; height: 14px;"></i> Cards
-                            </button>
-                        </div>
-                        <button type="button" onclick="exportRosterCSV()" class="btn-af btn-af-secondary btn-af-sm">
-                            <i data-lucide="download"></i> Export CSV / Excel
+                        <button type="button" onclick="exportTrackingCSV()" class="btn-af btn-af-secondary btn-af-sm">
+                            <i data-lucide="download"></i> Export CSV
                         </button>
-                        <button type="button" onclick="openUploadRosterModal()" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-                            <i data-lucide="upload"></i> Upload Excel Roster
+                        {% if roster_data or total_sessions_count > 0 or total_schools_count > 0 %}
+                        <form method="POST" action="{% url 'programs:program_remove_school_roster' program.pk %}" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to remove the uploaded tracking file and reset sessions/schools for {{ program.title }}?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-af btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #f87171; color: #dc2626;" title="Remove uploaded tracking file and reset data for this program">
+                                <i data-lucide="trash-2"></i> Remove File
+                            </button>
+                        </form>
+                        {% endif %}
+                        <button type="button" onclick="openUploadSessionLogModal()" class="btn-af btn-af-sm" style="background: #16a34a; color: #ffffff; font-weight: 600; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px; cursor: pointer;" title="Upload weekly session log Excel spreadsheet for this program">
+                            <i data-lucide="file-spreadsheet"></i> Add Weekly Session Log (Excel)
                         </button>
+                        <button type="button" onclick="openUploadRosterModal()" class="btn-af btn-af-secondary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <i data-lucide="upload"></i> Upload School Profile (Excel / CSV)
+                        </button>
+                        <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <i data-lucide="plus"></i> Log Field Session
+                        </a>
                     </div>
                 </div>
 
-                <!-- Demographic Summary Metric Cards -->
-                <div class="excel-kpi-grid">
-                    <div class="excel-kpi-item">
-                        <span class="label">Participating Schools</span>
-                        <div class="val" style="color: #1e293b;">{{ roster_data.kpis.total_schools }}</div>
-                        <div class="sub">Across {{ roster_data.kpis.taluks_count }} Taluks</div>
-                    </div>
-                    <div class="excel-kpi-item">
-                        <span class="label">Total Student Strength</span>
-                        <div class="val" style="color: #ed1c24;">{{ roster_data.kpis.total_students }}</div>
-                        <div class="sub">Class 4th to Class 10th</div>
-                    </div>
-                    <div class="excel-kpi-item">
-                        <span class="label">Gender Demographics</span>
-                        <div class="val" style="color: #0284c7; font-size: 16px;">
-                            {{ roster_data.kpis.total_boys }} Boys <span style="color: #94a3b8; font-size: 13px; font-weight: normal;">/</span> {{ roster_data.kpis.total_girls }} Girls
+                <!-- KPI Metric Cards (Identical to Schools Weekly Tracking) -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            Total Sessions Logged
+                            <i data-lucide="calendar" style="width: 15px; height: 15px; color: #2563eb;"></i>
                         </div>
-                        <div class="sub">46.9% Boys &bull; 53.1% Girls</div>
+                        <div class="kpi-value">{{ total_sessions_count }}</div>
+                        <div class="kpi-sub">Weekly Field &amp; Workshop Sessions</div>
                     </div>
-                    <div class="excel-kpi-item" style="border-left: 3px solid #eab308;">
-                        <span class="label">Class 6th (DLC Focus)</span>
-                        <div class="val" style="color: #ca8a04;">{{ roster_data.kpis.dlc_students }}</div>
-                        <div class="sub">Digital Learning Center cohort</div>
-                    </div>
-                </div>
-
-                <!-- Toolbar & Filter Pills -->
-                <div class="excel-toolbar">
-                    <div class="excel-filter-pills">
-                        <span style="font-size: 11.5px; font-weight: 600; color: #64748b; margin-right: 4px;">Taluk Filter:</span>
-                        <button type="button" class="filter-pill active" onclick="filterByTaluk('ALL', this)">All Taluks ({{ roster_data.schools|length }})</button>
-                        {% for taluk in roster_data.taluks %}
-                        <button type="button" class="filter-pill" onclick="filterByTaluk('{{ taluk|escapejs }}', this)">{{ taluk }}</button>
-                        {% endfor %}
-                    </div>
-
-                    <div style="position: relative; min-width: 240px;">
-                        <input type="text" id="rosterSearchInput" placeholder="Search schools, HMs, teachers..." oninput="filterSchoolTable()" style="width: 100%; padding: 6px 12px 6px 30px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
-                        <i data-lucide="search" style="position: absolute; left: 9px; top: 7px; width: 14px; height: 14px; color: #94a3b8;"></i>
-                    </div>
-                </div>
-
-                <!-- SPREADSHEET VIEW -->
-                <div id="rosterSpreadsheetView" class="excel-sheet-container">
-                    <!-- Excel Top Banners (Identical to 1st photo) -->
-                    <div class="excel-sheet-header-block">
-                        <div class="excel-sheet-header-title">{{ roster_data.title_org }}</div>
-                        <div class="excel-sheet-header-sub">{{ roster_data.profile_title }}</div>
-                        <div class="excel-sheet-meta">
-                            <span><strong>Program:</strong> {{ roster_data.program_title }}</span>
-                            <span><strong>Donor:</strong> {{ roster_data.donor_title }}</span>
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            Student Exposures
+                            <i data-lucide="users" style="width: 15px; height: 15px; color: #16a34a;"></i>
                         </div>
+                        <div class="kpi-value" style="color: #16a34a;">{{ total_exposures_sum|intcomma }}</div>
+                        <div class="kpi-sub">Total student interactions logged</div>
                     </div>
-
-                    <!-- Main Spreadsheet Table -->
-                    <table class="excel-table" id="rosterMainTable">
-                        <thead>
-                            <!-- Tier 1 Header -->
-                            <tr>
-                                <th rowspan="2" style="width: 45px;">SL NO</th>
-                                <th rowspan="2" style="min-width: 170px; text-align: left;">SCHOOL NAME</th>
-                                <th rowspan="2" style="min-width: 105px;">Taluk</th>
-                                <th rowspan="2" style="min-width: 100px;">UDISE CODE</th>
-                                <th rowspan="2" style="min-width: 135px;">HM Name</th>
-                                <th rowspan="2" style="min-width: 95px;">MOBILE</th>
-                                <th rowspan="2" style="min-width: 140px;">Science Teacher Name</th>
-                                <th rowspan="2" style="min-width: 95px;">MOBILE</th>
-                                <th rowspan="2" style="width: 55px;">Division</th>
-                                <th colspan="3">CLASS 4th</th>
-                                <th colspan="3">CLASS 5th</th>
-                                <th colspan="3" class="th-dlc-header">CLASS 6th (DLC)</th>
-                                <th colspan="3">CLASS 7th</th>
-                                <th colspan="3">CLASS 8th</th>
-                                <th colspan="3">CLASS 9th</th>
-                                <th colspan="3">CLASS 10th</th>
-                                <th colspan="3" style="background-color: #e2e8f0;">GRAND Total</th>
-                            </tr>
-                            <!-- Tier 2 Header -->
-                            <tr>
-                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
-                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
-                                <th class="th-dlc-header">BOYS</th><th class="th-dlc-header">GIRLS</th><th class="th-dlc-header">TOTAL</th>
-                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
-                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
-                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
-                                <th>BOYS</th><th>GIRLS</th><th>TOTAL</th>
-                                <th style="background-color: #e2e8f0;">BOYS</th><th style="background-color: #e2e8f0;">GIRLS</th><th style="background-color: #e2e8f0;">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in roster_data.schools %}
-                                {% for div in item.divisions %}
-                                <tr class="school-row" data-school-id="{{ item.sl }}" data-taluk="{{ item.taluk }}" data-search="{{ item.name|lower }} {{ item.taluk|lower }} {{ item.udise }} {{ item.hm|lower }} {{ item.teacher|lower }}">
-                                    {% if forloop.first %}
-                                    <td rowspan="{{ item.rowspan }}" class="center font-semibold">{{ item.sl }}</td>
-                                    <td rowspan="{{ item.rowspan }}" style="font-weight: 600; text-align: left;">
-                                        {% if item.school_obj %}
-                                        <a href="{% url 'schools:portal_agastya' %}?school={{ item.school_obj.pk }}" class="school-link" title="Open School Dossier in Agastya Portal">
-                                            {{ item.name }}
-                                        </a>
-                                        {% else %}
-                                        {{ item.name }}
-                                        {% endif %}
-                                    </td>
-                                    <td rowspan="{{ item.rowspan }}">{{ item.taluk }}</td>
-                                    <td rowspan="{{ item.rowspan }}" class="mono center">{{ item.udise }}</td>
-                                    <td rowspan="{{ item.rowspan }}">{{ item.hm|default:"—" }}</td>
-                                    <td rowspan="{{ item.rowspan }}" class="mono center">{{ item.hm_mob|default:"—" }}</td>
-                                    <td rowspan="{{ item.rowspan }}">{{ item.teacher|default:"—" }}</td>
-                                    <td rowspan="{{ item.rowspan }}" class="mono center">{{ item.teacher_mob|default:"—" }}</td>
-                                    {% endif %}
-
-                                    <td class="center font-semibold">{{ div.division|default:"—" }}</td>
-
-                                    <!-- Class 4th -->
-                                    <td class="num {% if div.c4.2 == 0 %}cell-zero{% endif %}">{% if div.c4.2 == 0 and div.c4.0 == 0 %}&nbsp;{% else %}{{ div.c4.0 }}{% endif %}</td>
-                                    <td class="num {% if div.c4.2 == 0 %}cell-zero{% endif %}">{% if div.c4.2 == 0 and div.c4.1 == 0 %}&nbsp;{% else %}{{ div.c4.1 }}{% endif %}</td>
-                                    <td class="num font-semibold {% if div.c4.2 == 0 %}cell-zero{% endif %}">{{ div.c4.2 }}</td>
-
-                                    <!-- Class 5th -->
-                                    <td class="num {% if div.c5.2 == 0 %}cell-zero{% endif %}">{% if div.c5.2 == 0 and div.c5.0 == 0 %}&nbsp;{% else %}{{ div.c5.0 }}{% endif %}</td>
-                                    <td class="num {% if div.c5.2 == 0 %}cell-zero{% endif %}">{% if div.c5.2 == 0 and div.c5.1 == 0 %}&nbsp;{% else %}{{ div.c5.1 }}{% endif %}</td>
-                                    <td class="num font-semibold {% if div.c5.2 == 0 %}cell-zero{% endif %}">{{ div.c5.2 }}</td>
-
-                                    <!-- Class 6th (DLC) -->
-                                    <td class="num {% if div.c6.2 == 0 %}cell-zero{% endif %}">{% if div.c6.2 == 0 and div.c6.0 == 0 %}&nbsp;{% else %}{{ div.c6.0 }}{% endif %}</td>
-                                    <td class="num {% if div.c6.2 == 0 %}cell-zero{% endif %}">{% if div.c6.2 == 0 and div.c6.1 == 0 %}&nbsp;{% else %}{{ div.c6.1 }}{% endif %}</td>
-                                    <td class="num font-semibold {% if div.c6.2 == 0 %}cell-zero{% endif %}">{{ div.c6.2 }}</td>
-
-                                    <!-- Class 7th -->
-                                    <td class="num {% if div.c7.2 == 0 %}cell-zero{% endif %}">{% if div.c7.2 == 0 and div.c7.0 == 0 %}&nbsp;{% else %}{{ div.c7.0 }}{% endif %}</td>
-                                    <td class="num {% if div.c7.2 == 0 %}cell-zero{% endif %}">{% if div.c7.2 == 0 and div.c7.1 == 0 %}&nbsp;{% else %}{{ div.c7.1 }}{% endif %}</td>
-                                    <td class="num font-semibold {% if div.c7.2 == 0 %}cell-zero{% endif %}">{{ div.c7.2 }}</td>
-
-                                    <!-- Class 8th -->
-                                    <td class="num {% if div.c8.2 == 0 %}cell-zero{% endif %}">{% if div.c8.2 == 0 and div.c8.0 == 0 %}&nbsp;{% else %}{{ div.c8.0 }}{% endif %}</td>
-                                    <td class="num {% if div.c8.2 == 0 %}cell-zero{% endif %}">{% if div.c8.2 == 0 and div.c8.1 == 0 %}&nbsp;{% else %}{{ div.c8.1 }}{% endif %}</td>
-                                    <td class="num font-semibold {% if div.c8.2 == 0 %}cell-zero{% endif %}">{{ div.c8.2 }}</td>
-
-                                    <!-- Class 9th -->
-                                    <td class="num {% if div.c9.2 == 0 %}cell-zero{% endif %}">{% if div.c9.2 == 0 and div.c9.0 == 0 %}&nbsp;{% else %}{{ div.c9.0 }}{% endif %}</td>
-                                    <td class="num {% if div.c9.2 == 0 %}cell-zero{% endif %}">{% if div.c9.2 == 0 and div.c9.1 == 0 %}&nbsp;{% else %}{{ div.c9.1 }}{% endif %}</td>
-                                    <td class="num font-semibold {% if div.c9.2 == 0 %}cell-zero{% endif %}">{{ div.c9.2 }}</td>
-
-                                    <!-- Class 10th -->
-                                    <td class="num {% if div.c10.2 == 0 %}cell-zero{% endif %}">{% if div.c10.2 == 0 and div.c10.0 == 0 %}&nbsp;{% else %}{{ div.c10.0 }}{% endif %}</td>
-                                    <td class="num {% if div.c10.2 == 0 %}cell-zero{% endif %}">{% if div.c10.2 == 0 and div.c10.1 == 0 %}&nbsp;{% else %}{{ div.c10.1 }}{% endif %}</td>
-                                    <td class="num font-semibold {% if div.c10.2 == 0 %}cell-zero{% endif %}">{{ div.c10.2 }}</td>
-
-                                    <!-- Grand Total -->
-                                    <td class="num font-bold cell-gt">{{ div.gt.0 }}</td>
-                                    <td class="num font-bold cell-gt">{{ div.gt.1 }}</td>
-                                    <td class="num font-bold cell-gt" style="color: #0f172a;">{{ div.gt.2 }}</td>
-                                </tr>
-                                {% endfor %}
-                            {% endfor %}
-                        </tbody>
-                        <tfoot>
-                            <tr class="tr-grand-total">
-                                <td colspan="9" style="text-align: right; font-weight: 800; padding-right: 12px; letter-spacing: 0.5px;">GRAND TOTAL</td>
-                                <td class="num">{{ roster_data.totals.c4.0 }}</td>
-                                <td class="num">{{ roster_data.totals.c4.1 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c4.2 }}</td>
-
-                                <td class="num">{{ roster_data.totals.c5.0 }}</td>
-                                <td class="num">{{ roster_data.totals.c5.1 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c5.2 }}</td>
-
-                                <td class="num">{{ roster_data.totals.c6.0 }}</td>
-                                <td class="num">{{ roster_data.totals.c6.1 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c6.2 }}</td>
-
-                                <td class="num">{{ roster_data.totals.c7.0 }}</td>
-                                <td class="num">{{ roster_data.totals.c7.1 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c7.2 }}</td>
-
-                                <td class="num">{{ roster_data.totals.c8.0 }}</td>
-                                <td class="num">{{ roster_data.totals.c8.1 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c8.2 }}</td>
-
-                                <td class="num">{{ roster_data.totals.c9.0 }}</td>
-                                <td class="num">{{ roster_data.totals.c9.1 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c9.2 }}</td>
-
-                                <td class="num">{{ roster_data.totals.c10.0 }}</td>
-                                <td class="num">{{ roster_data.totals.c10.1 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.c10.2 }}</td>
-
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.gt.0 }}</td>
-                                <td class="num" style="font-weight: 900;">{{ roster_data.totals.gt.1 }}</td>
-                                <td class="num" style="font-weight: 900; font-size: 13.5px; background: rgba(0,0,0,0.18);">{{ roster_data.totals.gt.2 }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-                <!-- CARDS VIEW (Alternative view) -->
-                <div id="rosterCardsView" style="display: none; padding: 20px 22px; background: #f8fafc;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
-                        {% for item in roster_data.schools %}
-                        <div class="school-card-item" data-taluk="{{ item.taluk }}" data-search="{{ item.name|lower }} {{ item.taluk|lower }} {{ item.udise }} {{ item.hm|lower }} {{ item.teacher|lower }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                                <span style="font-size: 11px; font-weight: 700; color: #ed1c24; background: #fff1f1; padding: 2px 7px; border-radius: 4px;">#{{ item.sl }}</span>
-                                <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 8px; border-radius: 4px;">{{ item.taluk }}</span>
-                            </div>
-                            <h4 style="margin: 0 0 4px 0; font-size: 14.5px; font-weight: 700;">
-                                {% if item.school_obj %}
-                                <a href="{% url 'schools:portal_agastya' %}?school={{ item.school_obj.pk }}" style="color: #0f172a; text-decoration: none;">{{ item.name }}</a>
-                                {% else %}
-                                {{ item.name }}
-                                {% endif %}
-                            </h4>
-                            <div style="font-size: 11.5px; color: #64748b; margin-bottom: 10px; font-family: monospace;">UDISE: {{ item.udise }}</div>
-                            <div style="font-size: 12px; color: #334155; line-height: 1.5; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                                <div><strong>HM:</strong> {{ item.hm|default:"—" }} {% if item.hm_mob %}<span style="color:#64748b;">({{ item.hm_mob }})</span>{% endif %}</div>
-                                <div><strong>Science Teacher:</strong> {{ item.teacher|default:"—" }} {% if item.teacher_mob %}<span style="color:#64748b;">({{ item.teacher_mob }})</span>{% endif %}</div>
-                            </div>
-                            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 6px; font-size: 12px;">
-                                <span style="color: #64748b;">Enrolled Strength:</span>
-                                <strong style="color: #ed1c24; font-size: 13.5px;">{{ item.total_students }} students</strong>
-                            </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            Session Demographics
+                            <i data-lucide="pie-chart" style="width: 15px; height: 15px; color: #ca8a04;"></i>
                         </div>
-                        {% endfor %}
+                        <div class="kpi-value" style="font-size: 18px; color: #0284c7;">
+                            {{ total_boys_sum }} <span style="font-size: 13px; color: #64748b; font-weight: 500;">Boys</span> / {{ total_girls_sum }} <span style="font-size: 13px; color: #64748b; font-weight: 500;">Girls</span>
+                        </div>
+                        <div class="kpi-sub">In-session attendance split</div>
                     </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            Partner Schools
+                            <i data-lucide="school" style="width: 15px; height: 15px; color: #dc2626;"></i>
+                        </div>
+                        <div class="kpi-value" style="color: #0f172a;">{{ total_schools_count }}</div>
+                        <div class="kpi-sub">Across {{ taluks|length }} Taluk{{ taluks|length|pluralize }}</div>
+                    </div>
+                    {% if total_students_enrolled %}
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            Enrolled Strength
+                            <i data-lucide="award" style="width: 15px; height: 15px; color: #9333ea;"></i>
+                        </div>
+                        <div class="kpi-value" style="color: #7e22ce;">{{ total_students_enrolled|intcomma }}</div>
+                        <div class="kpi-sub">{{ enrolled_boys|intcomma }} Boys &bull; {{ enrolled_girls|intcomma }} Girls</div>
+                    </div>
+                    {% endif %}
                 </div>
-            </div>
-            {% else %}
-            <!-- Fallback Participating Schools for generic programs -->
-            <div class="detail-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="school" style="color: #ed1c24;"></i> Participating Schools ({{ program.participating_schools.count }})
-                    </h3>
-                    <button type="button" onclick="openUploadRosterModal()" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-                        <i data-lucide="upload"></i> Upload School Profile (Excel / CSV)
+
+                <!-- View Navigation Switcher -->
+                <div class="view-nav">
+                    <button type="button" class="view-nav-link active" id="tabBtnSessions" onclick="switchTrackingTab('sessions')">
+                        <i data-lucide="list-checks" style="width: 15px; height: 15px;"></i> Weekly Session Logs ({{ total_sessions_count }})
+                    </button>
+                    <button type="button" class="view-nav-link" id="tabBtnSchools" onclick="switchTrackingTab('schools')">
+                        <i data-lucide="school" style="width: 15px; height: 15px;"></i> Participating Partner Schools ({{ total_schools_count }})
                     </button>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    {% for sc in program.participating_schools.all %}
-                    <span class="af-badge badge-neutral" style="font-size: 12.5px; padding: 6px 12px;">
-                        {{ sc.school_name }} ({{ sc.taluk }})
-                    </span>
-                    {% empty %}
-                    <div style="padding: 12px 0; color: #64748b; font-size: 13.5px;">
-                        No schools assigned yet. You can upload an Excel or CSV file to import and render the school roster.
+
+                <!-- TAB 1: WEEKLY SESSION LOGS (Matching Schools Weekly Tracking CRM) -->
+                <div id="tabContentSessions" style="display: block;">
+                    <!-- Quick Session Log Upload Bar -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <strong style="color: #14532d; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="calendar-check" style="width: 16px; height: 16px; color: #16a34a;"></i>
+                                Weekly Field &amp; Classroom Session Tracking
+                            </strong>
+                            <div style="font-size: 12px; color: #166534; margin-top: 2px;">
+                                Manage and sync weekly student sessions, curriculum topics, and facilitator exposures.
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <a href="{% url 'programs:tracking_sample_template' %}?prog={{ program.pk }}&ay={{ program.academic_year }}" class="btn-af btn-af-secondary btn-af-sm" style="background: #ffffff; color: #166534; border: 1px solid #86efac; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Download sample blank Excel spreadsheet for weekly session logs">
+                                <i data-lucide="download"></i> Excel Template
+                            </a>
+                            <button type="button" onclick="openUploadSessionLogModal()" class="btn-af btn-af-sm" style="background: #16a34a; color: #ffffff; font-weight: 600; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+                                <i data-lucide="upload"></i> Add Weekly Session Log (Excel)
+                            </button>
+                            {% if total_sessions_count > 0 %}
+                            <form method="POST" action="{% url 'programs:program_remove_session_logs' program.pk %}" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to remove all weekly session logs for {{ program.title }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-af btn-af-sm" style="background: #ffffff; border: 1px solid #f87171; color: #dc2626; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; cursor: pointer;" title="Remove weekly session logs for this program">
+                                    <i data-lucide="trash-2"></i> Remove Session Logs
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
 
-            <!-- EV Sessions / Exposure Visits linked -->
-            <div class="detail-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="zap" style="color: #f59e0b;"></i> EV Class &amp; Exposure Visit Sessions ({{ ev_sessions.count }})
-                    </h3>
-                    <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-secondary btn-af-sm">
-                        + Log New EV Session
-                    </a>
+                    <!-- Filter and Search Bar -->
+                    <div class="filter-panel">
+                        <div style="position: relative; min-width: 280px; flex: 1;">
+                            <input type="text" id="sessionSearchInput" placeholder="Search sessions by school, topic, instructor..." oninput="filterSessionsTable()" style="width: 100%; padding: 7px 12px 7px 32px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+                            <i data-lucide="search" style="position: absolute; left: 10px; top: 8px; width: 14px; height: 14px; color: #94a3b8;"></i>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <select id="sessionTypeFilter" onchange="filterSessionsTable()" style="padding: 6px 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: #fff;">
+                                <option value="">All Session Types</option>
+                                <option value="practical">Practical</option>
+                                <option value="theory">Theory</option>
+                                <option value="ev session">EV Session</option>
+                                <option value="workshop">Workshop</option>
+                            </select>
+                            <button type="button" onclick="resetSessionFilter()" class="btn-af btn-af-secondary btn-af-sm" title="Clear Filters">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sessions Data Table -->
+                    <div class="table-wrapper">
+                        <table class="tracker-table" id="sessionsMainTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px;">#</th>
+                                    <th>Date</th>
+                                    <th>Code</th>
+                                    <th>School / Location</th>
+                                    <th>STD &amp; Div</th>
+                                    <th>Topic Covered</th>
+                                    <th>Instructor</th>
+                                    <th>Type</th>
+                                    <th style="text-align: right;">Boys</th>
+                                    <th style="text-align: right;">Girls</th>
+                                    <th style="text-align: right;">Exposures</th>
+                                    <th style="text-align: center;">Teacher</th>
+                                    <th style="text-align: center;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in combined_sessions %}
+                                <tr class="session-row" data-search="{{ s.school_name|lower }} {{ s.topic|lower }} {{ s.instructor|lower }} {{ s.code|lower }}" data-type="{{ s.session_type|lower }}">
+                                    <td style="color: #94a3b8; font-size: 11px;">{{ forloop.counter }}</td>
+                                    <td>
+                                        <span style="font-weight: 600; color: #0f172a;">{{ s.date_display }}</span>
+                                        <div style="font-size: 11px; color: #64748b;">{{ s.timing }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge-prog-blue badge-pill mono">{{ s.code }}</span>
+                                    </td>
+                                    <td>
+                                        <span style="font-weight: 600; color: #1e293b;">{{ s.school_name }}</span>
+                                    </td>
+                                    <td>
+                                        <span style="font-weight: 600;">{{ s.standard }}</span>
+                                        {% if s.division %}<span style="color: #64748b;">(Sec {{ s.division }})</span>{% endif %}
+                                    </td>
+                                    <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ s.topic }}">
+                                        {{ s.topic }}
+                                    </td>
+                                    <td>
+                                        <span style="font-weight: 500; color: #334155;">{{ s.instructor }}</span>
+                                    </td>
+                                    <td>
+                                        <span style="font-size: 11.5px; color: #64748b;">{{ s.session_type }}</span>
+                                    </td>
+                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.boys }}</td>
+                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.girls }}</td>
+                                    <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ s.total_exposures|intcomma }}</td>
+                                    <td style="text-align: center;">
+                                        {% if s.teacher_present %}
+                                            <span style="color: #16a34a; font-weight: 700;" title="Teacher Present">✓ Yes</span>
+                                        {% else %}
+                                            <span style="color: #94a3b8;" title="No teacher logged">✗ No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="text-align: center;">
+                                        {% if s.pk %}
+                                        <a href="{% url 'programs:ev_class_detail' s.pk %}" class="btn-af btn-af-secondary btn-af-sm" style="padding: 2px 8px; font-size: 11px;">View</a>
+                                        {% else %}
+                                        <span class="af-badge badge-active" style="font-size: 10.5px; padding: 2px 6px;">{{ s.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="13" style="text-align: center; color: #94a3b8; padding: 32px;">
+                                        No weekly tracking sessions logged for this program yet. Click <strong>Log Field Session</strong> to record the first visit.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="table-wrapper">
-                    <table class="af-table">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Session Title</th>
-                                <th>Topic &amp; Module</th>
-                                <th>School &amp; Grade</th>
-                                <th>Date &amp; Facilitator</th>
-                                <th>Attendees</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for ev in ev_sessions %}
-                            <tr>
-                                <td><strong>{{ ev.session_code }}</strong></td>
-                                <td>
-                                    <a href="{% url 'programs:ev_class_detail' ev.pk %}" style="color: #0f172a; font-weight: 600; text-decoration: none;">
-                                        {{ ev.session_title }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <div>{{ ev.topic }}</div>
-                                    <div style="font-size: 11px; color: #64748b;">{{ ev.curriculum_module }}</div>
-                                </td>
-                                <td>
-                                    <div>{{ ev.school.school_name }}</div>
-                                    <div style="font-size: 11px; color: #64748b;">Grade: {{ ev.grade_level }}</div>
-                                </td>
-                                <td>
-                                    <div>{{ ev.session_date|date:"d M Y" }}</div>
-                                    <div style="font-size: 11px; color: #64748b;">{{ ev.facilitator_name }}</div>
-                                </td>
-                                <td>
-                                    <span class="af-badge badge-neutral">{{ ev.attendee_count }} students</span>
-                                </td>
-                                <td>
-                                    <span class="af-badge badge-{{ ev.status|lower }}">{{ ev.get_status_display }}</span>
-                                </td>
-                                <td style="text-align: right;">
-                                    <a href="{% url 'programs:ev_class_detail' ev.pk %}" class="btn-af btn-af-secondary btn-af-sm">View</a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="8" style="text-align: center; color: #94a3b8; padding: 24px;">
-                                    No EV class sessions logged for this program yet.
-                                </td>
-                            </tr>
+                <!-- TAB 2: PARTICIPATING PARTNER SCHOOLS -->
+                <div id="tabContentSchools" style="display: none;">
+                    <!-- Filter and Search Bar -->
+                    <div class="filter-panel">
+                        <div class="filter-pills">
+                            <span style="font-size: 11.5px; font-weight: 700; color: #64748b; margin-right: 4px;">Taluk:</span>
+                            <button type="button" class="filter-pill active" onclick="filterSchoolsByTaluk('ALL', this)">All ({{ schools_list|length }})</button>
+                            {% for t in taluks %}
+                            <button type="button" class="filter-pill" onclick="filterSchoolsByTaluk('{{ t|escapejs }}', this)">{{ t }}</button>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div style="position: relative; min-width: 240px;">
+                                <input type="text" id="schoolSearchInput" placeholder="Search schools, HMs, teachers..." oninput="filterSchoolsTable()" style="width: 100%; padding: 7px 12px 7px 32px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+                                <i data-lucide="search" style="position: absolute; left: 10px; top: 8px; width: 14px; height: 14px; color: #94a3b8;"></i>
+                            </div>
+                            {% if total_schools_count > 0 or roster_data %}
+                            <form method="POST" action="{% url 'programs:program_remove_school_roster' program.pk %}" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to remove the school profile roster and detach partner schools from {{ program.title }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-af btn-af-sm" style="background: #ffffff; border: 1px solid #f87171; color: #dc2626; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;" title="Remove school profile roster and detach partner schools">
+                                    <i data-lucide="trash-2"></i> Remove School Roster
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Schools Data Table -->
+                    <div class="table-wrapper">
+                        <table class="tracker-table" id="schoolsMainTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px;">#</th>
+                                    <th>School Name</th>
+                                    <th>Taluk</th>
+                                    <th>UDISE Code</th>
+                                    <th>Headmaster &amp; Phone</th>
+                                    <th>Science Teacher &amp; Phone</th>
+                                    <th style="text-align: right;">Enrolled Boys</th>
+                                    <th style="text-align: right;">Enrolled Girls</th>
+                                    <th style="text-align: right;">Total Strength</th>
+                                    <th style="text-align: center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sc in schools_list %}
+                                <tr class="school-list-row" data-taluk="{{ sc.taluk }}" data-search="{{ sc.name|lower }} {{ sc.taluk|lower }} {{ sc.udise|lower }} {{ sc.hm|lower }} {{ sc.teacher|lower }}">
+                                    <td style="color: #94a3b8; font-size: 11px;">{{ sc.sl|default:forloop.counter }}</td>
+                                    <td>
+                                        {% if sc.school_obj %}
+                                        <a href="{% url 'schools:portal_agastya' %}?school={{ sc.school_obj.pk }}" class="school-link" title="Open School Dossier in Agastya Portal">
+                                            {{ sc.name }}
+                                        </a>
+                                        {% else %}
+                                        <span style="font-weight: 600; color: #1e293b;">{{ sc.name }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 7px;">{{ sc.taluk }}</span>
+                                    </td>
+                                    <td style="font-family: monospace; font-size: 12px; color: #475569;">{{ sc.udise }}</td>
+                                    <td>
+                                        {% if sc.hm %}
+                                        <div style="font-weight: 500; color: #1e293b;">{{ sc.hm }}</div>
+                                        {% if sc.hm_mob %}<div style="font-size: 11px; color: #64748b; font-family: monospace;">{{ sc.hm_mob }}</div>{% endif %}
+                                        {% else %}
+                                        <span style="color: #94a3b8;">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if sc.teacher %}
+                                        <div style="font-weight: 500; color: #1e293b;">{{ sc.teacher }}</div>
+                                        {% if sc.teacher_mob %}<div style="font-size: 11px; color: #64748b; font-family: monospace;">{{ sc.teacher_mob }}</div>{% endif %}
+                                        {% else %}
+                                        <span style="color: #94a3b8;">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ sc.boys|default:"—" }}</td>
+                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ sc.girls|default:"—" }}</td>
+                                    <td style="text-align: right; font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums;">
+                                        {% if sc.total_students %}{{ sc.total_students|intcomma }}{% else %}—{% endif %}
+                                    </td>
+                                    <td style="text-align: center;">
+                                        {% if sc.school_obj %}
+                                        <a href="{% url 'schools:portal_agastya' %}?school={{ sc.school_obj.pk }}" class="btn-af btn-af-secondary btn-af-sm" style="padding: 2px 8px; font-size: 11px;">Dossier</a>
+                                        {% else %}
+                                        <span style="color: #94a3b8;">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" style="text-align: center; color: #94a3b8; padding: 28px;">
+                                        No participating schools recorded yet. Use <strong>Upload School Profile / Roster</strong> to import schools.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -926,86 +886,91 @@
         </div>
     </div>
 
-    <script>
+        <script>
         if (window.lucide) {
             lucide.createIcons();
         }
 
-        let activeTalukFilter = 'ALL';
+        let activeSchoolTaluk = 'ALL';
 
-        function switchRosterView(view) {
-            const sheet = document.getElementById('rosterSpreadsheetView');
-            const cards = document.getElementById('rosterCardsView');
-            const btnSheet = document.getElementById('btnViewSpreadsheet');
-            const btnCards = document.getElementById('btnViewCards');
-            if (!sheet || !cards) return;
+        function switchTrackingTab(tab) {
+            const btnSessions = document.getElementById('tabBtnSessions');
+            const btnSchools = document.getElementById('tabBtnSchools');
+            const secSessions = document.getElementById('tabContentSessions');
+            const secSchools = document.getElementById('tabContentSchools');
 
-            if (view === 'spreadsheet') {
-                sheet.style.display = 'block';
-                cards.style.display = 'none';
-                if (btnSheet) btnSheet.classList.add('active');
-                if (btnCards) btnCards.classList.remove('active');
+            if (tab === 'sessions') {
+                if (secSessions) secSessions.style.display = 'block';
+                if (secSchools) secSchools.style.display = 'none';
+                if (btnSessions) btnSessions.classList.add('active');
+                if (btnSchools) btnSchools.classList.remove('active');
             } else {
-                sheet.style.display = 'none';
-                cards.style.display = 'block';
-                if (btnSheet) btnSheet.classList.remove('active');
-                if (btnCards) btnCards.classList.add('active');
+                if (secSessions) secSessions.style.display = 'none';
+                if (secSchools) secSchools.style.display = 'block';
+                if (btnSessions) btnSessions.classList.remove('active');
+                if (btnSchools) btnSchools.classList.add('active');
             }
         }
 
-        function filterByTaluk(taluk, btn) {
-            activeTalukFilter = taluk;
-            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            filterSchoolTable();
-        }
-
-        function filterSchoolTable() {
-            const input = document.getElementById('rosterSearchInput');
-            const q = input ? (input.value || '').trim().toLowerCase() : '';
-            const rows = document.querySelectorAll('#rosterMainTable tbody tr.school-row');
-            const cards = document.querySelectorAll('#rosterCardsView .school-card-item');
-
-            // Track matched school IDs so multiline division rows stay in sync
-            const matchedSchools = new Set();
-            rows.forEach(tr => {
-                const schoolId = tr.getAttribute('data-school-id');
-                const rowTaluk = (tr.getAttribute('data-taluk') || '').toLowerCase();
-                const rowSearch = (tr.getAttribute('data-search') || '').toLowerCase();
-                const matchesTaluk = (activeTalukFilter === 'ALL') || (rowTaluk === activeTalukFilter.toLowerCase());
-                const matchesQuery = !q || rowSearch.includes(q);
-
-                if (matchesTaluk && matchesQuery) {
-                    matchedSchools.add(schoolId);
-                }
-            });
+        function filterSessionsTable() {
+            const q = (document.getElementById('sessionSearchInput')?.value || '').trim().toLowerCase();
+            const typeFilter = (document.getElementById('sessionTypeFilter')?.value || '').trim().toLowerCase();
+            const rows = document.querySelectorAll('#sessionsMainTable tbody tr.session-row');
 
             rows.forEach(tr => {
-                const schoolId = tr.getAttribute('data-school-id');
-                if (matchedSchools.has(schoolId)) {
+                const searchData = (tr.getAttribute('data-search') || '').toLowerCase();
+                const sType = (tr.getAttribute('data-type') || '').toLowerCase();
+                const matchQ = !q || searchData.includes(q);
+                const matchType = !typeFilter || sType.includes(typeFilter);
+
+                if (matchQ && matchType) {
                     tr.style.display = '';
                 } else {
                     tr.style.display = 'none';
                 }
             });
+        }
 
-            cards.forEach(card => {
-                const cardTaluk = (card.getAttribute('data-taluk') || '').toLowerCase();
-                const cardSearch = (card.getAttribute('data-search') || '').toLowerCase();
-                const matchesTaluk = (activeTalukFilter === 'ALL') || (cardTaluk === activeTalukFilter.toLowerCase());
-                const matchesQuery = !q || cardSearch.includes(q);
+        function resetSessionFilter() {
+            const searchInput = document.getElementById('sessionSearchInput');
+            const typeFilter = document.getElementById('sessionTypeFilter');
+            if (searchInput) searchInput.value = '';
+            if (typeFilter) typeFilter.value = '';
+            filterSessionsTable();
+        }
 
-                if (matchesTaluk && matchesQuery) {
-                    card.style.display = '';
+        function filterSchoolsByTaluk(taluk, btn) {
+            activeSchoolTaluk = taluk;
+            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            filterSchoolsTable();
+        }
+
+        function filterSchoolsTable() {
+            const q = (document.getElementById('schoolSearchInput')?.value || '').trim().toLowerCase();
+            const rows = document.querySelectorAll('#schoolsMainTable tbody tr.school-list-row');
+
+            rows.forEach(tr => {
+                const rowTaluk = (tr.getAttribute('data-taluk') || '').toLowerCase();
+                const rowSearch = (tr.getAttribute('data-search') || '').toLowerCase();
+                const matchTaluk = (activeSchoolTaluk === 'ALL') || (rowTaluk === activeSchoolTaluk.toLowerCase());
+                const matchQ = !q || rowSearch.includes(q);
+
+                if (matchTaluk && matchQ) {
+                    tr.style.display = '';
                 } else {
-                    card.style.display = 'none';
+                    tr.style.display = 'none';
                 }
             });
         }
 
-        function exportRosterCSV() {
-            const table = document.getElementById('rosterMainTable');
+        function exportTrackingCSV() {
+            const isSessionsTab = document.getElementById('tabContentSessions')?.style.display !== 'none';
+            const tableId = isSessionsTab ? 'sessionsMainTable' : 'schoolsMainTable';
+            const defaultFilename = isSessionsTab ? '{{ program.code }}_Weekly_Sessions_Log.csv' : '{{ program.code }}_Partner_Schools_List.csv';
+            const table = document.getElementById(tableId);
             if (!table) return;
+
             const rows = table.querySelectorAll('tr');
             const csvData = [];
             
@@ -1024,7 +989,7 @@
             const url = URL.createObjectURL(csvBlob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'Agastya_MSL_School_Profile_2025-26.csv';
+            a.download = defaultFilename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1043,6 +1008,46 @@
             if (m) m.style.display = 'none';
         }
 
+        function openUploadSessionLogModal() {
+            const m = document.getElementById('uploadSessionLogModal');
+            if (m) {
+                m.style.display = 'flex';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function closeUploadSessionLogModal() {
+            const m = document.getElementById('uploadSessionLogModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function handleSessionLogFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const f = input.files[0];
+                const lbl = document.getElementById('sessionLogFileLabel');
+                const dropZone = document.getElementById('dropZoneSessionLog');
+                if (lbl) {
+                    lbl.innerHTML = `<span style="color: #15803d; font-weight: 700;">Selected:</span> ${f.name} <span style="color: #64748b; font-size: 12px;">(${(f.size / 1024).toFixed(1)} KB)</span>`;
+                }
+                if (dropZone) {
+                    dropZone.style.borderColor = '#16a34a';
+                    dropZone.style.background = '#f0fdf4';
+                }
+            }
+        }
+
+        function handleSessionLogSubmit() {
+            const spin = document.getElementById('sessionUploadSpinner');
+            const btn = document.getElementById('btnSessionUploadSubmit');
+            if (spin) spin.style.display = 'block';
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+                btn.innerHTML = `<i data-lucide="loader-2" class="spin"></i> Ingesting...`;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
         function handleRosterFileSelect(input) {
             if (input.files && input.files[0]) {
                 const f = input.files[0];
@@ -1059,21 +1064,28 @@
         }
 
         window.addEventListener('click', function(e) {
-            const m = document.getElementById('uploadRosterModal');
-            if (e.target === m) closeUploadRosterModal();
+            const m1 = document.getElementById('uploadRosterModal');
+            if (e.target === m1) closeUploadRosterModal();
+            const m2 = document.getElementById('uploadSessionLogModal');
+            if (e.target === m2) closeUploadSessionLogModal();
         });
         window.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeUploadRosterModal();
+            if (e.key === 'Escape') {
+                closeUploadRosterModal();
+                closeUploadSessionLogModal();
+            }
         });
 
-        const dropZone = document.getElementById('dropZoneRoster');
-        if (dropZone) {
+        // Initialize dropzones
+        function setupDropzone(dropZoneId, inputId, selectFn) {
+            const dropZone = document.getElementById(dropZoneId);
+            if (!dropZone) return;
             ['dragenter', 'dragover'].forEach(eventName => {
                 dropZone.addEventListener(eventName, e => {
                     e.preventDefault();
                     e.stopPropagation();
-                    dropZone.style.borderColor = '#ed1c24';
-                    dropZone.style.background = '#fef2f2';
+                    dropZone.style.borderColor = '#16a34a';
+                    dropZone.style.background = '#f0fdf4';
                 }, false);
             });
             ['dragleave', 'drop'].forEach(eventName => {
@@ -1088,12 +1100,19 @@
                 const dt = e.dataTransfer;
                 const files = dt.files;
                 if (files && files.length) {
-                    const input = document.getElementById('rosterFileInput');
-                    input.files = files;
-                    handleRosterFileSelect(input);
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        input.files = files;
+                        selectFn(input);
+                    }
                 }
             }, false);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDropzone('dropZoneRoster', 'rosterFileInput', handleRosterFileSelect);
+            setupDropzone('dropZoneSessionLog', 'sessionLogFileInput', handleSessionLogFileSelect);
+        });
     </script>
 
     <!-- Upload School Roster Modal -->
@@ -1147,6 +1166,98 @@
                     </button>
                     <button type="submit" id="btnUploadSubmit" class="btn-af btn-af-primary" style="padding: 8px 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
                         <i data-lucide="upload"></i> Upload &amp; Render
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Weekly Session Log Modal -->
+    <div id="uploadSessionLogModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 560px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;">
+            <!-- Modal Header -->
+            <div style="padding: 16px 20px; background: linear-gradient(135deg, #0f172a 0%, #14532d 100%); color: #ffffff; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(34, 197, 94, 0.2); display: flex; align-items: center; justify-content: center; color: #4ade80;">
+                        <i data-lucide="file-spreadsheet" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff;">Add Weekly Session Log Excel File</h4>
+                        <div style="font-size: 11.5px; color: #86efac;">Upload .xlsx or .xls session tracking spreadsheet for {{ program.title }}</div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUploadSessionLogModal()" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 24px; line-height: 1; padding: 0 4px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+            </div>
+
+            <!-- Modal Form -->
+            <form method="post" action="{% url 'programs:program_upload_session_log' program.pk %}" enctype="multipart/form-data" style="padding: 22px 24px; margin: 0;" onsubmit="handleSessionLogSubmit()">
+                {% csrf_token %}
+
+                <!-- Program Context Info Badge -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b;">Target Program</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">{{ program.title }}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 11px; color: #64748b;">Code: <strong style="color: #ed1c24;">{{ program.code }}</strong></span>
+                        <div style="font-size: 11.5px; color: #166534; font-weight: 600;">{{ program.location_name }}</div>
+                    </div>
+                </div>
+
+                <!-- Academic Year Selection -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">
+                        Academic Year
+                    </label>
+                    <select name="academic_year" class="select-filter" style="width: 100%; height: 38px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 10px; font-size: 12.5px; background: #fff;" required>
+                        <option value="2026-27" {% if program.academic_year == '2026-27' %}selected{% endif %}>AY 2026-27 (Current)</option>
+                        <option value="2025-26" {% if program.academic_year == '2025-26' %}selected{% endif %}>AY 2025-26</option>
+                        <option value="2024-25" {% if program.academic_year == '2024-25' %}selected{% endif %}>AY 2024-25</option>
+                    </select>
+                </div>
+
+                <!-- Dropzone for File Upload -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 12.5px; font-weight: 600; color: #1e293b; margin-bottom: 6px;">
+                        Select Weekly Session Log Excel File <span style="color: #ed1c24;">*</span>
+                    </label>
+                    <div id="dropZoneSessionLog" style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 24px 16px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s ease;" onclick="document.getElementById('sessionLogFileInput').click()">
+                        <i data-lucide="upload-cloud" style="width: 38px; height: 38px; color: #16a34a; margin: 0 auto 8px;"></i>
+                        <div style="font-size: 13.5px; font-weight: 600; color: #1e293b;" id="sessionLogFileLabel">
+                            Click to select or drag &amp; drop Excel file here
+                        </div>
+                        <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                            Supports: Microsoft Excel (.xlsx, .xls)
+                        </div>
+                        <input type="file" id="sessionLogFileInput" name="session_log_file" accept=".xlsx,.xls" required style="display: none;" onchange="handleSessionLogFileSelect(this)">
+                    </div>
+                </div>
+
+                <!-- Guidance & Template Link -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; font-size: 12px; color: #166534; line-height: 1.5;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="color: #14532d; display: flex; align-items: center; gap: 5px;">
+                            <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Accepted Excel Formats
+                        </strong>
+                        <a href="{% url 'programs:tracking_sample_template' %}?prog={{ program.pk }}&ay={{ program.academic_year }}" style="font-weight: 700; color: #15803d; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
+                            <i data-lucide="download" style="width: 12px; height: 12px;"></i> Download Template (.xlsx)
+                        </a>
+                    </div>
+                    Accepts official partner multi-sheet tracker workbooks or single-sheet weekly session logs containing columns: <em>Month, Day (or Date), School/Venue, Standard, Division, Timing, Topic, Instructor, Boys, Girls, Total Exposures, Teacher Present</em>.
+                </div>
+
+                <div id="sessionUploadSpinner" style="display: none; margin-bottom: 16px; text-align: center; color: #16a34a; font-size: 13px; font-weight: 600;">
+                    <i data-lucide="loader-2" class="spin" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Ingesting session records and syncing with schools... Please wait.
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeUploadSessionLogModal()" class="btn-af btn-af-secondary" style="padding: 8px 16px; font-size: 13px;">
+                        Cancel
+                    </button>
+                    <button type="submit" id="btnSessionUploadSubmit" class="btn-af" style="background: #16a34a; color: #ffffff; font-weight: 700; border: none; padding: 8px 20px; font-size: 13px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <i data-lucide="check-circle"></i> Ingest &amp; Update Session Logs
                     </button>
                 </div>
             </form>

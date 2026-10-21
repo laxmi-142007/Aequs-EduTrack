@@ -12,6 +12,12 @@ def _get_roster_file_path(program_pk):
     return os.path.join(roster_dir, f"program_{program_pk}_roster.json")
 
 
+def _get_roster_cleared_marker_path(program_pk):
+    roster_dir = os.path.join(getattr(settings, "MEDIA_ROOT", "media"), "rosters")
+    os.makedirs(roster_dir, exist_ok=True)
+    return os.path.join(roster_dir, f"program_{program_pk}_cleared.marker")
+
+
 def get_program_school_roster(program):
     """
     Returns structured school profile Excel roster data for a given program.
@@ -20,6 +26,10 @@ def get_program_school_roster(program):
     2. Dynamically computed from database models (program.participating_schools, GradeStrength, SchoolResource).
     Returns None if no roster has been uploaded and no participating schools exist.
     """
+    marker_path = _get_roster_cleared_marker_path(program.pk)
+    if os.path.exists(marker_path):
+        return None
+
     # 1. Check for uploaded roster JSON for this program
     saved_path = _get_roster_file_path(program.pk)
     if os.path.exists(saved_path):
@@ -37,6 +47,13 @@ def get_program_school_roster(program):
     # 2. Dynamic roster from participating schools in the database
     part_schools = list(program.participating_schools.all().prefetch_related("grade_strengths", "resources"))
     if not part_schools:
+        if program.ngo:
+            from trackers.roster import get_ngo_enrollment_roster
+            ngo_roster = get_ngo_enrollment_roster(program.ngo, academic_year=program.academic_year)
+            if ngo_roster and ngo_roster.get("schools"):
+                ngo_roster["program_title"] = program.title
+                ngo_roster["donor_title"] = f"Location: {program.location_name or (program.ngo.name if program.ngo else 'Aequs Foundation')}"
+                return ngo_roster
         return None
 
     schools_output = []
@@ -135,6 +152,14 @@ def parse_and_save_roster(program, uploaded_file):
     """
     filename = uploaded_file.name.lower()
     raw_rows = []
+
+    # Clear previously dismissed/cleared marker if uploading a new file
+    marker_path = _get_roster_cleared_marker_path(program.pk)
+    if os.path.exists(marker_path):
+        try:
+            os.remove(marker_path)
+        except Exception:
+            pass
 
     # Read rows from Excel or CSV
     if filename.endswith((".xlsx", ".xls")):

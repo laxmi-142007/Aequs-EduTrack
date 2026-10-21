@@ -136,6 +136,13 @@ def portal_view(request, ngo_slug="pratham"):
     if requested_slug in ["all", ""]:
         return redirect("schools:portal_pratham")
 
+    # Handle direct tab redirection to trackers, enrollments, or dossier
+    tab_param = request.GET.get("tab", "").strip().lower()
+    if tab_param in ["tracker", "trackers", "weekly_tracker"]:
+        return redirect("trackers:ngo_session_list", ngo_slug=requested_slug)
+    if tab_param in ["enrollment", "enrollments", "classes"]:
+        return redirect("trackers:ngo_enrollment_list", ngo_slug=requested_slug)
+
     slug_to_code = {
         "pratham": "PRATHAM",
         "agastya": "AGASTYA",
@@ -150,32 +157,34 @@ def portal_view(request, ngo_slug="pratham"):
         target_code = "PRATHAM"
         requested_slug = "pratham"
 
+    if tab_param in ["dossier", "ngo"] and current_ngo:
+        return redirect("programs:ngo_detail", pk=current_ngo.id)
+
     # Fetch STRICTLY this NGO's schools (kept completely separate)
     schools = current_ngo.partner_schools.all().order_by("name").prefetch_related("students")
     total_students = sum(s.student_strength for s in schools)
     selected_school = schools.first()
 
-    # Build navigation modules list for quick switching between the separate NGO modules
-    ngo_nav = []
-    for ngo in core_ngos:
-        count = ngo.partner_schools.count()
-        ngo_nav.append({
-            "id": ngo.id,
-            "name": ngo.name,
-            "code": ngo.code,
-            "code_lower": ngo.code.lower(),
-            "url": f"/schools/{ngo.code.lower()}/",
-            "school_count": count,
-            "is_active": (ngo.code == target_code),
-        })
+    # Build rich navigation modules list for quick switching between the separate NGO modules
+    from trackers.views import get_ngo_nav
+    from trackers.roster import get_ngo_enrollment_roster
+    ngo_nav = get_ngo_nav(current_ngo)
+    roster_data = get_ngo_enrollment_roster(current_ngo)
+
+    taluks = roster_data.get("taluks", []) if roster_data else []
+    if not taluks:
+        taluks = sorted({(s.taluk or s.district or s.village).strip() for s in schools if (s.taluk or s.district or s.village)})
 
     context = {
         "current_ngo": current_ngo,
         "schools": schools,
         "selected_school": selected_school,
         "total_students": total_students,
+        "taluks": taluks,
         "ngo_nav": ngo_nav,
+        "roster_data": roster_data,
         "requested_ngo": requested_slug,
+        "foundation_subtab": "schools",
         "user_authenticated": request.user.is_authenticated,
         "username": request.user.username if request.user.is_authenticated else "Admin",
     }

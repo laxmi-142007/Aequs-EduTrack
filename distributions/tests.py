@@ -499,3 +499,56 @@ class BulkUploadRosterTests(TestCase):
         self.assertTrue(total_qty > 100000)
         self.assertTrue(School.objects.filter(name__icontains="Banapur").exists())
 
+    def test_remove_agastya_spreadsheet(self):
+        import os
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from distributions.views import _get_distribution_roster_data
+
+        if not os.path.exists(self.roster_path):
+            self.skipTest("test_agastya_roster.xlsx not found")
+
+        with open(self.roster_path, "rb") as f:
+            uploaded = SimpleUploadedFile(
+                "School_Profile_Agastya_MSL_2025_26.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        self.client.post(reverse("distributions:bulk_upload"), {"file": uploaded})
+        self.assertIsNotNone(_get_distribution_roster_data())
+
+        # Remove the agastya spreadsheet
+        res = self.client.post(reverse("distributions:remove_spreadsheet"), {"sheet": "agastya"})
+        self.assertEqual(res.status_code, 302)
+        self.assertIsNone(_get_distribution_roster_data())
+        self.assertEqual(
+            Distribution.objects.filter(remarks__icontains="School profile material distribution").count(),
+            0
+        )
+
+    def test_remove_opn_spreadsheet(self):
+        import os
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from distributions.views import _get_distribution_opn_data
+
+        opn_path = os.path.join("backend", "static", "test_opn_roster.xlsx")
+        if not os.path.exists(opn_path):
+            self.skipTest("test_opn_roster.xlsx not found")
+
+        with open(opn_path, "rb") as f:
+            uploaded = SimpleUploadedFile(
+                "Copy of OPN 26-27 final.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        self.client.post(reverse("distributions:bulk_upload"), {"file": uploaded})
+        self.assertIsNotNone(_get_distribution_opn_data())
+
+        # Remove the opn spreadsheet
+        res = self.client.post(reverse("distributions:remove_spreadsheet"), {"sheet": "opn"})
+        self.assertEqual(res.status_code, 302)
+        self.assertIsNone(_get_distribution_opn_data())
+        self.assertEqual(
+            Distribution.objects.filter(remarks__icontains="Operation Notebook").count(),
+            0
+        )
+

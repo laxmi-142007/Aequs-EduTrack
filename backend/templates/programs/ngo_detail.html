@@ -29,6 +29,11 @@
         </div>
 
         <div class="programs-page">
+            {% if ngo_nav %}
+            <!-- FOUNDATION MODULE NAVIGATION: PARTNER SWITCHER & INDIVIDUAL SECTION TABS -->
+            {% include 'includes/foundation_tabs.html' with foundation_subtab='dossier' current_ngo=ngo %}
+            {% endif %}
+
             <div class="detail-card">
                 <div class="detail-grid">
                     <div class="detail-item">

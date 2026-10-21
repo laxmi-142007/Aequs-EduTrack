@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
 
     # Aequs EduTrack apps
     "accounts",
@@ -72,6 +73,8 @@ INSTALLED_APPS = [
     "volunteers",
     "reports",
     "programs",
+    "django_filters",
+    "trackers",
 ]
 
 MIDDLEWARE = [

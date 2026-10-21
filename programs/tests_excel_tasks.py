@@ -169,6 +169,128 @@ class ExcelTasksComprehensiveTestCase(TestCase):
         self.assertEqual(resp_steam.status_code, 200)
         self.assertContains(resp_steam, "Mobile Science Lab 1- Hattargi")
 
+        # Test program filter dropdown and upload buttons exist
+        self.assertContains(resp, 'name="prog"')
+        self.assertContains(resp, "Add Weekly Session Log (Excel)")
+        self.assertContains(resp, "dashboardUploadModal")
+
+        # Test filtering by programme code
+        resp_prog = self.client.get(reverse("programs:tracking_dashboard") + "?prog=MSL&view=sessions")
+        self.assertEqual(resp_prog.status_code, 200)
+
+    def test_tracking_dashboard_upload_excel(self):
+        """Verify Excel upload endpoint on tracking dashboard."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        # Non-POST should redirect
+        get_resp = self.client.get(reverse("programs:tracking_upload_excel"))
+        self.assertEqual(get_resp.status_code, 302)
+
+        # Non-excel file upload should show error message
+        bad_file = SimpleUploadedFile("notes.txt", b"Invalid text data", content_type="text/plain")
+        bad_resp = self.client.post(
+            reverse("programs:tracking_upload_excel"),
+            {"file": bad_file, "academic_year": "2026-27"},
+            follow=True,
+        )
+        self.assertEqual(bad_resp.status_code, 200)
+        self.assertContains(bad_resp, "Only Microsoft Excel (.xlsx/.xls) files are supported.")
+
+    def test_sample_session_log_template_download(self):
+        """Verify sample weekly session log excel template can be downloaded."""
+        resp = self.client.get(reverse("programs:tracking_sample_template"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        self.assertIn("Weekly_Session_Log_Template", resp["Content-Disposition"])
+
+    def test_program_upload_session_log_valid(self):
+        """Verify uploading weekly session log excel file directly from program tracking."""
+        from trackers.services.excel_importer import generate_sample_weekly_session_log_excel
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from trackers.models import WeeklyTrackerSession
+
+        buf = generate_sample_weekly_session_log_excel(programme_title="MSL Hattargi", academic_year="2026-27")
+        excel_file = SimpleUploadedFile(
+            "Weekly_Session_Log_MSL_2026.xlsx",
+            buf.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+        resp = self.client.post(
+            reverse("programs:program_upload_session_log", kwargs={"pk": self.msl_prog.pk}),
+            {
+                "session_log_file": excel_file,
+                "academic_year": "2026-27",
+            },
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Successfully added")
+        self.assertContains(resp, "weekly session logs")
+
+        # Verify sessions were created and linked with auto-detected partner NGO
+        sessions = WeeklyTrackerSession.objects.filter(academic_year="2026-27", programme="MSL")
+        self.assertGreater(sessions.count(), 0)
+        self.assertEqual(sessions.first().ngo.code, "AGASTYA")
+
+    def test_program_upload_session_log_invalid_file(self):
+        """Verify validation when non-excel file is uploaded to program session logs."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        bad_file = SimpleUploadedFile("logs.pdf", b"%PDF-1.4...", content_type="application/pdf")
+        resp = self.client.post(
+            reverse("programs:program_upload_session_log", kwargs={"pk": self.msl_prog.pk}),
+            {
+                "session_log_file": bad_file,
+                "academic_year": "2026-27",
+            },
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Unsupported file type")
+
+    def test_program_remove_session_logs(self):
+        """Verify removing weekly session logs for a program."""
+        from trackers.models import WeeklyTrackerSession
+        WeeklyTrackerSession.objects.create(
+            programme="MSL",
+            academic_year="2026-27",
+            topic="Magnetism Experiment",
+            total_exposures=30,
+        )
+        self.assertEqual(WeeklyTrackerSession.objects.filter(programme="MSL", academic_year="2026-27").count(), 1)
+
+        resp = self.client.post(
+            reverse("programs:program_remove_session_logs", kwargs={"pk": self.msl_prog.pk}),
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Successfully removed")
+        self.assertEqual(WeeklyTrackerSession.objects.filter(programme="MSL", academic_year="2026-27").count(), 0)
+
+    def test_program_remove_school_roster_complete(self):
+        """Verify removing school roster clears participating schools and associated session logs."""
+        from trackers.models import WeeklyTrackerSession
+        self.msl_prog.participating_schools.add(self.school)
+        WeeklyTrackerSession.objects.create(
+            programme="MSL",
+            academic_year="2026-27",
+            topic="Optics Lab",
+            total_exposures=25,
+        )
+
+        resp = self.client.post(
+            reverse("programs:program_remove_school_roster", kwargs={"pk": self.msl_prog.pk}),
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Successfully removed uploaded tracking data")
+        self.assertEqual(self.msl_prog.participating_schools.count(), 0)
+        self.assertEqual(WeeklyTrackerSession.objects.filter(programme="MSL", academic_year="2026-27").count(), 0)
+
     def test_aeqatra_volunteering_portal(self):
         """Verify AEQATRA Employee Volunteering Portal, activities, and testimonials."""
         resp = self.client.get(reverse("volunteers:list"))

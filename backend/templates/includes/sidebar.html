@@ -2274,7 +2274,7 @@
   <!-- Header -->
   <div class="sidebar-header">
 
-    <div class="brand-logo"><img src="{% static 'images/LOGO Aequs Foundation.jpg' %}" alt="Aequs Foundation"><img src="{% static 'images/Aequs-logo.png' %}" alt="Aequs" style="display:none;"></div>
+    <div class="brand-logo"><img src="{% static 'images/LOGO Aequs Foundation.jpg' %}" alt="Aequs Foundation"></div>
 
     <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar"
       aria-label="Toggle Sidebar">
@@ -2310,10 +2310,10 @@
 
       {% if perms.schools.view_school or request.user.is_admin %}
       <li
-        class="nav-dropdown {% if requested_ngo or active_page == 'schools' or active_page == 'ngos' %}open{% endif %}"
+        class="nav-dropdown {% if requested_ngo or active_page == 'schools' or active_page == 'ngos' or 'trackers' in active_page %}open{% endif %}"
         id="dropdownSchools">
         <button type="button" class="dropdown-trigger" onclick="toggleNavDropdown('dropdownSchools')"
-          title="Partner Schools">
+          title="Foundation Partners &amp; Schools">
           <div class="dropdown-trigger-left">
             <i data-lucide="school"></i>
             <span class="label">Foundation Schools</span>
@@ -2322,20 +2322,20 @@
         </button>
 
         <ul class="sub-nav-list">
-          <li class="sub-nav-item {% if requested_ngo == 'pratham' %}active{% endif %}">
-            <a href="/schools/pratham/" class="sub-link" title="Pratham Schools">
-              <i data-lucide="book-open" style="color: #ed1c24;"></i>
-              <span class="label">Pratham Schools</span>
+          <li class="sub-nav-item {% if requested_ngo == 'yfs' or 'trackers_yfs' in active_page or 'enrollments_yfs' in active_page %}active{% endif %}">
+            <a href="/schools/yfs/" class="sub-link" title="Youth for Seva Schools &amp; Weekly Trackers">
+              <i data-lucide="heart-handshake" style="color: #eab308;"></i>
+              <span class="label">Youth for Seva (YFS)</span>
             </a>
             <a href="javascript:void(0)"
-              onclick="event.stopPropagation(); window.location.href='/schools/pratham/#add-school';"
-              class="sub-add-btn" title="Add School to Pratham">
+              onclick="event.stopPropagation(); window.location.href='/schools/yfs/#add-school';" class="sub-add-btn"
+              title="Add School to YFS">
               <i data-lucide="plus"></i>
             </a>
           </li>
 
-          <li class="sub-nav-item {% if requested_ngo == 'agastya' %}active{% endif %}">
-            <a href="/schools/agastya/" class="sub-link" title="Agastya Schools">
+          <li class="sub-nav-item {% if requested_ngo == 'agastya' or 'trackers_agastya' in active_page or 'enrollments_agastya' in active_page %}active{% endif %}">
+            <a href="/schools/agastya/" class="sub-link" title="Agastya Schools &amp; Weekly Trackers">
               <i data-lucide="flask-conical" style="color: #2563eb;"></i>
               <span class="label">Agastya Schools</span>
             </a>
@@ -2346,14 +2346,14 @@
             </a>
           </li>
 
-          <li class="sub-nav-item {% if requested_ngo == 'yfs' %}active{% endif %}">
-            <a href="/schools/yfs/" class="sub-link" title="Youth for Seva Schools">
-              <i data-lucide="heart-handshake" style="color: #eab308;"></i>
-              <span class="label">Youth for Seva Schools</span>
+          <li class="sub-nav-item {% if requested_ngo == 'pratham' or 'trackers_pratham' in active_page or 'enrollments_pratham' in active_page %}active{% endif %}">
+            <a href="/schools/pratham/" class="sub-link" title="Pratham Schools &amp; Weekly Trackers">
+              <i data-lucide="book-open" style="color: #ed1c24;"></i>
+              <span class="label">Pratham Schools</span>
             </a>
             <a href="javascript:void(0)"
-              onclick="event.stopPropagation(); window.location.href='/schools/yfs/#add-school';" class="sub-add-btn"
-              title="Add School to YFS">
+              onclick="event.stopPropagation(); window.location.href='/schools/pratham/#add-school';"
+              class="sub-add-btn" title="Add School to Pratham">
               <i data-lucide="plus"></i>
             </a>
           </li>

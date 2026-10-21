@@ -45,6 +45,9 @@ urlpatterns = [
     # Volunteers
     path("volunteers/", include("volunteers.urls")),
 
+    # YFS Weekly Trackers & Enrollments
+    path("trackers/", include("trackers.urls")),
+
     # Foundation Programs, Projects, EV Classes, NGOs, Scholarships, Archive
     path("", include("programs.urls")),
 

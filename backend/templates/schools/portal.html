@@ -924,6 +924,9 @@
             <!-- ========================================= -->
             <div id="dashboard-content" class="{% if not user_authenticated %}hidden{% endif %}">
                 
+                <!-- Foundation Navigation: Partner Switcher & Section Tabs -->
+                {% include 'includes/foundation_tabs.html' with foundation_subtab='schools' %}
+
                 <!-- Cards Grid Container -->
                 <div class="container">
                     <div id="school-cards" class="tab-content active">
@@ -943,6 +946,7 @@
                                 <p class="section-desc" style="margin: 4px 0 0; color: #64748b;">Dedicated school management environment for {{ current_ngo.name }} partner programs.</p>
                             </div>
                             <div class="portal-header-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb; text-decoration:none; padding: 9px 15px; border-radius: 6px; font-weight: 600; font-size: 13px;" title="Weekly Trackers for {{ current_ngo.name }}">📅 Weekly Trackers ({{ current_ngo.code }})</a>
                                 <button type="button" class="btn btn-primary" style="background:#231f20; border-color:#231f20; padding: 9px 16px; border-radius: 6px; font-weight: 600; font-size: 13px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add School</button>
                                 <a href="{% url 'schools:bulk_upload_for_ngo' current_ngo.code_lower %}" class="btn btn-primary" style="background:#dd2d27; border-color:#dd2d27; text-decoration:none; padding: 9px 16px; border-radius: 6px; font-weight: 600; font-size: 13px;" title="Bulk Upload Schools directly to {{ current_ngo.name }}">↑ Bulk Upload ({{ current_ngo.name }})</a>
                                 <a href="{% url 'programs:ngo_detail' current_ngo.id %}" class="btn btn-secondary" style="text-decoration:none; padding: 9px 14px; border-radius: 6px; font-weight: 600; font-size: 13px;">📋 NGO Dossier</a>
@@ -983,49 +987,162 @@
                                             <div style="font-size: 11px; color: #64748b; font-weight: 600;">Enrolled Students</div>
                                         </div>
                                     </div>
-                                    <div class="ngo-banner-buttons" style="display: flex; gap: 8px;">
-                                        <button type="button" class="btn btn-sm btn-primary" style="background:#231f20; border-color:#231f20; padding: 7px 14px; font-size: 12px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add School to {{ current_ngo.name }}</button>
-                                        <a href="{% url 'programs:ngo_detail' current_ngo.id %}" class="btn btn-sm btn-secondary" style="padding: 7px 14px; font-size: 12px; text-decoration: none;">📋 View NGO Dossier</a>
+                                    <div class="ngo-banner-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                        <a href="{% url 'trackers:ngo_session_list' current_ngo.code_lower %}" class="btn btn-sm btn-primary" style="background:#2563eb; border-color:#2563eb; padding: 7px 14px; font-size: 12px; text-decoration: none;">📅 {{ current_ngo.code }} Trackers</a>
+                                        <a href="{% url 'trackers:ngo_enrollment_list' current_ngo.code_lower %}" class="btn btn-sm btn-secondary" style="background:#fff; border:1px solid #cbd5e1; color:#334155; padding: 7px 14px; font-size: 12px; text-decoration: none;">🏫 Class Enrollments</a>
+                                        <button type="button" class="btn btn-sm btn-primary" style="background:#231f20; border-color:#231f20; padding: 7px 14px; font-size: 12px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add School</button>
+                                        <a href="{% url 'programs:ngo_detail' current_ngo.id %}" class="btn btn-sm btn-secondary" style="padding: 7px 14px; font-size: 12px; text-decoration: none;">📋 View Dossier</a>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        <!-- PARTNER SCHOOL DIRECTORY (CLEAN WEB CRM VIEW - NO RAW EXCEL SPREADSHEET) -->
+                        <div class="school-directory-section" style="margin-top: 14px; margin-bottom: 28px;">
+                            <!-- Directory Header with Stats & Actions -->
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                                            🏫 {{ current_ngo.name }} &bull; Partner School Directory
+                                            <span class="status-badge" id="directoryVisibleCount" style="background: #dcfce7; color: #15803d; font-size: 11.5px; padding: 2px 8px; border-radius: 4px; font-weight: 700;">{{ schools|length }} Schools</span>
+                                            <span class="status-badge" style="background: #eff6ff; color: #1e40af; font-size: 11.5px; padding: 2px 8px; border-radius: 4px; font-weight: 700;">{{ total_students }} Students</span>
+                                        </h3>
+                                        <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Direct management actions, student enrollments, and institution profiles</p>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <!-- View Toggle Buttons: Cards vs Table -->
+                                        <div style="display: inline-flex; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; background: #f8fafc;">
+                                            <button type="button" id="btnDirectoryCards" onclick="switchDirectoryView('cards')" class="btn btn-sm active" style="padding: 6px 13px; font-size: 12px; font-weight: 600; border: none; background: #0f172a; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                                🗂️ Cards View
+                                            </button>
+                                            <button type="button" id="btnDirectoryTable" onclick="switchDirectoryView('table')" class="btn btn-sm" style="padding: 6px 13px; font-size: 12px; font-weight: 600; border: none; background: transparent; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                                📋 Table View
+                                            </button>
+                                        </div>
+                                        <button type="button" onclick="exportDirectoryCSV()" class="btn btn-sm btn-secondary" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;" title="Export school directory to CSV">
+                                            📥 Export CSV
+                                        </button>
+                                        <button type="button" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')" class="btn btn-sm btn-primary" style="background:#ed1c24; border-color:#ed1c24; padding: 6px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+                                            ➕ Add School
+                                        </button>
+                                    </div>
+                                </div>
 
-                        <!-- Schools Exclusively Belonging to Current NGO Module -->
-                        <div class="school-cards-grid">
-                            {% for s in schools %}
-                            <div class="info-card" data-ngo="{{ current_ngo.code_lower }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.15s ease;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">
-                                <div>
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                                        <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #231f20;">🏫 {{ s.name }}</h3>
-                                        <span class="status-badge" style="background: #f0fdf4; color: #166534; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600;">ACTIVE</span>
+                                <!-- Filter Pills & Search Input Toolbar -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+                                    <!-- Taluk / Location Filter Pills -->
+                                    <div class="directory-filter-pills" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                                        <span style="font-size: 11.5px; font-weight: 700; color: #64748b; margin-right: 4px;">Taluk Filter:</span>
+                                        <button type="button" class="directory-filter-pill active" onclick="filterDirectoryByTaluk('ALL', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 16px; border: 1px solid #ed1c24; background: #ed1c24; color: #fff; cursor: pointer; font-weight: 600;">
+                                            All Taluks ({{ schools|length }})
+                                        </button>
+                                        {% for t in taluks %}
+                                        <button type="button" class="directory-filter-pill" onclick="filterDirectoryByTaluk('{{ t|escapejs }}', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 16px; border: 1px solid #cbd5e1; background: #fff; color: #334155; cursor: pointer; font-weight: 500;">
+                                            {{ t }}
+                                        </button>
+                                        {% endfor %}
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                                        <span style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: {% if current_ngo.code == 'PRATHAM' %}#fee2e2; color: #991b1b;{% elif current_ngo.code == 'AGASTYA' %}#dbeafe; color: #1e40af;{% else %}#fef3c7; color: #92400e;{% endif %}">
-                                            {{ current_ngo.name }}
-                                        </span>
-                                        <span style="font-size: 12px; color: #64748b;">🆔 {{ s.udise_code }}</span>
-                                    </div>
-                                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px;">
-                                        <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #334155;">📍 {{ s.village|default:s.district }}</span>
-                                        <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #334155;">🎓 {{ s.affiliation|default:"State Board" }}</span>
-                                        <span style="background: #fef2f2; border: 1px solid #fecaca; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #b91c1c; font-weight: 600;">👥 {{ s.student_strength }} Students</span>
+
+                                    <!-- Search Input -->
+                                    <div style="position: relative; min-width: 260px;">
+                                        <input type="text" id="directorySearchInput" placeholder="Search schools, UDISE, HM, location..." oninput="filterDirectorySchools()" style="width: 100%; padding: 6px 12px 6px 30px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; box-sizing: border-box;">
+                                        <span style="position: absolute; left: 9px; top: 7px; font-size: 12px; color: #94a3b8;">🔍</span>
                                     </div>
                                 </div>
-                                
-                                <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation();">
-                                    <button type="button" class="btn btn-sm btn-primary" style="flex: 1; padding: 8px; font-size: 12px; background: #dd2d27; border-color: #dd2d27;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">⚡ Manage School Options</button>
-                                    <button type="button" class="btn btn-sm btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="openSchoolModal('{{ s.id }}', 'bulk-students')">👨‍🎓 Bulk Add Students</button>
+                            </div>
+
+                            <!-- VIEW 1: CARDS GRID (DEFAULT) -->
+                            <div id="portalSchoolCardsWrapper" class="school-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+                                {% for s in schools %}
+                                <div class="info-card directory-item" data-ngo="{{ current_ngo.code_lower }}" data-taluk="{{ s.taluk|default:s.district|default:s.village }}" data-search="{{ s.name|lower }} {{ s.udise_code|lower }} {{ s.taluk|lower }} {{ s.district|lower }} {{ s.village|lower }} {{ s.headmaster_name|lower }} {{ s.science_teacher_name|lower }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.15s ease;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                            <h3 style="margin: 0; font-size: 15.5px; font-weight: 700; color: #231f20;">🏫 {{ s.name }}</h3>
+                                            <span class="status-badge" style="background: #f0fdf4; color: #166534; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600;">ACTIVE</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                            <span style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: {% if current_ngo.code == 'PRATHAM' %}#fee2e2; color: #991b1b;{% elif current_ngo.code == 'AGASTYA' %}#dbeafe; color: #1e40af;{% else %}#fef3c7; color: #92400e;{% endif %}">
+                                                {{ current_ngo.name }}
+                                            </span>
+                                            <span style="font-size: 12px; color: #64748b; font-family: monospace;">🆔 {{ s.udise_code }}</span>
+                                        </div>
+                                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                                            <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #334155;">📍 {{ s.taluk|default:s.village|default:s.district }}</span>
+                                            <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #334155;">🎓 {{ s.affiliation|default:"State Board" }}</span>
+                                            <span style="background: #fef2f2; border: 1px solid #fecaca; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; color: #b91c1c; font-weight: 600;">👥 {{ s.student_strength }} Students</span>
+                                        </div>
+                                        {% if s.headmaster_name or s.science_teacher_name %}
+                                        <div style="font-size: 11.5px; color: #64748b; border-top: 1px dashed #e2e8f0; padding-top: 8px; margin-bottom: 10px;">
+                                            {% if s.headmaster_name %}<div><strong>HM:</strong> {{ s.headmaster_name }} {% if s.headmaster_phone %}({{ s.headmaster_phone }}){% endif %}</div>{% endif %}
+                                            {% if s.science_teacher_name %}<div><strong>Science:</strong> {{ s.science_teacher_name }} {% if s.science_teacher_phone %}({{ s.science_teacher_phone }}){% endif %}</div>{% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation();">
+                                        <button type="button" class="btn btn-sm btn-primary" style="flex: 1; padding: 7px 10px; font-size: 12px; background: #dd2d27; border-color: #dd2d27;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">⚡ Manage School</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" style="padding: 7px 12px; font-size: 12px;" onclick="openSchoolModal('{{ s.id }}', 'bulk-students')">👨‍🎓 Bulk Add Students</button>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background: #f8fafc; border-radius: 12px; border: 1.5px dashed #cbd5e1;">
+                                    <div style="font-size: 38px; margin-bottom: 10px;">🏫</div>
+                                    <h3 style="margin: 0 0 6px; color: #1e293b; font-size: 17px; font-weight: 700;">No Schools in this Module</h3>
+                                    <p style="margin: 0 0 16px; color: #64748b; font-size: 13.5px;">There are currently no schools assigned to {{ current_ngo.name }}.</p>
+                                    <button type="button" class="btn btn-primary btn-sm" style="background: #231f20; padding: 8px 16px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add First School to {{ current_ngo.name }}</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- VIEW 2: CLEAN TABLE VIEW (WEB CRM TABLE - NO RAW SPREADSHEET LOOK) -->
+                            <div id="portalSchoolTableWrapper" style="display: none; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                                <div style="overflow-x: auto;">
+                                    <table id="portalSchoolsTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                                        <thead>
+                                            <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.3px;">
+                                                <th style="padding: 10px 14px; width: 45px;">#</th>
+                                                <th style="padding: 10px 14px;">School Name</th>
+                                                <th style="padding: 10px 14px;">Taluk / Location</th>
+                                                <th style="padding: 10px 14px;">UDISE Code</th>
+                                                <th style="padding: 10px 14px;">Affiliation</th>
+                                                <th style="padding: 10px 14px;">Headmaster</th>
+                                                <th style="padding: 10px 14px; text-align: right;">Strength</th>
+                                                <th style="padding: 10px 14px; text-align: center;">Status</th>
+                                                <th style="padding: 10px 14px; text-align: right;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for s in schools %}
+                                            <tr class="directory-row directory-item" data-taluk="{{ s.taluk|default:s.district|default:s.village }}" data-search="{{ s.name|lower }} {{ s.udise_code|lower }} {{ s.taluk|lower }} {{ s.district|lower }} {{ s.village|lower }} {{ s.headmaster_name|lower }} {{ s.science_teacher_name|lower }}" style="border-bottom: 1px solid #f1f5f9; cursor: pointer;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                                                <td style="padding: 10px 14px; color: #94a3b8; font-weight: 600;">{{ forloop.counter }}</td>
+                                                <td style="padding: 10px 14px;">
+                                                    <span style="font-weight: 600; color: #0f172a;">{{ s.name }}</span>
+                                                </td>
+                                                <td style="padding: 10px 14px; color: #334155;">{{ s.taluk|default:s.village|default:s.district|default:"—" }}</td>
+                                                <td style="padding: 10px 14px; font-family: monospace; color: #64748b;">{{ s.udise_code }}</td>
+                                                <td style="padding: 10px 14px; color: #64748b;">{{ s.affiliation|default:"State Board" }}</td>
+                                                <td style="padding: 10px 14px; color: #334155;">
+                                                    {{ s.headmaster_name|default:"—" }}
+                                                    {% if s.headmaster_phone %}<div style="font-size: 11px; color: #64748b;">{{ s.headmaster_phone }}</div>{% endif %}
+                                                </td>
+                                                <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: #ed1c24;">
+                                                    {{ s.student_strength }}
+                                                </td>
+                                                <td style="padding: 10px 14px; text-align: center;">
+                                                    <span style="background: #f0fdf4; color: #166534; font-size: 10.5px; padding: 2px 7px; border-radius: 10px; font-weight: 600;">ACTIVE</span>
+                                                </td>
+                                                <td style="padding: 10px 14px; text-align: right;" onclick="event.stopPropagation();">
+                                                    <button type="button" class="btn btn-sm btn-secondary" style="padding: 4px 8px; font-size: 11.5px;" onclick="openSchoolModal('{{ s.id }}', 'edit-details')">Manage</button>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="9" style="padding: 30px; text-align: center; color: #94a3b8;">No schools found in this module.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            {% empty %}
-                            <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background: #f8fafc; border-radius: 12px; border: 1.5px dashed #cbd5e1;">
-                                <div style="font-size: 38px; margin-bottom: 10px;">🏫</div>
-                                <h3 style="margin: 0 0 6px; color: #1e293b; font-size: 17px; font-weight: 700;">No Schools in this Module</h3>
-                                <p style="margin: 0 0 16px; color: #64748b; font-size: 13.5px;">There are currently no schools assigned to {{ current_ngo.name }}.</p>
-                                <button type="button" class="btn btn-primary btn-sm" style="background: #231f20; padding: 8px 16px;" onclick="openAddSchoolForNgo('{{ current_ngo.code }}')">➕ Add First School to {{ current_ngo.name }}</button>
-                            </div>
-                            {% endfor %}
                         </div>
                     </div>
 
@@ -2299,6 +2416,115 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchAndPopulateSchoolData(currentSchoolId);
     }
 });
+
+let activeDirectoryTaluk = 'ALL';
+
+function switchDirectoryView(view) {
+    const cardsWrapper = document.getElementById('portalSchoolCardsWrapper');
+    const tableWrapper = document.getElementById('portalSchoolTableWrapper');
+    const btnCards = document.getElementById('btnDirectoryCards');
+    const btnTable = document.getElementById('btnDirectoryTable');
+
+    if (view === 'table') {
+        if (cardsWrapper) cardsWrapper.style.display = 'none';
+        if (tableWrapper) tableWrapper.style.display = 'block';
+        if (btnCards) {
+            btnCards.style.background = 'transparent';
+            btnCards.style.color = '#475569';
+        }
+        if (btnTable) {
+            btnTable.style.background = '#0f172a';
+            btnTable.style.color = '#ffffff';
+        }
+    } else {
+        if (cardsWrapper) cardsWrapper.style.display = 'grid';
+        if (tableWrapper) tableWrapper.style.display = 'none';
+        if (btnCards) {
+            btnCards.style.background = '#0f172a';
+            btnCards.style.color = '#ffffff';
+        }
+        if (btnTable) {
+            btnTable.style.background = 'transparent';
+            btnTable.style.color = '#475569';
+        }
+    }
+}
+
+function filterDirectoryByTaluk(taluk, btn) {
+    activeDirectoryTaluk = taluk;
+    document.querySelectorAll('.directory-filter-pill').forEach(el => {
+        el.style.background = '#ffffff';
+        el.style.color = '#334155';
+        el.style.borderColor = '#cbd5e1';
+    });
+    if (btn) {
+        btn.style.background = '#ed1c24';
+        btn.style.color = '#ffffff';
+        btn.style.borderColor = '#ed1c24';
+    }
+    filterDirectorySchools();
+}
+
+function filterDirectorySchools() {
+    const query = (document.getElementById('directorySearchInput')?.value || '').toLowerCase().trim();
+    const items = document.querySelectorAll('.directory-item');
+    let visibleCount = 0;
+
+    items.forEach(el => {
+        const itemTaluk = (el.getAttribute('data-taluk') || '').trim();
+        const itemSearch = (el.getAttribute('data-search') || '').toLowerCase();
+
+        const matchesTaluk = (activeDirectoryTaluk === 'ALL') || 
+            (itemTaluk.toLowerCase() === activeDirectoryTaluk.toLowerCase()) ||
+            itemSearch.includes(activeDirectoryTaluk.toLowerCase());
+        const matchesQuery = !query || itemSearch.includes(query);
+
+        if (matchesTaluk && matchesQuery) {
+            el.style.display = el.tagName === 'TR' ? '' : 'flex';
+            visibleCount++;
+        } else {
+            el.style.display = 'none';
+        }
+    });
+
+    const countBadge = document.getElementById('directoryVisibleCount');
+    if (countBadge) {
+        countBadge.textContent = visibleCount + ' Schools';
+    }
+}
+
+function exportDirectoryCSV() {
+    const ngoName = "{{ current_ngo.name|escapejs }}";
+    let rows = ['"#","School Name","Taluk/Location","UDISE Code","Affiliation","Headmaster & Phone","Strength","Status"'];
+
+    document.querySelectorAll('.directory-row').forEach(tr => {
+        if (tr.style.display === 'none') return;
+        const cols = tr.querySelectorAll('td');
+        if (cols.length >= 8) {
+            const rowData = [
+                cols[0].innerText.trim(),
+                cols[1].innerText.trim(),
+                cols[2].innerText.trim(),
+                cols[3].innerText.trim(),
+                cols[4].innerText.trim(),
+                cols[5].innerText.trim().replace(/\n/g, ' '),
+                cols[6].innerText.trim(),
+                cols[7].innerText.trim()
+            ];
+            rows.push(rowData.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(","));
+        }
+    });
+
+    const blob = new Blob([rows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${ngoName.replace(/\s+/g, '_')}_Partner_Schools.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>

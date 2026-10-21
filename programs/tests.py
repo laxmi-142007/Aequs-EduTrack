@@ -606,11 +606,10 @@ class ProgramsAndFoundationModulesTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "GMPS Amaragol")
         self.assertContains(resp, "GHPS Ugginakeri")
-        self.assertContains(resp, "3722")
-        self.assertContains(resp, "1744")
-        self.assertContains(resp, "1978")
-        self.assertContains(resp, "th-dlc-header")
-        self.assertContains(resp, "tr-grand-total")
+        self.assertContains(resp, "3,722")
+        self.assertContains(resp, "1,744")
+        self.assertContains(resp, "1,978")
+        self.assertContains(resp, "tracker-table")
 
     def test_program_upload_school_roster(self):
         program = Program.objects.create(
@@ -638,9 +637,9 @@ class ProgramsAndFoundationModulesTest(TestCase):
         self.assertContains(resp, "Successfully parsed and rendered school roster")
         self.assertContains(resp, "GMPS Amaragol")
         self.assertContains(resp, "GHPS Ugginakeri")
-        self.assertContains(resp, "3722")
-        self.assertContains(resp, "1744")
-        self.assertContains(resp, "1978")
+        self.assertContains(resp, "3,722")
+        self.assertContains(resp, "1,744")
+        self.assertContains(resp, "1,978")
 
     def test_program_upload_school_roster_invalid_file(self):
         program = Program.objects.create(
