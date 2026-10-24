@@ -209,3 +209,113 @@ def get_budget_vs_actual(project_id=None):
         "utilization_pct": utilization_pct,
         "projects": project_list,
     }
+
+
+def get_program_location_q(loc_val):
+    """
+    Builds a Q filter for Program models matching a hub cluster (Belagavi, Hubballi, Koppal)
+    or specific venue/district.
+    """
+    val = (loc_val or "").strip().lower()
+    if val in ["belagavi", "belgaum"]:
+        return (
+            Q(district__icontains="Belagavi") |
+            Q(district__icontains="Belgaum") |
+            Q(location_name__icontains="Belagavi") |
+            Q(location_name__icontains="Belgaum") |
+            Q(location_name__icontains="Hattargi") |
+            Q(location_name__icontains="Hebbal") |
+            Q(village_or_town__icontains="Belagavi") |
+            Q(village_or_town__icontains="Belgaum") |
+            Q(taluk__icontains="Belagavi") |
+            Q(taluk__icontains="Belgaum") |
+            Q(taluk__icontains="Hukkeri") |
+            Q(locations__district__icontains="Belagavi") |
+            Q(locations__name__icontains="Belagavi")
+        )
+    elif val in ["hubballi", "dharwad", "hubli"]:
+        return (
+            Q(district__icontains="Dharwad") |
+            Q(district__icontains="Hubballi") |
+            Q(district__icontains="Hubli") |
+            Q(location_name__icontains="Hubballi") |
+            Q(location_name__icontains="Hubli") |
+            Q(location_name__icontains="Dharwad") |
+            Q(location_name__icontains="Itigatti") |
+            Q(location_name__icontains="Ittigatti") |
+            Q(village_or_town__icontains="Hubballi") |
+            Q(village_or_town__icontains="Dharwad") |
+            Q(taluk__icontains="Hubballi") |
+            Q(taluk__icontains="Dharwad") |
+            Q(locations__district__icontains="Hubli") |
+            Q(locations__district__icontains="Dharwad") |
+            Q(locations__name__icontains="Hubballi")
+        )
+    elif val == "koppal":
+        return (
+            Q(district__icontains="Koppal") |
+            Q(location_name__icontains="Koppal") |
+            Q(village_or_town__icontains="Koppal") |
+            Q(taluk__icontains="Koppal") |
+            Q(locations__district__icontains="Koppal") |
+            Q(locations__name__icontains="Koppal")
+        )
+    elif val:
+        return (
+            Q(district__icontains=loc_val) |
+            Q(location_name__icontains=loc_val) |
+            Q(village_or_town__icontains=loc_val) |
+            Q(taluk__icontains=loc_val) |
+            Q(locations__name__icontains=loc_val)
+        )
+    return Q()
+
+
+def get_session_location_q(loc_val):
+    """
+    Builds a Q filter for WeeklyTrackerSession records matching a hub cluster
+    or venue/district.
+    """
+    val = (loc_val or "").strip().lower()
+    if val in ["belagavi", "belgaum"]:
+        return (
+            Q(school__district__icontains="Belagavi") |
+            Q(school__district__icontains="Belgaum") |
+            Q(school__taluk__icontains="Belagavi") |
+            Q(school__taluk__icontains="Hukkeri") |
+            Q(school__address__icontains="Belagavi") |
+            Q(school__address__icontains="Belgaum") |
+            Q(raw_location_or_activity__icontains="Belagavi") |
+            Q(raw_location_or_activity__icontains="Belgaum") |
+            Q(programme="IGNITE_BGM")
+        )
+    elif val in ["hubballi", "dharwad", "hubli"]:
+        return (
+            Q(school__district__icontains="Hubballi") |
+            Q(school__district__icontains="Dharwad") |
+            Q(school__district__icontains="Hubli") |
+            Q(school__taluk__icontains="Hubballi") |
+            Q(school__taluk__icontains="Dharwad") |
+            Q(school__address__icontains="Hubballi") |
+            Q(school__address__icontains="Dharwad") |
+            Q(raw_location_or_activity__icontains="Hubballi") |
+            Q(raw_location_or_activity__icontains="Dharwad") |
+            Q(raw_location_or_activity__icontains="Itigatti") |
+            Q(raw_location_or_activity__icontains="Ittigatti") |
+            Q(programme="IGNITE_HBL")
+        )
+    elif val == "koppal":
+        return (
+            Q(school__district__icontains="Koppal") |
+            Q(school__taluk__icontains="Koppal") |
+            Q(school__address__icontains="Koppal") |
+            Q(raw_location_or_activity__icontains="Koppal")
+        )
+    elif val:
+        return (
+            Q(school__district__icontains=loc_val) |
+            Q(school__taluk__icontains=loc_val) |
+            Q(raw_location_or_activity__icontains=loc_val)
+        )
+    return Q()
+

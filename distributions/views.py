@@ -2837,19 +2837,14 @@ def bulk_upload_distributions(request):
                             st_val = str(r[4] if len(r) > 4 and r[4] else "").strip()
                             team_map[s_key] = (t_val, st_val)
 
-            best_rows = []
-            selected_sheet_rows = None
+            sheet_items = []
             for ws in wb.worksheets:
-                cur = [list(r) for r in ws.iter_rows(values_only=True) if any(c is not None and str(c).strip() != "" for c in r)]
-                if not cur:
+                if any(k in ws.title.lower() for k in ("distributed", "team", "delivery")) and len(wb.worksheets) > 1:
                     continue
-                if _is_school_roster_format(cur) or _is_opn_notebook_format(cur):
-                    selected_sheet_rows = cur
-                    break
-                if len(cur) > len(best_rows):
-                    best_rows = cur
+                cur = [list(r) for r in ws.iter_rows(values_only=True) if any(c is not None and str(c).strip() != "" for c in r)]
+                if cur:
+                    sheet_items.append((ws.title, cur))
             wb.close()
-            raw_rows = selected_sheet_rows or best_rows
         else:
             decoded = ""
             content_bytes = uploaded_file.read()
@@ -2864,54 +2859,62 @@ def bulk_upload_distributions(request):
                 return redirect("distributions:bulk_upload")
             delim = "\t" if decoded[:2048].count("\t") > decoded[:2048].count(",") else ","
             reader = csv.reader(_io.StringIO(decoded), delimiter=delim)
-            raw_rows = [list(r) for r in reader if any(c is not None and str(c).strip() != "" for c in r)]
+            csv_rows = [list(r) for r in reader if any(c is not None and str(c).strip() != "" for c in r)]
+            sheet_items = [("CSV", csv_rows)] if csv_rows else []
 
-        if not raw_rows:
+        if not sheet_items:
             messages.error(request, "The uploaded file is empty.")
             return redirect("distributions:bulk_upload")
 
         # -------------------------------------------------------------
-        # BRANCH 1: School Profile / Agastya Roster Format
+        # BRANCH 1 & 2: School Profile Roster / OPN Distribution Format
         # -------------------------------------------------------------
-        if _is_school_roster_format(raw_rows):
-            created_count, total_qty, ay, b_type = _process_school_profile_roster_distribution(raw_rows, request)
-            b_display = dict(BenefitType.choices).get(b_type, b_type)
+        special_sheets = [item for item in sheet_items if _is_school_roster_format(item[1]) or _is_opn_notebook_format(item[1])]
+        if special_sheets:
+            total_created = 0
+            total_qty_sum = 0
+            last_ay = "2026-27"
+            last_sheet_tag = "standard"
+            for s_title, s_rows in special_sheets:
+                if _is_school_roster_format(s_rows):
+                    c, q, ay, b_type = _process_school_profile_roster_distribution(s_rows, request)
+                    total_created += c
+                    total_qty_sum += q
+                    last_ay = ay
+                    last_sheet_tag = "agastya"
+                elif _is_opn_notebook_format(s_rows):
+                    c, q, ay, b_type = _process_opn_notebook_distribution(s_rows, request, team_map=team_map)
+                    total_created += c
+                    total_qty_sum += q
+                    last_ay = ay
+                    last_sheet_tag = "opn"
+
             messages.success(
                 request,
-                f"Successfully parsed School Profile roster: created {created_count} school distribution records totaling {total_qty:,} units ({b_display}, Academic Year {ay})."
+                f"Successfully parsed distribution data across {len(special_sheets)} sheet(s): created {total_created} school distribution records totaling {total_qty_sum:,} units (Academic Year {last_ay})."
             )
-            request.session["last_distribution_sheet"] = "agastya"
-            return redirect(f"{reverse('distributions:list')}?view=tabular&sheet=agastya")
+            request.session["last_distribution_sheet"] = last_sheet_tag
+            return redirect(f"{reverse('distributions:list')}?view=tabular&sheet={last_sheet_tag}")
 
         # -------------------------------------------------------------
-        # BRANCH 2: Operation Notebook (OPN) Distribution Format
+        # BRANCH 3: Flat / Tabular Columns Format across all sheets
         # -------------------------------------------------------------
-        if _is_opn_notebook_format(raw_rows):
-            created_count, total_qty, ay, b_type = _process_opn_notebook_distribution(raw_rows, request, team_map=team_map)
-            b_display = dict(BenefitType.choices).get(b_type, b_type)
-            messages.success(
-                request,
-                f"Successfully parsed Operation Notebook (OPN) distribution: created {created_count} school distribution records totaling {total_qty:,} units ({b_display}, Academic Year {ay})."
-            )
-            request.session["last_distribution_sheet"] = "opn"
-            return redirect(f"{reverse('distributions:list')}?view=tabular&sheet=opn")
-
-        # -------------------------------------------------------------
-        # BRANCH 3: Flat / Tabular Columns Format
-        # -------------------------------------------------------------
-        header_idx = 0
-        for idx, r in enumerate(raw_rows[:10]):
-            row_str = " ".join(str(c or "").lower() for c in r)
-            if any(k in row_str for k in ("benefit", "admission", "quantity", "school", "student", "total", "location", "place")):
-                header_idx = idx
-                break
-
-        headers = [_normalize_dist_header(c) for c in raw_rows[header_idx]]
         rows = []
-        for r in raw_rows[header_idx + 1:]:
-            if not any(c is not None and str(c).strip() for c in r):
-                continue
-            rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
+        for s_title, raw_rows in sheet_items:
+            header_idx = -1
+            for idx, r in enumerate(raw_rows[:10]):
+                row_str = " ".join(str(c or "").lower() for c in r)
+                if any(k in row_str for k in ("benefit", "admission", "quantity", "school", "student", "total", "location", "place")):
+                    header_idx = idx
+                    break
+            if header_idx == -1:
+                header_idx = 0
+
+            headers = [_normalize_dist_header(c) for c in raw_rows[header_idx]]
+            for r in raw_rows[header_idx + 1:]:
+                if not any(c is not None and str(c).strip() for c in r):
+                    continue
+                rows.append({headers[i]: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for i in range(len(headers))})
 
         created, errors = 0, []
         default_benefit = request.POST.get("benefit_type", "").strip().upper() or BenefitType.BOOK

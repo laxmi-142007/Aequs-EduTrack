@@ -9,18 +9,65 @@
     <link rel="stylesheet" href="/static/css/programs.css">
     <script src="/static/js/lucide.min.js"></script>
     <style>
-        .pillar-nav {
+        /* Primary View Switcher Navigation */
+        .primary-views-nav {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            margin-bottom: 16px;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 12px;
+            flex-wrap: wrap;
         }
-        .pillar-tab {
-            padding: 8px 18px;
+        .primary-view-tab {
+            padding: 10px 22px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #475569;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+        }
+        .primary-view-tab:hover {
+            background: #f8fafc;
+            color: #0f172a;
+            border-color: #94a3b8;
+        }
+        .primary-view-tab.active {
+            background: #1e293b;
+            color: #ffffff;
+            border-color: #1e293b;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+        }
+        .primary-view-tab .badge-count {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11.5px;
+            font-weight: 700;
+        }
+        .primary-view-tab.active .badge-count {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+        }
+
+        /* Single-Row Segmented Pillar Filter Bar */
+        .pillar-filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .pillar-filter-pill {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12.5px;
             font-weight: 600;
             text-decoration: none;
             color: #475569;
@@ -28,29 +75,72 @@
             border: 1px solid #cbd5e1;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.15s ease;
         }
-        .pillar-tab:hover {
+        .pillar-filter-pill:hover {
             background: #f1f5f9;
             color: #0f172a;
+            border-color: #94a3b8;
         }
-        .pillar-tab.active {
-            background: #ed1c24;
-            color: #ffffff;
-            border-color: #ed1c24;
-            box-shadow: 0 4px 10px rgba(237, 28, 36, 0.25);
+        .pillar-filter-pill.active {
+            background: #fff1f1;
+            color: #ed1c24;
+            border-color: #fca5a5;
+            font-weight: 700;
+            box-shadow: 0 1px 3px rgba(237, 28, 36, 0.1);
         }
-        .badge-count {
-            background: rgba(0, 0, 0, 0.08);
-            padding: 2px 7px;
-            border-radius: 12px;
+        .pillar-filter-pill .pill-badge {
+            background: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 10px;
             font-size: 11px;
+            color: #64748b;
         }
-        .pillar-tab.active .badge-count {
-            background: rgba(255, 255, 255, 0.25);
-            color: #fff;
+        .pillar-filter-pill.active .pill-badge {
+            background: #fee2e2;
+            color: #b91c1c;
         }
+
+        /* More Modules Dropdown */
+        .modules-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .modules-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 6px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
+            min-width: 210px;
+            z-index: 100;
+            overflow: hidden;
+            padding: 6px 0;
+        }
+        .modules-dropdown-menu.show {
+            display: block;
+        }
+        .modules-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .modules-dropdown-item:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
         .budget-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -97,37 +187,6 @@
             height: 100%;
             background: linear-gradient(90deg, #0284c7, #10b981);
             border-radius: 6px;
-        }
-        .view-switcher-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 10px;
-        }
-        .view-switcher-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #475569;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.15s ease;
-        }
-        .view-switcher-btn:hover {
-            background: #f8fafc;
-            color: #0f172a;
-        }
-        .view-switcher-btn.active {
-            background: #2563eb;
-            color: #ffffff;
-            border-color: #2563eb;
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
         }
 
         /* Modal & Dropzone Styles */
@@ -187,18 +246,34 @@
                 <span style="font-size: 12px; color: #64748b;">Centralized Multi-Year Impact Tracker across Focus Pillars</span>
             </div>
             <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
+                <a href="{% url 'programs:tracking_sample_template' %}?ay={{ selected_ay }}" class="btn-af btn-af-secondary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none;" title="Download sample session log Excel spreadsheet">
+                    <i data-lucide="download" style="width: 14px; height: 14px;"></i> Template (.xlsx)
+                </a>
                 <button type="button" onclick="openDashboardUploadModal()" class="btn-af" style="background: #16a34a; color: #ffffff; font-weight: 700; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: background 0.15s ease;">
-                    <i data-lucide="file-spreadsheet"></i> Add Weekly Session Log (Excel)
+                    <i data-lucide="file-spreadsheet" style="width: 15px; height: 15px;"></i> Add Weekly Session Log (Excel)
                 </button>
-                <a href="{% url 'programs:program_create' %}" class="btn-af btn-af-primary">
-                    <i data-lucide="plus-circle"></i> Add Program Center
+                <div class="modules-dropdown">
+                    <button type="button" class="btn-af btn-af-secondary" onclick="toggleMoreModulesDropdown(event)" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                        <i data-lucide="grid" style="width: 14px; height: 14px;"></i> More Modules <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+                    </button>
+                    <div class="modules-dropdown-menu" id="moreModulesMenu">
+                        <a href="{% url 'programs:project_list' %}" class="modules-dropdown-item"><i data-lucide="folder-kanban" style="width: 15px; height: 15px; color: #3b82f6;"></i> Projects</a>
+                        <a href="{% url 'programs:program_list' %}" class="modules-dropdown-item"><i data-lucide="layers" style="width: 15px; height: 15px; color: #8b5cf6;"></i> Programs</a>
+                        <a href="{% url 'programs:ev_class_list' %}" class="modules-dropdown-item"><i data-lucide="zap" style="width: 15px; height: 15px; color: #eab308;"></i> EV Classes</a>
+                        <a href="{% url 'programs:industry_visit_list' %}" class="modules-dropdown-item"><i data-lucide="factory" style="width: 15px; height: 15px; color: #10b981;"></i> Industry Visits</a>
+                        <a href="{% url 'programs:monthly_tracking' %}" class="modules-dropdown-item"><i data-lucide="calendar-check" style="width: 15px; height: 15px; color: #06b6d4;"></i> Monthly Tracking</a>
+                        <a href="{% url 'programs:location_list' %}" class="modules-dropdown-item"><i data-lucide="map-pin" style="width: 15px; height: 15px; color: #ef4444;"></i> Location Master</a>
+                    </div>
+                </div>
+                <a href="{% url 'programs:program_create' %}" class="btn-af btn-af-primary" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+                    <i data-lucide="plus-circle" style="width: 15px; height: 15px;"></i> Add Center
                 </a>
             </div>
         </div>
 
         <div class="programs-page">
             {% if messages %}
-            <div style="margin-bottom: 18px;">
+            <div style="margin-bottom: 16px;">
                 {% for message in messages %}
                 <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 13.5px; font-weight: 500; display: flex; align-items: center; gap: 8px; {% if message.tags == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #f87171;{% elif message.tags == 'warning' %}background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;{% else %}background: #dcfce7; color: #166534; border: 1px solid #86efac;{% endif %}">
                     <i data-lucide="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}check-circle{% endif %}" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
@@ -208,133 +283,275 @@
             </div>
             {% endif %}
 
-            <!-- Tracking Navigation Tabs -->
-            {% include 'programs/includes/tracking_tabs.html' with active_tab='tracking_dashboard' %}
+            <!-- 1. Primary View Switcher Navigation Tabs -->
+            <div class="primary-views-nav">
+                <button type="button" class="primary-view-tab {% if active_view != 'sessions' %}active{% endif %}" id="btnViewPrograms" onclick="switchDashboardView('programs')">
+                    <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
+                    <span>Programs &amp; Centers Directory</span>
+                    <span class="badge-count">{{ program_rows|length }}</span>
+                </button>
+                <button type="button" class="primary-view-tab {% if active_view == 'sessions' %}active{% endif %}" id="btnViewSessions" onclick="switchDashboardView('sessions')">
+                    <i data-lucide="list-checks" style="width: 16px; height: 16px;"></i>
+                    <span>Live Weekly Session Logs</span>
+                    <span class="badge-count">{{ total_weekly_sessions_count }}</span>
+                </button>
+            </div>
 
-            <!-- Pillar Filter Tabs -->
-            <div class="pillar-nav">
-                <a href="?tab=all&ay={{ selected_ay }}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-tab {% if active_tab == 'all' %}active{% endif %}">
-                    <i data-lucide="layout-grid"></i> All Focus Pillars
-                    <span class="badge-count">{{ total_programs_count }}</span>
+            <!-- 2. Single-Row Segmented Pillar Filter Bar -->
+            <div class="pillar-filter-bar">
+                <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px;">Pillar Filter:</span>
+                <a href="?tab=all&ay={{ selected_ay }}{% if selected_loc %}&loc={{ selected_loc }}{% endif %}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-filter-pill {% if active_tab == 'all' %}active{% endif %}">
+                    <i data-lucide="layout-grid" style="width: 13px; height: 13px;"></i> All Focus Pillars
+                    <span class="pill-badge">{{ total_programs_count }}</span>
                 </a>
-                <a href="?tab=cognitive&ay={{ selected_ay }}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-tab {% if active_tab == 'cognitive' %}active{% endif %}">
-                    <i data-lucide="brain"></i> Cognitive Development
-                    <span class="badge-count">{{ pillar_stats.cognitive.program_count|default:"6" }}</span>
+                <a href="?tab=cognitive&ay={{ selected_ay }}{% if selected_loc %}&loc={{ selected_loc }}{% endif %}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-filter-pill {% if active_tab == 'cognitive' %}active{% endif %}">
+                    <i data-lucide="brain" style="width: 13px; height: 13px;"></i> Cognitive Development
+                    <span class="pill-badge">{{ pillar_stats.cognitive.program_count|default:"6" }}</span>
                 </a>
-                <a href="?tab=steam&ay={{ selected_ay }}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-tab {% if active_tab == 'steam' %}active{% endif %}">
-                    <i data-lucide="flask-conical"></i> STEAM Literacy Program
-                    <span class="badge-count">{{ pillar_stats.steam.program_count|default:"13" }}</span>
+                <a href="?tab=steam&ay={{ selected_ay }}{% if selected_loc %}&loc={{ selected_loc }}{% endif %}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-filter-pill {% if active_tab == 'steam' %}active{% endif %}">
+                    <i data-lucide="flask-conical" style="width: 13px; height: 13px;"></i> STEAM Literacy Program
+                    <span class="pill-badge">{{ pillar_stats.steam.program_count|default:"13" }}</span>
                 </a>
-                <a href="?tab=student_excel&ay={{ selected_ay }}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-tab {% if active_tab == 'student_excel' %}active{% endif %}">
-                    <i data-lucide="graduation-cap"></i> Student Excel Program
-                    <span class="badge-count">{{ pillar_stats.student_excel.program_count|default:"9" }}</span>
+                <a href="?tab=student_excel&ay={{ selected_ay }}{% if selected_loc %}&loc={{ selected_loc }}{% endif %}{% if selected_prog %}&prog={{ selected_prog }}{% endif %}&view={{ active_view|default:'programs' }}" class="pillar-filter-pill {% if active_tab == 'student_excel' %}active{% endif %}">
+                    <i data-lucide="graduation-cap" style="width: 13px; height: 13px;"></i> Student Excel Program
+                    <span class="pill-badge">{{ pillar_stats.student_excel.program_count|default:"9" }}</span>
                 </a>
             </div>
 
-            <!-- KPI Metric Cards for Active Pillar / Filter -->
-            <div class="metric-grid">
-                <div class="metric-card accent-red">
-                    <div class="metric-label">Students Benefited</div>
-                    <div class="metric-value">{{ total_students_sum|stringformat:",d" }}</div>
-                    <div class="metric-meta">Across logged sessions &amp; cohorts</div>
+            <!-- Standalone Project Dossier Banner -->
+            {% if active_tab == 'cognitive' and cog_project %}
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="font-size: 13px; color: #1e40af; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="brain" style="width: 17px; height: 17px; color: #2563eb;"></i>
+                    <span>Dedicated Project Tracker: <strong>{{ cog_project.name }}</strong> ({{ cog_project.code }})</span>
                 </div>
-                <div class="metric-card accent-blue">
-                    <div class="metric-label">Learning Hours</div>
-                    <div class="metric-value">{{ total_learning_hrs_sum|floatformat:1 }} hrs</div>
-                    <div class="metric-meta">Curriculum &amp; practical instruction</div>
-                </div>
-                <div class="metric-card accent-green">
-                    <div class="metric-label">Partner Schools</div>
-                    <div class="metric-value">{{ total_schools_count }}</div>
-                    <div class="metric-meta">Covered educational institutions</div>
-                </div>
-                <div class="metric-card accent-amber">
-                    <div class="metric-label">Active Locations</div>
-                    <div class="metric-value">{{ total_locations_count }}</div>
-                    <div class="metric-meta">Belagavi, Hubballi, Koppal hubs</div>
-                </div>
+                <a href="{% url 'programs:project_detail' cog_project.pk %}" class="btn-af btn-af-secondary btn-af-sm" style="background: #ffffff; border-color: #93c5fd; color: #1e40af; font-weight: 700;">
+                    <i data-lucide="external-link"></i> Open Standalone Project Dossier &rarr;
+                </a>
             </div>
+            {% elif active_tab == 'steam' and steam_project %}
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="font-size: 13px; color: #1e40af; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="flask-conical" style="width: 17px; height: 17px; color: #2563eb;"></i>
+                    <span>Dedicated Project Tracker: <strong>{{ steam_project.name }}</strong> ({{ steam_project.code }})</span>
+                </div>
+                <a href="{% url 'programs:project_detail' steam_project.pk %}" class="btn-af btn-af-secondary btn-af-sm" style="background: #ffffff; border-color: #93c5fd; color: #1e40af; font-weight: 700;">
+                    <i data-lucide="external-link"></i> Open Standalone Project Dossier &rarr;
+                </a>
+            </div>
+            {% elif active_tab == 'student_excel' and excel_project %}
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="font-size: 13px; color: #1e40af; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="graduation-cap" style="width: 17px; height: 17px; color: #2563eb;"></i>
+                    <span>Dedicated Project Tracker: <strong>{{ excel_project.name }}</strong> ({{ excel_project.code }})</span>
+                </div>
+                <a href="{% url 'programs:project_detail' excel_project.pk %}" class="btn-af btn-af-secondary btn-af-sm" style="background: #ffffff; border-color: #93c5fd; color: #1e40af; font-weight: 700;">
+                    <i data-lucide="external-link"></i> Open Standalone Project Dossier &rarr;
+                </a>
+            </div>
+            {% endif %}
 
-            <!-- Budget vs Actual Spend Evaluation Banner -->
-            <div class="budget-card">
-                <div class="budget-stat">
-                    <span class="budget-stat-label">Allocated CSR Budget</span>
-                    <span class="budget-stat-value">&#8377; {{ allocated_total|floatformat:0 }}</span>
-                </div>
-                <div class="budget-stat">
-                    <span class="budget-stat-label">Actual Spent</span>
-                    <span class="budget-stat-value" style="color: #0284c7;">&#8377; {{ spent_total|floatformat:0 }}</span>
-                </div>
-                <div class="progress-bar-wrap">
-                    <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; color: #475569;">
-                        <span>Budget Utilization</span>
-                        <span style="color: #0284c7;">{{ utilization_pct }}%</span>
+            <!-- 3. Context-Aware KPI Metric Cards -->
+            <div id="kpiProgramsView" style="display: {% if active_view == 'sessions' %}none{% else %}block{% endif %};">
+                <div class="metric-grid">
+                    <div class="metric-card accent-red">
+                        <div class="metric-label">Students Benefited</div>
+                        <div class="metric-value">{{ total_students_sum|stringformat:",d" }}</div>
+                        <div class="metric-meta">Across logged sessions &amp; cohorts</div>
                     </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: {{ utilization_pct }}%;"></div>
+                    <div class="metric-card accent-blue">
+                        <div class="metric-label">Learning Hours</div>
+                        <div class="metric-value">{{ total_learning_hrs_sum|floatformat:1 }} hrs</div>
+                        <div class="metric-meta">Curriculum &amp; practical instruction</div>
+                    </div>
+                    <div class="metric-card accent-green">
+                        <div class="metric-label">Partner Schools</div>
+                        <div class="metric-value">{{ total_schools_count }}</div>
+                        <div class="metric-meta">Covered educational institutions</div>
+                    </div>
+                    <div class="metric-card accent-amber">
+                        <div class="metric-label">Active Locations</div>
+                        <div class="metric-value">{{ total_locations_count }}</div>
+                        <div class="metric-meta">{% if selected_loc_label %}{{ selected_loc_label }}{% elif selected_loc %}{{ selected_loc|title }} Hub{% else %}Belagavi, Hubballi, Koppal hubs{% endif %}</div>
                     </div>
                 </div>
-                <div>
-                    <span style="font-size: 11px; color: #64748b;">Evaluation Status:</span>
-                    <span style="display: inline-block; padding: 4px 9px; font-size: 11px; font-weight: 700; border-radius: 4px; background: #f0fdf4; color: #16a34a;">
-                        Within Allocated Envelope
-                    </span>
+
+                <!-- Budget vs Actual Spend Evaluation Banner -->
+                <div class="budget-card">
+                    <div class="budget-stat">
+                        <span class="budget-stat-label">Allocated CSR Budget</span>
+                        <span class="budget-stat-value">&#8377; {{ allocated_total|floatformat:0 }}</span>
+                    </div>
+                    <div class="budget-stat">
+                        <span class="budget-stat-label">Actual Spent</span>
+                        <span class="budget-stat-value" style="color: #0284c7;">&#8377; {{ spent_total|floatformat:0 }}</span>
+                    </div>
+                    <div class="progress-bar-wrap">
+                        <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; color: #475569;">
+                            <span>Budget Utilization</span>
+                            <span style="color: #0284c7;">{{ utilization_pct }}%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: {{ utilization_pct }}%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <span style="font-size: 11px; color: #64748b;">Evaluation Status:</span>
+                        <span style="display: inline-block; padding: 4px 9px; font-size: 11px; font-weight: 700; border-radius: 4px; background: #f0fdf4; color: #16a34a;">
+                            Within Allocated Envelope
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Filter & Search Toolbar -->
-            <div class="filter-bar">
-                <form method="get" class="filter-form" id="dashboardFilterForm">
+            <div id="kpiSessionsView" style="display: {% if active_view == 'sessions' %}block{% else %}none{% endif %};">
+                <div class="metric-grid" style="margin-bottom: 20px;">
+                    <div class="metric-card accent-red">
+                        <div class="metric-label">Total Field Sessions</div>
+                        <div class="metric-value">{{ total_weekly_sessions_count|intcomma }}</div>
+                        <div class="metric-meta">Logged field &amp; workshop sessions</div>
+                    </div>
+                    <div class="metric-card accent-blue">
+                        <div class="metric-label">Total Student Exposures</div>
+                        <div class="metric-value">{{ total_weekly_exposures|intcomma }}</div>
+                        <div class="metric-meta">Cumulative student touchpoints</div>
+                    </div>
+                    <div class="metric-card accent-green">
+                        <div class="metric-label">Classroom Gender Breakdown</div>
+                        <div class="metric-value" style="font-size: 19px; display: flex; align-items: center; gap: 8px;">
+                            <span>👦 {{ total_weekly_boys|intcomma }}</span>
+                            <span style="color: #cbd5e1; font-weight: 300;">|</span>
+                            <span style="color: #be185d;">👧 {{ total_weekly_girls|intcomma }}</span>
+                        </div>
+                        <div class="metric-meta">Boys vs Girls attending sessions</div>
+                    </div>
+                    <div class="metric-card accent-amber">
+                        <div class="metric-label">Schools Engaged</div>
+                        <div class="metric-value">{{ total_weekly_schools|default:total_schools_count }}</div>
+                        <div class="metric-meta">Active participating partner schools</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Unified Instant Filter & Search Toolbar -->
+            <div class="filter-bar" style="margin-bottom: 16px;">
+                <form method="get" class="filter-form" id="dashboardFilterForm" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; width: 100%;">
                     <input type="hidden" name="tab" value="{{ active_tab }}">
                     <input type="hidden" name="view" id="activeViewInput" value="{{ active_view|default:'programs' }}">
-                    <input type="text" name="q" value="{{ search_q }}" placeholder="Search program, school, topic, or location..." class="input-search" style="min-width: 230px;">
                     
-                    <select name="ay" class="select-filter" onchange="document.getElementById('dashboardFilterForm').submit()">
-                        {% for code, label in academic_years %}
-                        <option value="{{ code }}" {% if selected_ay == code %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <select name="prog" class="select-filter" onchange="document.getElementById('dashboardFilterForm').submit()" style="max-width: 270px;">
-                        <option value="">All Programs / Programmes</option>
-                        <optgroup label="Focus Programmes (Weekly Field Trackers)">
-                            {% for code, label in programme_choices %}
-                            <option value="{{ code }}" {% if selected_prog == code %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="Program Centers (Directory)">
-                            {% for p in program_centers %}
-                            <option value="{{ p.id }}" {% if selected_prog == p.id|stringformat:"s" %}selected{% endif %}>{{ p.code }} - {{ p.title|truncatechars:28 }}</option>
-                            {% endfor %}
-                        </optgroup>
-                    </select>
-
-                    <button type="submit" class="btn-af btn-af-secondary">
-                        <i data-lucide="search"></i> Filter
-                    </button>
+                    <!-- Instant Live Client-Side Search Box -->
+                    <div style="position: relative; width: 100%;">
+                        <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: #94a3b8;"></i>
+                        <input type="text" id="liveSearchInput" name="q" value="{{ search_q }}" 
+                               placeholder="Instant search by program, school, topic, location, instructor..." 
+                               class="input-search" 
+                               style="width: 100%; padding-left: 36px; font-size: 13px; height: 38px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;"
+                               oninput="handleLiveSearch(this.value)">
+                    </div>
                     
-                    {% if search_q or selected_ay != '2026-27' or selected_prog %}
-                    <a href="?tab={{ active_tab }}&view={{ active_view|default:'programs' }}" class="btn-af btn-af-secondary">Reset</a>
-                    {% endif %}
+                    <!-- Row 2: Split into 2 for Academic Year & Location (User Requirement 1) -->
+                    <div class="filter-row-split" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+                        <!-- Academic Year Filter (1st half) -->
+                        <div style="position: relative;">
+                            <select name="ay" id="filterAcademicYear" class="select-filter" onchange="document.getElementById('dashboardFilterForm').submit()" 
+                                    style="width: 100%; height: 38px; padding: 0 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #1e293b; background: #fff; cursor: pointer; box-sizing: border-box;">
+                                {% for code, label in academic_years %}
+                                <option value="{{ code }}" {% if selected_ay == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                    <button type="button" onclick="openDashboardUploadModal()" class="btn-af btn-af-secondary" style="margin-left: auto; border-color: #86efac; color: #166534; background: #f0fdf4; font-weight: 600;">
-                        <i data-lucide="file-spreadsheet" style="color: #16a34a;"></i> Add Session Log (Excel)
-                    </button>
+                        <!-- Operational Location Filter (2nd half: Belagavi, Hubballi, Koppal) -->
+                        <div style="position: relative;">
+                            <select name="loc" id="filterLocation" class="select-filter" onchange="document.getElementById('dashboardFilterForm').submit()" 
+                                    style="width: 100%; height: 38px; padding: 0 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #1e293b; background: #fff; cursor: pointer; box-sizing: border-box;">
+                                {% for code, label in location_choices %}
+                                <option value="{{ code }}" {% if selected_loc == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Program Filter with Location-Based Program Options (User Requirement 2) -->
+                    <div style="display: flex; gap: 10px; align-items: center; width: 100%; flex-wrap: wrap;">
+                        <select name="prog" id="filterProgramSelect" class="select-filter" onchange="document.getElementById('dashboardFilterForm').submit()" 
+                                style="height: 38px; padding: 0 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 500; color: #1e293b; background: #fff; min-width: 290px; max-width: 480px; flex: 1; cursor: pointer; box-sizing: border-box;">
+                            <option value="">All Programs / Programmes</option>
+
+                            <!-- Location-Based Program Options -->
+                            <optgroup label="📍 Location-Based Programs (Directory Centers)">
+                                <option value="all_location_based" {% if selected_prog == 'all_location_based' %}selected{% endif %}>
+                                    ⭐ All Location-Based Programs ({{ total_location_based_count }})
+                                </option>
+                                {% if not selected_loc or selected_loc == 'belagavi' %}
+                                <option value="loc_prog_belagavi" {% if selected_prog == 'loc_prog_belagavi' %}selected{% endif %}>
+                                    📍 All Belagavi Location-Based Programs ({{ total_belagavi_count }})
+                                </option>
+                                {% endif %}
+                                {% if not selected_loc or selected_loc == 'hubballi' %}
+                                <option value="loc_prog_hubballi" {% if selected_prog == 'loc_prog_hubballi' %}selected{% endif %}>
+                                    📍 All Hubballi-Dharwad Location-Based Programs ({{ total_hubballi_count }})
+                                </option>
+                                {% endif %}
+                                {% if not selected_loc or selected_loc == 'koppal' %}
+                                <option value="loc_prog_koppal" {% if selected_prog == 'loc_prog_koppal' %}selected{% endif %}>
+                                    📍 All Koppal Location-Based Programs ({{ total_koppal_count }})
+                                </option>
+                                {% endif %}
+                            </optgroup>
+
+                            <!-- Individual Location-Based Programs Grouped by Hub -->
+                            {% if not selected_loc or selected_loc == 'belagavi' %}
+                            <optgroup label="📍 Belagavi Hub Programs ({{ belagavi_programs|length }})">
+                                {% for p in belagavi_programs %}
+                                <option value="{{ p.id }}" data-loc="belagavi" {% if selected_prog == p.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ p.code }} - {{ p.title|truncatechars:38 }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+
+                            {% if not selected_loc or selected_loc == 'hubballi' %}
+                            <optgroup label="📍 Hubballi-Dharwad Hub Programs ({{ hubballi_programs|length }})">
+                                {% for p in hubballi_programs %}
+                                <option value="{{ p.id }}" data-loc="hubballi" {% if selected_prog == p.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ p.code }} - {{ p.title|truncatechars:38 }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+
+                            {% if not selected_loc or selected_loc == 'koppal' %}
+                            <optgroup label="📍 Koppal Hub Programs ({{ koppal_programs|length }})">
+                                {% for p in koppal_programs %}
+                                <option value="{{ p.id }}" data-loc="koppal" {% if selected_prog == p.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ p.code }} - {{ p.title|truncatechars:38 }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+
+                            <!-- Focus Programmes (Weekly Field Trackers) -->
+                            <optgroup label="📋 Focus Programmes (Weekly Field Trackers)">
+                                {% for code, label in programme_choices %}
+                                <option value="{{ code }}" {% if selected_prog == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        </select>
+
+                        {% if search_q or selected_ay != 'all' or selected_loc or selected_prog %}
+                        <a href="?tab={{ active_tab }}&view={{ active_view|default:'programs' }}" class="btn-af btn-af-secondary" style="height: 38px; display: inline-flex; align-items: center; font-size: 12.5px; padding: 0 14px; gap: 4px; text-decoration: none;">
+                            <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i> Reset
+                        </a>
+                        {% endif %}
+
+                        <span id="liveRowCountBadge" style="font-size: 12px; font-weight: 700; color: #64748b; margin-left: auto;"></span>
+                    </div>
                 </form>
             </div>
 
-            <!-- View Navigation Switcher: Programs Directory vs Live Weekly Session Logs -->
-            <div class="view-switcher-bar">
-                <button type="button" class="view-switcher-btn active" id="btnViewPrograms" onclick="switchDashboardView('programs')">
-                    <i data-lucide="building-2"></i> Programs &amp; Centers Directory ({{ program_rows|length }})
-                </button>
-                <button type="button" class="view-switcher-btn" id="btnViewSessions" onclick="switchDashboardView('sessions')">
-                    <i data-lucide="list-checks"></i> Live Weekly Session Logs ({{ total_weekly_sessions_count }})
-                </button>
-            </div>
-
             <!-- VIEW 1: Programs & Centers Directory -->
-            <div id="viewProgramsDir" class="table-wrapper">
+            <div id="viewProgramsDir" class="table-wrapper" style="display: {% if active_view == 'sessions' %}none{% else %}block{% endif %};">
                 <table class="af-table">
                     <thead>
                         <tr>
@@ -352,7 +569,7 @@
                     </thead>
                     <tbody>
                         {% for row in program_rows %}
-                        <tr>
+                        <tr data-district="{{ row.program.district|lower }}" data-location="{{ row.program.location_name|lower }}" data-program-id="{{ row.program.id }}">
                             <td><strong style="color: #ed1c24;">{{ row.program.code }}</strong></td>
                             <td>
                                 <a href="{% url 'programs:program_detail' row.program.pk %}" style="color: #0f172a; font-weight: 700; text-decoration: none;">
@@ -360,6 +577,18 @@
                                 </a>
                                 {% if row.program.ngo %}
                                 <div style="font-size: 11px; color: #64748b;">NGO Partner: {{ row.program.ngo.name }}</div>
+                                {% endif %}
+                                {% if "Humara Gaon" in row.program.title %}
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px;">
+                                    <span style="font-size: 10px; font-weight: 700; background: #fef3c7; color: #b45309; padding: 1px 6px; border-radius: 4px; border: 1px solid #fde68a;">Anganwadi</span>
+                                    <span style="font-size: 10px; font-weight: 700; background: #e0f2fe; color: #0369a1; padding: 1px 6px; border-radius: 4px; border: 1px solid #bae6fd;">Light Activity (Std 1-2)</span>
+                                    <span style="font-size: 10px; font-weight: 700; background: #dcfce7; color: #15803d; padding: 1px 6px; border-radius: 4px; border: 1px solid #bbf7d0;">Learning Camps (Std 2-5)</span>
+                                </div>
+                                {% elif "Mother Mela" in row.program.title %}
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px;">
+                                    <span style="font-size: 10px; font-weight: 700; background: #fdf2f8; color: #be185d; padding: 1px 6px; border-radius: 4px; border: 1px solid #fbcfe8;">Mother Community Event</span>
+                                    <span style="font-size: 10px; font-weight: 700; background: #f5f3ff; color: #6d28d9; padding: 1px 6px; border-radius: 4px; border: 1px solid #ddd6fe;">Early Childhood Dev</span>
+                                </div>
                                 {% endif %}
                             </td>
                             <td>
@@ -403,20 +632,26 @@
                 </table>
             </div>
 
-            <!-- VIEW 2: Live Weekly Field Tracking Sessions (Matching Schools Weekly Tracking) -->
-            <div id="viewLiveSessions" style="display: none;">
+            <!-- VIEW 2: Live Weekly Field Tracking Sessions Grouped by Sheet Folders -->
+            <div id="viewLiveSessions" style="display: {% if active_view == 'sessions' %}block{% else %}none{% endif %};">
                 <!-- Quick Session Log Upload Bar inside Live Sessions View -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 14px 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <strong style="color: #14532d; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
-                            <i data-lucide="calendar-check" style="width: 16px; height: 16px; color: #16a34a;"></i>
-                            Live Weekly Field &amp; Workshop Session Logs
+                        <strong style="color: #14532d; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="folder-kanban" style="width: 18px; height: 18px; color: #16a34a;"></i>
+                            Live Weekly Field &amp; Workshop Session Folders
+                            <span class="af-badge badge-active" style="font-size: 11.5px; padding: 2px 8px; background: #dcfce7; color: #166534; border: 1px solid #86efac;">
+                                {{ total_weekly_sessions_count }} Sessions
+                            </span>
+                            <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 8px; background: #ffffff; color: #166534; border: 1px solid #bbf7d0;">
+                                {{ total_weekly_exposures|intcomma }} Exposures
+                            </span>
                         </strong>
-                        <div style="font-size: 12px; color: #166534; margin-top: 2px;">
-                            Consolidated field session logs across partner schools, student exposures, and faculty facilitators.
+                        <div style="font-size: 12px; color: #166534; margin-top: 3px;">
+                            Multi-sheet tracker view organized into sheet folders (CHAAP Junior, SEP, MSL, Ignite, etc.)
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <a href="{% url 'programs:tracking_sample_template' %}?ay={{ selected_ay }}" class="btn-af btn-af-secondary btn-af-sm" style="background: #ffffff; color: #166534; border: 1px solid #86efac; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Download sample blank Excel spreadsheet for weekly session logs">
                             <i data-lucide="download"></i> Excel Template
                         </a>
@@ -426,81 +661,233 @@
                     </div>
                 </div>
 
-                <div class="table-wrapper">
-                    <table class="af-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px;">#</th>
-                                <th>Date</th>
-                                <th>Programme</th>
-                                <th>School / Location</th>
-                                <th>STD &amp; Div</th>
-                                <th>Topic Covered</th>
-                                <th>Instructor</th>
-                                <th>Type</th>
-                                <th style="text-align: right;">Boys</th>
-                                <th style="text-align: right;">Girls</th>
-                                <th style="text-align: right;">Exposures</th>
-                                <th style="text-align: center;">Teacher</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for s in recent_weekly_sessions %}
-                            <tr>
-                                <td style="color: #94a3b8; font-size: 11px;">{{ forloop.counter }}</td>
-                                <td>
-                                    {% if s.session_date %}
-                                        <strong>{{ s.session_date|date:"d M Y" }}</strong>
-                                    {% else %}
-                                        <strong>{{ s.month_name }} {{ s.day_number|default:"" }}</strong>
-                                    {% endif %}
-                                    <div style="font-size: 11px; color: #64748b;">{{ s.academic_year }}</div>
-                                </td>
-                                <td>
-                                    <span class="af-badge badge-neutral" style="font-size: 11px;">{{ s.get_programme_display }}</span>
-                                </td>
-                                <td>
-                                    {% if s.school %}
-                                        <strong style="color: #0f172a;">{{ s.school.name }}</strong>
-                                        {% if s.school.taluk %}
-                                        <div style="font-size: 11px; color: #64748b;">{{ s.school.taluk }}</div>
-                                        {% endif %}
-                                    {% else %}
-                                        <span style="color: #475569;">{{ s.raw_location_or_activity|default:"—" }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <strong>{{ s.standard|default:"—" }}</strong>
-                                    {% if s.division %}<span style="color: #64748b;">({{ s.division }})</span>{% endif %}
-                                </td>
-                                <td style="max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ s.topic }}">
-                                    {{ s.topic|default:"—" }}
-                                </td>
-                                <td>{{ s.instructor_name|default:"—" }}</td>
-                                <td>
-                                    <span style="font-size: 11.5px; color: #64748b;">{{ s.session_type|default:"Practical" }}</span>
-                                </td>
-                                <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.boys_present }}</td>
-                                <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.girls_present }}</td>
-                                <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ s.total_exposures|intcomma }}</td>
-                                <td style="text-align: center;">
-                                    {% if s.teacher_present %}
-                                        <span style="color: #16a34a; font-weight: 700;">✓ Yes</span>
-                                    {% else %}
-                                        <span style="color: #94a3b8;">✗ No</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="12" style="text-align: center; padding: 32px; color: #94a3b8;">
-                                    No weekly tracking sessions found for the active filter.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <!-- Horizontal Folder-Tab Navigation Bar -->
+                <div class="sheet-folder-nav" role="tablist" style="display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; overflow-x: auto; padding-bottom: 2px; align-items: center;">
+                    {% for folder in tracking_sheet_folders %}
+                    <button type="button"
+                            class="tracking-sheet-tab {% if selected_folder %}{% if folder.key == selected_folder %}active{% endif %}{% else %}{% if forloop.first %}active{% endif %}{% endif %}"
+                            onclick="switchTrackingSheetFolder('{{ folder.key }}', this)"
+                            id="tracking-tab-{{ folder.key }}"
+                            style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: {% if selected_folder %}{% if folder.key == selected_folder %}#ffffff{% else %}#f8fafc{% endif %}{% else %}{% if forloop.first %}#ffffff{% else %}#f8fafc{% endif %}{% endif %}; border: 1px solid {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#cbd5e1{% endif %}{% else %}{% if forloop.first %}#2563eb{% else %}#cbd5e1{% endif %}{% endif %}; border-bottom: none; border-radius: 8px 8px 0 0; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1e40af{% else %}#475569{% endif %}{% else %}{% if forloop.first %}#1e40af{% else %}#475569{% endif %}{% endif %}; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.15s ease-in-out; white-space: nowrap; {% if selected_folder %}{% if folder.key == selected_folder %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% else %}{% if forloop.first %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% endif %}">
+                        <i data-lucide="folder" style="width: 16px; height: 16px; color: {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#64748b{% endif %}{% else %}{% if forloop.first %}#2563eb{% else %}#64748b{% endif %}{% endif %};"></i>
+                        <span>{{ folder.name }}</span>
+                        {% if folder.is_custom_folder %}
+                        <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; background: #e0e7ff; color: #4338ca; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Folder</span>
+                        {% endif %}
+                        <span class="sheet-count-badge" style="background: {% if selected_folder %}{% if folder.key == selected_folder %}#dbeafe{% else %}#e2e8f0{% endif %}{% else %}{% if forloop.first %}#dbeafe{% else %}#e2e8f0{% endif %}{% endif %}; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1d4ed8{% else %}#475569{% endif %}{% else %}{% if forloop.first %}#1d4ed8{% else %}#475569{% endif %}{% endif %}; border-radius: 12px; padding: 2px 8px; font-size: 11.5px; font-weight: 700;">{{ folder.total_count }}</span>
+                    </button>
+                    {% endfor %}
+
+                    <!-- + Add Folder Button -->
+                    <button type="button"
+                            onclick="openAddFolderModal()"
+                            style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #eff6ff; border: 1.5px dashed #3b82f6; border-radius: 8px 8px 0 0; color: #1d4ed8; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s ease-in-out; white-space: nowrap; margin-left: 4px;">
+                        <i data-lucide="folder-plus" style="width: 15px; height: 15px; color: #2563eb;"></i>
+                        <span>+ Add Folder</span>
+                    </button>
                 </div>
+
+                {% if not tracking_sheet_folders %}
+                <div style="background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 36px 20px; text-align: center; margin-bottom: 24px;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #eff6ff; display: inline-flex; align-items: center; justify-content: center; color: #2563eb; margin-bottom: 10px;">
+                        <i data-lucide="folder-plus" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="font-weight: 700; color: #1e293b; font-size: 15px; margin-bottom: 4px;">No Tracking Folders Yet</div>
+                    <div style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Create a custom folder to organize tracking sheets and session logs for this view.</div>
+                    <button type="button" onclick="openAddFolderModal()" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; font-size: 13px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                        <i data-lucide="folder-plus" style="width: 15px; height: 15px;"></i>
+                        <span>+ Add Folder</span>
+                    </button>
+                </div>
+                {% endif %}
+
+                <!-- Individual Sheet Folder Panels -->
+                {% for folder in tracking_sheet_folders %}
+                <div id="tracking-sheet-panel-{{ folder.key }}" class="tracking-sheet-panel" style="{% if selected_folder %}{% if folder.key != selected_folder %}display: none;{% endif %}{% else %}{% if not forloop.first %}display: none;{% endif %}{% endif %}">
+                    {% if folder.is_custom_folder %}
+                    <!-- Custom Folder Action Toolbar -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8;">
+                                <i data-lucide="folder" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #0f172a; font-size: 15px;">{{ folder.name }}</div>
+                                <div style="font-size: 12px; color: #64748b;">
+                                    {% if folder.uploaded_file_name %}
+                                        Spreadsheet: <span style="font-weight: 600; color: #334155;">{{ folder.uploaded_file_name }}</span>
+                                    {% else %}
+                                        Custom tracking folder &bull; No spreadsheet uploaded yet
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            {% if folder.uploaded_file_url %}
+                            <a href="{% url 'programs:tracking_folder_download' folder.folder_id %}"
+                               class="btn btn-sm"
+                               style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; text-decoration: none;">
+                                <i data-lucide="download" style="width: 14px; height: 14px; color: #0284c7;"></i>
+                                <span>Download Original Excel</span>
+                            </a>
+                            {% endif %}
+                            <button type="button"
+                                    onclick="openUploadFolderModal('{{ folder.folder_id }}', '{{ folder.name|escapejs }}')"
+                                    class="btn btn-sm btn-primary"
+                                    style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                                <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                                <span>Upload Excel to this Folder</span>
+                            </button>
+                            <form method="post" action="{% url 'programs:tracking_folder_delete' folder.folder_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete folder \'{{ folder.name|escapejs }}\' and all its {{ folder.total_count }} logged sessions?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="next_url" value="{{ request.get_full_path }}">
+                                <button type="submit"
+                                        class="btn btn-sm"
+                                        style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-radius: 6px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; cursor: pointer;">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    <span>Delete Folder</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!-- Sheet KPI Summary Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px;">
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Sheet Sessions</span>
+                                <div style="width: 28px; height: 28px; border-radius: 6px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                                    <i data-lucide="calendar-check" style="width: 15px; height: 15px;"></i>
+                                </div>
+                            </div>
+                            <div style="font-size: 22px; font-weight: 800; color: #0f172a;">{{ folder.total_count }}</div>
+                            <span style="font-size: 11.5px; color: #64748b;">Logged field activity entries</span>
+                        </div>
+
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Student Exposures</span>
+                                <div style="width: 28px; height: 28px; border-radius: 6px; background: #f0fdf4; display: flex; align-items: center; justify-content: center; color: #16a34a;">
+                                    <i data-lucide="users" style="width: 15px; height: 15px;"></i>
+                                </div>
+                            </div>
+                            <div style="font-size: 22px; font-weight: 800; color: #16a34a;">{{ folder.total_exposures|intcomma }}</div>
+                            <span style="font-size: 11.5px; color: #64748b;">Total student touchpoints</span>
+                        </div>
+
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Gender Breakdown</span>
+                                <div style="width: 28px; height: 28px; border-radius: 6px; background: #faf5ff; display: flex; align-items: center; justify-content: center; color: #9333ea;">
+                                    <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
+                                </div>
+                            </div>
+                            <div style="font-size: 19px; font-weight: 800; color: #0f172a;">
+                                <span style="color: #2563eb;">{{ folder.boys_present|intcomma }} B</span> &bull; <span style="color: #db2777;">{{ folder.girls_present|intcomma }} G</span>
+                            </div>
+                            <span style="font-size: 11.5px; color: #64748b;">Boys vs Girls attendance</span>
+                        </div>
+
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Partner Schools</span>
+                                <div style="width: 28px; height: 28px; border-radius: 6px; background: #fffbeb; display: flex; align-items: center; justify-content: center; color: #d97706;">
+                                    <i data-lucide="school" style="width: 15px; height: 15px;"></i>
+                                </div>
+                            </div>
+                            <div style="font-size: 22px; font-weight: 800; color: #0f172a;">{{ folder.schools_count }}</div>
+                            <span style="font-size: 11.5px; color: #64748b;">Schools / learning centers</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Instant Search Bar for this sheet -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px; flex-wrap: wrap;">
+                        <div style="position: relative; flex: 1; min-width: 260px;">
+                            <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #94a3b8;"></i>
+                            <input type="text"
+                                   placeholder="Live search {{ folder.name }} by school, topic, instructor..."
+                                   oninput="filterTrackingSheetTable('{{ folder.key }}', this.value)"
+                                   style="width: 100%; padding: 8px 12px 8px 32px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; box-sizing: border-box;">
+                        </div>
+                        <span class="sheet-visible-badge-{{ folder.key }}" style="font-size: 12.5px; color: #64748b; font-weight: 600;">
+                            Showing all {{ folder.total_count }} sessions
+                        </span>
+                    </div>
+
+                    <!-- Sheet Session Table -->
+                    <div class="table-wrapper">
+                        <table class="af-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">#</th>
+                                    <th>Date</th>
+                                    <th>School / Location</th>
+                                    <th>STD &amp; Div</th>
+                                    <th>Topic Covered</th>
+                                    <th>Instructor</th>
+                                    <th>Type</th>
+                                    <th style="text-align: right;">Boys</th>
+                                    <th style="text-align: right;">Girls</th>
+                                    <th style="text-align: right;">Exposures</th>
+                                    <th style="text-align: center;">Teacher</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in folder.sessions %}
+                                <tr data-session-row data-search-text="{{ s.school.name|default:s.raw_location_or_activity|lower }} {{ s.topic|lower }} {{ s.instructor_name|lower }} {{ s.standard|lower }}">
+                                    <td style="color: #94a3b8; font-size: 11px;">{{ forloop.counter }}</td>
+                                    <td>
+                                        {% if s.session_date %}
+                                            <strong>{{ s.session_date|date:"d M Y" }}</strong>
+                                        {% else %}
+                                            <strong>{{ s.month_name }} {{ s.day_number|default:"" }}</strong>
+                                        {% endif %}
+                                        <div style="font-size: 11px; color: #64748b;">{{ s.academic_year }}</div>
+                                    </td>
+                                    <td>
+                                        {% if s.school %}
+                                            <strong style="color: #0f172a;">{{ s.school.name }}</strong>
+                                            {% if s.school.taluk %}
+                                            <div style="font-size: 11px; color: #64748b;">{{ s.school.taluk }}</div>
+                                            {% endif %}
+                                        {% else %}
+                                            <span style="color: #475569;">{{ s.raw_location_or_activity|default:"—" }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ s.standard|default:"All" }}</strong>
+                                        {% if s.division %}<span style="color: #64748b;">({{ s.division }})</span>{% endif %}
+                                    </td>
+                                    <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ s.topic }}">
+                                        {{ s.topic|default:"—" }}
+                                    </td>
+                                    <td>{{ s.instructor_name|default:"—" }}</td>
+                                    <td>
+                                        <span style="font-size: 11.5px; color: #64748b;">{{ s.session_type|default:"Practical" }}</span>
+                                    </td>
+                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.boys_present }}</td>
+                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.girls_present }}</td>
+                                    <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ s.total_exposures|intcomma }}</td>
+                                    <td style="text-align: center;">
+                                        {% if s.teacher_present %}
+                                            <span style="color: #16a34a; font-weight: 700;">✓ Yes</span>
+                                        {% else %}
+                                            <span style="color: #94a3b8;">✗ No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="11" style="text-align: center; color: #94a3b8; padding: 24px;">
+                                        No weekly tracking sessions found in this sheet folder.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -583,21 +970,105 @@
             const btnSess = document.getElementById('btnViewSessions');
             const viewProg = document.getElementById('viewProgramsDir');
             const viewSess = document.getElementById('viewLiveSessions');
+            const kpiProg = document.getElementById('kpiProgramsView');
+            const kpiSess = document.getElementById('kpiSessionsView');
             const activeViewInput = document.getElementById('activeViewInput');
             if (activeViewInput) activeViewInput.value = view;
+
+            // Sync URL query without full page reload
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('view', view);
+                window.history.replaceState({}, '', url.toString());
+            } catch(e) {}
 
             if (view === 'programs') {
                 if (viewProg) viewProg.style.display = 'block';
                 if (viewSess) viewSess.style.display = 'none';
+                if (kpiProg) kpiProg.style.display = 'block';
+                if (kpiSess) kpiSess.style.display = 'none';
                 if (btnProg) btnProg.classList.add('active');
                 if (btnSess) btnSess.classList.remove('active');
             } else {
                 if (viewProg) viewProg.style.display = 'none';
                 if (viewSess) viewSess.style.display = 'block';
+                if (kpiProg) kpiProg.style.display = 'none';
+                if (kpiSess) kpiSess.style.display = 'block';
                 if (btnProg) btnProg.classList.remove('active');
                 if (btnSess) btnSess.classList.add('active');
             }
+
+            // Sync live search to active view table
+            const searchInput = document.getElementById('liveSearchInput');
+            if (searchInput && searchInput.value) {
+                handleLiveSearch(searchInput.value);
+            } else {
+                updateLiveRowCount();
+            }
         }
+
+        // Instant Real-Time Client-Side Table Filtering
+        function handleLiveSearch(query) {
+            const q = (query || "").toLowerCase().trim();
+            const activeView = (document.getElementById('activeViewInput') ? document.getElementById('activeViewInput').value : 'programs') || 'programs';
+            const tableSelector = activeView === 'sessions' ? '#viewLiveSessions table tbody tr' : '#viewProgramsDir table tbody tr';
+            const rows = document.querySelectorAll(tableSelector);
+            let visibleCount = 0;
+            let totalCount = 0;
+
+            rows.forEach(row => {
+                // Skip empty placeholder row if present
+                if (row.querySelector('td[colspan]')) return;
+                totalCount++;
+                const text = row.innerText.toLowerCase();
+                if (!q || text.includes(q)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const badge = document.getElementById('liveRowCountBadge');
+            if (badge) {
+                if (q) {
+                    badge.innerText = `Showing ${visibleCount} of ${totalCount} rows`;
+                    badge.style.color = visibleCount > 0 ? '#16a34a' : '#ef4444';
+                } else {
+                    badge.innerText = `Total: ${totalCount} rows`;
+                    badge.style.color = '#64748b';
+                }
+            }
+        }
+
+        function updateLiveRowCount() {
+            const activeView = (document.getElementById('activeViewInput') ? document.getElementById('activeViewInput').value : 'programs') || 'programs';
+            const tableSelector = activeView === 'sessions' ? '#viewLiveSessions table tbody tr' : '#viewProgramsDir table tbody tr';
+            const rows = document.querySelectorAll(tableSelector);
+            let count = 0;
+            rows.forEach(row => {
+                if (!row.querySelector('td[colspan]') && row.style.display !== 'none') count++;
+            });
+            const badge = document.getElementById('liveRowCountBadge');
+            if (badge) {
+                badge.innerText = `Total: ${count} rows`;
+                badge.style.color = '#64748b';
+            }
+        }
+
+        // More Modules Dropdown Toggle
+        function toggleMoreModulesDropdown(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('moreModulesMenu');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('moreModulesMenu');
+            if (menu && menu.classList.contains('show')) {
+                menu.classList.remove('show');
+            }
+        });
 
         function openDashboardUploadModal() {
             const modal = document.getElementById('dashboardUploadModal');
@@ -677,13 +1148,211 @@
             });
         }
 
+        function switchTrackingSheetFolder(key, btn) {
+            document.querySelectorAll('.tracking-sheet-tab').forEach(t => {
+                t.classList.remove('active');
+                t.style.background = '#f8fafc';
+                t.style.borderColor = '#cbd5e1';
+                t.style.borderTop = 'none';
+                t.style.color = '#475569';
+                t.style.marginBottom = '0';
+                t.style.paddingBottom = '10px';
+                t.style.boxShadow = 'none';
+                const icon = t.querySelector('i');
+                if (icon) icon.style.color = '#64748b';
+                const badge = t.querySelector('.sheet-count-badge');
+                if (badge) {
+                    badge.style.background = '#e2e8f0';
+                    badge.style.color = '#475569';
+                }
+            });
+            document.querySelectorAll('.tracking-sheet-panel').forEach(p => p.style.display = 'none');
+
+            btn.classList.add('active');
+            btn.style.background = '#ffffff';
+            btn.style.borderColor = '#2563eb';
+            btn.style.borderTop = '3px solid #2563eb';
+            btn.style.color = '#1e40af';
+            btn.style.marginBottom = '-2px';
+            btn.style.paddingBottom = '11px';
+            btn.style.boxShadow = '0 4px 6px -2px rgba(37,99,235,0.08)';
+            const activeIcon = btn.querySelector('i');
+            if (activeIcon) activeIcon.style.color = '#2563eb';
+            const activeBadge = btn.querySelector('.sheet-count-badge');
+            if (activeBadge) {
+                activeBadge.style.background = '#dbeafe';
+                activeBadge.style.color = '#1d4ed8';
+            }
+
+            const panel = document.getElementById('tracking-sheet-panel-' + key);
+            if (panel) {
+                panel.style.display = 'block';
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function filterTrackingSheetTable(key, query) {
+            const q = (query || '').toLowerCase().trim();
+            const panel = document.getElementById('tracking-sheet-panel-' + key);
+            if (!panel) return;
+            const rows = panel.querySelectorAll('tbody tr[data-session-row]');
+            let visibleCount = 0;
+            rows.forEach(r => {
+                const text = r.getAttribute('data-search-text') || r.innerText.toLowerCase();
+                if (!q || text.includes(q)) {
+                    r.style.display = '';
+                    visibleCount++;
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+            const badge = panel.querySelector('.sheet-visible-badge-' + key);
+            if (badge) {
+                badge.innerText = q ? `Showing ${visibleCount} of ${rows.length} sessions` : `Showing all ${rows.length} sessions`;
+            }
+        }
+
+        function openAddFolderModal() {
+            const m = document.getElementById('addFolderModal');
+            if (m) {
+                m.style.display = 'flex';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function closeAddFolderModal() {
+            const m = document.getElementById('addFolderModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function openUploadFolderModal(folderId, folderName) {
+            const m = document.getElementById('uploadFolderModal');
+            const form = document.getElementById('uploadFolderForm');
+            const label = document.getElementById('uploadFolderTargetName');
+            if (label) label.textContent = 'Folder: ' + folderName;
+            if (form) {
+                form.action = "{% url 'programs:tracking_folder_upload' 0 %}".replace('/0/', '/' + folderId + '/');
+            }
+            if (m) {
+                m.style.display = 'flex';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function closeUploadFolderModal() {
+            const m = document.getElementById('uploadFolderModal');
+            if (m) m.style.display = 'none';
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             const initialView = "{{ active_view|default:'programs' }}";
             switchDashboardView(initialView);
+            updateLiveRowCount();
             if (window.lucide) {
                 lucide.createIcons();
             }
         });
     </script>
+
+    <!-- Add Folder Modal -->
+    <div id="addFolderModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+        <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 500px; margin: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
+            <div style="padding: 18px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                        <i data-lucide="folder-plus" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Add New Tracking Folder</h3>
+                </div>
+                <button type="button" onclick="closeAddFolderModal()" style="border: none; background: transparent; cursor: pointer; color: #94a3b8; padding: 4px;">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'programs:tracking_folder_create' %}" enctype="multipart/form-data" style="padding: 22px;">
+                {% csrf_token %}
+                <input type="hidden" name="tab_type" value="{{ active_tab }}">
+                {% if active_tab == 'cognitive' and cog_project %}
+                <input type="hidden" name="project_id" value="{{ cog_project.id }}">
+                {% elif active_tab == 'steam' and steam_project %}
+                <input type="hidden" name="project_id" value="{{ steam_project.id }}">
+                {% elif active_tab == 'student_excel' and excel_project %}
+                <input type="hidden" name="project_id" value="{{ excel_project.id }}">
+                {% endif %}
+                <input type="hidden" name="next_url" value="{{ request.get_full_path }}">
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Folder Name <span style="color: #ef4444;">*</span></label>
+                    <input type="text" name="name" required placeholder="e.g. Science Camp, Robotics Workshop, Field Visits"
+                           style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13.5px; box-sizing: border-box; outline: none;">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Academic Year</label>
+                    <select name="academic_year" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13.5px; box-sizing: border-box; outline: none; background: #ffffff;">
+                        <option value="2026-27" selected>2026-27 (Current Year)</option>
+                        <option value="2025-26">2025-26</option>
+                        <option value="2024-25">2024-25</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">
+                        Excel Spreadsheet
+                        <span style="font-weight: 400; color: #64748b; font-size: 12px;">(Optional — upload now or later)</span>
+                    </label>
+                    <input type="file" name="excel_file" accept=".xlsx, .xls"
+                           style="width: 100%; padding: 8px; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: #f8fafc;">
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Supports Microsoft Excel (.xlsx, .xls) files. Sessions will be grouped under this folder.</div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    <button type="button" onclick="closeAddFolderModal()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px; border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                        Create Folder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Excel to Folder Modal -->
+    <div id="uploadFolderModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+        <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 500px; margin: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
+            <div style="padding: 18px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                        <i data-lucide="upload" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Upload Excel to Folder</h3>
+                        <div id="uploadFolderTargetName" style="font-size: 12px; color: #2563eb; font-weight: 600;"></div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUploadFolderModal()" style="border: none; background: transparent; cursor: pointer; color: #94a3b8; padding: 4px;">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+            <form id="uploadFolderForm" method="post" action="" enctype="multipart/form-data" style="padding: 22px;">
+                {% csrf_token %}
+                <input type="hidden" name="next_url" value="{{ request.get_full_path }}">
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Select Excel Workbook (.xlsx / .xls) <span style="color: #ef4444;">*</span></label>
+                    <input type="file" name="excel_file" required accept=".xlsx, .xls"
+                           style="width: 100%; padding: 10px; border: 1.5px dashed #2563eb; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: #f8fafc;">
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 6px;">
+                        The spreadsheet session rows will be ingested and grouped under this custom folder.
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    <button type="button" onclick="closeUploadFolderModal()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px; border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                        Upload &amp; Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

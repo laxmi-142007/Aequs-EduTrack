@@ -251,6 +251,52 @@
             gap: 10px;
         }
 
+        /* AEQATRA Tabbed Portal Navigation */
+        .aeqatra-tabs-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            flex-wrap: wrap;
+        }
+        .aeqatra-tab-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate-600);
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .aeqatra-tab-item:hover {
+            color: var(--slate-900);
+            background: var(--slate-100);
+        }
+        .aeqatra-tab-item.active {
+            background: #fff1f1;
+            color: var(--aequs-red);
+            box-shadow: 0 1px 2px rgba(221,45,39,0.08);
+        }
+        .aeqatra-tab-badge {
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 12px;
+            background: var(--slate-200);
+            color: var(--slate-700);
+            font-weight: 700;
+        }
+        .aeqatra-tab-item.active .aeqatra-tab-badge {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
         @media (max-width: 768px) {
             .main { margin-left: 0; }
             .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -308,7 +354,34 @@
             {% endfor %}
         </div>
         {% endif %}
+        <!-- AEQATRA 3-Tab Pillar Navigation Bar -->
+        <div class="aeqatra-tabs-bar" style="margin-bottom: 8px;">
+            <a href="{% url 'volunteers:list' %}?tab=all{% if selected_ay %}&ay={{ selected_ay }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+               class="aeqatra-tab-item {% if active_tab == 'all' %}active{% endif %}" id="tab-all">
+                <i data-lucide="layout-grid" style="width:16px;height:16px;"></i>
+                <span>All Overview</span>
+            </a>
+            <a href="{% url 'volunteers:list' %}?tab=impact{% if selected_ay %}&ay={{ selected_ay }}{% endif %}"
+               class="aeqatra-tab-item {% if active_tab == 'impact' %}active{% endif %}" id="tab-impact">
+                <i data-lucide="activity" style="width:16px;height:16px;"></i>
+                <span>1. Impact &amp; Activities</span>
+                <span class="aeqatra-tab-badge">{{ completed_activities.count|add:ongoing_activities.count|add:upcoming_activities.count }}</span>
+            </a>
+            <a href="{% url 'volunteers:list' %}?tab=videos{% if selected_ay %}&ay={{ selected_ay }}{% endif %}"
+               class="aeqatra-tab-item {% if active_tab == 'videos' %}active{% endif %}" id="tab-videos">
+                <i data-lucide="video" style="width:16px;height:16px;"></i>
+                <span>2. Video Testimonials</span>
+                <span class="aeqatra-tab-badge">{{ testimonials.count }}</span>
+            </a>
+            <a href="{% url 'volunteers:list' %}?tab=roster{% if selected_ay %}&ay={{ selected_ay }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+               class="aeqatra-tab-item {% if active_tab == 'roster' %}active{% endif %}" id="tab-roster">
+                <i data-lucide="users" style="width:16px;height:16px;"></i>
+                <span>3. Forms &amp; Volunteer Roster</span>
+                <span class="aeqatra-tab-badge">{{ total_volunteers }}</span>
+            </a>
+        </div>
 
+        {% if active_tab == 'all' or active_tab == 'impact' %}
         <!-- CURRENT YEAR VS HISTORICAL DATA (Excel Volunteering Specification) -->
         <div style="background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.03);border-left:4px solid var(--aequs-red);">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
@@ -323,8 +396,8 @@
                     <div style="display:flex;align-items:center;background:#fff;border:1px solid var(--slate-300);border-radius:6px;padding:3px 6px 3px 10px;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,0.04);">
                         <i data-lucide="compass" style="width:14px;height:14px;color:var(--aequs-red);"></i>
                         <input type="text" id="employeeJourneyInput" placeholder="Employee ID (e.g. AEQ-1001)..." 
-                               style="border:none;background:transparent;outline:none;font-size:12px;color:var(--slate-800);width:190px;"
-                               onkeydown="if(event.key==='Enter'){event.preventDefault();lookupEmployeeJourney();}">
+                                style="border:none;background:transparent;outline:none;font-size:12px;color:var(--slate-800);width:190px;"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();lookupEmployeeJourney();}">
                         <button type="button" onclick="lookupEmployeeJourney()" class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:11.5px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;">
                             <i data-lucide="search" style="width:12px;height:12px;"></i> Journey
                         </button>
@@ -332,6 +405,7 @@
 
                     <!-- Academic Year Filter Form -->
                     <form method="GET" style="display:flex;gap:8px;align-items:center;margin:0;">
+                        <input type="hidden" name="tab" value="{{ active_tab }}">
                         <select name="ay" onchange="this.form.submit()" style="padding:6px 12px;font-size:12px;border:1px solid var(--slate-200);border-radius:6px;font-weight:600;color:var(--slate-800);background:#fff;cursor:pointer;">
                             {% for code, label in academic_years %}
                             <option value="{{ code }}" {% if selected_ay == code %}selected{% endif %}>{{ label }}</option>
@@ -580,7 +654,9 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
+        {% if active_tab == 'all' or active_tab == 'videos' %}
         <!-- EMPLOYEE TESTIMONIALS - VIDEO GALLERY (Excel Spec) -->
         <div style="background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.03);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -624,15 +700,19 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
 
+        {% if active_tab == 'all' or active_tab == 'roster' %}
         <!-- Controls: Search & Filters -->
         <div class="controls-card">
             <form method="get" style="display:flex;align-items:center;gap:10px;flex:1;max-width:460px;">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <input type="hidden" name="ay" value="{{ selected_ay }}">
                 <div class="search-wrap" style="width:100%;">
                     <i data-lucide="search" style="width:15px;height:15px;color:var(--slate-400);"></i>
                     <input type="text" name="q" value="{{ q }}" placeholder="Search by name, email, skills, occupation, city...">
                     {% if q %}
-                    <a href="{% url 'volunteers:list' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" style="color:var(--slate-400);text-decoration:none;">&times;</a>
+                    <a href="{% url 'volunteers:list' %}?tab={{ active_tab }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if selected_ay %}&ay={{ selected_ay }}{% endif %}" style="color:var(--slate-400);text-decoration:none;">&times;</a>
                     {% endif %}
                 </div>
                 {% if status_filter %}
@@ -643,9 +723,9 @@
 
             <div class="filter-pills">
                 <span style="font-size:11.5px;font-weight:700;color:var(--slate-400);margin-right:2px;">STATUS:</span>
-                <a href="{% url 'volunteers:list' %}{% if q %}?q={{ q }}{% endif %}" class="pill {% if not status_filter %}active{% endif %}">All</a>
-                <a href="{% url 'volunteers:list' %}?status=ACTIVE{% if q %}&q={{ q }}{% endif %}" class="pill {% if status_filter == 'ACTIVE' %}active{% endif %}">Active</a>
-                <a href="{% url 'volunteers:list' %}?status=INACTIVE{% if q %}&q={{ q }}{% endif %}" class="pill {% if status_filter == 'INACTIVE' %}active{% endif %}">Inactive</a>
+                <a href="{% url 'volunteers:list' %}?tab={{ active_tab }}{% if q %}&q={{ q }}{% endif %}{% if selected_ay %}&ay={{ selected_ay }}{% endif %}" class="pill {% if not status_filter %}active{% endif %}">All</a>
+                <a href="{% url 'volunteers:list' %}?tab={{ active_tab }}&status=ACTIVE{% if q %}&q={{ q }}{% endif %}{% if selected_ay %}&ay={{ selected_ay }}{% endif %}" class="pill {% if status_filter == 'ACTIVE' %}active{% endif %}">Active</a>
+                <a href="{% url 'volunteers:list' %}?tab={{ active_tab }}&status=INACTIVE{% if q %}&q={{ q }}{% endif %}{% if selected_ay %}&ay={{ selected_ay }}{% endif %}" class="pill {% if status_filter == 'INACTIVE' %}active{% endif %}">Inactive</a>
             </div>
         </div>
 
@@ -745,6 +825,7 @@
                 </table>
             </div>
         </div>
+        {% endif %}
     </main>
 </div>
 

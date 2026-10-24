@@ -2,6 +2,7 @@ import os
 import io
 import csv
 import json
+import re
 from django.conf import settings
 from django.db import transaction
 from schools.models import School, SchoolResource, GradeStrength
@@ -161,18 +162,16 @@ def parse_and_save_roster(program, uploaded_file):
         except Exception:
             pass
 
-    # Read rows from Excel or CSV
+    # Read rows from Excel or CSV (Processing ALL sheets in workbook)
+    sheets_to_process = []
     if filename.endswith((".xlsx", ".xls")):
         import openpyxl
         wb = openpyxl.load_workbook(uploaded_file, data_only=True)
-        # Select sheet with most data / headers
-        best_rows = []
         for ws in wb.worksheets:
             cur = [list(r) for r in ws.iter_rows(values_only=True) if any(c is not None and str(c).strip() != "" for c in r)]
-            if len(cur) > len(best_rows):
-                best_rows = cur
+            if len(cur) >= 2:
+                sheets_to_process.append((ws.title, cur))
         wb.close()
-        raw_rows = best_rows
     else:
         content_bytes = uploaded_file.read()
         decoded = ""
@@ -189,8 +188,9 @@ def parse_and_save_roster(program, uploaded_file):
         delim = "\t" if sample.count("\t") > sample.count(",") else ","
         reader = csv.reader(io.StringIO(decoded), delimiter=delim)
         raw_rows = [list(r) for r in reader if any(c is not None and str(c).strip() != "" for c in r)]
+        sheets_to_process.append(("CSV", raw_rows))
 
-    if not raw_rows:
+    if not sheets_to_process:
         raise ValueError("Uploaded file contains no readable data.")
 
     # Find Header Row & Title Info dynamically
@@ -198,74 +198,6 @@ def parse_and_save_roster(program, uploaded_file):
     profile_title = f"School Profile: Academic Year {program.academic_year or '2025-26'}"
     program_title = program.title
     donor_title = f"Location: {program.location_name}" if program.location_name else "Aequs Foundation"
-
-    header_idx = -1
-    for idx, r in enumerate(raw_rows[:15]):
-        row_str = " ".join(str(c or "").lower() for c in r)
-        first_cell = str(r[0] or "").strip()
-        if any(w in row_str for w in ("foundation", "agastya", "trust", "region", "ngo")):
-            title_org = first_cell if first_cell else row_str.strip()
-        if "school profile" in row_str or "academic year" in row_str:
-            profile_title = first_cell if first_cell else row_str.strip()
-        if ("school" in row_str and ("udise" in row_str or "taluk" in row_str)) or ("hool" in row_str and "taluk" in row_str):
-            header_idx = idx
-            break
-
-    if header_idx == -1:
-        # Fallback: search for first row having multiple string headers
-        for idx, r in enumerate(raw_rows[:10]):
-            if sum(1 for c in r if c and isinstance(c, str) and len(c.strip()) > 1) >= 4:
-                header_idx = idx
-                break
-
-    if header_idx == -1:
-        header_idx = 0
-
-    r0 = [str(c or "").strip() for c in raw_rows[header_idx]]
-    col_map = {}
-    mobiles = []
-    for i, h in enumerate(r0):
-        hl = h.lower()
-        if "sl" in hl or ("no" in hl and "mobile" not in hl and "hool" not in hl):
-            col_map.setdefault("sl", i)
-        elif "school" in hl or "name" in hl and "teacher" not in hl and "hm" not in hl:
-            col_map.setdefault("name", i)
-        elif "taluk" in hl:
-            col_map.setdefault("taluk", i)
-        elif "udise" in hl or "dise" in hl:
-            col_map.setdefault("udise", i)
-        elif "hm" in hl or "headmaster" in hl:
-            col_map.setdefault("hm", i)
-        elif "teacher" in hl:
-            col_map.setdefault("teacher", i)
-        elif "div" in hl or "sec" in hl:
-            col_map.setdefault("div", i)
-        if "mobile" in hl or "phone" in hl or "contact" in hl:
-            mobiles.append(i)
-
-    if mobiles:
-        col_map["hm_mob"] = mobiles[0]
-        if len(mobiles) > 1:
-            col_map["teacher_mob"] = mobiles[1]
-
-    # Grade mapping columns: Class 4th to 10th & Grand Total
-    # Standard format has 3 columns (BOYS, GIRLS, TOTAL) per class starting after Division
-    start_grades_idx = 9
-    for i, h in enumerate(r0):
-        if "4" in h or "class" in h.lower():
-            start_grades_idx = i
-            break
-
-    grade_cols = {
-        "c4": (start_grades_idx, start_grades_idx + 1, start_grades_idx + 2),
-        "c5": (start_grades_idx + 3, start_grades_idx + 4, start_grades_idx + 5),
-        "c6": (start_grades_idx + 6, start_grades_idx + 7, start_grades_idx + 8),
-        "c7": (start_grades_idx + 9, start_grades_idx + 10, start_grades_idx + 11),
-        "c8": (start_grades_idx + 12, start_grades_idx + 13, start_grades_idx + 14),
-        "c9": (start_grades_idx + 15, start_grades_idx + 16, start_grades_idx + 17),
-        "c10": (start_grades_idx + 18, start_grades_idx + 19, start_grades_idx + 20),
-        "gt": (start_grades_idx + 21, start_grades_idx + 22, start_grades_idx + 23),
-    }
 
     def _to_int(v):
         if v is None:
@@ -276,62 +208,193 @@ def parse_and_save_roster(program, uploaded_file):
         except (ValueError, TypeError):
             return 0
 
-    schools_data = []
-    current_school = None
-    data_rows = raw_rows[header_idx + 2:] if len(raw_rows) > header_idx + 2 else raw_rows[header_idx + 1:]
+    schools_dict = {}
 
-    for r in data_rows:
-        row_text = " ".join(str(c or "") for c in r)
-        # Skip user notes / metadata lines
-        if any(k in row_text for k in ("<USER", "<ADDITIONAL", "my data is in")):
-            break
+    for sheet_title, raw_rows in sheets_to_process:
+        # Check first rows for titles
+        for idx, r in enumerate(raw_rows[:15]):
+            row_str = " ".join(str(c or "").lower() for c in r)
+            first_cell = str(r[0] or "").strip()
+            if any(w in row_str for w in ("foundation", "agastya", "trust", "region", "ngo")):
+                if not title_org or title_org == "Partner Organization":
+                    title_org = first_cell if first_cell else row_str.strip()
+            if "school profile" in row_str or "academic year" in row_str:
+                profile_title = first_cell if first_cell else row_str.strip()
 
-        def _get_val(k):
-            idx = col_map.get(k)
-            if idx is not None and idx < len(r):
-                val = r[idx]
-                if val is not None:
-                    from backend.utils import clean_str_value
-                    return clean_str_value(val)
-            return ""
+        # Find Header Row in this sheet
+        header_idx = -1
+        for idx, r in enumerate(raw_rows[:15]):
+            row_str = " ".join(str(c or "").lower() for c in r)
+            if ("name of the school" in row_str) or ("school" in row_str and ("udise" in row_str or "taluk" in row_str or "name" in row_str or "std" in row_str or "sl" in row_str)) or ("hool" in row_str and "taluk" in row_str):
+                header_idx = idx
+                break
 
-        sl = _get_val("sl")
-        name = _get_val("name")
-        taluk = _get_val("taluk")
-        udise = _get_val("udise")
-        div = _get_val("div")
+        if header_idx == -1:
+            for idx, r in enumerate(raw_rows[:10]):
+                if sum(1 for c in r if c and isinstance(c, str) and len(c.strip()) > 1) >= 3:
+                    header_idx = idx
+                    break
 
-        # Skip Grand total summary row from data loop
-        c4_b = _to_int(r[grade_cols["c4"][0]]) if grade_cols["c4"][0] < len(r) else 0
-        gt_t = _to_int(r[grade_cols["gt"][2]]) if grade_cols["gt"][2] < len(r) else 0
-        if not name and not sl and not div and (c4_b == 333 or gt_t == 3722 or "total" in row_text.lower()):
+        if header_idx == -1:
             continue
 
-        div_obj = {}
-        for gk, (b_idx, g_idx, t_idx) in grade_cols.items():
-            b = _to_int(r[b_idx]) if b_idx < len(r) else 0
-            g_v = _to_int(r[g_idx]) if g_idx < len(r) else 0
-            t = _to_int(r[t_idx]) if t_idx < len(r) else (b + g_v)
-            div_obj[gk] = [b, g_v, t]
-        div_obj["division"] = div
+        r0 = [str(c or "").strip() for c in raw_rows[header_idx]]
+        col_map = {}
+        mobiles = []
+        for i, h in enumerate(r0):
+            hl = h.lower()
+            if "sl" in hl or ("no" in hl and "mobile" not in hl and "hool" not in hl):
+                col_map.setdefault("sl", i)
+            elif "name of the school" in hl or "name of school" in hl or (("school" in hl or "name" in hl) and "teacher" not in hl and "hm" not in hl):
+                col_map.setdefault("name", i)
+            elif "taluk" in hl:
+                col_map.setdefault("taluk", i)
+            elif "udise" in hl or "dise" in hl:
+                col_map.setdefault("udise", i)
+            elif "hm" in hl or "headmaster" in hl:
+                col_map.setdefault("hm", i)
+            elif "teacher" in hl:
+                col_map.setdefault("teacher", i)
+            elif "div" in hl or "sec" in hl:
+                col_map.setdefault("div", i)
+            if "mobile" in hl or "phone" in hl or "contact" in hl:
+                mobiles.append(i)
 
-        if sl or name:
-            if sl and not sl.isdigit() and not name:
-                continue
-            current_school = {
-                "sl": int(sl) if sl.isdigit() else (len(schools_data) + 1),
-                "name": name or f"School {len(schools_data) + 1}",
-                "taluk": taluk or "Dharwad",
-                "udise": udise or f"29090{len(schools_data) + 1:06d}",
-                "hm": _get_val("hm"),
-                "hm_mob": _get_val("hm_mob"),
-                "teacher": _get_val("teacher"),
-                "teacher_mob": _get_val("teacher_mob"),
-                "divisions": [div_obj],
+        if mobiles:
+            col_map["hm_mob"] = mobiles[0]
+            if len(mobiles) > 1:
+                col_map["teacher_mob"] = mobiles[1]
+
+        # Dynamically detect standards in header_row (r0)
+        grade_cols = {}
+        for i, h in enumerate(r0):
+            hl = h.lower()
+            for std_num in range(1, 11):
+                suffix = '1st' if std_num == 1 else ('2nd' if std_num == 2 else ('3rd' if std_num == 3 else f'{std_num}th'))
+                if suffix in hl and any(k in hl for k in ("std", "sdt", "class", "grade")):
+                    grade_cols[f"c{std_num}"] = (i, i + 1, i + 2)
+                    break
+            if "grand total" in hl or ("total" in hl and "total students" in hl):
+                grade_cols["gt"] = (i, i + 1, i + 2)
+
+        # Fallback to sequential standard offsets starting at col 9
+        if not grade_cols:
+            start_grades_idx = 9
+            for i, h in enumerate(r0):
+                if "4" in h or "class" in h.lower():
+                    start_grades_idx = i
+                    break
+            grade_cols = {
+                "c4": (start_grades_idx, start_grades_idx + 1, start_grades_idx + 2),
+                "c5": (start_grades_idx + 3, start_grades_idx + 4, start_grades_idx + 5),
+                "c6": (start_grades_idx + 6, start_grades_idx + 7, start_grades_idx + 8),
+                "c7": (start_grades_idx + 9, start_grades_idx + 10, start_grades_idx + 11),
+                "c8": (start_grades_idx + 12, start_grades_idx + 13, start_grades_idx + 14),
+                "c9": (start_grades_idx + 15, start_grades_idx + 16, start_grades_idx + 17),
+                "c10": (start_grades_idx + 18, start_grades_idx + 19, start_grades_idx + 20),
+                "gt": (start_grades_idx + 21, start_grades_idx + 22, start_grades_idx + 23),
             }
-            schools_data.append(current_school)
-        elif div and current_school:
-            current_school["divisions"].append(div_obj)
+
+        start_r = header_idx + 1
+        if start_r < len(raw_rows) and any(str(c or "").strip().upper() in ("B", "G", "T", "BOYS", "GIRLS", "TOTAL") for c in raw_rows[start_r]):
+            start_r += 1
+
+        data_rows = raw_rows[start_r:]
+        current_school = None
+
+        for r in data_rows:
+            row_text = " ".join(str(c or "") for c in r)
+            if any(k in row_text for k in ("<USER", "<ADDITIONAL", "my data is in")):
+                break
+
+            def _get_val(k):
+                idx = col_map.get(k)
+                if idx is not None and idx < len(r):
+                    val = r[idx]
+                    if val is not None:
+                        from backend.utils import clean_str_value
+                        return clean_str_value(val)
+                return ""
+
+            sl = _get_val("sl")
+            name = _get_val("name")
+            taluk = _get_val("taluk")
+            udise = _get_val("udise")
+            div = _get_val("div")
+
+            if not name and not sl and not div and ("total" in row_text.lower() or "grand total" in row_text.lower()):
+                continue
+
+            if name and name.lower() in ["total", "grand total", "name of the school", "nan", "none", "b", "g", "t"]:
+                continue
+
+            # Fallback taluk if missing from row
+            if not taluk and sheet_title and not sheet_title.lower().startswith("sheet"):
+                clean_st = sheet_title.replace("_", " ").replace("-", " ")
+                clean_st = re.sub(r"(school|data|tracker|weekly|junior|yuva)", "", clean_st, flags=re.IGNORECASE).strip()
+                if clean_st:
+                    taluk = clean_st
+
+            div_obj = {f"c{i}": [0, 0, 0] for i in range(1, 11)}
+            div_obj["gt"] = [0, 0, 0]
+            for gk, (b_idx, g_idx, t_idx) in grade_cols.items():
+                b = _to_int(r[b_idx]) if b_idx < len(r) else 0
+                g_v = _to_int(r[g_idx]) if g_idx < len(r) else 0
+                t = _to_int(r[t_idx]) if t_idx < len(r) else (b + g_v)
+                div_obj[gk] = [b, g_v, t]
+            div_obj["division"] = div
+
+            # Compute gt if 0
+            if div_obj["gt"][2] == 0:
+                tot_b = sum(div_obj[f"c{i}"][0] for i in range(1, 11))
+                tot_g = sum(div_obj[f"c{i}"][1] for i in range(1, 11))
+                tot_t = sum(div_obj[f"c{i}"][2] for i in range(1, 11))
+                div_obj["gt"] = [tot_b, tot_g, tot_t]
+
+            if sl or name:
+                if sl and not sl.isdigit() and not name:
+                    continue
+                clean_name = name.strip().lower() if name else f"school_{len(schools_dict)+1}"
+                school_key = clean_name
+                if school_key in schools_dict and not sl:
+                    existing = schools_dict[school_key]
+                    if not existing.get("hm") and _get_val("hm"):
+                        existing["hm"] = _get_val("hm")
+                        existing["hm_mob"] = _get_val("hm_mob")
+                    if not existing.get("teacher") and _get_val("teacher"):
+                        existing["teacher"] = _get_val("teacher")
+                        existing["teacher_mob"] = _get_val("teacher_mob")
+                    if div:
+                        existing["divisions"].append(div_obj)
+                    else:
+                        e_div = existing["divisions"][0]
+                        for i in range(1, 11):
+                            gk = f"c{i}"
+                            if div_obj[gk][2] > 0 and e_div[gk][2] == 0:
+                                e_div[gk] = div_obj[gk]
+                        e_div["gt"][0] = sum(e_div[f"c{i}"][0] for i in range(1, 11))
+                        e_div["gt"][1] = sum(e_div[f"c{i}"][1] for i in range(1, 11))
+                        e_div["gt"][2] = sum(e_div[f"c{i}"][2] for i in range(1, 11))
+                    current_school = existing
+                else:
+                    current_school = {
+                        "sl": int(sl) if (sl and sl.isdigit()) else (len(schools_dict) + 1),
+                        "name": name or f"School {len(schools_dict) + 1}",
+                        "taluk": taluk or "Dharwad",
+                        "udise": udise or f"29090{len(schools_dict) + 1:06d}",
+                        "hm": _get_val("hm"),
+                        "hm_mob": _get_val("hm_mob"),
+                        "teacher": _get_val("teacher"),
+                        "teacher_mob": _get_val("teacher_mob"),
+                        "divisions": [div_obj],
+                    }
+                    schools_dict[school_key] = current_school
+            elif div and current_school:
+                current_school["divisions"].append(div_obj)
+
+    schools_data = list(schools_dict.values())
+    for idx, sc in enumerate(schools_data, start=1):
+        sc["sl"] = idx
 
     if not schools_data:
         raise ValueError("Could not extract school rows from the uploaded file.")

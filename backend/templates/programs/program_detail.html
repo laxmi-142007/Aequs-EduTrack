@@ -502,11 +502,11 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <strong style="color: #14532d; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="calendar-check" style="width: 16px; height: 16px; color: #16a34a;"></i>
-                                Weekly Field &amp; Classroom Session Tracking
+                                <i data-lucide="folder-kanban" style="width: 16px; height: 16px; color: #16a34a;"></i>
+                                Weekly Field &amp; Classroom Session Sheet Folders
                             </strong>
                             <div style="font-size: 12px; color: #166534; margin-top: 2px;">
-                                Manage and sync weekly student sessions, curriculum topics, and facilitator exposures.
+                                Multi-sheet workbook view: navigate individual sheet tabs to view specific session logs and reach metrics.
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -527,101 +527,319 @@
                         </div>
                     </div>
 
-                    <!-- Filter and Search Bar -->
-                    <div class="filter-panel">
-                        <div style="position: relative; min-width: 280px; flex: 1;">
-                            <input type="text" id="sessionSearchInput" placeholder="Search sessions by school, topic, instructor..." oninput="filterSessionsTable()" style="width: 100%; padding: 7px 12px 7px 32px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
-                            <i data-lucide="search" style="position: absolute; left: 10px; top: 8px; width: 14px; height: 14px; color: #94a3b8;"></i>
-                        </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <select id="sessionTypeFilter" onchange="filterSessionsTable()" style="padding: 6px 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: #fff;">
-                                <option value="">All Session Types</option>
-                                <option value="practical">Practical</option>
-                                <option value="theory">Theory</option>
-                                <option value="ev session">EV Session</option>
-                                <option value="workshop">Workshop</option>
-                            </select>
-                            <button type="button" onclick="resetSessionFilter()" class="btn-af btn-af-secondary btn-af-sm" title="Clear Filters">
-                                Reset
-                            </button>
-                        </div>
+                    <!-- Horizontal Folder-Tab Navigation Bar -->
+                    <div class="sheet-folder-nav" role="tablist" style="display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; overflow-x: auto; padding-bottom: 2px; align-items: center;">
+                        {% for folder in sheet_folders %}
+                        <button type="button"
+                                class="prog-sheet-tab {% if selected_folder %}{% if folder.key == selected_folder %}active{% endif %}{% else %}{% if forloop.first %}active{% endif %}{% endif %}"
+                                onclick="switchProgSheetFolder('{{ folder.key }}', this)"
+                                id="prog-tab-{{ folder.key }}"
+                                style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: {% if selected_folder %}{% if folder.key == selected_folder %}#ffffff{% else %}#f8fafc{% endif %}{% else %}{% if forloop.first %}#ffffff{% else %}#f8fafc{% endif %}{% endif %}; border: 1px solid {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#cbd5e1{% endif %}{% else %}{% if forloop.first %}#2563eb{% else %}#cbd5e1{% endif %}{% endif %}; border-bottom: none; border-radius: 8px 8px 0 0; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1e40af{% else %}#475569{% endif %}{% else %}{% if forloop.first %}#1e40af{% else %}#475569{% endif %}{% endif %}; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.15s ease-in-out; white-space: nowrap; {% if selected_folder %}{% if folder.key == selected_folder %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% else %}{% if forloop.first %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% endif %}">
+                            <i data-lucide="folder" style="width: 16px; height: 16px; color: {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#64748b{% endif %}{% else %}{% if forloop.first %}#2563eb{% else %}#64748b{% endif %}{% endif %};"></i>
+                            <span>{{ folder.name }}</span>
+                            {% if folder.is_custom_folder %}
+                            <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; background: #e0e7ff; color: #4338ca; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Folder</span>
+                            {% endif %}
+                            <span class="sheet-count-badge" style="background: {% if selected_folder %}{% if folder.key == selected_folder %}#dbeafe{% else %}#e2e8f0{% endif %}{% else %}{% if forloop.first %}#dbeafe{% else %}#e2e8f0{% endif %}{% endif %}; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1d4ed8{% else %}#475569{% endif %}{% else %}{% if forloop.first %}#1d4ed8{% else %}#475569{% endif %}{% endif %}; border-radius: 12px; padding: 2px 8px; font-size: 11.5px; font-weight: 700;">{{ folder.total_count }}</span>
+                        </button>
+                        {% endfor %}
+
+                        <!-- + Add Folder Button -->
+                        <button type="button"
+                                onclick="openAddFolderModal()"
+                                style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #eff6ff; border: 1.5px dashed #3b82f6; border-radius: 8px 8px 0 0; color: #1d4ed8; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s ease-in-out; white-space: nowrap; margin-left: 4px;">
+                            <i data-lucide="folder-plus" style="width: 15px; height: 15px; color: #2563eb;"></i>
+                            <span>+ Add Folder</span>
+                        </button>
                     </div>
 
-                    <!-- Sessions Data Table -->
-                    <div class="table-wrapper">
-                        <table class="tracker-table" id="sessionsMainTable">
-                            <thead>
-                                <tr>
-                                    <th style="width: 45px;">#</th>
-                                    <th>Date</th>
-                                    <th>Code</th>
-                                    <th>School / Location</th>
-                                    <th>STD &amp; Div</th>
-                                    <th>Topic Covered</th>
-                                    <th>Instructor</th>
-                                    <th>Type</th>
-                                    <th style="text-align: right;">Boys</th>
-                                    <th style="text-align: right;">Girls</th>
-                                    <th style="text-align: right;">Exposures</th>
-                                    <th style="text-align: center;">Teacher</th>
-                                    <th style="text-align: center;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for s in combined_sessions %}
-                                <tr class="session-row" data-search="{{ s.school_name|lower }} {{ s.topic|lower }} {{ s.instructor|lower }} {{ s.code|lower }}" data-type="{{ s.session_type|lower }}">
-                                    <td style="color: #94a3b8; font-size: 11px;">{{ forloop.counter }}</td>
-                                    <td>
-                                        <span style="font-weight: 600; color: #0f172a;">{{ s.date_display }}</span>
-                                        <div style="font-size: 11px; color: #64748b;">{{ s.timing }}</div>
-                                    </td>
-                                    <td>
-                                        <span class="badge-prog-blue badge-pill mono">{{ s.code }}</span>
-                                    </td>
-                                    <td>
-                                        <span style="font-weight: 600; color: #1e293b;">{{ s.school_name }}</span>
-                                    </td>
-                                    <td>
-                                        <span style="font-weight: 600;">{{ s.standard }}</span>
-                                        {% if s.division %}<span style="color: #64748b;">(Sec {{ s.division }})</span>{% endif %}
-                                    </td>
-                                    <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ s.topic }}">
-                                        {{ s.topic }}
-                                    </td>
-                                    <td>
-                                        <span style="font-weight: 500; color: #334155;">{{ s.instructor }}</span>
-                                    </td>
-                                    <td>
-                                        <span style="font-size: 11.5px; color: #64748b;">{{ s.session_type }}</span>
-                                    </td>
-                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.boys }}</td>
-                                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.girls }}</td>
-                                    <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ s.total_exposures|intcomma }}</td>
-                                    <td style="text-align: center;">
-                                        {% if s.teacher_present %}
-                                            <span style="color: #16a34a; font-weight: 700;" title="Teacher Present">✓ Yes</span>
-                                        {% else %}
-                                            <span style="color: #94a3b8;" title="No teacher logged">✗ No</span>
-                                        {% endif %}
-                                    </td>
-                                    <td style="text-align: center;">
-                                        {% if s.pk %}
-                                        <a href="{% url 'programs:ev_class_detail' s.pk %}" class="btn-af btn-af-secondary btn-af-sm" style="padding: 2px 8px; font-size: 11px;">View</a>
-                                        {% else %}
-                                        <span class="af-badge badge-active" style="font-size: 10.5px; padding: 2px 6px;">{{ s.status }}</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="13" style="text-align: center; color: #94a3b8; padding: 32px;">
-                                        No weekly tracking sessions logged for this program yet. Click <strong>Log Field Session</strong> to record the first visit.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    {% if not sheet_folders %}
+                    <div style="background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 36px 20px; text-align: center; margin-bottom: 24px;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: #eff6ff; display: inline-flex; align-items: center; justify-content: center; color: #2563eb; margin-bottom: 10px;">
+                            <i data-lucide="folder-plus" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 15px; margin-bottom: 4px;">No Tracking Folders Yet</div>
+                        <div style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Create your first custom tracking folder to organize sessions and upload Excel data.</div>
+                        <button type="button" onclick="openAddFolderModal()" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; font-size: 13px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                            <i data-lucide="folder-plus" style="width: 15px; height: 15px;"></i>
+                            <span>+ Add Folder</span>
+                        </button>
                     </div>
+                    {% endif %}
+
+                    <!-- Individual Sheet Folder Panels -->
+                    {% for folder in sheet_folders %}
+                    <div id="prog-sheet-panel-{{ folder.key }}" class="prog-sheet-panel" style="{% if selected_folder %}{% if folder.key != selected_folder %}display: none;{% endif %}{% else %}{% if not forloop.first %}display: none;{% endif %}{% endif %}">
+                        {% if folder.is_custom_folder %}
+                        <!-- Custom Folder Action Toolbar -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 36px; height: 36px; border-radius: 8px; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8;">
+                                    <i data-lucide="folder" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; color: #0f172a; font-size: 15px;">{{ folder.name }}</div>
+                                    <div style="font-size: 12px; color: #64748b;">
+                                        {% if folder.uploaded_file_name %}
+                                            Spreadsheet: <span style="font-weight: 600; color: #334155;">{{ folder.uploaded_file_name }}</span>
+                                        {% else %}
+                                            Custom tracking folder &bull; No spreadsheet uploaded yet
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                {% if folder.uploaded_file_url %}
+                                <a href="{% url 'programs:tracking_folder_download' folder.folder_id %}"
+                                   class="btn btn-sm"
+                                   style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; text-decoration: none;">
+                                    <i data-lucide="download" style="width: 14px; height: 14px; color: #0284c7;"></i>
+                                    <span>Download Original Excel</span>
+                                </a>
+                                {% endif %}
+                                <button type="button"
+                                        onclick="openUploadFolderModal('{{ folder.folder_id }}', '{{ folder.name|escapejs }}')"
+                                        class="btn btn-sm btn-primary"
+                                        style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                                    <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                                    <span>Upload Excel to this Folder</span>
+                                </button>
+                                <form method="post" action="{% url 'programs:tracking_folder_delete' folder.folder_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete folder \'{{ folder.name|escapejs }}\' and all its {{ folder.total_count }} logged sessions?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next_url" value="{{ request.get_full_path }}">
+                                    <button type="submit"
+                                            class="btn btn-sm"
+                                            style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-radius: 6px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; cursor: pointer;">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        <span>Delete Folder</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!-- Sheet KPI Summary Cards -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px;">
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">
+                                        {% if folder.is_school_profile %}Registered Schools{% else %}Sheet Sessions{% endif %}
+                                    </span>
+                                    <div style="width: 28px; height: 28px; border-radius: 6px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                                        <i data-lucide="{% if folder.is_school_profile %}school{% else %}calendar-check{% endif %}" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                </div>
+                                <div style="font-size: 22px; font-weight: 800; color: #0f172a;">{{ folder.total_count }}</div>
+                                <span style="font-size: 11.5px; color: #64748b;">
+                                    {% if folder.is_school_profile %}Active partner schools{% else %}Logged field activity entries{% endif %}
+                                </span>
+                            </div>
+
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">
+                                        {% if folder.is_school_profile %}Total Enrolled Students{% else %}Student Exposures{% endif %}
+                                    </span>
+                                    <div style="width: 28px; height: 28px; border-radius: 6px; background: #f0fdf4; display: flex; align-items: center; justify-content: center; color: #16a34a;">
+                                        <i data-lucide="users" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                </div>
+                                <div style="font-size: 22px; font-weight: 800; color: #16a34a;">{{ folder.total_exposures|intcomma }}</div>
+                                <span style="font-size: 11.5px; color: #64748b;">
+                                    {% if folder.is_school_profile %}Enrolled student strength{% else %}Total student touchpoints{% endif %}
+                                </span>
+                            </div>
+
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Gender Breakdown</span>
+                                    <div style="width: 28px; height: 28px; border-radius: 6px; background: #faf5ff; display: flex; align-items: center; justify-content: center; color: #9333ea;">
+                                        <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                </div>
+                                <div style="font-size: 19px; font-weight: 800; color: #0f172a;">
+                                    <span style="color: #2563eb;">{{ folder.boys_present|intcomma }} B</span> &bull; <span style="color: #db2777;">{{ folder.girls_present|intcomma }} G</span>
+                                </div>
+                                <span style="font-size: 11.5px; color: #64748b;">
+                                    {% if folder.is_school_profile %}Enrolled boys vs girls{% else %}Boys vs Girls attendance{% endif %}
+                                </span>
+                            </div>
+
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">
+                                        {% if folder.is_school_profile %}Taluks Covered{% else %}Partner Schools{% endif %}
+                                    </span>
+                                    <div style="width: 28px; height: 28px; border-radius: 6px; background: #fffbeb; display: flex; align-items: center; justify-content: center; color: #d97706;">
+                                        <i data-lucide="map-pin" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                </div>
+                                <div style="font-size: 22px; font-weight: 800; color: #0f172a;">
+                                    {% if folder.is_school_profile %}{{ folder.taluks_count|default:1 }}{% else %}{{ folder.schools_count }}{% endif %}
+                                </div>
+                                <span style="font-size: 11.5px; color: #64748b;">
+                                    {% if folder.is_school_profile %}Educational sub-districts{% else %}Schools / learning centers{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Live Instant Search Bar for this sheet -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px; flex-wrap: wrap;">
+                            <div style="position: relative; flex: 1; min-width: 260px;">
+                                <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #94a3b8;"></i>
+                                <input type="text"
+                                       placeholder="Live search {{ folder.name }} by school, topic, instructor..."
+                                       oninput="filterProgSheetTable('{{ folder.key }}', this.value)"
+                                       style="width: 100%; padding: 8px 12px 8px 32px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; box-sizing: border-box;">
+                            </div>
+                            <span class="sheet-visible-badge-{{ folder.key }}" style="font-size: 12.5px; color: #64748b; font-weight: 600;">
+                                Showing all {{ folder.total_count }} {% if folder.is_school_profile %}schools{% else %}sessions{% endif %}
+                            </span>
+                        </div>
+
+                        {% if folder.is_school_profile %}
+                        <!-- School Profile Table for this sheet -->
+                        <div class="table-wrapper">
+                            <table class="tracker-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 45px;">#</th>
+                                        <th>School Name</th>
+                                        <th>Taluk</th>
+                                        <th>UDISE Code</th>
+                                        <th>Headmaster &amp; Phone</th>
+                                        <th>Science Teacher &amp; Phone</th>
+                                        <th style="text-align: right;">Enrolled Boys</th>
+                                        <th style="text-align: right;">Enrolled Girls</th>
+                                        <th style="text-align: right;">Total Strength</th>
+                                        <th style="text-align: center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sc in folder.schools %}
+                                    <tr data-session-row data-search-text="{{ sc.name|lower }} {{ sc.taluk|lower }} {{ sc.udise|lower }} {{ sc.hm|lower }} {{ sc.teacher|lower }}">
+                                        <td style="color: #94a3b8; font-size: 11px;">{{ sc.sl|default:forloop.counter }}</td>
+                                        <td>
+                                            {% if sc.school_obj %}
+                                            <a href="{% url 'schools:portal_agastya' %}?school={{ sc.school_obj.pk }}" class="school-link" title="Open School Dossier in Agastya Portal">
+                                                {{ sc.name }}
+                                            </a>
+                                            {% else %}
+                                            <span style="font-weight: 600; color: #1e293b;">{{ sc.name }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="af-badge badge-neutral" style="font-size: 11px;">{{ sc.taluk }}</span></td>
+                                        <td><span style="font-family: monospace; font-size: 11.5px; color: #64748b;">{{ sc.udise }}</span></td>
+                                        <td>
+                                            <div style="font-weight: 600; color: #1e293b; font-size: 12.5px;">{{ sc.hm|default:"—" }}</div>
+                                            {% if sc.hm_mob %}<a href="tel:{{ sc.hm_mob }}" style="font-size: 11px; color: #2563eb; text-decoration: none;">📞 {{ sc.hm_mob }}</a>{% endif %}
+                                        </td>
+                                        <td>
+                                            <div style="font-weight: 600; color: #1e293b; font-size: 12.5px;">{{ sc.teacher|default:"—" }}</div>
+                                            {% if sc.teacher_mob %}<a href="tel:{{ sc.teacher_mob }}" style="font-size: 11px; color: #2563eb; text-decoration: none;">📞 {{ sc.teacher_mob }}</a>{% endif %}
+                                        </td>
+                                        <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ sc.boys }}</td>
+                                        <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ sc.girls }}</td>
+                                        <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ sc.total_students }}</td>
+                                        <td style="text-align: center;">
+                                            {% if sc.school_obj %}
+                                            <a href="{% url 'schools:portal_agastya' %}?school={{ sc.school_obj.pk }}" class="btn-af btn-af-secondary btn-af-sm" style="padding: 2px 8px; font-size: 11px;">Profile</a>
+                                            {% else %}
+                                            <span style="color: #94a3b8; font-size: 11px;">—</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="10" style="text-align: center; color: #94a3b8; padding: 28px;">
+                                            No schools enrolled in this profile yet.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <!-- Sheet Session Table -->
+                        <div class="table-wrapper">
+                            <table class="tracker-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 45px;">#</th>
+                                        <th>Date</th>
+                                        <th>Code</th>
+                                        <th>School / Location</th>
+                                        <th>STD &amp; Div</th>
+                                        <th>Topic Covered</th>
+                                        <th>Instructor</th>
+                                        <th>Type</th>
+                                        <th style="text-align: right;">Boys</th>
+                                        <th style="text-align: right;">Girls</th>
+                                        <th style="text-align: right;">Exposures</th>
+                                        <th style="text-align: center;">Teacher</th>
+                                        <th style="text-align: center;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for s in folder.sessions %}
+                                    <tr data-session-row data-search-text="{{ s.school_name|lower }} {{ s.topic|lower }} {{ s.instructor|lower }} {{ s.code|lower }} {{ s.standard|lower }}">
+                                        <td style="color: #94a3b8; font-size: 11px;">{{ forloop.counter }}</td>
+                                        <td>
+                                            <span style="font-weight: 600; color: #0f172a;">{{ s.date_display }}</span>
+                                            <div style="font-size: 11px; color: #64748b;">{{ s.timing }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge-prog-blue badge-pill mono">{{ s.code }}</span>
+                                        </td>
+                                        <td>
+                                            <span style="font-weight: 600; color: #1e293b;">{{ s.school_name }}</span>
+                                            {% if s.school_taluk %}
+                                            <div style="font-size: 11px; color: #64748b;">{{ s.school_taluk }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span style="font-weight: 600;">{{ s.standard|default:"All" }}</span>
+                                            {% if s.division %}<span style="color: #64748b;">(Sec {{ s.division }})</span>{% endif %}
+                                        </td>
+                                        <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ s.topic }}">
+                                            {{ s.topic }}
+                                        </td>
+                                        <td>
+                                            <span style="font-weight: 500; color: #334155;">{{ s.instructor }}</span>
+                                        </td>
+                                        <td>
+                                            <span style="font-size: 11.5px; color: #64748b;">{{ s.session_type }}</span>
+                                        </td>
+                                        <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.boys }}</td>
+                                        <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ s.girls }}</td>
+                                        <td style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">{{ s.total_exposures|intcomma }}</td>
+                                        <td style="text-align: center;">
+                                            {% if s.teacher_present %}
+                                                <span style="color: #16a34a; font-weight: 700;" title="Teacher Present">✓ Yes</span>
+                                            {% else %}
+                                                <span style="color: #94a3b8;" title="No teacher logged">✗ No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            {% if s.pk %}
+                                            <a href="{% url 'programs:ev_class_detail' s.pk %}" class="btn-af btn-af-secondary btn-af-sm" style="padding: 2px 8px; font-size: 11px;">View</a>
+                                            {% else %}
+                                            <span class="af-badge badge-active" style="font-size: 10.5px; padding: 2px 6px;">{{ s.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="13" style="text-align: center; color: #94a3b8; padding: 28px;">
+                                            No session entries logged in this sheet yet.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
                 </div>
 
                 <!-- TAB 2: PARTICIPATING PARTNER SCHOOLS -->
@@ -1109,9 +1327,76 @@
             }, false);
         }
 
+        function switchProgSheetFolder(key, btn) {
+            document.querySelectorAll('.prog-sheet-tab').forEach(t => {
+                t.classList.remove('active');
+                t.style.background = '#f8fafc';
+                t.style.borderColor = '#cbd5e1';
+                t.style.borderTop = 'none';
+                t.style.color = '#475569';
+                t.style.marginBottom = '0';
+                t.style.paddingBottom = '10px';
+                t.style.boxShadow = 'none';
+                const icon = t.querySelector('i');
+                if (icon) icon.style.color = '#64748b';
+                const badge = t.querySelector('.sheet-count-badge');
+                if (badge) {
+                    badge.style.background = '#e2e8f0';
+                    badge.style.color = '#475569';
+                }
+            });
+            document.querySelectorAll('.prog-sheet-panel').forEach(p => p.style.display = 'none');
+
+            btn.classList.add('active');
+            btn.style.background = '#ffffff';
+            btn.style.borderColor = '#2563eb';
+            btn.style.borderTop = '3px solid #2563eb';
+            btn.style.color = '#1e40af';
+            btn.style.marginBottom = '-2px';
+            btn.style.paddingBottom = '11px';
+            btn.style.boxShadow = '0 4px 6px -2px rgba(37,99,235,0.08)';
+            const activeIcon = btn.querySelector('i');
+            if (activeIcon) activeIcon.style.color = '#2563eb';
+            const activeBadge = btn.querySelector('.sheet-count-badge');
+            if (activeBadge) {
+                activeBadge.style.background = '#dbeafe';
+                activeBadge.style.color = '#1d4ed8';
+            }
+
+            const panel = document.getElementById('prog-sheet-panel-' + key);
+            if (panel) {
+                panel.style.display = 'block';
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function filterProgSheetTable(key, query) {
+            const q = (query || '').toLowerCase().trim();
+            const panel = document.getElementById('prog-sheet-panel-' + key);
+            if (!panel) return;
+            const rows = panel.querySelectorAll('tbody tr[data-session-row]');
+            let visibleCount = 0;
+            rows.forEach(r => {
+                const text = r.getAttribute('data-search-text') || r.innerText.toLowerCase();
+                if (!q || text.includes(q)) {
+                    r.style.display = '';
+                    visibleCount++;
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+            const badge = panel.querySelector('.sheet-visible-badge-' + key);
+            if (badge) {
+                badge.innerText = q ? `Showing ${visibleCount} of ${rows.length} sessions` : `Showing all ${rows.length} sessions`;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             setupDropzone('dropZoneRoster', 'rosterFileInput', handleRosterFileSelect);
             setupDropzone('dropZoneSessionLog', 'sessionLogFileInput', handleSessionLogFileSelect);
+            if (window.lucide) {
+                lucide.createIcons();
+            }
         });
     </script>
 
@@ -1251,7 +1536,6 @@
                     <i data-lucide="loader-2" class="spin" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Ingesting session records and syncing with schools... Please wait.
                 </div>
 
-                <!-- Actions -->
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" onclick="closeUploadSessionLogModal()" class="btn-af btn-af-secondary" style="padding: 8px 16px; font-size: 13px;">
                         Cancel
@@ -1263,5 +1547,133 @@
             </form>
         </div>
     </div>
+
+    <!-- Add Folder Modal -->
+    <div id="addFolderModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+        <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 500px; margin: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
+            <div style="padding: 18px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                        <i data-lucide="folder-plus" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Add New Tracking Folder</h3>
+                </div>
+                <button type="button" onclick="closeAddFolderModal()" style="border: none; background: transparent; cursor: pointer; color: #94a3b8; padding: 4px;">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'programs:tracking_folder_create' %}" enctype="multipart/form-data" style="padding: 22px;">
+                {% csrf_token %}
+                <input type="hidden" name="program_id" value="{{ program.id }}">
+                <input type="hidden" name="next_url" value="{{ request.get_full_path }}">
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Folder Name <span style="color: #ef4444;">*</span></label>
+                    <input type="text" name="name" required placeholder="e.g. Science Exposure Visits, Class 8 Assessments"
+                           style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13.5px; box-sizing: border-box; outline: none;">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Academic Year</label>
+                    <select name="academic_year" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13.5px; box-sizing: border-box; outline: none; background: #ffffff;">
+                        <option value="2026-27" selected>2026-27 (Current Year)</option>
+                        <option value="2025-26">2025-26</option>
+                        <option value="2024-25">2024-25</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">
+                        Excel Spreadsheet
+                        <span style="font-weight: 400; color: #64748b; font-size: 12px;">(Optional — upload now or later)</span>
+                    </label>
+                    <input type="file" name="excel_file" accept=".xlsx, .xls"
+                           style="width: 100%; padding: 8px; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: #f8fafc;">
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Supports Microsoft Excel (.xlsx, .xls) files. Sessions will be grouped under this folder.</div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    <button type="button" onclick="closeAddFolderModal()" class="btn-af btn-af-secondary" style="padding: 8px 16px; font-size: 13px; border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn-af btn-af-primary" style="padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                        Create Folder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Excel to Folder Modal -->
+    <div id="uploadFolderModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+        <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 500px; margin: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
+            <div style="padding: 18px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                        <i data-lucide="upload" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Upload Excel to Folder</h3>
+                        <div id="uploadFolderTargetName" style="font-size: 12px; color: #2563eb; font-weight: 600;"></div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUploadFolderModal()" style="border: none; background: transparent; cursor: pointer; color: #94a3b8; padding: 4px;">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+            <form id="uploadFolderForm" method="post" action="" enctype="multipart/form-data" style="padding: 22px;">
+                {% csrf_token %}
+                <input type="hidden" name="next_url" value="{{ request.get_full_path }}">
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Select Excel Workbook (.xlsx / .xls) <span style="color: #ef4444;">*</span></label>
+                    <input type="file" name="excel_file" required accept=".xlsx, .xls"
+                           style="width: 100%; padding: 10px; border: 1.5px dashed #2563eb; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: #f8fafc;">
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 6px;">
+                        The spreadsheet session rows will be ingested and grouped under this custom folder.
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    <button type="button" onclick="closeUploadFolderModal()" class="btn-af btn-af-secondary" style="padding: 8px 16px; font-size: 13px; border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn-af btn-af-primary" style="padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                        Upload &amp; Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddFolderModal() {
+            const m = document.getElementById('addFolderModal');
+            if (m) {
+                m.style.display = 'flex';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function closeAddFolderModal() {
+            const m = document.getElementById('addFolderModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function openUploadFolderModal(folderId, folderName) {
+            const m = document.getElementById('uploadFolderModal');
+            const form = document.getElementById('uploadFolderForm');
+            const label = document.getElementById('uploadFolderTargetName');
+            if (label) label.textContent = 'Folder: ' + folderName;
+            if (form) {
+                form.action = "{% url 'programs:tracking_folder_upload' 0 %}".replace('/0/', '/' + folderId + '/');
+            }
+            if (m) {
+                m.style.display = 'flex';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function closeUploadFolderModal() {
+            const m = document.getElementById('uploadFolderModal');
+            if (m) m.style.display = 'none';
+        }
+    </script>
 </body>
 </html>

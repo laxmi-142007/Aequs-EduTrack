@@ -656,4 +656,45 @@ class ProgramsAndFoundationModulesTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Unsupported file type")
 
+    def test_program_list_location_filtering(self):
+        prg_belagavi = Program.objects.create(
+            title="Belagavi Training Initiative",
+            code="PRG-BGM-FILTER-01",
+            district="Belagavi",
+            location_name="Belagavi Center",
+        )
+        prg_hubballi = Program.objects.create(
+            title="Hubballi Robotics Workshop",
+            code="PRG-HBL-FILTER-01",
+            district="Dharwad",
+            village_or_town="Hubballi",
+            location_name="Dharwad Tech Lab",
+        )
+        prg_koppal = Program.objects.create(
+            title="Koppal Precision Skills",
+            code="PRG-KPL-FILTER-01",
+            district="Koppal",
+            location_name="Koppal Precision Center",
+        )
+
+        # Test Belagavi filter
+        resp_bgm = self.client.get(reverse("programs:program_list") + "?location=belagavi")
+        self.assertEqual(resp_bgm.status_code, 200)
+        self.assertContains(resp_bgm, "Belagavi Training Initiative")
+        self.assertNotContains(resp_bgm, "Hubballi Robotics Workshop")
+        self.assertNotContains(resp_bgm, "Koppal Precision Skills")
+
+        # Test Hubballi filter
+        resp_hbl = self.client.get(reverse("programs:program_list") + "?location=hubballi")
+        self.assertEqual(resp_hbl.status_code, 200)
+        self.assertContains(resp_hbl, "Hubballi Robotics Workshop")
+        self.assertNotContains(resp_hbl, "Belagavi Training Initiative")
+
+        # Test Koppal filter
+        resp_kpl = self.client.get(reverse("programs:program_list") + "?location=koppal")
+        self.assertEqual(resp_kpl.status_code, 200)
+        self.assertContains(resp_kpl, "Koppal Precision Skills")
+        self.assertNotContains(resp_kpl, "Belagavi Training Initiative")
+
+
 

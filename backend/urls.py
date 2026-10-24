@@ -42,8 +42,11 @@ urlpatterns = [
     # Events
     path("events/", include("events.urls")),
 
-    # Volunteers
-    path("volunteers/", include("volunteers.urls")),
+    # AEQATRA Employee Volunteering Portal (Canonical)
+    path("aeqatra/", include("volunteers.urls")),
+
+    # Backward-compatible direct access for legacy /volunteers/
+    path("volunteers/", include(("volunteers.urls", "volunteers_legacy"), namespace="volunteers_legacy")),
 
     # YFS Weekly Trackers & Enrollments
     path("trackers/", include("trackers.urls")),

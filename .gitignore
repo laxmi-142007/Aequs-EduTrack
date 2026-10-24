@@ -35,3 +35,7 @@ batch*.txt
 
 # Backup files
 *.backup*
+*.bak
+
+# Scratch scripts
+scratch/

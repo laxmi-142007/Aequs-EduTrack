@@ -464,86 +464,104 @@ def bulk_upload_students(request):
 
         else:
 
+            import re
+
             workbook = openpyxl.load_workbook(
                 uploaded_file,
                 read_only=True,
                 data_only=True,
             )
 
-            worksheet = workbook.active
-
-            excel_rows = list(
-                worksheet.iter_rows(
-                    values_only=True
-                )
-            )
-
-            workbook.close()
-
-            if not excel_rows:
-
-                messages.error(
-                    request,
-                    "The Excel file is empty."
-                )
-
-                return redirect(
-                    "students:bulk_upload"
-                )
-
-            # -------------------------------------------------
-            # HEADER ROW
-            # -------------------------------------------------
-
-            headers = [
-                _normalize_header_name(cell)
-                if cell is not None
-                else ""
-                for cell in excel_rows[0]
-            ]
-
-            available_columns = set(
-                headers
-            )
-
-            # -------------------------------------------------
-            # CONVERT EXCEL TO DICTIONARIES
-            # -------------------------------------------------
-
             rows = []
+            available_columns = set()
 
-            for excel_row in excel_rows[1:]:
+            for worksheet in workbook.worksheets:
+                excel_rows = list(
+                    worksheet.iter_rows(
+                        values_only=True
+                    )
+                )
 
-                # Ignore completely empty rows
-                if not any(
-                    cell is not None
-                    and str(cell).strip() != ""
-                    for cell in excel_row
-                ):
+                excel_rows = [
+                    r for r in excel_rows
+                    if any(cell is not None and str(cell).strip() != "" for cell in r)
+                ]
+
+                if not excel_rows:
                     continue
 
-                row_data = {}
+                # -------------------------------------------------
+                # HEADER ROW DETECTION PER SHEET
+                # -------------------------------------------------
 
-                for index, header in enumerate(headers):
+                header_idx = -1
+                for idx, r in enumerate(excel_rows[:15]):
+                    norm_r = [
+                        _normalize_header_name(c)
+                        for c in r
+                        if c is not None
+                    ]
+                    if any("student_name" in c or c == "name" or "student" in c for c in norm_r):
+                        header_idx = idx
+                        break
 
-                    if not header:
+                if header_idx == -1:
+                    if len(workbook.worksheets) == 1:
+                        header_idx = 0
+                    else:
+                        # Skip summary, cover, or non-student worksheet
                         continue
 
-                    value = (
-                        excel_row[index]
-                        if index < len(excel_row)
-                        else ""
-                    )
+                headers = [
+                    _normalize_header_name(cell)
+                    if cell is not None
+                    else ""
+                    for cell in excel_rows[header_idx]
+                ]
 
-                    row_data[header] = (
-                        ""
-                        if value is None
-                        else value
-                    )
+                available_columns.update(headers)
 
-                rows.append(
-                    row_data
-                )
+                # Detect if sheet title specifies grade/standard (e.g. "8th STD", "Grade 9", "Class 10")
+                sheet_grade = None
+                ws_clean = worksheet.title.strip()
+                m_cls = re.search(r'\b(1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|[1-9]|10)\b', ws_clean, re.I)
+                if m_cls:
+                    sheet_grade = m_cls.group(0)
+
+                # -------------------------------------------------
+                # CONVERT EXCEL TO DICTIONARIES
+                # -------------------------------------------------
+
+                for excel_row in excel_rows[header_idx + 1:]:
+                    if not any(
+                        cell is not None
+                        and str(cell).strip() != ""
+                        for cell in excel_row
+                    ):
+                        continue
+
+                    row_data = {}
+                    for index, header in enumerate(headers):
+                        if not header:
+                            continue
+                        value = (
+                            excel_row[index]
+                            if index < len(excel_row)
+                            else ""
+                        )
+                        row_data[header] = (
+                            ""
+                            if value is None
+                            else value
+                        )
+
+                    if sheet_grade and not row_data.get("current_class"):
+                        row_data["current_class"] = sheet_grade
+
+                    if any(str(v).strip() for v in row_data.values()):
+                        rows.append(row_data)
+
+            workbook.close()
 
         # =====================================================
         # REQUIRED COLUMNS

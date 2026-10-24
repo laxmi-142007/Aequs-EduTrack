@@ -11,7 +11,9 @@ from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import transaction
 
-from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit, MikePropenScholarshipApplication
+from django.utils.text import slugify
+
+from .models import NGO, Project, Program, EVClassSession, Scholarship, CSRGrant, Location, MentorshipSession, IndustryVisit, MikePropenScholarshipApplication, TrackingFolder
 from .forms import NGOForm, ProjectForm, ProgramForm, EVClassSessionForm, ScholarshipForm, LocationForm, MentorshipSessionForm, IndustryVisitForm
 from schools.models import School, SchoolResource
 from students.models import Student
@@ -138,6 +140,35 @@ def resolve_tracker_programme(program):
     return None
 
 
+def format_sheet_folder_label(folder_key, programme_code=None, prog_labels=None):
+    """
+    Returns clean, professional display title for workbook sheet folders.
+    """
+    if prog_labels is None:
+        from trackers.models import Programme
+        prog_labels = dict(Programme.choices)
+    custom = {
+        "school_profile": "School Profile 2025-26",
+        "schoolprofile": "School Profile 2025-26",
+        "schoolsession": "School Sessions (MSL)",
+        "summerwinter": "Summer & Winter Camp",
+        "communityvisit": "Community Visits",
+        "teachertrainingprogram": "Teacher Training",
+        "sciencefair": "Science Fair (Avishkar)",
+        "specialprogram": "Special Programs",
+        "operationvasantha": "Operation Vasantha",
+        "ev_class": "EV Classroom Sessions",
+    }
+    k_lower = (folder_key or "").lower().strip()
+    if k_lower in custom:
+        return custom[k_lower]
+    if folder_key and folder_key in prog_labels:
+        return prog_labels[folder_key]
+    if programme_code and programme_code in prog_labels:
+        return prog_labels[programme_code]
+    return folder_key.replace("_", " ").title() if folder_key else "General Sessions"
+
+
 def project_detail(request, pk):
     project = get_object_or_404(
         Project.objects.select_related("ngo").prefetch_related("target_schools", "locations"),
@@ -150,33 +181,169 @@ def project_detail(request, pk):
     internships = project.internships.all().select_related("student", "school", "program")
     mentorship_sessions = project.mentorship_sessions.all().select_related("student")
 
-    from trackers.models import WeeklyTrackerSession
+    from trackers.models import WeeklyTrackerSession, Programme
+    from collections import defaultdict
+    from django.db.models import Q, Sum
+
     project_program_keys = set()
     for prg in programs:
         k = resolve_tracker_programme(prg)
         if k:
             project_program_keys.add(k)
 
-    project_sessions = []
+    ws_filter = Q()
     if project_program_keys:
-        ws_qs = WeeklyTrackerSession.objects.filter(programme__in=project_program_keys).select_related("school", "ngo").order_by("-session_date", "-id")[:60]
-        for ws in ws_qs:
-            project_sessions.append({
+        ws_filter |= Q(programme__in=project_program_keys)
+    if project.ngo:
+        ws_filter |= Q(ngo=project.ngo)
+
+    ws_qs = WeeklyTrackerSession.objects.none()
+    if ws_filter:
+        ws_qs = WeeklyTrackerSession.objects.filter(ws_filter).select_related("school", "ngo").order_by("-created_at", "-session_date", "-id")
+
+    prog_labels = dict(Programme.choices)
+    grouped = defaultdict(list)
+    schools_per_sheet = defaultdict(set)
+
+    agastya_sheets = {
+        "schoolsession", "summerwinter", "communityvisit", "teachertrainingprogram", "sciencefair", "specialprogram", "operationvasantha"
+    }
+    custom_folders = list(TrackingFolder.objects.filter(project=project))
+    cf_names = {cf.name for cf in custom_folders}
+
+    for ws in ws_qs[:3000]:
+        st_clean = (ws.session_type or "").strip()
+        if st_clean in cf_names:
+            continue
+        st_lower = st_clean.lower()
+        if st_lower in agastya_sheets:
+            folder_key = st_lower
+        elif ws.programme == "MSL" or st_lower in ["hands-on", "practical", "theory", "msl"]:
+            folder_key = "schoolsession"
+        else:
+            folder_key = ws.programme
+        session_dict = {
+            "date": ws.session_date,
+            "date_display": ws.session_date.strftime("%d %b %Y") if ws.session_date else f"{ws.month_name} {ws.day_number or ''}".strip(),
+            "academic_year": ws.academic_year,
+            "programme": ws.get_programme_display(),
+            "programme_code": ws.programme,
+            "school_name": ws.school.name if ws.school else (ws.raw_location_or_activity or "—"),
+            "school_taluk": ws.school.taluk if ws.school else "",
+            "standard": ws.standard or "All",
+            "division": ws.division or "",
+            "timing": ws.timing or "",
+            "topic": ws.topic or ws.raw_location_or_activity or "Module Session",
+            "instructor": ws.instructor_name or "Faculty Facilitator",
+            "session_type": ws.session_type or "Practical",
+            "boys": ws.boys_present,
+            "girls": ws.girls_present,
+            "exposures": ws.total_exposures,
+            "teacher_present": ws.teacher_present,
+        }
+        grouped[folder_key].append(session_dict)
+        if ws.school_id:
+            schools_per_sheet[folder_key].add(ws.school_id)
+        elif ws.raw_location_or_activity:
+            schools_per_sheet[folder_key].add(ws.raw_location_or_activity.strip().lower())
+
+    sheet_folders = []
+    for f_key, sess_list in grouped.items():
+        total_exp = sum(s["exposures"] for s in sess_list)
+        total_b = sum(s["boys"] for s in sess_list)
+        total_g = sum(s["girls"] for s in sess_list)
+        f_prog = sess_list[0].get("programme_code") if sess_list else f_key
+        label = format_sheet_folder_label(f_key, f_prog, prog_labels)
+        sheet_folders.append({
+            "key": f_key,
+            "name": label,
+            "sessions": sess_list[:250],
+            "total_count": len(sess_list),
+            "total_exposures": total_exp,
+            "boys_present": total_b,
+            "girls_present": total_g,
+            "schools_count": len(schools_per_sheet[f_key]),
+        })
+
+    # Add custom TrackingFolders for this project
+    for cf in custom_folders:
+        cf_sess_qs = WeeklyTrackerSession.objects.filter(session_type=cf.name).select_related("school", "ngo")
+        cf_sess_list = []
+        cf_schools = set()
+        for ws in cf_sess_qs.order_by("-created_at", "-session_date", "-id"):
+            session_dict = {
                 "date": ws.session_date,
                 "date_display": ws.session_date.strftime("%d %b %Y") if ws.session_date else f"{ws.month_name} {ws.day_number or ''}".strip(),
+                "academic_year": ws.academic_year,
                 "programme": ws.get_programme_display(),
+                "programme_code": ws.programme,
                 "school_name": ws.school.name if ws.school else (ws.raw_location_or_activity or "—"),
+                "school_taluk": ws.school.taluk if ws.school else "",
                 "standard": ws.standard or "All",
+                "division": ws.division or "",
+                "timing": ws.timing or "",
                 "topic": ws.topic or ws.raw_location_or_activity or "Module Session",
                 "instructor": ws.instructor_name or "Faculty Facilitator",
-                "session_type": ws.session_type or "Practical",
+                "session_type": ws.session_type or cf.name,
                 "boys": ws.boys_present,
                 "girls": ws.girls_present,
                 "exposures": ws.total_exposures,
                 "teacher_present": ws.teacher_present,
+            }
+            cf_sess_list.append(session_dict)
+            if ws.school_id:
+                cf_schools.add(ws.school_id)
+            elif ws.raw_location_or_activity:
+                cf_schools.add(ws.raw_location_or_activity.strip().lower())
+
+        total_exp = sum(s["exposures"] for s in cf_sess_list)
+        total_b = sum(s["boys"] for s in cf_sess_list)
+        total_g = sum(s["girls"] for s in cf_sess_list)
+
+        sheet_folders.append({
+            "key": cf.key,
+            "name": cf.name,
+            "folder_id": cf.id,
+            "is_custom_folder": True,
+            "uploaded_file_url": cf.uploaded_file.url if cf.uploaded_file else None,
+            "uploaded_file_name": os.path.basename(cf.uploaded_file.name) if cf.uploaded_file else None,
+            "sessions": cf_sess_list[:250],
+            "total_count": len(cf_sess_list),
+            "total_exposures": total_exp,
+            "boys_present": total_b,
+            "girls_present": total_g,
+            "schools_count": len(cf_schools),
+        })
+
+    if (project.ngo and getattr(project.ngo, "code", "") == "AGASTYA") or "schoolsession" in grouped:
+        if "teachertrainingprogram" not in [f["key"] for f in sheet_folders]:
+            sheet_folders.append({
+                "key": "teachertrainingprogram",
+                "name": "Teacher Training",
+                "sessions": [],
+                "total_count": 0,
+                "total_exposures": 0,
+                "boys_present": 0,
+                "girls_present": 0,
+                "schools_count": 0,
             })
-    project_sessions_count = len(project_sessions)
-    project_exposures_sum = sum(s["exposures"] for s in project_sessions)
+
+    excel_order = {
+        "school_profile": 1,
+        "schoolsession": 2,
+        "summerwinter": 3,
+        "communityvisit": 4,
+        "teachertrainingprogram": 5,
+        "sciencefair": 6,
+        "specialprogram": 7,
+        "operationvasantha": 8,
+    }
+    sheet_folders.sort(key=lambda x: (excel_order.get(x["key"].lower(), 99), x["name"]))
+
+    project_sessions_count = ws_qs.count()
+    project_exposures_sum = ws_qs.aggregate(total_exp=Sum("total_exposures"))["total_exp"] or 0
+    project_schools_count = ws_qs.filter(school__isnull=False).values("school").distinct().count()
+    project_sessions = sheet_folders[0]["sessions"] if sheet_folders else []
 
     return render(
         request,
@@ -190,8 +357,12 @@ def project_detail(request, pk):
             "internships": internships,
             "mentorship_sessions": mentorship_sessions,
             "project_sessions": project_sessions,
+            "sheet_folders": sheet_folders,
             "project_sessions_count": project_sessions_count,
             "project_exposures_sum": project_exposures_sum,
+            "project_schools_count": project_schools_count,
+            "academic_years": ["2026-27", "2025-26", "2024-25"],
+            "selected_folder": request.GET.get("folder", ""),
         },
     )
 
@@ -288,8 +459,11 @@ def project_toggle_archive(request, pk):
 def program_list(request):
     ensure_default_ngos()
     project_filter = request.GET.get("project")
+    location_filter = (request.GET.get("location") or request.GET.get("loc") or "").strip()
     taluk_filter = request.GET.get("taluk")
     search_query = request.GET.get("q", "").strip()
+
+    from .metrics import get_program_location_q
 
     queryset = Program.objects.filter(is_archived=False).select_related("project", "ngo").prefetch_related("participating_schools")
 
@@ -298,6 +472,8 @@ def program_list(request):
             queryset = queryset.filter(project__isnull=True)
         else:
             queryset = queryset.filter(project_id=project_filter)
+    if location_filter:
+        queryset = queryset.filter(get_program_location_q(location_filter))
     if taluk_filter:
         queryset = queryset.filter(taluk__iexact=taluk_filter)
     if search_query:
@@ -318,14 +494,24 @@ def program_list(request):
     taluks = Program.objects.filter(is_archived=False).values_list("taluk", flat=True).distinct()
     projects = Project.objects.filter(is_archived=False).order_by("name")
 
+    location_choices = [
+        ("", "All Locations (Belagavi, Hubballi, Koppal)"),
+        ("belagavi", "Belagavi Hub (Belgaum / Hattargi / Hebbal)"),
+        ("hubballi", "Hubballi-Dharwad Hub (Hubli / Dharwad / Itigatti)"),
+        ("koppal", "Koppal Precision Cluster Hub (Koppal)"),
+    ]
+
     return render(
         request,
         "programs/program_list.html",
         {
             "programs": queryset,
             "total_count": queryset.count(),
+            "active_count": queryset.filter(status=Program.Status.ACTIVE).count(),
             "projects": projects,
             "selected_project": project_filter,
+            "location_choices": location_choices,
+            "selected_location": location_filter,
             "taluks": sorted([t for t in taluks if t]),
             "selected_taluk": taluk_filter,
             "search_query": search_query,
@@ -347,28 +533,56 @@ def program_detail(request, pk):
     from .roster import get_program_school_roster
     roster_data = get_program_school_roster(program)
 
-    from trackers.models import WeeklyTrackerSession
+    from trackers.models import WeeklyTrackerSession, Programme
+    from collections import defaultdict
     prog_key = resolve_tracker_programme(program)
 
-    weekly_sessions_qs = WeeklyTrackerSession.objects.none()
-    if prog_key:
-        weekly_sessions_qs = WeeklyTrackerSession.objects.filter(programme=prog_key).select_related("school", "ngo")
-    elif program.participating_schools.exists():
-        weekly_sessions_qs = WeeklyTrackerSession.objects.filter(school__in=program.participating_schools.all()).select_related("school", "ngo")
-    elif program.ngo:
-        weekly_sessions_qs = WeeklyTrackerSession.objects.filter(ngo=program.ngo).select_related("school", "ngo")
+    prog_ngo = program.ngo or (program.project.ngo if program.project else None)
+    q_filter = Q()
+    if prog_ngo:
+        q_filter = Q(ngo=prog_ngo)
+    else:
+        if program.participating_schools.exists():
+            q_filter |= Q(school__in=program.participating_schools.all())
+        if prog_key:
+            q_filter |= Q(programme=prog_key)
 
-    combined_sessions = []
-    # Add WeeklyTrackerSessions
-    for ws in weekly_sessions_qs.order_by("-session_date", "-id")[:250]:
-        combined_sessions.append({
+    if q_filter:
+        weekly_sessions_qs = WeeklyTrackerSession.objects.filter(q_filter).exclude(session_type__startswith="School Profile").distinct().select_related("school", "ngo")
+    else:
+        weekly_sessions_qs = WeeklyTrackerSession.objects.none()
+
+    prog_labels = dict(Programme.choices)
+    agastya_sheets = {
+        "schoolsession", "summerwinter", "communityvisit", "teachertrainingprogram", "sciencefair", "specialprogram", "operationvasantha"
+    }
+    grouped = defaultdict(list)
+    schools_per_sheet = defaultdict(set)
+
+    custom_folders = list(TrackingFolder.objects.filter(program=program))
+    cf_names = {cf.name for cf in custom_folders}
+
+    for ws in weekly_sessions_qs.order_by("-created_at", "-session_date", "-id")[:3000]:
+        st_clean = (ws.session_type or "").strip()
+        if st_clean in cf_names:
+            continue
+        st_lower = st_clean.lower()
+        if st_lower in agastya_sheets:
+            folder_key = st_lower
+        elif ws.programme == "MSL" or st_lower in ["hands-on", "practical", "theory", "msl"]:
+            folder_key = "schoolsession"
+        else:
+            folder_key = ws.programme
+        session_dict = {
             "source": "weekly_tracker",
             "date": ws.session_date,
             "date_display": ws.session_date.strftime("%d %b %Y") if ws.session_date else f"{ws.month_name} {ws.day_number or ''}".strip(),
             "code": f"SES-{ws.id:04d}",
+            "academic_year": ws.academic_year,
             "title": ws.topic or ws.raw_location_or_activity or "Field Session",
             "school_name": ws.school.name if ws.school else (ws.raw_location_or_activity or "—"),
             "school_id": ws.school_id,
+            "school_taluk": ws.school.taluk if ws.school else "",
             "standard": ws.standard or "All",
             "division": ws.division or "",
             "timing": ws.timing or "—",
@@ -378,20 +592,28 @@ def program_detail(request, pk):
             "boys": ws.boys_present,
             "girls": ws.girls_present,
             "total_exposures": ws.total_exposures,
+            "exposures": ws.total_exposures,
             "teacher_present": ws.teacher_present,
             "status": "COMPLETED",
-        })
+        }
+        grouped[folder_key].append(session_dict)
+        if ws.school_id:
+            schools_per_sheet[folder_key].add(ws.school_id)
+        elif ws.raw_location_or_activity:
+            schools_per_sheet[folder_key].add(ws.raw_location_or_activity.strip().lower())
 
     # Add EVClassSessions
     for ev in ev_sessions.order_by("-session_date", "-id"):
-        combined_sessions.append({
+        grouped["ev_class"].append({
             "source": "ev_class",
             "date": ev.session_date,
             "date_display": ev.session_date.strftime("%d %b %Y") if ev.session_date else "—",
             "code": ev.session_code,
+            "academic_year": program.academic_year or "",
             "title": ev.session_title,
             "school_name": ev.school.school_name if ev.school else "—",
             "school_id": ev.school_id,
+            "school_taluk": ev.school.taluk if ev.school else "",
             "standard": f"Grade {ev.grade_level}" if ev.grade_level else "All",
             "division": "",
             "timing": f"{ev.duration_minutes} min" if ev.duration_minutes else "—",
@@ -401,17 +623,15 @@ def program_detail(request, pk):
             "boys": int(ev.attendee_count / 2) if ev.attendee_count else 0,
             "girls": int(ev.attendee_count / 2) if ev.attendee_count else 0,
             "total_exposures": ev.attendee_count or 0,
+            "exposures": ev.attendee_count or 0,
             "teacher_present": True,
             "status": ev.get_status_display(),
             "pk": ev.pk,
         })
+        if ev.school_id:
+            schools_per_sheet["ev_class"].add(ev.school_id)
 
-    total_sessions_count = len(combined_sessions)
-    total_exposures_sum = sum(s["total_exposures"] for s in combined_sessions)
-    total_boys_sum = sum(s["boys"] for s in combined_sessions)
-    total_girls_sum = sum(s["girls"] for s in combined_sessions)
-
-    # Clean schools list
+    # Clean schools list from roster or participating schools
     schools_list = []
     if roster_data and roster_data.get("schools"):
         for sc in roster_data["schools"]:
@@ -471,6 +691,128 @@ def program_detail(request, pk):
 
     taluks = sorted(list(set(sc["taluk"] for sc in schools_list if sc["taluk"] and sc["taluk"] != "—")))
 
+    sheet_folders = []
+    # 1. School Profile sheet folder (matches Sheet 1 in workbook)
+    if schools_list:
+        sheet_folders.append({
+            "key": "school_profile",
+            "name": "School Profile 2025-26",
+            "is_school_profile": True,
+            "schools": schools_list,
+            "sessions": [],
+            "total_count": len(schools_list),
+            "total_exposures": total_students_enrolled,
+            "boys_present": enrolled_boys,
+            "girls_present": enrolled_girls,
+            "schools_count": len(schools_list),
+            "taluks_count": len(taluks),
+        })
+
+    # 2. Activity / Session sheet folders
+    for f_key, sess_list in grouped.items():
+        total_exp = sum(s["total_exposures"] for s in sess_list)
+        total_b = sum(s["boys"] for s in sess_list)
+        total_g = sum(s["girls"] for s in sess_list)
+        f_prog = sess_list[0].get("programme_code") if sess_list else f_key
+        label = format_sheet_folder_label(f_key, f_prog, prog_labels)
+        sheet_folders.append({
+            "key": f_key,
+            "name": label,
+            "sessions": sess_list,
+            "total_count": len(sess_list),
+            "total_exposures": total_exp,
+            "boys_present": total_b,
+            "girls_present": total_g,
+            "schools_count": len(schools_per_sheet[f_key]),
+        })
+
+    # Add custom TrackingFolders for this program
+    for cf in custom_folders:
+        cf_sess_qs = WeeklyTrackerSession.objects.filter(session_type=cf.name).select_related("school", "ngo")
+        cf_sess_list = []
+        cf_schools = set()
+        for ws in cf_sess_qs.order_by("-created_at", "-session_date", "-id"):
+            session_dict = {
+                "source": "weekly_tracker",
+                "date": ws.session_date,
+                "date_display": ws.session_date.strftime("%d %b %Y") if ws.session_date else f"{ws.month_name} {ws.day_number or ''}".strip(),
+                "code": f"SES-{ws.id:04d}",
+                "academic_year": ws.academic_year,
+                "title": ws.topic or ws.raw_location_or_activity or "Field Session",
+                "school_name": ws.school.name if ws.school else (ws.raw_location_or_activity or "—"),
+                "school_id": ws.school_id,
+                "school_taluk": ws.school.taluk if ws.school else "",
+                "standard": ws.standard or "All",
+                "division": ws.division or "",
+                "timing": ws.timing or "—",
+                "topic": ws.topic or ws.raw_location_or_activity or "Curriculum Session",
+                "instructor": ws.instructor_name or "Faculty Facilitator",
+                "session_type": ws.session_type or cf.name,
+                "boys": ws.boys_present,
+                "girls": ws.girls_present,
+                "total_exposures": ws.total_exposures,
+                "exposures": ws.total_exposures,
+                "teacher_present": ws.teacher_present,
+                "status": "COMPLETED",
+            }
+            cf_sess_list.append(session_dict)
+            if ws.school_id:
+                cf_schools.add(ws.school_id)
+            elif ws.raw_location_or_activity:
+                cf_schools.add(ws.raw_location_or_activity.strip().lower())
+
+        total_exp = sum(s["exposures"] for s in cf_sess_list)
+        total_b = sum(s["boys"] for s in cf_sess_list)
+        total_g = sum(s["girls"] for s in cf_sess_list)
+
+        sheet_folders.append({
+            "key": cf.key,
+            "name": cf.name,
+            "folder_id": cf.id,
+            "is_custom_folder": True,
+            "uploaded_file_url": cf.uploaded_file.url if cf.uploaded_file else None,
+            "uploaded_file_name": os.path.basename(cf.uploaded_file.name) if cf.uploaded_file else None,
+            "sessions": cf_sess_list,
+            "total_count": len(cf_sess_list),
+            "total_exposures": total_exp,
+            "boys_present": total_b,
+            "girls_present": total_g,
+            "schools_count": len(cf_schools),
+        })
+
+    # 3. Ensure Teacher Training sheet is present (header in Excel, ready for logs)
+    if (prog_ngo and getattr(prog_ngo, "code", "") == "AGASTYA") or "schoolsession" in grouped:
+        if "teachertrainingprogram" not in [f["key"] for f in sheet_folders]:
+            sheet_folders.append({
+                "key": "teachertrainingprogram",
+                "name": "Teacher Training",
+                "sessions": [],
+                "total_count": 0,
+                "total_exposures": 0,
+                "boys_present": 0,
+                "girls_present": 0,
+                "schools_count": 0,
+            })
+
+    excel_order = {
+        "school_profile": 1,
+        "schoolsession": 2,
+        "summerwinter": 3,
+        "communityvisit": 4,
+        "teachertrainingprogram": 5,
+        "sciencefair": 6,
+        "specialprogram": 7,
+        "operationvasantha": 8,
+    }
+    sheet_folders.sort(key=lambda x: (excel_order.get(x["key"].lower(), 99), x["name"]))
+
+    session_folders = [f for f in sheet_folders if not f.get("is_school_profile")]
+    combined_sessions = [s for f in session_folders for s in f["sessions"][:250]]
+    total_sessions_count = sum(f["total_count"] for f in session_folders)
+    total_exposures_sum = sum(f["total_exposures"] for f in session_folders)
+    total_boys_sum = sum(f["boys_present"] for f in session_folders)
+    total_girls_sum = sum(f["girls_present"] for f in session_folders)
+
     context = {
         "program": program,
         "ev_sessions": ev_sessions,
@@ -490,6 +832,8 @@ def program_detail(request, pk):
         "internships": internships,
         "mentorship_sessions": mentorship_sessions,
         "roster_data": roster_data,
+        "sheet_folders": sheet_folders,
+        "selected_folder": request.GET.get("folder", ""),
     }
     return render(request, "programs/program_detail.html", context)
 
@@ -1589,22 +1933,34 @@ def bulk_upload_scholarships(request):
         else:
             import openpyxl
             wb = openpyxl.load_workbook(uploaded_file, read_only=True, data_only=True)
-            ws = wb.active
-            excel_rows = list(ws.iter_rows(values_only=True))
-            wb.close()
-            if not excel_rows:
-                messages.error(request, "The Excel file is empty.")
-                return redirect("programs:scholarship_bulk_upload")
-            headers = [_normalize_header(c) for c in excel_rows[0]]
             rows = []
-            for r in excel_rows[1:]:
-                if not any(c is not None and str(c).strip() for c in r):
+            for ws in wb.worksheets:
+                excel_rows = [list(r) for r in ws.iter_rows(values_only=True) if any(c is not None and str(c).strip() for c in r)]
+                if not excel_rows:
                     continue
-                row_dict = {}
-                for i in range(len(headers)):
-                    if headers[i]:
-                        row_dict[headers[i]] = str(r[i]).strip() if i < len(r) and r[i] is not None else ""
-                rows.append(row_dict)
+                header_idx = -1
+                for idx, r in enumerate(excel_rows[:10]):
+                    norm_r = [_normalize_header(c) for c in r if c is not None]
+                    if any("student" in c or "name" in c or "admission" in c for c in norm_r):
+                        header_idx = idx
+                        break
+                if header_idx == -1:
+                    if len(wb.worksheets) == 1:
+                        header_idx = 0
+                    else:
+                        continue
+                headers = [_normalize_header(c) for c in excel_rows[header_idx]]
+                for r in excel_rows[header_idx + 1:]:
+                    row_dict = {}
+                    for i in range(len(headers)):
+                        if headers[i]:
+                            row_dict[headers[i]] = str(r[i]).strip() if i < len(r) and r[i] is not None else ""
+                    if any(row_dict.values()):
+                        rows.append(row_dict)
+            wb.close()
+            if not rows:
+                messages.error(request, "The Excel file contains no valid records across any sheets.")
+                return redirect("programs:scholarship_bulk_upload")
 
         created, skipped, errors = 0, 0, []
         with transaction.atomic():

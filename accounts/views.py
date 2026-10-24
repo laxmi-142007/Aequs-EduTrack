@@ -153,6 +153,14 @@ def admin_dashboard(request):
     ).select_related("student").order_by("session_date")[:5]
 
     # Reach Matrix & Historical Filters
+    academic_years = [
+        ("2026-27", "Current Year (2026-27)"),
+        ("2025-26", "Academic Year 2025-26"),
+        ("2024-25", "Academic Year 2024-25"),
+        ("all", "All Years (Consolidated)"),
+    ]
+    available_projects = Project.objects.filter(is_archived=False).order_by("name")
+
     selected_ay = request.GET.get("ay", "2026-27").strip()
     selected_proj_id = request.GET.get("project_id", "").strip()
     proj_id_int = int(selected_proj_id) if selected_proj_id.isdigit() else None
@@ -161,30 +169,26 @@ def admin_dashboard(request):
     reach_matrix = get_reach_matrix(academic_year=selected_ay, project_id=proj_id_int)
     reach_matrix_hist = get_reach_matrix(academic_year="all", project_id=proj_id_int)
 
-    # Volunteering KPIs (Current Year & Historical)
-    volunteering_curr = get_volunteering_kpis(academic_year="2026-27")
+    # Selected project object for deep linking
+    selected_project_obj = available_projects.filter(id=proj_id_int).first() if proj_id_int else None
+
+    # Volunteering KPIs (Selected Year & Consolidated Historical)
+    volunteering_curr = get_volunteering_kpis(academic_year=selected_ay)
     volunteering_hist = get_volunteering_kpis(academic_year="all")
 
-    # One Precious Notebook KPIs (Current Year & Historical)
-    opn_curr = get_one_precious_notebook_kpis(academic_year="2026-27")
+    # One Precious Notebook KPIs (Selected Year & Consolidated Historical)
+    opn_curr = get_one_precious_notebook_kpis(academic_year=selected_ay)
     opn_hist = get_one_precious_notebook_kpis(academic_year="all")
 
     # Budget vs Actual expenditure
     budget_data = get_budget_vs_actual(project_id=proj_id_int)
-
-    available_projects = Project.objects.filter(is_archived=False).order_by("name")
-    academic_years = [
-        ("2026-27", "Current Year (2026-27)"),
-        ("2025-26", "Academic Year 2025-26"),
-        ("2024-25", "Academic Year 2024-25"),
-        ("all", "All Years (Consolidated)"),
-    ]
 
     context = {
         "searched_student": searched_student,
         "search_query_id": id_search,
         "selected_ay": selected_ay,
         "selected_proj_id": proj_id_int,
+        "selected_project_obj": selected_project_obj,
         "academic_years": academic_years,
         "available_projects": available_projects,
         "reach_matrix": reach_matrix,

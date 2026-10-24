@@ -58,7 +58,15 @@
 <div class="main">
     <div class="topbar">
         <h1><i data-lucide="layout-dashboard"></i> Admin Executive Dashboard</h1>
-        <span class="admin-badge">ADMIN PORTAL</span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="{% url 'accounts:user_create' %}" class="btn btn-primary btn-sm" title="Create New Login for Admin / Dhaval">
+                <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> Create User Login
+            </a>
+            <a href="{% url 'reports:list' %}" class="btn btn-outline btn-sm" title="Software Requirements Specification & System Docs">
+                <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> Software Req. Template
+            </a>
+            <span class="admin-badge">ADMIN PORTAL</span>
+        </div>
     </div>
     <div class="content">
         {% if messages %}
@@ -119,6 +127,19 @@
                 </form>
             </div>
 
+            {% if selected_project_obj %}
+            <!-- Project-specific Historical Tracker Link Banner -->
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="font-size: 13px; color: #1e40af; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="layers" style="width: 17px; height: 17px; color: #2563eb;"></i>
+                    <span>Filtering Reach Matrix to: <strong>{{ selected_project_obj.name }}</strong> ({{ selected_project_obj.code }})</span>
+                </div>
+                <a href="{% url 'programs:project_detail' selected_project_obj.pk %}" class="btn btn-primary btn-sm" style="background: #2563eb; padding: 6px 14px;">
+                    <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Open {{ selected_project_obj.name }} Historical Dossier
+                </a>
+            </div>
+            {% endif %}
+
             <!-- Reach Matrix Grid (5 Columns) -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
                 <!-- Students Reached -->
@@ -166,11 +187,11 @@
                     <span class="section-title" style="margin: 0; font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="heart-handshake" style="width: 17px; height: 17px; color: #9333ea;"></i> AEQATRA Volunteering
                     </span>
-                    <a href="{% url 'volunteers:list' %}" class="btn btn-outline btn-sm">Portal &rarr;</a>
+                    <a href="/aeqatra/" class="btn btn-outline btn-sm">Portal &rarr;</a>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div style="background: #faf5ff; padding: 12px; border-radius: 8px; border: 1px solid #f3e8ff;">
-                        <div style="font-size: 11px; color: #7e22ce; font-weight: 700;">Current Year (2026-27)</div>
+                        <div style="font-size: 11px; color: #7e22ce; font-weight: 700;">Selected Year ({% if selected_ay == 'all' %}Consolidated{% else %}{{ selected_ay }}{% endif %})</div>
                         <div style="font-size: 20px; font-weight: 800; color: #581c87; margin-top: 2px;">{{ volunteering_curr.no_of_volunteers }}</div>
                         <div style="font-size: 11px; color: #6b21a8;">{{ volunteering_curr.volunteering_hrs_participated }} hrs logged</div>
                     </div>
@@ -192,7 +213,7 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #dcfce7;">
-                        <div style="font-size: 11px; color: #15803d; font-weight: 700;">Current Year (2026-27)</div>
+                        <div style="font-size: 11px; color: #15803d; font-weight: 700;">Selected Year ({% if selected_ay == 'all' %}Consolidated{% else %}{{ selected_ay }}{% endif %})</div>
                         <div style="font-size: 20px; font-weight: 800; color: #14532d; margin-top: 2px;">{{ opn_curr.notebooks_donated|stringformat:",d" }}</div>
                         <div style="font-size: 11px; color: #166534;">{{ opn_curr.no_of_students|stringformat:",d" }} students</div>
                     </div>

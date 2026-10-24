@@ -543,3 +543,44 @@ class MikePropenScholarshipApplication(models.Model):
         super().save(*args, **kwargs)
 
 
+# ============================================================================
+# TRACKING FOLDER MODEL (User-created Custom Excel / Session Tracking Folders)
+# ============================================================================
+
+class TrackingFolder(models.Model):
+    """
+    User-created custom tracking folder for uploading Excel workbooks or grouping sessions.
+    Can be scoped to a Project, a Program, or Tracking Dashboard (pillar/all).
+    """
+    name = models.CharField(max_length=150, help_text="e.g. Science Exposure Visits, Q3 Assessments")
+    key = models.SlugField(max_length=150, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True, related_name="custom_folders")
+    program = models.ForeignKey(Program, on_delete=models.CASCADE, null=True, blank=True, related_name="custom_folders")
+    tab_type = models.CharField(max_length=50, blank=True, default="", help_text="Pillar or tab key for tracking dashboard (e.g. cognitive, steam, student_excel, all)")
+    academic_year = models.CharField(max_length=20, default="2026-27")
+    uploaded_file = models.FileField(upload_to="tracking_folders/", blank=True, null=True, help_text="Raw Excel spreadsheet uploaded to this folder")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = "Tracking Folder"
+        verbose_name_plural = "Tracking Folders"
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.key or not self.key.strip():
+            from django.utils.text import slugify
+            base = slugify(self.name).replace("-", "_") or "folder"
+            candidate = f"custom_{base}"
+            counter = 1
+            while TrackingFolder.objects.filter(key=candidate).exclude(pk=self.pk).exists():
+                candidate = f"custom_{base}_{counter}"
+                counter += 1
+            self.key = candidate
+        super().save(*args, **kwargs)
+
+
+
