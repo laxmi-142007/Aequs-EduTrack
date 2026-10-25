@@ -4,6 +4,8 @@ from django.core.management.base import BaseCommand
 from accounts.models import User
 from schools.models import School
 from students.models import Student
+from programs.models import Program, Project
+from trackers.models import WeeklyTrackerSession
 
 
 class Command(BaseCommand):
@@ -13,7 +15,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--force",
             action="store_true",
-            help="Force reload fixture even if database already has students/schools",
+            help="Force reload fixture even if database already has students/schools/programs",
         )
         parser.add_argument(
             "--fixture",
@@ -34,14 +36,23 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"Note during admin/group setup: {e}"))
 
-        # 2. Check if data should be loaded
+        # 2. Check if data is already fully populated
         student_count = Student.objects.count()
         school_count = School.objects.count()
+        program_count = Program.objects.count()
+        session_count = WeeklyTrackerSession.objects.count()
 
-        if not force and student_count > 0 and school_count > 0:
+        is_fully_seeded = (
+            program_count >= 30
+            and student_count >= 9
+            and school_count >= 500
+            and session_count >= 500
+        )
+
+        if not force and is_fully_seeded:
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Database already populated: {student_count} students and {school_count} schools present. Skipping seed fixture load (use --force to reload)."
+                    f"Database already fully populated: {program_count} programs, {session_count} weekly sessions, {student_count} students, {school_count} schools present. Skipping seed fixture load (use --force to reload)."
                 )
             )
             return
@@ -70,14 +81,32 @@ class Command(BaseCommand):
             )
             return
 
-        self.stdout.write(f"Loading complete seed data from '{target_file}'...")
+        self.stdout.write(
+            f"Loading complete seed data from '{target_file}' (current status: {program_count} programs, {session_count} sessions, {student_count} students, {school_count} schools)..."
+        )
         try:
             call_command("loaddata", str(target_file), verbosity=1)
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Successfully loaded seed data! Current database state: {Student.objects.count()} students, {School.objects.count()} schools."
+                    f"Successfully loaded seed data! Current database state: {Program.objects.count()} programs, {WeeklyTrackerSession.objects.count()} sessions, {Student.objects.count()} students, {School.objects.count()} schools."
                 )
             )
+
+            # Reset database sequences for PostgreSQL if running in production
+            try:
+                from django.core.management.color import no_style
+                from django.db import connection
+                from django.apps import apps
+
+                if connection.vendor == "postgresql":
+                    commands = connection.ops.sequence_reset_sql(no_style(), apps.get_models())
+                    with connection.cursor() as cursor:
+                        for sql in commands:
+                            cursor.execute(sql)
+                    self.stdout.write(self.style.SUCCESS("PostgreSQL sequences successfully reset."))
+            except Exception as seq_err:
+                self.stdout.write(self.style.WARNING(f"Sequence reset note: {seq_err}"))
+
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error loading seed fixture: {e}"))
             raise e

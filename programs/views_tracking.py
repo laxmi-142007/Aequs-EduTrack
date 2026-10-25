@@ -55,28 +55,59 @@ def tracking_dashboard(request):
         "student_excel": {"name": "Student Excel", "alt_name": "Student Excel Program", "code_prefix": "EXC"},
     }
 
-    # Retrieve all 3 core projects
-    cog_project = Project.objects.filter(Q(name__icontains="Cognitive") | Q(code="PRJ-COG")).first()
-    steam_project = Project.objects.filter(Q(name__icontains="STEAM") | Q(code="PRJ-STM")).first()
-    excel_project = Project.objects.filter(Q(name__icontains="Student Excel") | Q(code="PRJ-EXC")).first()
+    # Self-healing baseline: auto-load seeds if database has 0 programs
+    if Program.objects.count() == 0:
+        try:
+            from django.core.management import call_command
+            call_command("load_seed_data")
+        except Exception:
+            pass
 
-    # Determine which projects are displayed based on active_tab
-    if active_tab == "cognitive" and cog_project:
-        active_projects = [cog_project]
-    elif active_tab == "steam" and steam_project:
-        active_projects = [steam_project]
-    elif active_tab == "student_excel" and excel_project:
-        active_projects = [excel_project]
+    # Retrieve all 3 core projects accurately
+    cog_project = (
+        Project.objects.filter(code="PRJ-COG").first()
+        or Project.objects.filter(name__iexact="Cognitive Development").first()
+        or Project.objects.filter(name__icontains="Cognitive").first()
+    )
+    steam_project = (
+        Project.objects.filter(code="PRJ-STM").first()
+        or Project.objects.filter(name__iexact="STEAM").first()
+        or Project.objects.filter(name__icontains="STEAM").first()
+    )
+    excel_project = (
+        Project.objects.filter(code="PRJ-EXC").first()
+        or Project.objects.filter(name__iexact="Student Excel").first()
+        or Project.objects.filter(name__icontains="Student Excel").first()
+    )
+
+    # Determine which projects and programs are displayed based on active_tab
+    if active_tab == "cognitive":
+        programs_qs = Program.objects.filter(is_archived=False)
+        if cog_project:
+            programs_qs = programs_qs.filter(project=cog_project)
+        else:
+            programs_qs = programs_qs.filter(Q(title__icontains="Cognitive") | Q(code__icontains="COG") | Q(project__name__icontains="Cognitive"))
+        active_projects = [cog_project] if cog_project else []
+    elif active_tab == "steam":
+        programs_qs = Program.objects.filter(is_archived=False)
+        if steam_project:
+            programs_qs = programs_qs.filter(project=steam_project)
+        else:
+            programs_qs = programs_qs.filter(Q(title__icontains="STEAM") | Q(code__icontains="STM") | Q(project__name__icontains="STEAM"))
+        active_projects = [steam_project] if steam_project else []
+    elif active_tab == "student_excel":
+        programs_qs = Program.objects.filter(is_archived=False)
+        if excel_project:
+            programs_qs = programs_qs.filter(project=excel_project)
+        else:
+            programs_qs = programs_qs.filter(Q(title__icontains="Excel") | Q(code__icontains="EXC") | Q(project__name__icontains="Excel"))
+        active_projects = [excel_project] if excel_project else []
     else:
+        # Consolidated Overview for "All Focus Pillars" -> Show ALL active programs across the foundation
+        programs_qs = Program.objects.filter(is_archived=False)
         active_projects = [p for p in [cog_project, steam_project, excel_project] if p]
 
-    project_ids = [p.id for p in active_projects]
-
-    # Query programs under these projects
-    programs_qs = Program.objects.filter(
-        is_archived=False,
-        project_id__in=project_ids
-    ).select_related("project", "ngo").prefetch_related("participating_schools", "locations")
+    programs_qs = programs_qs.select_related("project", "ngo").prefetch_related("participating_schools", "locations")
 
     if ay != "all":
         programs_qs = programs_qs.filter(academic_year=ay)
@@ -169,8 +200,13 @@ def tracking_dashboard(request):
         })
 
     # Summary Rollup for the active tab
-    allocated_total = sum(p.allocated_budget for p in active_projects)
-    spent_total = sum(p.spent_budget for p in active_projects)
+    if active_tab == "all":
+        allocated_total = sum(p.allocated_budget for p in Project.objects.all())
+        spent_total = sum(p.spent_budget for p in Project.objects.all())
+    else:
+        allocated_total = sum(p.allocated_budget for p in active_projects)
+        spent_total = sum(p.spent_budget for p in active_projects)
+
     utilization_pct = 0.0
     if allocated_total > 0:
         utilization_pct = round(float((spent_total / allocated_total) * 100), 1)
@@ -180,7 +216,11 @@ def tracking_dashboard(request):
 
     # Per-pillar rollups for quick badge display
     pillar_stats = {}
-    for key, p_obj in [("cognitive", cog_project), ("steam", steam_project), ("student_excel", excel_project)]:
+    for key, p_obj, code_kw, name_kw in [
+        ("cognitive", cog_project, "COG", "Cognitive Development"),
+        ("steam", steam_project, "STM", "STEAM Literacy Program"),
+        ("student_excel", excel_project, "EXC", "Student Excel Program"),
+    ]:
         if p_obj:
             p_progs = Program.objects.filter(is_archived=False, project=p_obj)
             pillar_stats[key] = {
@@ -189,6 +229,17 @@ def tracking_dashboard(request):
                 "allocated": float(p_obj.allocated_budget),
                 "spent": float(p_obj.spent_budget),
                 "utilization": p_obj.budget_utilization_pct,
+            }
+        else:
+            p_progs = Program.objects.filter(is_archived=False).filter(
+                Q(code__icontains=code_kw) | Q(title__icontains=code_kw) | Q(project__name__icontains=name_kw)
+            )
+            pillar_stats[key] = {
+                "name": name_kw,
+                "program_count": p_progs.count(),
+                "allocated": 0.0,
+                "spent": 0.0,
+                "utilization": 0.0,
             }
 
     weekly_qs = WeeklyTrackerSession.objects.all().select_related("school", "ngo")
@@ -367,9 +418,10 @@ def tracking_dashboard(request):
 
     # Location-based programs grouped by Hub for directory filter
     tracking_programs = Program.objects.filter(
-        is_archived=False,
-        project_id__in=project_ids
+        is_archived=False
     ).select_related("project").order_by("district", "title")
+    if active_tab != "all" and active_projects:
+        tracking_programs = tracking_programs.filter(project__in=active_projects)
 
     belagavi_programs = []
     hubballi_programs = []
