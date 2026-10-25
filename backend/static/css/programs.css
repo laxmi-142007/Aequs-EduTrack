@@ -207,6 +207,13 @@
   box-shadow: 0 0 0 2px rgba(237, 28, 36, 0.15);
 }
 
+.filter-row-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
 /* Nav Tabs */
 .af-tabs {
   display: flex;
@@ -582,6 +589,10 @@
   .search-filter-bar select {
     width: 100% !important;
     min-width: 100% !important;
+  }
+
+  .filter-row-split {
+    grid-template-columns: 1fr !important;
   }
 
   .data-table-container,

@@ -8,6 +8,7 @@ from programs.models import (
     Program,
     EVClassSession,
     MikePropenScholarshipApplication,
+    TrackingFolder,
 )
 from programs.metrics import (
     get_reach_matrix,
@@ -121,6 +122,22 @@ class ExcelTasksComprehensiveTestCase(TestCase):
             status="ASSIGNED",
         )
 
+    def tearDown(self):
+        super().tearDown()
+        import os
+        from programs.roster import _get_roster_file_path, _get_roster_cleared_marker_path
+        pks_to_clean = [getattr(self, "msl_prog", None) and self.msl_prog.pk, 1, 2, 3]
+        for pk in pks_to_clean:
+            if pk:
+                rp = _get_roster_file_path(pk)
+                mp = _get_roster_cleared_marker_path(pk)
+                if os.path.exists(rp):
+                    try: os.remove(rp)
+                    except Exception: pass
+                if os.path.exists(mp):
+                    try: os.remove(mp)
+                    except Exception: pass
+
     def test_reach_matrix_computation(self):
         """Verify reach matrix returns proper metrics for current and consolidated years."""
         curr = get_reach_matrix(academic_year="2026-27")
@@ -171,12 +188,39 @@ class ExcelTasksComprehensiveTestCase(TestCase):
 
         # Test program filter dropdown and upload buttons exist
         self.assertContains(resp, 'name="prog"')
+        self.assertContains(resp, 'name="loc"')
+        self.assertContains(resp, 'filter-row-split')
+        self.assertContains(resp, 'Location-Based Programs')
+        self.assertContains(resp, 'All Location-Based Programs')
+        self.assertContains(resp, "Belagavi Hub")
+        self.assertContains(resp, "Hubballi-Dharwad Hub")
+        self.assertContains(resp, "Koppal Precision Cluster Hub")
         self.assertContains(resp, "Add Weekly Session Log (Excel)")
         self.assertContains(resp, "dashboardUploadModal")
 
-        # Test filtering by programme code
+        # Test location filtering
+        resp_loc = self.client.get(reverse("programs:tracking_dashboard") + "?loc=belagavi")
+        self.assertEqual(resp_loc.status_code, 200)
+        self.assertContains(resp_loc, "Belagavi")
+
+        # Test location-based program option filtering
+        resp_loc_prog = self.client.get(reverse("programs:tracking_dashboard") + "?prog=all_location_based")
+        self.assertEqual(resp_loc_prog.status_code, 200)
+        resp_bgm_prog = self.client.get(reverse("programs:tracking_dashboard") + "?prog=loc_prog_belagavi")
+        self.assertEqual(resp_bgm_prog.status_code, 200)
+
+        # Test streamlined UX elements (Instant search, More Modules dropdown, context-aware KPIs)
+        self.assertContains(resp, "liveSearchInput")
+        self.assertContains(resp, "More Modules")
+        self.assertContains(resp, "kpiProgramsView")
+        self.assertContains(resp, "kpiSessionsView")
+        self.assertContains(resp, "primary-views-nav")
+        self.assertContains(resp, "pillar-filter-bar")
+
+        # Test filtering by programme code and sessions view
         resp_prog = self.client.get(reverse("programs:tracking_dashboard") + "?prog=MSL&view=sessions")
         self.assertEqual(resp_prog.status_code, 200)
+        self.assertContains(resp_prog, "Live Weekly Session Logs")
 
     def test_tracking_dashboard_upload_excel(self):
         """Verify Excel upload endpoint on tracking dashboard."""
@@ -292,15 +336,45 @@ class ExcelTasksComprehensiveTestCase(TestCase):
         self.assertEqual(WeeklyTrackerSession.objects.filter(programme="MSL", academic_year="2026-27").count(), 0)
 
     def test_aeqatra_volunteering_portal(self):
-        """Verify AEQATRA Employee Volunteering Portal, activities, and testimonials."""
+        """Verify AEQATRA Employee Volunteering Portal canonical URL, redirects, 3-tab layout, and testimonials."""
+        # 1. Canonical /aeqatra/ route verification & dual routing
+        self.assertEqual(reverse("volunteers:list"), "/aeqatra/")
+        legacy_resp = self.client.get("/volunteers/")
+        self.assertEqual(legacy_resp.status_code, 200)
+        self.assertContains(legacy_resp, "AEQATRA — Employee Volunteering Portal")
+
+        # 2. Default (all) overview tab
         resp = self.client.get(reverse("volunteers:list"))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "AEQATRA — Employee Volunteering Portal")
         self.assertContains(resp, "Volunteering Participation: Current Year vs. Historical Data")
         self.assertContains(resp, "List of Activities for Year")
         self.assertContains(resp, "Employee Testimonials — Video Gallery")
+        self.assertContains(resp, "Volunteer Members")
 
-        # Add testimonial test
+        # 3. Tab: Impact & Activities
+        resp_impact = self.client.get(reverse("volunteers:list") + "?tab=impact")
+        self.assertEqual(resp_impact.status_code, 200)
+        self.assertContains(resp_impact, "Volunteering Participation: Current Year vs. Historical Data")
+        self.assertContains(resp_impact, "List of Activities for Year")
+        self.assertNotContains(resp_impact, "Employee Testimonials — Video Gallery")
+        self.assertNotContains(resp_impact, "Volunteer Members")
+
+        # 4. Tab: Video Testimonials
+        resp_videos = self.client.get(reverse("volunteers:list") + "?tab=videos")
+        self.assertEqual(resp_videos.status_code, 200)
+        self.assertContains(resp_videos, "Employee Testimonials — Video Gallery")
+        self.assertNotContains(resp_videos, "Volunteering Participation: Current Year vs. Historical Data")
+        self.assertNotContains(resp_videos, "Volunteer Members")
+
+        # 5. Tab: Forms & Volunteer Roster
+        resp_roster = self.client.get(reverse("volunteers:list") + "?tab=roster")
+        self.assertEqual(resp_roster.status_code, 200)
+        self.assertContains(resp_roster, "Volunteer Members")
+        self.assertNotContains(resp_roster, "Volunteering Participation: Current Year vs. Historical Data")
+        self.assertNotContains(resp_roster, "Employee Testimonials — Video Gallery")
+
+        # 6. Add testimonial test
         post_resp = self.client.post(
             reverse("volunteers:testimonial_create"),
             {
@@ -371,3 +445,274 @@ class ExcelTasksComprehensiveTestCase(TestCase):
         self.assertEqual(csv_resp.status_code, 200)
         self.assertEqual(csv_resp["Content-Type"], "text/csv")
         self.assertIn("Suresh Naik", csv_resp.content.decode("utf-8"))
+
+    def test_project_detail_and_tracking_sheet_folders(self):
+        """Verify multi-sheet folder navigation in Project Dossier and Tracking Dashboard."""
+        from trackers.models import WeeklyTrackerSession, Programme
+        from programs.models import NGO
+
+        yfs_ngo, _ = NGO.objects.get_or_create(code="YFS", defaults={"name": "Youth for Seva"})
+        self.excel_proj.ngo = yfs_ngo
+        self.excel_proj.save()
+
+        # Seed sessions under 2 distinct sheets/programmes
+        WeeklyTrackerSession.objects.create(
+            ngo=yfs_ngo,
+            academic_year="2026-27",
+            programme=Programme.CHAAP_JR,
+            session_date=date(2026, 8, 10),
+            school=self.school,
+            topic="Health & Hygiene",
+            instructor_name="Trainer Ramesh",
+            boys_present=15,
+            girls_present=18,
+            total_exposures=33,
+        )
+        WeeklyTrackerSession.objects.create(
+            ngo=yfs_ngo,
+            academic_year="2026-27",
+            programme=Programme.SEP,
+            session_date=date(2026, 8, 12),
+            school=self.school,
+            topic="Vedic Math Workshop",
+            instructor_name="Mentor Priya",
+            boys_present=20,
+            girls_present=22,
+            total_exposures=42,
+        )
+
+        # 1. Test Project Detail Dossier Sheet Folders
+        prj_resp = self.client.get(reverse("programs:project_detail", kwargs={"pk": self.excel_proj.pk}))
+        self.assertEqual(prj_resp.status_code, 200)
+        self.assertIn("sheet_folders", prj_resp.context)
+        sheet_keys = [f["key"] for f in prj_resp.context["sheet_folders"]]
+        self.assertIn("CHAAP_JR", sheet_keys)
+        self.assertIn("SEP", sheet_keys)
+        self.assertContains(prj_resp, "Field Activity Tracking Folders")
+        self.assertContains(prj_resp, "project-sheet-tab")
+        self.assertContains(prj_resp, "project-sheet-panel")
+        self.assertContains(prj_resp, "projectUploadModal")
+
+        # 2. Test Program Detail Sheet Folders
+        prog_resp = self.client.get(reverse("programs:program_detail", kwargs={"pk": self.msl_prog.pk}))
+        self.assertEqual(prog_resp.status_code, 200)
+        self.assertIn("sheet_folders", prog_resp.context)
+        self.assertContains(prog_resp, "prog-sheet-tab")
+        self.assertContains(prog_resp, "prog-sheet-panel")
+
+        # 3. Test Tracking Dashboard Session Folders
+        dash_resp = self.client.get(reverse("programs:tracking_dashboard") + "?view=sessions")
+        self.assertEqual(dash_resp.status_code, 200)
+        self.assertIn("tracking_sheet_folders", dash_resp.context)
+        self.assertContains(dash_resp, "tracking-sheet-tab")
+        self.assertContains(dash_resp, "tracking-sheet-panel")
+
+    def test_project_upload_excel_redirect(self):
+        """Verify uploading multi-sheet excel workbook redirects cleanly to project dossier."""
+        from trackers.services.excel_importer import generate_sample_weekly_session_log_excel
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        buf = generate_sample_weekly_session_log_excel(programme_title="MSL Hattargi", academic_year="2026-27")
+        excel_file = SimpleUploadedFile(
+            "Project_Tracker_MSL_2026.xlsx",
+            buf.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+        resp = self.client.post(
+            reverse("programs:tracking_upload_excel"),
+            {
+                "file": excel_file,
+                "academic_year": "2026-27",
+                "project_id": str(self.steam_proj.pk),
+                "redirect_to": "project_detail",
+            },
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Successfully added weekly session logs")
+        self.assertContains(resp, self.steam_proj.name)
+
+    def test_custom_tracking_folder_lifecycle(self):
+        """
+        Comprehensive test of Custom Tracking Folder lifecycle:
+        1. Create empty folder without file -> verify created, badge 0, empty state displayed.
+        2. Create folder with Excel file -> verify sessions parsed and tagged with folder name.
+        3. Download original Excel file -> verify FileResponse attachment.
+        4. Upload/replace Excel for existing folder -> verify sessions refreshed.
+        5. Delete folder -> verify folder and sessions cleaned up.
+        6. Verify '+ Add Folder' button rendered on Project, Program, and Dashboard.
+        """
+        from trackers.services.excel_importer import generate_sample_weekly_session_log_excel
+        from trackers.models import WeeklyTrackerSession
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        # 1. Create empty folder for project
+        create_resp = self.client.post(
+            reverse("programs:tracking_folder_create"),
+            {
+                "name": "Robotics Lab Sessions",
+                "project_id": str(self.steam_proj.pk),
+                "academic_year": "2026-27",
+            },
+            follow=True,
+        )
+        self.assertEqual(create_resp.status_code, 200)
+        self.assertContains(create_resp, "Folder &#x27;Robotics Lab Sessions&#x27; created")
+        folder = TrackingFolder.objects.filter(name="Robotics Lab Sessions").first()
+        self.assertIsNotNone(folder)
+        self.assertTrue(folder.key.startswith("custom_robotics_lab_sessions"))
+
+        # Check project detail displays the folder
+        proj_resp = self.client.get(reverse("programs:project_detail", kwargs={"pk": self.steam_proj.pk}))
+        self.assertEqual(proj_resp.status_code, 200)
+        self.assertContains(proj_resp, "Robotics Lab Sessions")
+        self.assertContains(proj_resp, "+ Add Folder")
+        self.assertContains(proj_resp, "addFolderModal")
+        self.assertContains(proj_resp, "uploadFolderModal")
+
+        # 2. Upload Excel to this folder
+        buf = generate_sample_weekly_session_log_excel(programme_title="Robotics", academic_year="2026-27")
+        excel_file = SimpleUploadedFile(
+            "Robotics_Tracker.xlsx",
+            buf.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+        upload_resp = self.client.post(
+            reverse("programs:tracking_folder_upload", kwargs={"pk": folder.pk}),
+            {
+                "excel_file": excel_file,
+            },
+            follow=True,
+        )
+        self.assertEqual(upload_resp.status_code, 200)
+        self.assertContains(upload_resp, "Successfully updated folder &#x27;Robotics Lab Sessions&#x27;")
+
+        # Verify sessions have session_type = folder.name
+        folder_sessions = WeeklyTrackerSession.objects.filter(session_type="Robotics Lab Sessions")
+        self.assertGreater(folder_sessions.count(), 0)
+
+        # 3. Download original Excel file
+        dl_resp = self.client.get(reverse("programs:tracking_folder_download", kwargs={"pk": folder.pk}))
+        self.assertEqual(dl_resp.status_code, 200)
+        self.assertTrue(dl_resp.has_header("Content-Disposition"))
+        self.assertIn("attachment", dl_resp["Content-Disposition"])
+
+        # 4. Check folder on Program Detail and Tracking Dashboard
+        prog_create_resp = self.client.post(
+            reverse("programs:tracking_folder_create"),
+            {
+                "name": "Astronomy Workshop",
+                "program_id": str(self.msl_prog.pk),
+                "academic_year": "2026-27",
+            },
+            follow=True,
+        )
+        self.assertEqual(prog_create_resp.status_code, 200)
+        prog_detail_resp = self.client.get(reverse("programs:program_detail", kwargs={"pk": self.msl_prog.pk}))
+        self.assertContains(prog_detail_resp, "Astronomy Workshop")
+        self.assertContains(prog_detail_resp, "+ Add Folder")
+
+        dash_resp = self.client.get(reverse("programs:tracking_dashboard") + "?view=sessions")
+        self.assertContains(dash_resp, "+ Add Folder")
+
+        # 5. Delete folder
+        del_resp = self.client.post(
+            reverse("programs:tracking_folder_delete", kwargs={"pk": folder.pk}),
+            follow=True,
+        )
+        self.assertEqual(del_resp.status_code, 200)
+        self.assertFalse(TrackingFolder.objects.filter(pk=folder.pk).exists())
+        self.assertEqual(WeeklyTrackerSession.objects.filter(session_type="Robotics Lab Sessions").count(), 0)
+
+    def test_remove_session_logs_deletes_all_sheets_and_folders(self):
+        """Verify removing session logs removes all multi-sheet sessions, folders, and school profile tabs."""
+        from trackers.models import WeeklyTrackerSession, Programme
+        self.msl_prog.participating_schools.add(self.school)
+
+        # Create sessions across multiple sheet types
+        WeeklyTrackerSession.objects.create(
+            programme="MSL",
+            session_type="SchoolSession",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Magnetism Experiment",
+            total_exposures=30,
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="CAMP",
+            session_type="SummerWinter",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Summer Camp Science",
+            total_exposures=45,
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="AVISHKAR",
+            session_type="ScienceFair",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Avishkar Fair",
+            total_exposures=50,
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="VASANTHA",
+            session_type="OperationVasantha",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Evening Class",
+            total_exposures=20,
+        )
+
+        # Create a custom folder for this program
+        custom_f = TrackingFolder.objects.create(
+            name="Robotics Extra",
+            program=self.msl_prog,
+            academic_year="2026-27",
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="OTHERS",
+            session_type="Robotics Extra",
+            academic_year="2026-27",
+            topic="Robotics Module",
+            total_exposures=15,
+        )
+
+        # Check detail page has all sheet folders
+        resp_before = self.client.get(reverse("programs:program_detail", kwargs={"pk": self.msl_prog.pk}))
+        self.assertEqual(resp_before.status_code, 200)
+        self.assertGreater(len(resp_before.context["sheet_folders"]), 1)
+        self.assertContains(resp_before, "Remove Session Logs")
+
+        # Now remove session logs
+        del_resp = self.client.post(
+            reverse("programs:program_remove_session_logs", kwargs={"pk": self.msl_prog.pk}),
+            follow=True,
+        )
+        self.assertEqual(del_resp.status_code, 200)
+        self.assertContains(del_resp, "Successfully removed")
+
+        # Verify all sessions are gone
+        self.assertEqual(WeeklyTrackerSession.objects.filter(school=self.school).count(), 0)
+        self.assertEqual(WeeklyTrackerSession.objects.filter(session_type="Robotics Extra").count(), 0)
+        self.assertFalse(TrackingFolder.objects.filter(pk=custom_f.pk).exists())
+        self.assertEqual(self.msl_prog.participating_schools.count(), 0)
+
+        # Verify sheet_folders on program detail is now completely empty
+        resp_after = self.client.get(reverse("programs:program_detail", kwargs={"pk": self.msl_prog.pk}))
+        self.assertEqual(len(resp_after.context["sheet_folders"]), 0)
+
+    def test_watermark_developed_by_rsc_near_logout(self):
+        """Verify watermark 'developed by RSC' is present near the logout button."""
+        resp = self.client.get(reverse("programs:program_list"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "developed by RSC")
+        self.assertContains(resp, "Log Out")
+
+        portal_resp = self.client.get(reverse("schools:portal"), follow=True)
+        self.assertEqual(portal_resp.status_code, 200)
+        self.assertContains(portal_resp, "developed by RSC")
+
+
+

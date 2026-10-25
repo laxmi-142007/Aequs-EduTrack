@@ -1103,22 +1103,34 @@ def bulk_upload_events(request):
         else:
             import openpyxl
             wb = openpyxl.load_workbook(uploaded_file, read_only=True, data_only=True)
-            ws = wb.active
-            excel_rows = list(ws.iter_rows(values_only=True))
-            wb.close()
-            if not excel_rows:
-                messages.error(request, "The Excel file is empty.")
-                return redirect("events:bulk_upload")
-            headers = [_normalize_event_header(c) for c in excel_rows[0]]
             rows = []
-            for r in excel_rows[1:]:
-                if not any(c is not None and str(c).strip() for c in r):
+            for ws in wb.worksheets:
+                excel_rows = [list(r) for r in ws.iter_rows(values_only=True) if any(c is not None and str(c).strip() for c in r)]
+                if not excel_rows:
                     continue
-                row_dict = {}
-                for i in range(len(headers)):
-                    if headers[i]:
-                        row_dict[headers[i]] = r[i] if i < len(r) and r[i] is not None else ""
-                rows.append(row_dict)
+                header_idx = -1
+                for idx, r in enumerate(excel_rows[:10]):
+                    norm_r = [_normalize_event_header(c) for c in r if c is not None]
+                    if any(k in norm_r for k in ("title", "event_name", "name", "date", "venue")):
+                        header_idx = idx
+                        break
+                if header_idx == -1:
+                    if len(wb.worksheets) == 1:
+                        header_idx = 0
+                    else:
+                        continue
+                headers = [_normalize_event_header(c) for c in excel_rows[header_idx]]
+                for r in excel_rows[header_idx + 1:]:
+                    row_dict = {}
+                    for i in range(len(headers)):
+                        if headers[i]:
+                            row_dict[headers[i]] = r[i] if i < len(r) and r[i] is not None else ""
+                    if any(row_dict.values()):
+                        rows.append(row_dict)
+            wb.close()
+            if not rows:
+                messages.error(request, "The Excel file contains no valid event records across any sheets.")
+                return redirect("events:bulk_upload")
 
         created, errors = 0, []
         with transaction.atomic():

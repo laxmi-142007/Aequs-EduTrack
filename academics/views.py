@@ -972,21 +972,30 @@ def academic_bulk_upload(request):
         else:
             import openpyxl
             wb = openpyxl.load_workbook(uploaded_file, data_only=True)
-            sheet = wb.active
-            all_rows = list(sheet.iter_rows(values_only=True))
-            if not all_rows or len(all_rows) < 2:
-                messages.error(request, "The Excel file is empty.")
-                return redirect("academics:bulk_upload")
-
-            headers = [_normalize_academic_header(h) for h in all_rows[0]]
-            for row_vals in all_rows[1:]:
-                if not any(row_vals):
+            for sheet in wb.worksheets:
+                all_rows = [list(r) for r in sheet.iter_rows(values_only=True) if any(c is not None and str(c).strip() for c in r)]
+                if not all_rows or len(all_rows) < 2:
                     continue
-                row_dict = {}
-                for idx, val in enumerate(row_vals):
-                    if idx < len(headers) and headers[idx]:
-                        row_dict[headers[idx]] = str(val) if val is not None else ""
-                rows_data.append(row_dict)
+                header_idx = -1
+                for idx, r in enumerate(all_rows[:10]):
+                    norm_r = [_normalize_academic_header(c) for c in r if c is not None]
+                    if any(k in norm_r for k in ("student_name", "admission_number", "exam_name", "marks", "subject")):
+                        header_idx = idx
+                        break
+                if header_idx == -1:
+                    if len(wb.worksheets) == 1:
+                        header_idx = 0
+                    else:
+                        continue
+                headers = [_normalize_academic_header(h) for h in all_rows[header_idx]]
+                for row_vals in all_rows[header_idx + 1:]:
+                    row_dict = {}
+                    for idx, val in enumerate(row_vals):
+                        if idx < len(headers) and headers[idx]:
+                            row_dict[headers[idx]] = str(val) if val is not None else ""
+                    if any(row_dict.values()):
+                        rows_data.append(row_dict)
+            wb.close()
 
         if not rows_data:
             messages.error(request, "No rows found in the uploaded file.")

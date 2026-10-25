@@ -52,24 +52,58 @@
             </div>
 
             <!-- Filter Bar -->
-            <div class="filter-bar">
-                <form method="get" class="filter-form">
-                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search program name, code, or location..." class="input-search">
-                    <select name="project" class="select-filter" onchange="this.form.submit()">
-                        <option value="">All Projects</option>
-                        <option value="standalone" {% if selected_project == "standalone" %}selected{% endif %}>-- Standalone Only --</option>
-                        {% for prj in projects %}
-                        <option value="{{ prj.pk }}" {% if selected_project == prj.pk|stringformat:"i" %}selected{% endif %}>
-                            {{ prj.name }} ({{ prj.code }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit" class="btn-af btn-af-secondary">
-                        <i data-lucide="search"></i> Filter
-                    </button>
-                    {% if search_query or selected_project %}
-                    <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">Reset</a>
-                    {% endif %}
+            <div class="filter-bar" style="margin-bottom: 20px;">
+                <form method="get" class="filter-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; width: 100%;">
+                    <!-- Search Input Box -->
+                    <div style="position: relative; width: 100%;">
+                        <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: #94a3b8;"></i>
+                        <input type="text" name="q" value="{{ search_query }}" 
+                               placeholder="Search program name, code, or location..." 
+                               class="input-search" 
+                               style="width: 100%; padding-left: 36px; font-size: 13px; height: 38px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                    </div>
+
+                    <!-- Row 2: Split into 2 for Project & Location -->
+                    <div class="filter-row-split" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+                        <!-- Parent Project Filter (1st half) -->
+                        <div style="position: relative;">
+                            <select name="project" class="select-filter" onchange="this.form.submit()" 
+                                    style="width: 100%; height: 38px; padding: 0 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #1e293b; background: #fff; cursor: pointer; box-sizing: border-box;">
+                                <option value="">All Projects</option>
+                                <option value="standalone" {% if selected_project == "standalone" %}selected{% endif %}>-- Standalone Only --</option>
+                                {% for prj in projects %}
+                                <option value="{{ prj.pk }}" {% if selected_project == prj.pk|stringformat:"i" %}selected{% endif %}>
+                                    {{ prj.name }} ({{ prj.code }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Operational Location Filter (2nd half: Belagavi, Hubballi, Koppal) -->
+                        <div style="position: relative;">
+                            <select name="location" class="select-filter" onchange="this.form.submit()" 
+                                    style="width: 100%; height: 38px; padding: 0 12px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #1e293b; background: #fff; cursor: pointer; box-sizing: border-box;">
+                                {% for code, label in location_choices %}
+                                <option value="{{ code }}" {% if selected_location == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Action Buttons -->
+                    <div style="display: flex; gap: 10px; align-items: center; width: 100%; flex-wrap: wrap;">
+                        <button type="submit" class="btn-af" style="background: #ed1c24; color: #ffffff; border: none; font-weight: 600; height: 38px; padding: 0 16px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <i data-lucide="search" style="width: 14px; height: 14px;"></i> Filter
+                        </button>
+                        {% if search_query or selected_project or selected_location or selected_taluk %}
+                        <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary" style="height: 38px; display: inline-flex; align-items: center; font-size: 12.5px; padding: 0 14px; gap: 4px; text-decoration: none;">
+                            <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i> Reset
+                        </a>
+                        {% endif %}
+                        <span style="font-size: 12px; font-weight: 700; color: #64748b; margin-left: auto;">
+                            Total: {{ total_count }} program{{ total_count|pluralize }}
+                        </span>
+                    </div>
                 </form>
             </div>
 

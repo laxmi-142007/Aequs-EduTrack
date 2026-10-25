@@ -189,6 +189,12 @@ class Program(models.Model):
     academic_year = models.CharField(max_length=20, default="2026-27")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     is_archived = models.BooleanField(default=False, db_index=True)
+
+    # Modular Optional Components (Enabled via [+] in Edit Program)
+    enable_scholarships = models.BooleanField(default=False, help_text="Enable Connected Scholarships component")
+    enable_internships = models.BooleanField(default=False, help_text="Enable Connected Internships component")
+    enable_mentorship = models.BooleanField(default=False, help_text="Enable Connected Mentorship component")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -204,6 +210,18 @@ class Program(models.Model):
     def full_location(self):
         parts = [self.location_name, self.village_or_town, self.taluk, self.district]
         return ", ".join(p for p in parts if p)
+
+    @property
+    def has_scholarships(self):
+        return self.enable_scholarships or self.scholarships.filter(is_archived=False).exists()
+
+    @property
+    def has_internships(self):
+        return self.enable_internships or self.internships.exists()
+
+    @property
+    def has_mentorship(self):
+        return self.enable_mentorship or self.mentorship_sessions.exists()
 
 
 # ============================================================================
@@ -541,5 +559,46 @@ class MikePropenScholarshipApplication(models.Model):
         if self.school and not self.school_name:
             self.school_name = self.school.name
         super().save(*args, **kwargs)
+
+
+# ============================================================================
+# TRACKING FOLDER MODEL (User-created Custom Excel / Session Tracking Folders)
+# ============================================================================
+
+class TrackingFolder(models.Model):
+    """
+    User-created custom tracking folder for uploading Excel workbooks or grouping sessions.
+    Can be scoped to a Project, a Program, or Tracking Dashboard (pillar/all).
+    """
+    name = models.CharField(max_length=150, help_text="e.g. Science Exposure Visits, Q3 Assessments")
+    key = models.SlugField(max_length=150, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True, related_name="custom_folders")
+    program = models.ForeignKey(Program, on_delete=models.CASCADE, null=True, blank=True, related_name="custom_folders")
+    tab_type = models.CharField(max_length=50, blank=True, default="", help_text="Pillar or tab key for tracking dashboard (e.g. cognitive, steam, student_excel, all)")
+    academic_year = models.CharField(max_length=20, default="2026-27")
+    uploaded_file = models.FileField(upload_to="tracking_folders/", blank=True, null=True, help_text="Raw Excel spreadsheet uploaded to this folder")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = "Tracking Folder"
+        verbose_name_plural = "Tracking Folders"
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.key or not self.key.strip():
+            from django.utils.text import slugify
+            base = slugify(self.name).replace("-", "_") or "folder"
+            candidate = f"custom_{base}"
+            counter = 1
+            while TrackingFolder.objects.filter(key=candidate).exclude(pk=self.pk).exists():
+                candidate = f"custom_{base}_{counter}"
+                counter += 1
+            self.key = candidate
+        super().save(*args, **kwargs)
+
 
 

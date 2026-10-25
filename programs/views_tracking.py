@@ -1,14 +1,23 @@
+import os
+from collections import defaultdict
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from django.db.models import Sum, Count, Q
-from programs.models import Project, Program, EVClassSession, Scholarship, Location, NGO
+from django.http import FileResponse
+from programs.models import Project, Program, EVClassSession, Scholarship, Location, NGO, TrackingFolder
 from schools.models import School
 from students.models import Student
 from distributions.models import Distribution
-from programs.metrics import normalize_academic_year, get_reach_matrix, get_budget_vs_actual
+from programs.metrics import (
+    normalize_academic_year,
+    get_reach_matrix,
+    get_budget_vs_actual,
+    get_program_location_q,
+    get_session_location_q,
+)
 from trackers.models import Programme, WeeklyTrackerSession
-from programs.views import resolve_tracker_programme
+from programs.views import resolve_tracker_programme, format_sheet_folder_label
 
 
 def tracking_dashboard(request):
@@ -16,7 +25,8 @@ def tracking_dashboard(request):
     Dedicated Tracking Dashboard for Cognitive Development, STEAM Literacy,
     and Student Excel Programs (Excel Tracking Specification).
     """
-    selected_ay = request.GET.get("ay", "2026-27").strip()
+    selected_ay = request.GET.get("ay", "all").strip() if "ay" in request.GET else "all"
+    selected_loc = request.GET.get("loc", "").strip().lower()
     active_tab = request.GET.get("tab", "all").strip().lower()
     search_q = request.GET.get("q", "").strip()
     selected_prog = request.GET.get("prog", "").strip()
@@ -25,10 +35,17 @@ def tracking_dashboard(request):
     ay = normalize_academic_year(selected_ay)
 
     academic_years = [
+        ("all", "All Years (Consolidated)"),
         ("2026-27", "Current Year (2026-27)"),
         ("2025-26", "Academic Year 2025-26"),
         ("2024-25", "Academic Year 2024-25"),
-        ("all", "All Years (Consolidated)"),
+    ]
+
+    location_choices = [
+        ("", "All Locations (Belagavi, Hubballi, Koppal)"),
+        ("belagavi", "Belagavi Hub (Belgaum / Hattargi / Hebbal)"),
+        ("hubballi", "Hubballi-Dharwad Hub (Hubli / Dharwad / Itigatti)"),
+        ("koppal", "Koppal Precision Cluster Hub (Koppal)"),
     ]
 
     # Map tabs to project codes / search keys
@@ -64,6 +81,9 @@ def tracking_dashboard(request):
     if ay != "all":
         programs_qs = programs_qs.filter(academic_year=ay)
 
+    if selected_loc:
+        programs_qs = programs_qs.filter(get_program_location_q(selected_loc))
+
     if search_q:
         norm_q = search_q.replace("tt", "t").replace("ii", "i")
         programs_qs = programs_qs.filter(
@@ -80,7 +100,16 @@ def tracking_dashboard(request):
         )
 
     if selected_prog:
-        if selected_prog.isdigit():
+        if selected_prog in ["all_location_based", "location_based"]:
+            # All location-based programs directory
+            pass
+        elif selected_prog in ["loc_prog_belagavi", "belagavi_location_based"]:
+            programs_qs = programs_qs.filter(get_program_location_q("belagavi"))
+        elif selected_prog in ["loc_prog_hubballi", "hubballi_location_based"]:
+            programs_qs = programs_qs.filter(get_program_location_q("hubballi"))
+        elif selected_prog in ["loc_prog_koppal", "koppal_location_based"]:
+            programs_qs = programs_qs.filter(get_program_location_q("koppal"))
+        elif selected_prog.isdigit():
             programs_qs = programs_qs.filter(id=int(selected_prog))
         else:
             matching_ids = [
@@ -183,8 +212,19 @@ def tracking_dashboard(request):
             Q(raw_location_or_activity__icontains=norm_q)
         )
 
+    if selected_loc:
+        weekly_qs = weekly_qs.filter(get_session_location_q(selected_loc))
+
     if selected_prog:
-        if selected_prog.isdigit():
+        if selected_prog in ["all_location_based", "location_based"]:
+            pass
+        elif selected_prog in ["loc_prog_belagavi", "belagavi_location_based"]:
+            weekly_qs = weekly_qs.filter(get_session_location_q("belagavi"))
+        elif selected_prog in ["loc_prog_hubballi", "hubballi_location_based"]:
+            weekly_qs = weekly_qs.filter(get_session_location_q("hubballi"))
+        elif selected_prog in ["loc_prog_koppal", "koppal_location_based"]:
+            weekly_qs = weekly_qs.filter(get_session_location_q("koppal"))
+        elif selected_prog.isdigit():
             target_prog = Program.objects.filter(id=int(selected_prog)).first()
             if target_prog:
                 mapped_p = resolve_tracker_programme(target_prog)
@@ -197,7 +237,7 @@ def tracking_dashboard(request):
         else:
             weekly_qs = weekly_qs.filter(programme=selected_prog)
 
-    recent_weekly_sessions = weekly_qs.order_by("-session_date", "-id")[:100]
+    recent_weekly_sessions = weekly_qs.order_by("-created_at", "-session_date", "-id")[:100]
     total_weekly_sessions_count = weekly_qs.count()
     weekly_kpis = weekly_qs.aggregate(
         total_exp=Sum("total_exposures"),
@@ -205,20 +245,173 @@ def tracking_dashboard(request):
         total_g=Sum("girls_present")
     )
 
+    total_weekly_schools = weekly_qs.filter(school__isnull=False).values("school").distinct().count()
+
+    # Build folder-style tabs for each individual workbook sheet / programme
+    prog_labels = dict(Programme.choices)
+    agastya_sheets = {
+        "schoolsession", "summerwinter", "communityvisit", "teachertrainingprogram", "sciencefair", "specialprogram", "operationvasantha"
+    }
+
+    # Fetch custom TrackingFolders for this view
+    if active_tab == "cognitive":
+        custom_folders = list(TrackingFolder.objects.filter(Q(tab_type="cognitive") | (Q(tab_type="") & Q(project=cog_project))))
+    elif active_tab == "steam":
+        custom_folders = list(TrackingFolder.objects.filter(Q(tab_type="steam") | (Q(tab_type="") & Q(project=steam_project))))
+    elif active_tab == "student_excel":
+        custom_folders = list(TrackingFolder.objects.filter(Q(tab_type="student_excel") | (Q(tab_type="") & Q(project=excel_project))))
+    else:
+        custom_folders = list(TrackingFolder.objects.filter(Q(tab_type="all") | Q(tab_type="") | Q(project__in=active_projects)))
+
+    cf_names = {cf.name for cf in custom_folders}
+    grouped_tracking = defaultdict(list)
+    schools_per_tracking_sheet = defaultdict(set)
+
+    for ws in weekly_qs.order_by("-created_at", "-session_date", "-id")[:3000]:
+        st_clean = (ws.session_type or "").strip()
+        if st_clean in cf_names:
+            continue
+        st_lower = st_clean.lower()
+        if st_lower in agastya_sheets:
+            folder_key = st_lower
+        elif ws.programme == "MSL" or st_lower in ["hands-on", "practical", "theory", "msl"]:
+            folder_key = "schoolsession"
+        else:
+            folder_key = ws.programme
+        grouped_tracking[folder_key].append(ws)
+        if ws.school_id:
+            schools_per_tracking_sheet[folder_key].add(ws.school_id)
+        elif ws.raw_location_or_activity:
+            schools_per_tracking_sheet[folder_key].add(ws.raw_location_or_activity.strip().lower())
+
+    tracking_sheet_folders = []
+    for f_key, sess_list in grouped_tracking.items():
+        total_exp = sum(s.total_exposures for s in sess_list)
+        total_b = sum(s.boys_present for s in sess_list)
+        total_g = sum(s.girls_present for s in sess_list)
+        f_prog = sess_list[0].programme if sess_list else f_key
+        label = format_sheet_folder_label(f_key, f_prog, prog_labels)
+        tracking_sheet_folders.append({
+            "key": f_key,
+            "name": label,
+            "sessions": sess_list[:250],
+            "total_count": len(sess_list),
+            "total_exposures": total_exp,
+            "boys_present": total_b,
+            "girls_present": total_g,
+            "schools_count": len(schools_per_tracking_sheet[f_key]),
+        })
+
+    # Add custom TrackingFolders to tabs
+    for cf in custom_folders:
+        cf_sess_qs = WeeklyTrackerSession.objects.filter(session_type=cf.name).select_related("school", "ngo")
+        if ay != "all":
+            cf_sess_qs = cf_sess_qs.filter(Q(academic_year=ay) | Q(academic_year__startswith=ay.split("-")[0]))
+        if search_q:
+            norm_q = search_q.replace("tt", "t").replace("ii", "i")
+            cf_sess_qs = cf_sess_qs.filter(
+                Q(school__name__icontains=search_q) |
+                Q(school__name__icontains=norm_q) |
+                Q(topic__icontains=search_q) |
+                Q(instructor_name__icontains=search_q) |
+                Q(raw_location_or_activity__icontains=search_q)
+            )
+        cf_list = list(cf_sess_qs.order_by("-created_at", "-session_date", "-id")[:250])
+        total_exp = sum(s.total_exposures for s in cf_list)
+        total_b = sum(s.boys_present for s in cf_list)
+        total_g = sum(s.girls_present for s in cf_list)
+        cf_schools = set(s.school_id for s in cf_list if s.school_id)
+        for s in cf_list:
+            if not s.school_id and s.raw_location_or_activity:
+                cf_schools.add(s.raw_location_or_activity.strip().lower())
+
+        tracking_sheet_folders.append({
+            "key": cf.key,
+            "name": cf.name,
+            "folder_id": cf.id,
+            "is_custom_folder": True,
+            "uploaded_file_url": cf.uploaded_file.url if cf.uploaded_file else None,
+            "uploaded_file_name": os.path.basename(cf.uploaded_file.name) if cf.uploaded_file else None,
+            "sessions": cf_list,
+            "total_count": len(cf_list),
+            "total_exposures": total_exp,
+            "boys_present": total_b,
+            "girls_present": total_g,
+            "schools_count": len(cf_schools),
+        })
+
+    if active_tab == "steam" or "schoolsession" in grouped_tracking:
+        if "teachertrainingprogram" not in [f["key"] for f in tracking_sheet_folders]:
+            tracking_sheet_folders.append({
+                "key": "teachertrainingprogram",
+                "name": "Teacher Training",
+                "sessions": [],
+                "total_count": 0,
+                "total_exposures": 0,
+                "boys_present": 0,
+                "girls_present": 0,
+                "schools_count": 0,
+            })
+
+    excel_order = {
+        "school_profile": 1,
+        "schoolsession": 2,
+        "summerwinter": 3,
+        "communityvisit": 4,
+        "teachertrainingprogram": 5,
+        "sciencefair": 6,
+        "specialprogram": 7,
+        "operationvasantha": 8,
+    }
+    tracking_sheet_folders.sort(key=lambda x: (excel_order.get(x["key"].lower(), 99), x["name"]))
+
+    # Location-based programs grouped by Hub for directory filter
+    tracking_programs = Program.objects.filter(
+        is_archived=False,
+        project_id__in=project_ids
+    ).select_related("project").order_by("district", "title")
+
+    belagavi_programs = []
+    hubballi_programs = []
+    koppal_programs = []
+
+    for p in tracking_programs:
+        dist = (p.district or "").lower()
+        loc_n = (p.location_name or "").lower()
+        if "koppal" in dist or "koppal" in loc_n:
+            koppal_programs.append(p)
+        elif any(x in dist or x in loc_n for x in ["hubballi", "hubli", "dharwad", "itigatti"]):
+            hubballi_programs.append(p)
+        else:
+            belagavi_programs.append(p)
+
+    loc_labels = dict(location_choices)
+    selected_loc_label = loc_labels.get(selected_loc, "")
+
     context = {
         "active_tab": active_tab,
         "selected_ay": selected_ay,
+        "selected_loc": selected_loc,
+        "selected_loc_label": selected_loc_label,
+        "location_choices": location_choices,
         "selected_prog": selected_prog,
         "active_view": active_view,
         "academic_years": academic_years,
         "search_q": search_q,
         "programme_choices": Programme.choices,
-        "program_centers": Program.objects.filter(is_archived=False).select_related("project").order_by("code", "title"),
+        "program_centers": tracking_programs,
+        "belagavi_programs": belagavi_programs,
+        "hubballi_programs": hubballi_programs,
+        "koppal_programs": koppal_programs,
+        "total_belagavi_count": len(belagavi_programs),
+        "total_hubballi_count": len(hubballi_programs),
+        "total_koppal_count": len(koppal_programs),
+        "total_location_based_count": len(tracking_programs),
         "program_rows": program_rows,
         "total_programs_count": len(program_rows),
         "total_students_sum": total_students_sum,
         "total_schools_count": total_schools_count,
-        "total_locations_count": locations_count or 4,
+        "total_locations_count": locations_count or (1 if selected_loc else 23),
         "total_learning_hrs_sum": round(total_learning_hrs_sum, 1),
         "allocated_total": float(allocated_total),
         "spent_total": float(spent_total),
@@ -228,10 +421,13 @@ def tracking_dashboard(request):
         "steam_project": steam_project,
         "excel_project": excel_project,
         "recent_weekly_sessions": recent_weekly_sessions,
+        "tracking_sheet_folders": tracking_sheet_folders,
         "total_weekly_sessions_count": total_weekly_sessions_count,
         "total_weekly_exposures": weekly_kpis["total_exp"] or 0,
         "total_weekly_boys": weekly_kpis["total_b"] or 0,
         "total_weekly_girls": weekly_kpis["total_g"] or 0,
+        "total_weekly_schools": total_weekly_schools,
+        "selected_folder": request.GET.get("folder", ""),
     }
     return render(request, "programs/tracking_dashboard.html", context)
 
@@ -249,17 +445,29 @@ def upload_tracking_excel(request):
     academic_year = request.POST.get("academic_year", "").strip()
     target_ngo_code = request.POST.get("ngo_code", "").strip()
     program_id = request.POST.get("program_id", "").strip()
+    project_id = request.POST.get("project_id", "").strip()
     redirect_target = request.POST.get("redirect_to", "").strip()
 
     if not uploaded_file:
         messages.error(request, "Please select an Excel (.xlsx or .xls) file to upload.")
+        if redirect_target == "project_detail" and project_id:
+            return redirect("programs:project_detail", pk=int(project_id))
         return redirect("programs:tracking_dashboard")
 
     if not uploaded_file.name.lower().endswith((".xlsx", ".xls")):
         messages.error(request, "Only Microsoft Excel (.xlsx/.xls) files are supported.")
+        if redirect_target == "project_detail" and project_id:
+            return redirect("programs:project_detail", pk=int(project_id))
         return redirect("programs:tracking_dashboard")
 
     target_program = None
+    target_project = None
+
+    if project_id and project_id.isdigit():
+        target_project = Project.objects.filter(pk=int(project_id)).first()
+        if target_project and not target_ngo_code and target_project.ngo:
+            target_ngo_code = target_project.ngo.code
+
     if program_id and program_id.isdigit():
         target_program = Program.objects.filter(pk=int(program_id)).first()
         if target_program and not target_ngo_code:
@@ -281,6 +489,20 @@ def upload_tracking_excel(request):
     try:
         from trackers.services.excel_importer import import_yfs_workbook
         prog_key = resolve_tracker_programme(target_program) if target_program else None
+        if not prog_key and target_project:
+            for prg in target_project.programs.filter(is_archived=False):
+                k = resolve_tracker_programme(prg)
+                if k:
+                    prog_key = k
+                    break
+            if not prog_key:
+                p_text = f"{target_project.code or ''} {target_project.name or ''}".upper()
+                if "STEAM" in p_text or "STM" in p_text or "SCIENCE" in p_text:
+                    prog_key = "MSL"
+                elif "COG" in p_text or "COGNITIVE" in p_text:
+                    prog_key = "OPN"
+                elif "EXC" in p_text or "EXCEL" in p_text:
+                    prog_key = "SEP"
         res = import_yfs_workbook(
             uploaded_file,
             academic_year,
@@ -289,10 +511,14 @@ def upload_tracking_excel(request):
             target_programme=prog_key,
         )
         if res.get("sessions_imported", 0) > 0:
-            prog_note = f" for '{target_program.title}'" if target_program else ""
+            target_note = ""
+            if target_program:
+                target_note = f" for '{target_program.title}'"
+            elif target_project:
+                target_note = f" for project '{target_project.name}'"
             messages.success(
                 request,
-                f"Successfully added weekly session logs from '{uploaded_file.name}'{prog_note}: "
+                f"Successfully added weekly session logs from '{uploaded_file.name}'{target_note}: "
                 f"{res['sessions_imported']:,} sessions, {res['enrollments_imported']:,} class enrollments, "
                 f"{res['total_exposures']:,} student exposures across {res['schools_count']} schools for AY {academic_year}."
             )
@@ -304,6 +530,10 @@ def upload_tracking_excel(request):
             )
     except Exception as e:
         messages.error(request, f"Failed to ingest Excel weekly session log workbook: {e}")
+
+    if redirect_target == "project_detail" and (target_project or project_id):
+        proj_pk = target_project.pk if target_project else int(project_id)
+        return redirect("programs:project_detail", pk=proj_pk)
 
     if redirect_target == "program_detail" and target_program:
         return redirect("programs:program_detail", pk=target_program.pk)
@@ -342,4 +572,172 @@ def download_session_log_template(request):
     safe_filename = f"Weekly_Session_Log_Template_{ay}.xlsx"
     response["Content-Disposition"] = f'attachment; filename="{safe_filename}"'
     return response
+
+
+# ==============================================================================
+# CUSTOM TRACKING FOLDER ACTIONS (Create, Upload, Delete, Download)
+# ==============================================================================
+
+def tracking_folder_create(request):
+    """
+    Creates a new custom TrackingFolder for a Project, Program, or Dashboard tab.
+    Optionally ingests an uploaded Excel workbook immediately.
+    """
+    if request.method != "POST":
+        return redirect("programs:tracking_dashboard")
+
+    folder_name = request.POST.get("name", "").strip()
+    project_id = request.POST.get("project_id", "").strip()
+    program_id = request.POST.get("program_id", "").strip()
+    tab_type = request.POST.get("tab_type", "").strip().lower()
+    academic_year = request.POST.get("academic_year", "2026-27").strip() or "2026-27"
+    next_url = request.POST.get("next_url", "").strip()
+
+    if not folder_name:
+        messages.error(request, "Folder name is required.")
+        return redirect(next_url or "programs:tracking_dashboard")
+
+    project = Project.objects.filter(pk=int(project_id)).first() if project_id and project_id.isdigit() else None
+    program = Program.objects.filter(pk=int(program_id)).first() if program_id and program_id.isdigit() else None
+
+    folder = TrackingFolder.objects.create(
+        name=folder_name,
+        project=project,
+        program=program,
+        tab_type=tab_type,
+        academic_year=academic_year,
+    )
+
+    excel_file = request.FILES.get("excel_file")
+    if excel_file:
+        folder.uploaded_file = excel_file
+        folder.save()
+        from trackers.services.excel_importer import import_yfs_workbook
+        try:
+            res = import_yfs_workbook(
+                file_obj_or_path=folder.uploaded_file.path,
+                academic_year=folder.academic_year,
+                target_program=program,
+                target_session_type=folder.name,
+            )
+            messages.success(
+                request,
+                f"Folder '{folder.name}' created and {res.get('sessions_imported', 0)} sessions imported from Excel."
+            )
+        except Exception as e:
+            messages.warning(
+                request,
+                f"Folder '{folder.name}' created, but Excel file processing encountered an error: {e}"
+            )
+    else:
+        messages.success(
+            request,
+            f"Folder '{folder.name}' created. You can upload Excel files to it at any time."
+        )
+
+    if not next_url:
+        if project:
+            next_url = reverse("programs:project_detail", kwargs={"pk": project.pk})
+        elif program:
+            next_url = reverse("programs:program_detail", kwargs={"pk": program.pk})
+        else:
+            next_url = reverse("programs:tracking_dashboard")
+
+    sep = "&" if "?" in next_url else "?"
+    return redirect(f"{next_url}{sep}folder={folder.key}")
+
+
+def tracking_folder_upload(request, pk):
+    """
+    Uploads or updates the Excel sheet for an existing TrackingFolder.
+    """
+    if request.method != "POST":
+        return redirect("programs:tracking_dashboard")
+
+    folder = get_object_or_404(TrackingFolder, pk=pk)
+    next_url = request.POST.get("next_url", "").strip()
+    excel_file = request.FILES.get("excel_file")
+
+    if not excel_file:
+        messages.error(request, "Please select an Excel file (.xlsx or .xls) to upload.")
+        return redirect(next_url or "programs:tracking_dashboard")
+
+    folder.uploaded_file = excel_file
+    folder.save()
+
+    from trackers.services.excel_importer import import_yfs_workbook
+    try:
+        res = import_yfs_workbook(
+            file_obj_or_path=folder.uploaded_file.path,
+            academic_year=folder.academic_year,
+            target_program=folder.program,
+            target_session_type=folder.name,
+        )
+        messages.success(
+            request,
+            f"Successfully updated folder '{folder.name}': {res.get('sessions_imported', 0)} sessions imported."
+        )
+    except Exception as e:
+        messages.error(request, f"Error processing Excel file: {e}")
+
+    if not next_url:
+        if folder.project:
+            next_url = reverse("programs:project_detail", kwargs={"pk": folder.project.pk})
+        elif folder.program:
+            next_url = reverse("programs:program_detail", kwargs={"pk": folder.program.pk})
+        else:
+            next_url = reverse("programs:tracking_dashboard")
+
+    sep = "&" if "?" in next_url else "?"
+    return redirect(f"{next_url}{sep}folder={folder.key}")
+
+
+def tracking_folder_delete(request, pk):
+    """
+    Deletes a custom TrackingFolder, removing its associated sessions and uploaded file.
+    """
+    if request.method != "POST":
+        return redirect("programs:tracking_dashboard")
+
+    folder = get_object_or_404(TrackingFolder, pk=pk)
+    folder_name = folder.name
+    next_url = request.POST.get("next_url", "").strip()
+
+    if not next_url:
+        if folder.project:
+            next_url = reverse("programs:project_detail", kwargs={"pk": folder.project.pk})
+        elif folder.program:
+            next_url = reverse("programs:program_detail", kwargs={"pk": folder.program.pk})
+        else:
+            next_url = reverse("programs:tracking_dashboard")
+
+    # Delete sessions tagged with this folder's name
+    WeeklyTrackerSession.objects.filter(session_type=folder.name).delete()
+
+    if folder.uploaded_file:
+        try:
+            folder.uploaded_file.delete(save=False)
+        except Exception:
+            pass
+
+    folder.delete()
+    messages.success(request, f"Folder '{folder_name}' and its sessions have been deleted.")
+    return redirect(next_url)
+
+
+def tracking_folder_download(request, pk):
+    """
+    Directly streams the original Excel file uploaded for a TrackingFolder.
+    """
+    folder = get_object_or_404(TrackingFolder, pk=pk)
+    if not folder.uploaded_file or not folder.uploaded_file.storage.exists(folder.uploaded_file.name):
+        messages.error(request, f"No Excel file has been uploaded for folder '{folder.name}'.")
+        return redirect(request.META.get("HTTP_REFERER", "programs:tracking_dashboard"))
+
+    return FileResponse(
+        folder.uploaded_file.open("rb"),
+        as_attachment=True,
+        filename=os.path.basename(folder.uploaded_file.name)
+    )
+
 

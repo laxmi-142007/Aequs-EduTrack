@@ -11,6 +11,12 @@ urlpatterns = [
     path("tracking/upload-excel/", views_tracking.upload_tracking_excel, name="tracking_upload_excel"),
     path("tracking/sample-template/", views_tracking.download_session_log_template, name="tracking_sample_template"),
 
+    # Custom Tracking Folders (Add folder, Upload Excel, Delete, Download)
+    path("tracking/folders/create/", views_tracking.tracking_folder_create, name="tracking_folder_create"),
+    path("tracking/folders/<int:pk>/upload/", views_tracking.tracking_folder_upload, name="tracking_folder_upload"),
+    path("tracking/folders/<int:pk>/delete/", views_tracking.tracking_folder_delete, name="tracking_folder_delete"),
+    path("tracking/folders/<int:pk>/download/", views_tracking.tracking_folder_download, name="tracking_folder_download"),
+
     # Mike Propen Scholarship Portal (Application, Analysis, Data Details)
     path("scholarships/mike-propen/", views_propen.propen_portal, name="propen_portal"),
     path("scholarships/mike-propen/apply/", views_propen.propen_apply, name="propen_apply"),

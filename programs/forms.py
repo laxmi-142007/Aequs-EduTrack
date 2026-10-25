@@ -114,11 +114,17 @@ class ProgramForm(forms.ModelForm):
             "participating_schools",
             "academic_year",
             "status",
+            "enable_scholarships",
+            "enable_internships",
+            "enable_mentorship",
         ]
         widgets = {
             "locations": forms.SelectMultiple(attrs={"class": "form-select-multi", "size": "4"}),
             "participating_schools": forms.SelectMultiple(attrs={"class": "form-select-multi"}),
             "description": forms.Textarea(attrs={"rows": 3}),
+            "enable_scholarships": forms.CheckboxInput(attrs={"id": "id_enable_scholarships"}),
+            "enable_internships": forms.CheckboxInput(attrs={"id": "id_enable_internships"}),
+            "enable_mentorship": forms.CheckboxInput(attrs={"id": "id_enable_mentorship"}),
         }
 
     def __init__(self, *args, **kwargs):

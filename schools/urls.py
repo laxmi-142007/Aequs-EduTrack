@@ -41,8 +41,7 @@ urlpatterns = [
     path("api/auth/login/", views.api_login, name="api_login"),
     path("api/auth/logout/", views.api_logout, name="api_logout"),
     
-    # Old views kept for ponytail compatibility
+    # Legacy compatibility routes
     path("", views.school_list, name="list"),
     path("add/", views.school_create, name="create"),
-    path("add/", views.school_create, name="add"),
 ]

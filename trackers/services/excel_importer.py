@@ -66,6 +66,22 @@ TRACKER_SHEET_MAPPING = {
     "mobile science lab tracker": Programme.MSL,
     "msl 1": Programme.MSL,
     "msl 2": Programme.MSL,
+    "schoolsession": Programme.MSL,
+    "school session": Programme.MSL,
+    "school sessions": Programme.MSL,
+    "summerwinter": Programme.CAMP,
+    "summer & winter": Programme.CAMP,
+    "summer winter": Programme.CAMP,
+    "communityvisit": Programme.OTHERS,
+    "community visit": Programme.OTHERS,
+    "community visits": Programme.OTHERS,
+    "teachertrainingprogram": Programme.OTHERS,
+    "sciencefair": Programme.AVISHKAR,
+    "science fair": Programme.AVISHKAR,
+    "specialprogram": Programme.OTHERS,
+    "special program": Programme.OTHERS,
+    "operationvasantha": Programme.VASANTHA,
+    "operation vasantha": Programme.VASANTHA,
     "avishkar": Programme.AVISHKAR,
     "avishkar_tracker": Programme.AVISHKAR,
     "avishkar science fair": Programme.AVISHKAR,
@@ -242,10 +258,25 @@ def parse_flexible_date(date_val=None, month_val=None, day_val=None, academic_ye
         return date_val, date_val.strftime("%B"), date_val.day
 
     if date_val and not pd.isna(date_val):
-        s = str(date_val).strip()
+        raw_s = str(date_val).strip()
+        clean_s = re.sub(r'[,/]', ' ', raw_s)
+        clean_s = ' '.join(clean_s.split())
+        for fmt in (
+            "%d %b %y", "%d %b %Y", "%d %B %y", "%d %B %Y",
+            "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d-%b-%Y",
+            "%d/%m/%y", "%d-%m-%y", "%m/%d/%Y", "%m/%d/%y",
+            "%b %d %Y", "%b %d %y", "%B %d %Y"
+        ):
+            try:
+                parsed = datetime.datetime.strptime(clean_s, fmt).date()
+                return parsed, parsed.strftime("%B"), parsed.day
+            except (ValueError, TypeError):
+                continue
+
+        token0 = raw_s.split()[0]
         for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d-%b-%Y", "%d/%m/%y", "%d-%m-%y", "%m/%d/%Y"):
             try:
-                parsed = datetime.datetime.strptime(s.split()[0], fmt).date()
+                parsed = datetime.datetime.strptime(token0, fmt).date()
                 return parsed, parsed.strftime("%B"), parsed.day
             except (ValueError, TypeError):
                 continue
@@ -275,7 +306,7 @@ def parse_boolean_teacher(val):
 # MAIN WORKBOOK INGESTION SERVICE
 # ==============================================================================
 
-def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_program=None, target_programme=None):
+def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_program=None, target_programme=None, target_session_type=None):
     """
     Idempotent, transaction-safe ingestion service for Weekly Trackers and Session Logs.
     Supports:
@@ -331,15 +362,16 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
     excel_file = pd.ExcelFile(file_obj_or_path)
     sheet_names = excel_file.sheet_names
 
-    # 3. If NGO still not resolved, auto-detect from workbook sheet names
+    # 3. If NGO still not resolved, auto-detect from workbook sheet names or filename
     if not ngo:
         clean_sheets = [s.strip().lower() for s in sheet_names]
+        file_hint = str(getattr(file_obj_or_path, "name", file_obj_or_path) or "").lower()
         detected_code = None
-        if any(any(k in s for k in ["msl", "avishkar", "vasantha", "yuvacharya"]) for s in clean_sheets):
+        if any(any(k in s for k in ["msl", "avishkar", "vasantha", "yuvacharya", "schoolsession", "summerwinter", "communityvisit", "sciencefair", "operationvasantha"]) for s in clean_sheets) or "agastya" in file_hint or "msl" in file_hint:
             detected_code = "AGASTYA"
-        elif any(any(k in s for k in ["opn", "reading", "one notebook"]) for s in clean_sheets):
+        elif any(any(k in s for k in ["opn", "reading", "one notebook"]) for s in clean_sheets) or "pratham" in file_hint:
             detected_code = "PRATHAM"
-        elif any(any(k in s for k in ["chaap", "sep", "ignite", "nmms", "hhp", "ahap"]) for s in clean_sheets):
+        elif any(any(k in s for k in ["chaap", "sep", "ignite", "nmms", "hhp", "ahap"]) for s in clean_sheets) or "yfs" in file_hint:
             detected_code = "YFS"
 
         if detected_code:
@@ -358,8 +390,15 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
         fallback_code = (ngo_code or "YFS").upper()
         ngo = NGO.objects.create(name=f"{fallback_code} Foundation", code=fallback_code)
 
-    # Normalize academic year string format
-    ay_clean = academic_year.strip() if academic_year else "2026-27"
+    # Normalize academic year string format (detecting from filename if present)
+    file_hint = str(getattr(file_obj_or_path, "name", file_obj_or_path) or "")
+    if "2025-26" in file_hint and (not academic_year or academic_year == "2026-27"):
+        ay_clean = "2025-26"
+    elif "2026-27" in file_hint and (not academic_year or academic_year == "2025-26"):
+        ay_clean = "2026-27"
+    else:
+        ay_clean = academic_year.strip() if academic_year else "2026-27"
+
     if not re.match(r"^20\d{2}-\d{2}$", ay_clean):
         # e.g. 2025 -> 2025-26
         if ay_clean.isdigit() and len(ay_clean) == 4:
@@ -379,52 +418,74 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
     ]
 
     # --------------------------------------------------------------------------
-    # 1. PARSE WEEKLY TRACKER & SESSION LOG SHEETS
+    # 1. PARSE WEEKLY TRACKER & SESSION LOG SHEETS (ALL MATCHING SHEETS)
     # --------------------------------------------------------------------------
     for sheet_name in sheet_names:
         clean_key = sheet_name.strip().lower()
-        prog_choice = TRACKER_SHEET_MAPPING.get(clean_key)
 
-        # Fallback matching for single-sheet or generic weekly session log files
-        if not prog_choice:
-            if clean_key in generic_sheet_keywords or len(sheet_names) == 1:
-                prog_choice = target_programme or Programme.SEP
-            elif target_programme and any(k in clean_key for k in ["tracker", "session", "log", "weekly"]):
-                prog_choice = target_programme
-
-        if not prog_choice:
+        # Skip pure schedule/planning sheets that only have planned dates without actual sessions
+        if ("shedule" in clean_key or "schedule" in clean_key) and not any(k in clean_key for k in ["tracker", "session", "actual"]):
             continue
 
-        sheet_ngo = ngo
-        if not target_program:
-            if prog_choice in [Programme.MSL, Programme.AVISHKAR, Programme.VASANTHA, Programme.YUVACHARYA]:
-                ag_ngo = NGO.objects.filter(code__iexact="AGASTYA").first()
-                if ag_ngo:
-                    sheet_ngo = ag_ngo
-            elif prog_choice in [Programme.OPN, Programme.READING]:
-                pr_ngo = NGO.objects.filter(code__iexact="PRATHAM").first()
-                if pr_ngo:
-                    sheet_ngo = pr_ngo
-            elif prog_choice in [Programme.CHAAP_JR, Programme.CHAAP_YUVA, Programme.SEP, Programme.IGNITE_BGM, Programme.IGNITE_HBL, Programme.NMMS]:
-                yf_ngo = NGO.objects.filter(code__iexact="YFS").first()
-                if yf_ngo:
-                    sheet_ngo = yf_ngo
+        prog_choice = TRACKER_SHEET_MAPPING.get(clean_key)
+        if not prog_choice:
+            for map_k, map_p in TRACKER_SHEET_MAPPING.items():
+                if map_k in clean_key or clean_key in map_k:
+                    prog_choice = map_p
+                    break
 
-        df = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
+        if not prog_choice:
+            if any(k in clean_key for k in ["chaap-yuva", "chaap_yuva", "ahap"]):
+                prog_choice = Programme.CHAAP_YUVA
+            elif any(k in clean_key for k in ["chaap", "hhp"]):
+                prog_choice = Programme.CHAAP_JR
+            elif any(k in clean_key for k in ["ignite(hbl)", "ignite_hbl", "ignite hbl", "hubballi"]):
+                prog_choice = Programme.IGNITE_HBL
+            elif "ignite" in clean_key:
+                prog_choice = Programme.IGNITE_BGM
+            elif "nmms" in clean_key:
+                prog_choice = Programme.NMMS
+            elif "sep" in clean_key:
+                prog_choice = Programme.SEP
+            elif any(k in clean_key for k in ["msl", "mobile science"]):
+                prog_choice = Programme.MSL
+            elif "avishkar" in clean_key:
+                prog_choice = Programme.AVISHKAR
+            elif "vasantha" in clean_key:
+                prog_choice = Programme.VASANTHA
+            elif "yuvacharya" in clean_key:
+                prog_choice = Programme.YUVACHARYA
+            elif any(k in clean_key for k in ["opn", "one notebook"]):
+                prog_choice = Programme.OPN
+            elif "reading" in clean_key:
+                prog_choice = Programme.READING
+            elif "camp" in clean_key:
+                prog_choice = Programme.CAMP
+            elif "sap" in clean_key:
+                prog_choice = Programme.SAP
+            elif "other" in clean_key:
+                prog_choice = Programme.OTHERS
+
+        try:
+            df = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
+        except Exception:
+            continue
+
         if len(df) <= 1:
             continue
 
-        # Detect column layout: check first 5 rows for column header titles
+        # Detect column layout: check first 10 rows for column header titles
         col_map = {}
         header_row_idx = None
 
-        for r_idx in range(min(5, len(df))):
+        for r_idx in range(min(10, len(df))):
             row_vals = [str(v or "").strip().lower() for v in df.iloc[r_idx]]
             has_school = any("school" in v or "venue" in v or "place" in v or "center" in v for v in row_vals)
             has_topic = any("topic" in v or "activity" in v or "module" in v or "subject" in v for v in row_vals)
-            has_month_or_date = any("month" in v or "date" in v for v in row_vals)
+            has_month_or_date = any("month" in v or "date" in v or "day" in v for v in row_vals)
+            has_attendance = any("boy" in v or "girl" in v or "total" in v or "exposure" in v or "present" in v for v in row_vals)
 
-            if has_school and (has_topic or has_month_or_date):
+            if has_school and (has_topic or has_month_or_date or has_attendance):
                 header_row_idx = r_idx
                 for c_idx, cell_str in enumerate(row_vals):
                     if "date" in cell_str and "date" not in col_map:
@@ -433,15 +494,23 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
                         col_map["month"] = c_idx
                     elif "day" in cell_str and "day" not in col_map:
                         col_map["day"] = c_idx
-                    elif ("school" in cell_str or "venue" in cell_str or "place" in cell_str) and "school" not in col_map:
+                    elif ("schoolname" in cell_str or "school_name" in cell_str) and "schoolname" not in col_map:
+                        col_map["schoolname"] = c_idx
+                    elif ("village" in cell_str) and "village" not in col_map:
+                        col_map["village"] = c_idx
+                    elif ("location" in cell_str) and "location" not in col_map:
+                        col_map["location"] = c_idx
+                    elif ("school" in cell_str or "venue" in cell_str or "place" in cell_str or "center" in cell_str) and "school" not in col_map:
                         col_map["school"] = c_idx
+                    elif ("details" in cell_str) and "details" not in col_map:
+                        col_map["details"] = c_idx
                     elif ("std" in cell_str or "class" in cell_str or "grade" in cell_str) and "std" not in col_map:
                         col_map["std"] = c_idx
                     elif ("div" in cell_str or "section" in cell_str) and "div" not in col_map:
                         col_map["div"] = c_idx
                     elif ("timing" in cell_str or "time" in cell_str or "duration" in cell_str) and "timing" not in col_map:
                         col_map["timing"] = c_idx
-                    elif ("topic" in cell_str or "activity" in cell_str or "module" in cell_str or "concept" in cell_str) and "topic" not in col_map:
+                    elif ("topic" in cell_str or "activity" in cell_str or "module" in cell_str or "concept" in cell_str or "coveredtopics" in cell_str) and "topic" not in col_map:
                         col_map["topic"] = c_idx
                     elif ("instructor" in cell_str or "trainer" in cell_str or "faculty" in cell_str or "facilitator" in cell_str) and "instructor" not in col_map:
                         col_map["instructor"] = c_idx
@@ -451,11 +520,36 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
                         col_map["boys"] = c_idx
                     elif ("girl" in cell_str) and "girls" not in col_map:
                         col_map["girls"] = c_idx
-                    elif ("total" in cell_str or "exposure" in cell_str or "strength" in cell_str) and "total" not in col_map:
+                    elif ("total" in cell_str or "exposure" in cell_str or "strength" in cell_str or "no_of_teachers" in cell_str or "no_of_studentpresent" in cell_str or "noofstudentspresent" in cell_str) and "total" not in col_map:
                         col_map["total"] = c_idx
                     elif ("teacher" in cell_str or "present" in cell_str) and "teacher" not in col_map:
                         col_map["teacher"] = c_idx
                 break
+
+        # Check if this sheet has session data rows
+        is_session_sheet = (header_row_idx is not None and "school" in col_map) or ("school" not in clean_key and len(df.columns) >= 12)
+        if not is_session_sheet:
+            if not (clean_key in TRACKER_SHEET_MAPPING or any(k in clean_key for k in ["tracker", "weekly", "session", "log", "camp", "workshop"])):
+                continue
+
+        if not prog_choice:
+            prog_choice = target_programme or Programme.SEP
+
+        sheet_ngo = ngo
+        if prog_choice in [Programme.MSL, Programme.AVISHKAR, Programme.VASANTHA, Programme.YUVACHARYA]:
+            ag_ngo = NGO.objects.filter(code__iexact="AGASTYA").first()
+            if ag_ngo:
+                sheet_ngo = ag_ngo
+        elif prog_choice in [Programme.OPN, Programme.READING]:
+            pr_ngo = NGO.objects.filter(code__iexact="PRATHAM").first()
+            if pr_ngo:
+                sheet_ngo = pr_ngo
+        elif prog_choice in [Programme.CHAAP_JR, Programme.CHAAP_YUVA, Programme.SEP, Programme.IGNITE_BGM, Programme.IGNITE_HBL, Programme.NMMS]:
+            yf_ngo = NGO.objects.filter(code__iexact="YFS").first()
+            if yf_ngo:
+                sheet_ngo = yf_ngo
+        elif target_program and target_program.ngo:
+            sheet_ngo = target_program.ngo
 
         sheet_session_count = 0
 
@@ -501,7 +595,7 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
 
                 sessions_to_create.append(
                     WeeklyTrackerSession(
-                        ngo=ngo,
+                        ngo=sheet_ngo,
                         academic_year=ay_clean,
                         programme=prog_choice,
                         session_date=session_date,
@@ -514,7 +608,7 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
                         timing=timing_val if timing_val.lower() != "nan" else "",
                         topic=topic_val if topic_val.lower() != "nan" else "",
                         instructor_name=inst_val if inst_val.lower() != "nan" else "",
-                        session_type=sess_type if sess_type.lower() != "nan" else "Practical",
+                        session_type=target_session_type or (sheet_name if sheet_name else (sess_type if sess_type.lower() != "nan" else "Practical")),
                         boys_present=boys_cnt,
                         girls_present=girls_cnt,
                         total_exposures=total_exp,
@@ -548,10 +642,26 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
                     val = row.iloc[col_map["school"]]
                     raw_loc = str(val).strip() if pd.notna(val) else ""
 
+                if not raw_loc or raw_loc.lower() == "nan":
+                    for alt_k in ["schoolname", "village", "location"]:
+                        if alt_k in col_map and col_map[alt_k] < len(row):
+                            v = row.iloc[col_map[alt_k]]
+                            if pd.notna(v) and str(v).strip() and str(v).strip().lower() != "nan":
+                                raw_loc = str(v).strip()
+                                break
+
                 topic_val = ""
                 if "topic" in col_map and col_map["topic"] < len(row):
                     val = row.iloc[col_map["topic"]]
                     topic_val = str(val).strip() if pd.notna(val) else ""
+
+                if not topic_val or topic_val.lower() == "nan":
+                    for alt_t in ["details", "coveredtopics"]:
+                        if alt_t in col_map and col_map[alt_t] < len(row):
+                            v = row.iloc[col_map[alt_t]]
+                            if pd.notna(v) and str(v).strip() and str(v).strip().lower() != "nan":
+                                topic_val = str(v).strip()
+                                break
 
                 inst_val = ""
                 if "instructor" in col_map and col_map["instructor"] < len(row):
@@ -601,7 +711,7 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
                         timing=timing_val if timing_val.lower() != "nan" else "",
                         topic=topic_val if topic_val.lower() != "nan" else "",
                         instructor_name=inst_val if inst_val.lower() != "nan" else "",
-                        session_type=sess_type if sess_type.lower() != "nan" else "Practical",
+                        session_type=target_session_type or (sheet_name if sheet_name else (sess_type if sess_type.lower() != "nan" else "Practical")),
                         boys_present=boys_cnt,
                         girls_present=girls_cnt,
                         total_exposures=total_exp,
@@ -613,25 +723,65 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
         sheet_stats[sheet_name] = f"{sheet_session_count} sessions"
 
     # --------------------------------------------------------------------------
-    # 2. PARSE SCHOOL ENROLLMENT SHEETS (*_Schools_Data)
+    # 2. PARSE SCHOOL ENROLLMENT SHEETS (*_Schools_Data & All Enrollment Sheets)
     # --------------------------------------------------------------------------
     seen_enrollment_keys = set()
     for sheet_name in sheet_names:
         clean_key = sheet_name.strip().lower()
         prog_choice = ENROLLMENT_SHEET_MAPPING.get(clean_key)
         if not prog_choice:
+            for map_k, map_p in ENROLLMENT_SHEET_MAPPING.items():
+                if map_k in clean_key or clean_key in map_k:
+                    prog_choice = map_p
+                    break
+
+        if not prog_choice:
+            if any(k in clean_key for k in ["chaap-yuva", "ahap"]):
+                prog_choice = Programme.CHAAP_YUVA
+            elif any(k in clean_key for k in ["chaap", "hhp"]):
+                prog_choice = Programme.CHAAP_JR
+            elif any(k in clean_key for k in ["ignite(hbl)", "ignite_hbl", "ignite hbl", "hubballi"]):
+                prog_choice = Programme.IGNITE_HBL
+            elif "ignite" in clean_key:
+                prog_choice = Programme.IGNITE_BGM
+            elif "nmms" in clean_key:
+                prog_choice = Programme.NMMS
+            elif "sep" in clean_key:
+                prog_choice = Programme.SEP
+            elif any(k in clean_key for k in ["msl", "mobile science"]):
+                prog_choice = Programme.MSL
+            elif "avishkar" in clean_key:
+                prog_choice = Programme.AVISHKAR
+            elif "vasantha" in clean_key:
+                prog_choice = Programme.VASANTHA
+            elif "yuvacharya" in clean_key:
+                prog_choice = Programme.YUVACHARYA
+            elif any(k in clean_key for k in ["opn", "one notebook"]):
+                prog_choice = Programme.OPN
+            elif "reading" in clean_key:
+                prog_choice = Programme.READING
+            else:
+                prog_choice = target_programme or Programme.SEP
+
+        try:
+            df = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
+        except Exception:
             continue
 
-        df = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
         if len(df) <= 2:
             continue
 
-        # Locate row with 'Name of the School' in col 1
+        # Locate row with 'Name of the School' or 'School' across first columns
         header_idx = None
-        for r_idx in range(min(10, len(df))):
-            val = str(df.iloc[r_idx, 1]).strip().lower()
-            if "name of the school" in val or "name of school" in val or val == "school":
-                header_idx = r_idx
+        school_col_idx = 1
+        for r_idx in range(min(12, len(df))):
+            for c_i in range(min(4, len(df.columns))):
+                val = str(df.iloc[r_idx, c_i]).strip().lower()
+                if "name of the school" in val or "name of school" in val or val == "school" or "school name" in val:
+                    header_idx = r_idx
+                    school_col_idx = c_i
+                    break
+            if header_idx is not None:
                 break
 
         if header_idx is None:
@@ -640,9 +790,9 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
         header_row = list(df.iloc[header_idx])
         data_rows = df.iloc[header_idx + 2:].copy()
 
-        # Identify standard triplets starting at col 2
+        # Identify standard triplets starting after school column
         std_columns = []
-        for col_idx in range(2, len(header_row)):
+        for col_idx in range(school_col_idx + 1, len(header_row)):
             cell_val = str(header_row[col_idx] or "").strip()
             # Match standards like '1st STD', '10th STD', '8th SDT', etc.
             if any(k in cell_val.lower() for k in ["std", "sdt", "class", "grade"]):
@@ -651,7 +801,7 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
 
         sheet_enr_count = 0
         for _, r in data_rows.iterrows():
-            raw_school = str(r.iloc[1]).strip() if pd.notna(r.iloc[1]) else ""
+            raw_school = str(r.iloc[school_col_idx]).strip() if school_col_idx < len(r) and pd.notna(r.iloc[school_col_idx]) else ""
             if not raw_school or raw_school.lower() in ["nan", "none", "total", "grand total"]:
                 continue
 
@@ -692,19 +842,25 @@ def import_yfs_workbook(file_obj_or_path, academic_year, ngo_code=None, target_p
     # 3. TRANSACTION-SAFE IDEMPOTENT PERSISTENCE
     # --------------------------------------------------------------------------
     with transaction.atomic():
-        # Scoped deletion per (ngo, programme) pair
-        prog_ngo_pairs = set((s.ngo, s.programme) for s in sessions_to_create)
-        for s_ngo, s_prog in prog_ngo_pairs:
-            del_filter = {"academic_year": ay_clean, "programme": s_prog}
-            if s_ngo:
-                del_filter["ngo"] = s_ngo
+        # Scoped deletion: if importing into a specific folder, only clear sessions for that folder
+        if target_session_type:
+            del_filter = {"session_type": target_session_type}
+            if ay_clean:
+                del_filter["academic_year"] = ay_clean
             WeeklyTrackerSession.objects.filter(**del_filter).delete()
+        else:
+            prog_ngo_pairs = set((s.ngo, s.programme) for s in sessions_to_create)
+            for s_ngo, s_prog in prog_ngo_pairs:
+                del_filter = {"academic_year": ay_clean, "programme": s_prog}
+                if s_ngo:
+                    del_filter["ngo"] = s_ngo
+                WeeklyTrackerSession.objects.filter(**del_filter).delete()
 
-        if not prog_ngo_pairs and target_programme:
-            del_filter = {"academic_year": ay_clean, "programme": target_programme}
-            if ngo:
-                del_filter["ngo"] = ngo
-            WeeklyTrackerSession.objects.filter(**del_filter).delete()
+            if not prog_ngo_pairs and target_programme:
+                del_filter = {"academic_year": ay_clean, "programme": target_programme}
+                if ngo:
+                    del_filter["ngo"] = ngo
+                WeeklyTrackerSession.objects.filter(**del_filter).delete()
 
         enr_ngo_pairs = set((ngo, e.programme) for e in enrollments_to_create)
         for e_ngo, e_prog in enr_ngo_pairs:

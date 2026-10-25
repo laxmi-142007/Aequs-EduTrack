@@ -24,6 +24,9 @@ def volunteer_list(request):
     status_filter = request.GET.get("status", "").strip()
     gender_filter = request.GET.get("gender", "").strip()
     selected_ay = request.GET.get("ay", "2026-27").strip()
+    active_tab = request.GET.get("tab", "all").strip().lower()
+    if active_tab not in ("all", "impact", "videos", "roster"):
+        active_tab = "all"
 
     volunteers = Volunteer.objects.all()
 
@@ -132,6 +135,7 @@ def volunteer_list(request):
             "status_filter": status_filter,
             "gender_filter": gender_filter,
             "selected_ay": selected_ay,
+            "active_tab": active_tab,
             "academic_years": academic_years,
             "status_choices": Volunteer.STATUS_CHOICES,
             "gender_choices": Volunteer.GENDER_CHOICES,
