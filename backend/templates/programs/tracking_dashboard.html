@@ -263,6 +263,7 @@
                         <a href="{% url 'programs:industry_visit_list' %}" class="modules-dropdown-item"><i data-lucide="factory" style="width: 15px; height: 15px; color: #10b981;"></i> Industry Visits</a>
                         <a href="{% url 'programs:monthly_tracking' %}" class="modules-dropdown-item"><i data-lucide="calendar-check" style="width: 15px; height: 15px; color: #06b6d4;"></i> Monthly Tracking</a>
                         <a href="{% url 'programs:location_list' %}" class="modules-dropdown-item"><i data-lucide="map-pin" style="width: 15px; height: 15px; color: #ef4444;"></i> Location Master</a>
+                        <a href="{% url 'programs:tracking_seed_data' %}" class="modules-dropdown-item"><i data-lucide="database" style="width: 15px; height: 15px; color: #f59e0b;"></i> Sync Baseline Data</a>
                     </div>
                 </div>
                 <a href="{% url 'programs:program_create' %}" class="btn-af btn-af-primary" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
@@ -624,7 +625,10 @@
                         <tr>
                             <td colspan="10" style="text-align: center; padding: 36px; color: #94a3b8;">
                                 <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 8px;"></i>
-                                <p>No programs found matching the selected filter criteria.</p>
+                                <p style="margin-bottom: 12px;">No programs found matching the selected filter criteria.</p>
+                                <a href="{% url 'programs:tracking_seed_data' %}" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+                                    <i data-lucide="database" style="width: 14px; height: 14px;"></i> Load / Sync Baseline Programs &amp; Data
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}

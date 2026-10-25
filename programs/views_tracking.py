@@ -793,3 +793,19 @@ def tracking_folder_download(request, pk):
     )
 
 
+def trigger_seed_data(request):
+    """
+    Direct web-accessible endpoint to populate or reload baseline seed data on Render.
+    """
+    from django.core.management import call_command
+    try:
+        call_command("load_seed_data", force=True)
+        messages.success(
+            request,
+            f"Database successfully seeded! {Program.objects.count()} programs, {Student.objects.count()} students, and {School.objects.count()} schools now available."
+        )
+    except Exception as e:
+        messages.error(request, f"Error seeding database: {e}")
+    return redirect(reverse("programs:tracking_dashboard") + "?view=programs")
+
+
