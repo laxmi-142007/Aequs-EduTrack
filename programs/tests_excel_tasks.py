@@ -122,6 +122,22 @@ class ExcelTasksComprehensiveTestCase(TestCase):
             status="ASSIGNED",
         )
 
+    def tearDown(self):
+        super().tearDown()
+        import os
+        from programs.roster import _get_roster_file_path, _get_roster_cleared_marker_path
+        pks_to_clean = [getattr(self, "msl_prog", None) and self.msl_prog.pk, 1, 2, 3]
+        for pk in pks_to_clean:
+            if pk:
+                rp = _get_roster_file_path(pk)
+                mp = _get_roster_cleared_marker_path(pk)
+                if os.path.exists(rp):
+                    try: os.remove(rp)
+                    except Exception: pass
+                if os.path.exists(mp):
+                    try: os.remove(mp)
+                    except Exception: pass
+
     def test_reach_matrix_computation(self):
         """Verify reach matrix returns proper metrics for current and consolidated years."""
         curr = get_reach_matrix(academic_year="2026-27")
@@ -609,5 +625,94 @@ class ExcelTasksComprehensiveTestCase(TestCase):
         self.assertEqual(del_resp.status_code, 200)
         self.assertFalse(TrackingFolder.objects.filter(pk=folder.pk).exists())
         self.assertEqual(WeeklyTrackerSession.objects.filter(session_type="Robotics Lab Sessions").count(), 0)
+
+    def test_remove_session_logs_deletes_all_sheets_and_folders(self):
+        """Verify removing session logs removes all multi-sheet sessions, folders, and school profile tabs."""
+        from trackers.models import WeeklyTrackerSession, Programme
+        self.msl_prog.participating_schools.add(self.school)
+
+        # Create sessions across multiple sheet types
+        WeeklyTrackerSession.objects.create(
+            programme="MSL",
+            session_type="SchoolSession",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Magnetism Experiment",
+            total_exposures=30,
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="CAMP",
+            session_type="SummerWinter",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Summer Camp Science",
+            total_exposures=45,
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="AVISHKAR",
+            session_type="ScienceFair",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Avishkar Fair",
+            total_exposures=50,
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="VASANTHA",
+            session_type="OperationVasantha",
+            academic_year="2025-26",
+            school=self.school,
+            topic="Evening Class",
+            total_exposures=20,
+        )
+
+        # Create a custom folder for this program
+        custom_f = TrackingFolder.objects.create(
+            name="Robotics Extra",
+            program=self.msl_prog,
+            academic_year="2026-27",
+        )
+        WeeklyTrackerSession.objects.create(
+            programme="OTHERS",
+            session_type="Robotics Extra",
+            academic_year="2026-27",
+            topic="Robotics Module",
+            total_exposures=15,
+        )
+
+        # Check detail page has all sheet folders
+        resp_before = self.client.get(reverse("programs:program_detail", kwargs={"pk": self.msl_prog.pk}))
+        self.assertEqual(resp_before.status_code, 200)
+        self.assertGreater(len(resp_before.context["sheet_folders"]), 1)
+        self.assertContains(resp_before, "Remove Session Logs")
+
+        # Now remove session logs
+        del_resp = self.client.post(
+            reverse("programs:program_remove_session_logs", kwargs={"pk": self.msl_prog.pk}),
+            follow=True,
+        )
+        self.assertEqual(del_resp.status_code, 200)
+        self.assertContains(del_resp, "Successfully removed")
+
+        # Verify all sessions are gone
+        self.assertEqual(WeeklyTrackerSession.objects.filter(school=self.school).count(), 0)
+        self.assertEqual(WeeklyTrackerSession.objects.filter(session_type="Robotics Extra").count(), 0)
+        self.assertFalse(TrackingFolder.objects.filter(pk=custom_f.pk).exists())
+        self.assertEqual(self.msl_prog.participating_schools.count(), 0)
+
+        # Verify sheet_folders on program detail is now completely empty
+        resp_after = self.client.get(reverse("programs:program_detail", kwargs={"pk": self.msl_prog.pk}))
+        self.assertEqual(len(resp_after.context["sheet_folders"]), 0)
+
+    def test_watermark_developed_by_rsc_near_logout(self):
+        """Verify watermark 'developed by RSC' is present near the logout button."""
+        resp = self.client.get(reverse("programs:program_list"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "developed by RSC")
+        self.assertContains(resp, "Log Out")
+
+        portal_resp = self.client.get(reverse("schools:portal"), follow=True)
+        self.assertEqual(portal_resp.status_code, 200)
+        self.assertContains(portal_resp, "developed by RSC")
+
 
 

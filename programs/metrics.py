@@ -7,11 +7,14 @@ from programs.models import (
     Scholarship,
     Location,
     MikePropenScholarshipApplication,
+    MentorshipSession,
 )
 from schools.models import School
 from students.models import Student
 from distributions.models import Distribution
 from volunteers.models import Volunteer, EventParticipation, VolunteerActivity
+from internships.models import InternshipPlacement
+from academics.models import AcademicRecord
 
 
 def normalize_academic_year(ay):
@@ -39,11 +42,16 @@ def get_reach_matrix(academic_year="2026-27", project_id=None):
     sch_qs = Scholarship.objects.filter(is_archived=False)
     propen_qs = MikePropenScholarshipApplication.objects.all()
     prog_qs = Program.objects.filter(is_archived=False)
+    intern_qs = InternshipPlacement.objects.all()
+    ment_qs = MentorshipSession.objects.all()
+    acad_qs = AcademicRecord.objects.all()
 
     if project_id:
         ev_qs = ev_qs.filter(Q(program__project_id=project_id))
         prog_qs = prog_qs.filter(project_id=project_id)
         sch_qs = sch_qs.filter(Q(project_id=project_id) | Q(program__project_id=project_id))
+        ment_qs = ment_qs.filter(Q(project_id=project_id) | Q(program__project_id=project_id))
+        intern_qs = intern_qs.filter(Q(program__project_id=project_id))
 
     if ay != "all":
         # Year filter: check academic_year string or session_date year
@@ -53,20 +61,54 @@ def get_reach_matrix(academic_year="2026-27", project_id=None):
         sch_qs = sch_qs.filter(Q(academic_year=ay) | Q(created_at__year=year_prefix))
         propen_qs = propen_qs.filter(Q(academic_year=ay) | Q(application_date__year=year_prefix))
         prog_qs = prog_qs.filter(academic_year=ay)
+        intern_qs = intern_qs.filter(Q(academic_year=ay) | Q(start_date__year=year_prefix))
+        ment_qs = ment_qs.filter(Q(session_date__year=year_prefix) | Q(created_at__year=year_prefix))
+        acad_qs = acad_qs.filter(Q(academic_year=ay) | Q(created_at__year=year_prefix))
 
-    # 1. Number of Students
+    # 1. Number of Students (Across EV classes, distributions, scholarships, internships, mentorships, academics, and schools)
     ev_students = set(ev_qs.values_list("students", flat=True)) - {None}
     dist_students = set(dist_qs.values_list("student", flat=True)) - {None}
     sch_students = set(sch_qs.values_list("student", flat=True)) - {None}
     propen_students = set(propen_qs.values_list("student", flat=True)) - {None}
-    all_student_ids = ev_students | dist_students | sch_students | propen_students
+    intern_students = set(intern_qs.values_list("student", flat=True)) - {None}
+    ment_students = set(ment_qs.values_list("student", flat=True)) - {None}
+    acad_students = set(acad_qs.values_list("student", flat=True)) - {None}
+
+    ev_schools = set(ev_qs.values_list("school", flat=True)) - {None}
+    prog_schools = set(prog_qs.values_list("participating_schools", flat=True)) - {None}
+    dist_schools = set(dist_qs.values_list("school", flat=True)) - {None}
+    all_school_ids = ev_schools | prog_schools | dist_schools
+    school_students = set(Student.objects.filter(school_id__in=all_school_ids).values_list("id", flat=True))
+
+    if not project_id:
+        active_students_qs = Student.objects.filter(status=Student.Status.ACTIVE)
+        if ay != "all":
+            year_prefix = ay.split("-")[0] if "-" in ay else ay
+            active_students_qs = active_students_qs.filter(
+                Q(created_at__year__lte=int(year_prefix)) |
+                Q(admission_date__year__lte=int(year_prefix)) |
+                Q(academic_records__academic_year=ay) |
+                Q(internship_placements__academic_year=ay) |
+                Q(scholarships__academic_year=ay)
+            ).distinct()
+        all_student_ids = (
+            ev_students | dist_students | sch_students | propen_students |
+            intern_students | ment_students | acad_students | school_students |
+            set(active_students_qs.values_list("id", flat=True))
+        )
+    else:
+        all_student_ids = (
+            ev_students | dist_students | sch_students | propen_students |
+            intern_students | ment_students | acad_students | school_students
+        )
+
     unique_students_count = len(all_student_ids)
 
     # Fallback to total attendees if specific student links were not individually tagged
     ev_attendees = ev_qs.aggregate(total=Sum("attendee_count"))["total"] or 0
     total_students_reached = max(unique_students_count, ev_attendees)
-    if total_students_reached == 0:
-        total_students_reached = Student.objects.count()
+    if not project_id and total_students_reached == 0:
+        total_students_reached = Student.objects.filter(status=Student.Status.ACTIVE).count() or Student.objects.count()
 
     # 2. Number of Schools
     ev_schools = set(ev_qs.values_list("school", flat=True)) - {None}

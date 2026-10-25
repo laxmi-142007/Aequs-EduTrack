@@ -696,5 +696,127 @@ class ProgramsAndFoundationModulesTest(TestCase):
         self.assertContains(resp_kpl, "Koppal Precision Skills")
         self.assertNotContains(resp_kpl, "Belagavi Training Initiative")
 
+    def test_modular_components_defaults_and_properties(self):
+        prg = Program.objects.create(
+            title="Clean Program Without Modules",
+            code="PRG-MOD-001",
+            district="Belagavi",
+            location_name="Belagavi Hub",
+        )
+        self.assertFalse(prg.enable_scholarships)
+        self.assertFalse(prg.enable_internships)
+        self.assertFalse(prg.enable_mentorship)
+        self.assertFalse(prg.has_scholarships)
+        self.assertFalse(prg.has_internships)
+        self.assertFalse(prg.has_mentorship)
+
+        # Toggle flag
+        prg.enable_scholarships = True
+        prg.save()
+        self.assertTrue(prg.has_scholarships)
+
+    def test_program_form_saves_modular_components(self):
+        post_data = {
+            "title": "Modular STEM Camp",
+            "code": "PRG-STEM-MOD-01",
+            "location_name": "STEM Lab",
+            "village_or_town": "Kakati",
+            "taluk": "Belagavi",
+            "district": ["Belagavi"],
+            "state": "Karnataka",
+            "academic_year": "2026-27",
+            "status": "ACTIVE",
+            "enable_scholarships": "on",
+            "enable_internships": "on",
+        }
+        resp = self.client.post(reverse("programs:program_create"), post_data)
+        self.assertEqual(resp.status_code, 302)
+        prg = Program.objects.get(code="PRG-STEM-MOD-01")
+        self.assertTrue(prg.enable_scholarships)
+        self.assertTrue(prg.enable_internships)
+        self.assertFalse(prg.enable_mentorship)
+
+    def test_program_detail_conditional_rendering_of_modular_components(self):
+        # 1. Without components enabled
+        prg_empty = Program.objects.create(
+            title="Empty Modular Program",
+            code="PRG-EMPTY-01",
+            district="Belagavi",
+            location_name="Belagavi Center",
+        )
+        resp1 = self.client.get(reverse("programs:program_detail", kwargs={"pk": prg_empty.pk}))
+        self.assertEqual(resp1.status_code, 200)
+        # Should NOT contain the empty tables for components
+        self.assertNotContains(resp1, "Connected Scholarships (0)")
+        self.assertNotContains(resp1, "Connected Internships (0)")
+        self.assertNotContains(resp1, "Connected Mentorship Sessions (0)")
+        # Should show the helpful placeholder
+        self.assertContains(resp1, "Modular Program Components")
+
+        # 2. With scholarships enabled
+        prg_empty.enable_scholarships = True
+        prg_empty.save()
+        resp2 = self.client.get(reverse("programs:program_detail", kwargs={"pk": prg_empty.pk}))
+        self.assertEqual(resp2.status_code, 200)
+        self.assertContains(resp2, "Connected Scholarships (0)")
+        self.assertNotContains(resp2, "Connected Internships (0)")
+
+    def test_program_detail_dynamic_kpis_and_sheet_folder_attributes(self):
+        prg = Program.objects.create(
+            title="Dynamic Sheet Program",
+            code="PRG-DYN-01",
+            district="Belagavi",
+            location_name="Dynamic Center",
+        )
+        resp = self.client.get(reverse("programs:program_detail", kwargs={"pk": prg.pk}))
+        self.assertEqual(resp.status_code, 200)
+        # Verify dynamic KPI element IDs are rendered
+        self.assertContains(resp, 'id="kpi-val-sessions"')
+        self.assertContains(resp, 'id="kpi-val-exposures"')
+        self.assertContains(resp, 'id="kpi-val-demographics"')
+        self.assertContains(resp, 'id="kpi-val-schools"')
+        self.assertContains(resp, 'id="kpi-bar-boys"')
+        self.assertContains(resp, 'id="kpi-bar-girls"')
+        self.assertContains(resp, 'id="kpi-demo-gender-box"')
+        self.assertContains(resp, 'id="kpi-demo-alt-box"')
+        self.assertContains(resp, 'id="sheetHighlightsStrip"')
+
+    def test_sheet_folder_without_gender_data_displays_alternate_metric(self):
+        from trackers.models import WeeklyTrackerSession, Programme
+        ngo = NGO.objects.create(name="Science Mission", code="SCI-01")
+        prg = Program.objects.create(
+            title="Science Explorer",
+            code="PRG-SCI-EXP-01",
+            ngo=ngo,
+            district="Belagavi",
+            location_name="Science Lab",
+        )
+        prg.participating_schools.add(self.school)
+
+        # Create session without boys/girls data but with teacher present and topic
+        WeeklyTrackerSession.objects.create(
+            ngo=ngo,
+            academic_year="2026-27",
+            programme=Programme.MSL,
+            session_date=date(2026, 3, 1),
+            school=self.school,
+            session_type="Special Program",
+            topic="Laser Optics Workshop",
+            instructor_name="Dr. Rao",
+            boys_present=0,
+            girls_present=0,
+            total_exposures=65,
+            teacher_present=True,
+        )
+
+        resp = self.client.get(reverse("programs:program_detail", kwargs={"pk": prg.pk}))
+        self.assertEqual(resp.status_code, 200)
+        # Verify sheet tab has data-has-gender="0"
+        self.assertContains(resp, 'data-has-gender="0"')
+        # Verify alternate metric attributes exist
+        self.assertContains(resp, 'data-alt-metric-title="Teacher Engagement"')
+        self.assertContains(resp, 'data-alt-metric-val="1 Sessions (100%)"')
+        self.assertContains(resp, 'data-topics-sample="Laser Optics Workshop"')
+
 
 

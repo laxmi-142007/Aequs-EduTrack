@@ -151,7 +151,138 @@
                         </div>
                     </div>
 
-                    <div class="form-actions">
+                    <!-- Modular Program Components (Scholarships, Internships, Mentorship) -->
+                    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="layout-grid" style="color: #6366f1; width: 18px; height: 18px;"></i>
+                                    Additional Modular Components
+                                </h3>
+                                <div style="font-size: 12.5px; color: #64748b; margin-top: 2px;">
+                                    Attach optional tracking modules to this program. Only added components will appear on the program dossier.
+                                </div>
+                            </div>
+                            <div style="position: relative;">
+                                <button type="button" id="btnAddCompTrigger" onclick="toggleCompDropdown(event)" class="btn-af btn-af-sm" style="background: #4f46e5; color: #ffffff; border: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(79,70,229,0.2);">
+                                    <i data-lucide="plus" style="width: 15px; height: 15px;"></i> Add Component
+                                </button>
+                                <div id="compDropdownMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 6px; width: 270px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); z-index: 50; overflow: hidden;">
+                                    <div style="padding: 8px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                        Select Component to Add
+                                    </div>
+                                    <button type="button" id="opt-scholarships" onclick="addComponent('scholarships')" style="width: 100%; text-align: left; padding: 10px 14px; background: none; border: none; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #1e293b; transition: background 0.15s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+                                        <div style="width: 28px; height: 28px; border-radius: 6px; background: #fee2e2; display: flex; align-items: center; justify-content: center; color: #ed1c24; flex-shrink: 0;">
+                                            <i data-lucide="award" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: #1e293b;">Connected Scholarships</div>
+                                            <div style="font-size: 11px; color: #64748b;">Merit, SSP &amp; Employee grants</div>
+                                        </div>
+                                    </button>
+                                    <button type="button" id="opt-internships" onclick="addComponent('internships')" style="width: 100%; text-align: left; padding: 10px 14px; background: none; border: none; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #1e293b; transition: background 0.15s;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='none'">
+                                        <div style="width: 28px; height: 28px; border-radius: 6px; background: #e0f2fe; display: flex; align-items: center; justify-content: center; color: #0284c7; flex-shrink: 0;">
+                                            <i data-lucide="briefcase" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: #1e293b;">Connected Internships</div>
+                                            <div style="font-size: 11px; color: #64748b;">Corporate batches &amp; stipends</div>
+                                        </div>
+                                    </button>
+                                    <button type="button" id="opt-mentorship" onclick="addComponent('mentorship')" style="width: 100%; text-align: left; padding: 10px 14px; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #1e293b; transition: background 0.15s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='none'">
+                                        <div style="width: 28px; height: 28px; border-radius: 6px; background: #dcfce7; display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
+                                            <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: #1e293b;">Connected Mentorship</div>
+                                            <div style="font-size: 11px; color: #64748b;">1-on-1 advisor sessions</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden form inputs for boolean flags -->
+                        <div style="display: none;">
+                            {{ form.enable_scholarships }}
+                            {{ form.enable_internships }}
+                            {{ form.enable_mentorship }}
+                        </div>
+
+                        <!-- Active Components Cards List -->
+                        <div id="activeComponentsContainer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+                            <!-- Empty State -->
+                            <div id="emptyComponentsPlaceholder" style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 8px; padding: 22px 18px; text-align: center; color: #64748b; font-size: 13px;">
+                                <i data-lucide="layers" style="width: 24px; height: 24px; color: #94a3b8; margin-bottom: 6px; display: inline-block;"></i>
+                                <div>No additional components attached. Use <strong>[+ Add Component]</strong> above to connect Scholarships, Internships, or Mentorship to this program.</div>
+                            </div>
+
+                            <!-- Scholarships Card -->
+                            <div id="card-scholarships" style="display: none; background: #ffffff; border: 1px solid #fecaca; border-left: 4px solid #ed1c24; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); justify-content: space-between; align-items: center; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 38px; height: 38px; border-radius: 8px; background: #fee2e2; display: flex; align-items: center; justify-content: center; color: #ed1c24; flex-shrink: 0;">
+                                        <i data-lucide="award" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <strong style="color: #0f172a; font-size: 14px;">Connected Scholarships</strong>
+                                            <span style="background: #fee2e2; color: #991b1b; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">Active Component</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                                            Enables scholarship tracking table, applicant roster, sanctioned and disbursed fund metrics.
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="removeComponent('scholarships')" class="btn-af btn-af-sm" style="background: #fff; border: 1px solid #fca5a5; color: #dc2626; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Remove
+                                </button>
+                            </div>
+
+                            <!-- Internships Card -->
+                            <div id="card-internships" style="display: none; background: #ffffff; border: 1px solid #bae6fd; border-left: 4px solid #0284c7; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); justify-content: space-between; align-items: center; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 38px; height: 38px; border-radius: 8px; background: #e0f2fe; display: flex; align-items: center; justify-content: center; color: #0284c7; flex-shrink: 0;">
+                                        <i data-lucide="briefcase" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <strong style="color: #0f172a; font-size: 14px;">Connected Internships</strong>
+                                            <span style="background: #e0f2fe; color: #075985; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">Active Component</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                                            Enables aerospace and corporate internship tracking, placement status, stipends &amp; durations.
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="removeComponent('internships')" class="btn-af btn-af-sm" style="background: #fff; border: 1px solid #93c5fd; color: #0284c7; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Remove
+                                </button>
+                            </div>
+
+                            <!-- Mentorship Card -->
+                            <div id="card-mentorship" style="display: none; background: #ffffff; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); justify-content: space-between; align-items: center; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 38px; height: 38px; border-radius: 8px; background: #dcfce7; display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
+                                        <i data-lucide="user-check" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <strong style="color: #0f172a; font-size: 14px;">Connected Mentorship Sessions</strong>
+                                            <span style="background: #dcfce7; color: #166534; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">Active Component</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                                            Enables 1-on-1 advisor sessions log, mentor attendance, student feedback &amp; progress reports.
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="removeComponent('mentorship')" class="btn-af btn-af-sm" style="background: #fff; border: 1px solid #86efac; color: #16a34a; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 28px;">
                         <a href="{% url 'programs:program_list' %}" class="btn-af btn-af-secondary">Cancel</a>
                         <button type="submit" class="btn-af btn-af-primary">
                             <i data-lucide="save"></i> Save Program
@@ -163,9 +294,89 @@
     </div>
 
     <script>
-        if (window.lucide) {
-            lucide.createIcons();
+        function toggleCompDropdown(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('compDropdownMenu');
+            if (menu) {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            }
         }
+
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('compDropdownMenu');
+            const trigger = document.getElementById('btnAddCompTrigger');
+            if (menu && menu.style.display === 'block' && !menu.contains(e.target) && e.target !== trigger) {
+                menu.style.display = 'none';
+            }
+        });
+
+        function getCheckbox(type) {
+            return document.getElementById('id_enable_' + type);
+        }
+
+        function addComponent(type) {
+            const cb = getCheckbox(type);
+            if (cb) {
+                cb.checked = true;
+            }
+            updateComponentUI();
+            const menu = document.getElementById('compDropdownMenu');
+            if (menu) menu.style.display = 'none';
+        }
+
+        function removeComponent(type) {
+            const cb = getCheckbox(type);
+            if (cb) {
+                cb.checked = false;
+            }
+            updateComponentUI();
+        }
+
+        function updateComponentUI() {
+            const types = ['scholarships', 'internships', 'mentorship'];
+            let activeCount = 0;
+
+            types.forEach(type => {
+                const cb = getCheckbox(type);
+                const card = document.getElementById('card-' + type);
+                const opt = document.getElementById('opt-' + type);
+                const isChecked = cb ? cb.checked : false;
+
+                if (isChecked) {
+                    activeCount++;
+                    if (card) card.style.display = 'flex';
+                    if (opt) opt.style.display = 'none';
+                } else {
+                    if (card) card.style.display = 'none';
+                    if (opt) opt.style.display = 'flex';
+                }
+            });
+
+            const placeholder = document.getElementById('emptyComponentsPlaceholder');
+            if (placeholder) {
+                placeholder.style.display = activeCount === 0 ? 'block' : 'none';
+            }
+
+            const trigger = document.getElementById('btnAddCompTrigger');
+            if (trigger) {
+                if (activeCount === types.length) {
+                    trigger.style.display = 'none';
+                } else {
+                    trigger.style.display = 'inline-flex';
+                }
+            }
+
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateComponentUI();
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
     </script>
 </body>
 </html>

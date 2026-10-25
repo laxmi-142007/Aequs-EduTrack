@@ -265,7 +265,8 @@
             </div>
 
             <!-- Inter-linked Parent Project Card -->
-            <div class="detail-card" style="border-left: 4px solid #3b82f6;">
+            <!-- Inter-linked Parent Project Card -->
+            <div class="detail-card" style="border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; border-radius: 10px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                     <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
                         <i data-lucide="folder" style="color: #3b82f6;"></i> Linked Parent Project
@@ -317,18 +318,18 @@
                 <form method="post" action="{% url 'programs:program_link_project' program.pk %}" style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
                     {% csrf_token %}
                     <span style="font-size: 13px; font-weight: 600; color: #475569;">Change Parent Project:</span>
-                    <select name="project_id" class="select-filter" style="flex: 1; min-width: 240px; padding: 6px 10px; font-size: 13px;">
+                    <select name="project_id" class="select-filter" style="flex: 1; min-width: 240px; padding: 7px 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px;">
                         {% for prj in available_projects %}
                         <option value="{{ prj.pk }}" {% if prj.pk == program.project.pk %}selected{% endif %}>
                             {{ prj.name }} ({{ prj.code }})
                         </option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn-af btn-af-secondary btn-af-sm">
-                        <i data-lucide="refresh-cw"></i> Update Project
+                    <button type="submit" class="btn-af btn-af-sm" style="background: #2563eb; color: #ffffff; border: none; font-weight: 600; padding: 7px 16px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Update Project
                     </button>
-                    <button type="submit" name="project_id" value="" class="btn-af btn-af-danger btn-af-sm" onclick="return confirm('Unlink this program from {{ program.project.name|escapejs }}? It will become a standalone program.');">
-                        <i data-lucide="unlink"></i> Make Standalone
+                    <button type="submit" name="project_id" value="" class="btn-af btn-af-sm" style="background: #ffffff; border: 1px solid #fca5a5; color: #dc2626; font-weight: 600; padding: 7px 14px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" onclick="return confirm('Unlink this program from {{ program.project.name|escapejs }}? It will become a standalone program.');">
+                        <i data-lucide="unlink" style="width: 14px; height: 14px;"></i> Make Standalone
                     </button>
                 </form>
                 {% else %}
@@ -400,94 +401,191 @@
             </div>
 
                         <!-- Unified Field Tracking & Partner Schools (Matching Schools Weekly Tracking) -->
-            <div class="tracker-section-card" id="program-tracking-section">
+            <!-- Unified Field Tracking & Partner Schools (Matching Schools Weekly Tracking) -->
+            <div class="tracker-section-card" id="program-tracking-section" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05); padding: 22px; margin-bottom: 24px;">
                 <!-- Section Header with Meta & Actions -->
-                <div class="tracker-header">
+                <div class="tracker-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
                     <div>
-                        <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
-                            <i data-lucide="activity" style="color: #2563eb;"></i> Field Tracking &amp; Partner Schools
-                            <span class="af-badge badge-active" style="font-size: 11.5px; padding: 2px 8px;">{{ total_sessions_count }} Sessions</span>
-                            <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 8px;">{{ total_schools_count }} Schools</span>
-                        </h3>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
-                            {% if program.ngo %}{{ program.ngo.name }}{% elif program.project %}{{ program.project.name }}{% else %}Aequs Foundation{% endif %} &bull; Program Tracking Dossier
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h3 style="font-size: 17px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #0f172a;">
+                                <i data-lucide="activity" style="color: #2563eb; width: 20px; height: 20px;"></i> Field Tracking &amp; Partner Schools
+                            </h3>
+                            <span class="af-badge badge-active" style="font-size: 11.5px; padding: 2px 9px;">{{ total_sessions_count }} Sessions</span>
+                            <span class="af-badge badge-neutral" style="font-size: 11.5px; padding: 2px 9px;">{{ total_schools_count }} Schools</span>
+                            <span id="kpi-active-view-chip" style="font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 20px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; display: inline-flex; align-items: center; gap: 5px;">
+                                <i data-lucide="layers" style="width: 12px; height: 12px;"></i> Consolidated Overview
+                            </span>
+                        </div>
+                        <div style="font-size: 12.5px; color: #64748b; margin-top: 4px;">
+                            {% if program.ngo %}{{ program.ngo.name }}{% elif program.project %}{{ program.project.name }}{% else %}Aequs Foundation{% endif %} &bull; Program Tracking Dossier &bull; Real-time Excel Synchronization
                         </div>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <button type="button" onclick="exportTrackingCSV()" class="btn-af btn-af-secondary btn-af-sm">
+                        <button type="button" onclick="exportTrackingCSV()" class="btn-af btn-af-secondary btn-af-sm" title="Export session records as CSV">
                             <i data-lucide="download"></i> Export CSV
                         </button>
                         {% if roster_data or total_sessions_count > 0 or total_schools_count > 0 %}
                         <form method="POST" action="{% url 'programs:program_remove_school_roster' program.pk %}" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to remove the uploaded tracking file and reset sessions/schools for {{ program.title }}?');">
                             {% csrf_token %}
-                            <button type="submit" class="btn-af btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #f87171; color: #dc2626;" title="Remove uploaded tracking file and reset data for this program">
-                                <i data-lucide="trash-2"></i> Remove File
+                            <button type="submit" class="btn-af btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #fca5a5; color: #dc2626; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;" title="Remove uploaded tracking file and reset data for this program">
+                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Remove File
                             </button>
                         </form>
                         {% endif %}
-                        <button type="button" onclick="openUploadSessionLogModal()" class="btn-af btn-af-sm" style="background: #16a34a; color: #ffffff; font-weight: 600; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px; cursor: pointer;" title="Upload weekly session log Excel spreadsheet for this program">
-                            <i data-lucide="file-spreadsheet"></i> Add Weekly Session Log (Excel)
+                        <button type="button" onclick="openUploadSessionLogModal()" class="btn-af btn-af-sm" style="background: #16a34a; color: #ffffff; font-weight: 600; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(22,163,74,0.2);" title="Upload weekly session log Excel spreadsheet for this program">
+                            <i data-lucide="file-spreadsheet" style="width: 15px; height: 15px;"></i> Add Weekly Session Log (Excel)
                         </button>
-                        <button type="button" onclick="openUploadRosterModal()" class="btn-af btn-af-secondary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-                            <i data-lucide="upload"></i> Upload School Profile (Excel / CSV)
+                        <button type="button" onclick="openUploadRosterModal()" class="btn-af btn-af-secondary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600;" title="Upload School Profile roster spreadsheet">
+                            <i data-lucide="upload" style="width: 15px; height: 15px;"></i> Upload School Profile (Excel / CSV)
                         </button>
-                        <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-                            <i data-lucide="plus"></i> Log Field Session
+                        <a href="{% url 'programs:ev_class_create' %}" class="btn-af btn-af-primary btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                            <i data-lucide="plus" style="width: 15px; height: 15px;"></i> Log Field Session
                         </a>
                     </div>
                 </div>
 
-                <!-- KPI Metric Cards (Identical to Schools Weekly Tracking) -->
-                <div class="kpi-grid">
-                    <div class="kpi-card">
-                        <div class="kpi-title">
-                            Total Sessions Logged
-                            <i data-lucide="calendar" style="width: 15px; height: 15px; color: #2563eb;"></i>
+                <!-- Dynamic Reactive KPI Metric Cards -->
+                <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 22px;">
+                    <!-- KPI 1: Sessions Logged -->
+                    <div class="kpi-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+                        <div class="kpi-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="kpi-title-sessions" style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Total Sessions Logged</span>
+                            <div style="width: 30px; height: 30px; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                            </div>
                         </div>
-                        <div class="kpi-value">{{ total_sessions_count }}</div>
-                        <div class="kpi-sub">Weekly Field &amp; Workshop Sessions</div>
+                        <div class="kpi-value" id="kpi-val-sessions" style="font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1.1; margin-bottom: 6px;">
+                            {{ total_sessions_count|intcomma }}
+                        </div>
+                        <div class="kpi-sub" id="kpi-sub-sessions" style="font-size: 12px; color: #64748b;">
+                            Weekly Field &amp; Workshop Sessions
+                        </div>
                     </div>
-                    <div class="kpi-card">
-                        <div class="kpi-title">
-                            Student Exposures
-                            <i data-lucide="users" style="width: 15px; height: 15px; color: #16a34a;"></i>
+
+                    <!-- KPI 2: Student Exposures -->
+                    <div class="kpi-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-top: 3px solid #16a34a; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+                        <div class="kpi-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="kpi-title-exposures" style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Student Exposures</span>
+                            <div style="width: 30px; height: 30px; border-radius: 8px; background: #f0fdf4; display: flex; align-items: center; justify-content: center; color: #16a34a;">
+                                <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                            </div>
                         </div>
-                        <div class="kpi-value" style="color: #16a34a;">{{ total_exposures_sum|intcomma }}</div>
-                        <div class="kpi-sub">Total student interactions logged</div>
+                        <div class="kpi-value" id="kpi-val-exposures" style="font-size: 26px; font-weight: 800; color: #16a34a; line-height: 1.1; margin-bottom: 6px;">
+                            {{ total_exposures_sum|intcomma }}
+                        </div>
+                        <div class="kpi-sub" id="kpi-sub-exposures" style="font-size: 12px; color: #64748b;">
+                            Total student interactions logged
+                        </div>
                     </div>
-                    <div class="kpi-card">
-                        <div class="kpi-title">
-                            Session Demographics
-                            <i data-lucide="pie-chart" style="width: 15px; height: 15px; color: #ca8a04;"></i>
+
+                    <!-- KPI 3: Dynamic Session Demographics / Key Sheet Metric -->
+                    <div class="kpi-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-top: 3px solid #8b5cf6; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+                        <div class="kpi-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="kpi-title-demographics" style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Session Demographics</span>
+                            <div id="kpi-icon-demographics-container" style="width: 30px; height: 30px; border-radius: 8px; background: #faf5ff; display: flex; align-items: center; justify-content: center; color: #9333ea;">
+                                <i id="kpi-icon-demographics" data-lucide="pie-chart" style="width: 16px; height: 16px;"></i>
+                            </div>
                         </div>
-                        <div class="kpi-value" style="font-size: 18px; color: #0284c7;">
-                            {{ total_boys_sum }} <span style="font-size: 13px; color: #64748b; font-weight: 500;">Boys</span> / {{ total_girls_sum }} <span style="font-size: 13px; color: #64748b; font-weight: 500;">Girls</span>
+
+                        <!-- Box A: When Gender Data is Logged (Boys / Girls) -->
+                        <div id="kpi-demo-gender-box" style="{% if not total_boys_sum and not total_girls_sum %}display: none;{% endif %}">
+                            <div class="kpi-value" id="kpi-val-demographics" style="font-size: 19px; font-weight: 800; color: #0f172a; line-height: 1.1; margin-bottom: 4px;">
+                                <span id="kpi-val-boys" style="color: #2563eb;">{{ total_boys_sum|intcomma }}</span> <span style="font-size: 12px; font-weight: 600; color: #64748b;">Boys</span> / <span id="kpi-val-girls" style="color: #db2777;">{{ total_girls_sum|intcomma }}</span> <span style="font-size: 12px; font-weight: 600; color: #64748b;">Girls</span>
+                            </div>
+                            <!-- Mini Demographic Progress Ratio Bar -->
+                            <div style="height: 6px; width: 100%; background: #e2e8f0; border-radius: 4px; overflow: hidden; display: flex; margin: 6px 0;">
+                                <div id="kpi-bar-boys" style="background: #3b82f6; width: 50%; height: 100%; transition: width 0.3s ease;" title="Boys ratio"></div>
+                                <div id="kpi-bar-girls" style="background: #ec4899; width: 50%; height: 100%; transition: width 0.3s ease;" title="Girls ratio"></div>
+                            </div>
                         </div>
-                        <div class="kpi-sub">In-session attendance split</div>
+
+                        <!-- Box B: When Gender Data is Not Present in Sheet (Dynamic Focus Metric) -->
+                        <div id="kpi-demo-alt-box" style="{% if total_boys_sum or total_girls_sum %}display: none;{% endif %}">
+                            <div class="kpi-value" id="kpi-val-alt-metric" style="font-size: 21px; font-weight: 800; color: #7c3aed; line-height: 1.1; margin-bottom: 4px;">
+                                {% if all_teachers_cnt %}{{ all_teachers_cnt }} Sessions Verified{% elif all_avg_reach %}~{{ all_avg_reach }} Students / Ses{% else %}Total Reach Logged{% endif %}
+                            </div>
+                            <!-- Accent Progress Bar -->
+                            <div style="height: 6px; width: 100%; background: #ede9fe; border-radius: 4px; overflow: hidden; display: flex; margin: 6px 0;">
+                                <div id="kpi-bar-alt" style="background: #8b5cf6; width: 100%; height: 100%; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-sub" id="kpi-sub-demographics" style="font-size: 12px; color: #64748b;">
+                            {% if unsplit_exposures %}In gender-tracked sheets ({{ unsplit_exposures|intcomma }} in unsplit activities){% else %}In-session attendance split{% endif %}
+                        </div>
                     </div>
-                    <div class="kpi-card">
-                        <div class="kpi-title">
-                            Partner Schools
-                            <i data-lucide="school" style="width: 15px; height: 15px; color: #dc2626;"></i>
+
+                    <!-- KPI 4: Partner Schools -->
+                    <div class="kpi-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-top: 3px solid #d97706; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+                        <div class="kpi-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="kpi-title-schools" style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Partner Schools</span>
+                            <div style="width: 30px; height: 30px; border-radius: 8px; background: #fffbeb; display: flex; align-items: center; justify-content: center; color: #d97706;">
+                                <i data-lucide="school" style="width: 16px; height: 16px;"></i>
+                            </div>
                         </div>
-                        <div class="kpi-value" style="color: #0f172a;">{{ total_schools_count }}</div>
-                        <div class="kpi-sub">Across {{ taluks|length }} Taluk{{ taluks|length|pluralize }}</div>
+                        <div class="kpi-value" id="kpi-val-schools" style="font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1.1; margin-bottom: 6px;">
+                            {{ total_schools_count|intcomma }}
+                        </div>
+                        <div class="kpi-sub" id="kpi-sub-schools" style="font-size: 12px; color: #64748b;">
+                            Across {{ taluks|length }} Taluk{{ taluks|length|pluralize }}
+                        </div>
                     </div>
-                    {% if total_students_enrolled %}
-                    <div class="kpi-card">
-                        <div class="kpi-title">
-                            Enrolled Strength
-                            <i data-lucide="award" style="width: 15px; height: 15px; color: #9333ea;"></i>
+
+                    {% if total_students_enrolled and total_sessions_count > 0 %}
+                    <!-- KPI 5: Enrolled Baseline (Only shown if sessions also exist) -->
+                    <div class="kpi-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-top: 3px solid #7c3aed; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div class="kpi-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Enrolled Roster Baseline</span>
+                            <div style="width: 30px; height: 30px; border-radius: 8px; background: #f5f3ff; display: flex; align-items: center; justify-content: center; color: #7c3aed;">
+                                <i data-lucide="award" style="width: 16px; height: 16px;"></i>
+                            </div>
                         </div>
-                        <div class="kpi-value" style="color: #7e22ce;">{{ total_students_enrolled|intcomma }}</div>
-                        <div class="kpi-sub">{{ enrolled_boys|intcomma }} Boys &bull; {{ enrolled_girls|intcomma }} Girls</div>
+                        <div class="kpi-value" style="font-size: 26px; font-weight: 800; color: #7c3aed; line-height: 1.1; margin-bottom: 6px;">
+                            {{ total_students_enrolled|intcomma }}
+                        </div>
+                        <div class="kpi-sub" style="font-size: 12px; color: #64748b;">
+                            {{ enrolled_boys|intcomma }} Boys &bull; {{ enrolled_girls|intcomma }} Girls
+                        </div>
                     </div>
                     {% endif %}
                 </div>
 
+                <!-- Dynamic Sheet Highlights Strip (Metadata & Important Columns in active sheet) -->
+                <div id="sheetHighlightsStrip" style="margin-top: 14px; margin-bottom: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 11px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.05em; background: #eff6ff; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                            <i data-lucide="sparkles" style="width: 13px; height: 13px; color: #2563eb;"></i> Sheet Context
+                        </span>
+                        <span id="hl-sheet-name" style="font-size: 13px; font-weight: 700; color: #0f172a;">All Sheets Overview</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: #475569;">
+                        <div id="hl-item-avg" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <i data-lucide="calculator" style="width: 14px; height: 14px; color: #2563eb;"></i>
+                            <span>Avg Density: <strong id="hl-val-avg" style="color: #0f172a;">~{{ all_avg_reach }} students/ses</strong></span>
+                        </div>
+                        <div id="hl-item-teachers" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <i data-lucide="graduation-cap" style="width: 14px; height: 14px; color: #16a34a;"></i>
+                            <span>Teacher Verified: <strong id="hl-val-teachers" style="color: #0f172a;">{{ all_teachers_cnt }} sessions</strong></span>
+                        </div>
+                        <div id="hl-item-topics" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <i data-lucide="book-open" style="width: 14px; height: 14px; color: #7c3aed;"></i>
+                            <span>Curriculum: <strong id="hl-val-topics" style="color: #0f172a;">{{ all_topics_count }} unique topics</strong></span>
+                        </div>
+                        <div id="hl-item-instructors" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <i data-lucide="user-check" style="width: 14px; height: 14px; color: #d97706;"></i>
+                            <span>Facilitators: <strong id="hl-val-instructors" style="color: #0f172a;">{{ all_instructors_count }} active</strong></span>
+                        </div>
+                        <div id="hl-item-gender-badge" style="display: inline-flex; align-items: center;">
+                            <span id="hl-badge-gender" style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; background: {% if total_boys_sum or total_girls_sum %}#dbeafe; color: #1d4ed8;{% else %}#fef3c7; color: #b45309;{% endif %}">
+                                {% if total_boys_sum or total_girls_sum %}✓ Gender Split Logged{% else %}ℹ️ Gender Unsplit{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- View Navigation Switcher -->
-                <div class="view-nav">
+                <div class="view-nav" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
                     <button type="button" class="view-nav-link active" id="tabBtnSessions" onclick="switchTrackingTab('sessions')">
                         <i data-lucide="list-checks" style="width: 15px; height: 15px;"></i> Weekly Session Logs ({{ total_sessions_count }})
                     </button>
@@ -506,17 +604,17 @@
                                 Weekly Field &amp; Classroom Session Sheet Folders
                             </strong>
                             <div style="font-size: 12px; color: #166534; margin-top: 2px;">
-                                Multi-sheet workbook view: navigate individual sheet tabs to view specific session logs and reach metrics.
+                                Multi-sheet workbook view: click any sheet tab to dynamically filter session logs and real-time metrics.
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <a href="{% url 'programs:tracking_sample_template' %}?prog={{ program.pk }}&ay={{ program.academic_year }}" class="btn-af btn-af-secondary btn-af-sm" style="background: #ffffff; color: #166534; border: 1px solid #86efac; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Download sample blank Excel spreadsheet for weekly session logs">
                                 <i data-lucide="download"></i> Excel Template
                             </a>
                             <button type="button" onclick="openUploadSessionLogModal()" class="btn-af btn-af-sm" style="background: #16a34a; color: #ffffff; font-weight: 600; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
                                 <i data-lucide="upload"></i> Add Weekly Session Log (Excel)
                             </button>
-                            {% if total_sessions_count > 0 %}
+                            {% if total_sessions_count > 0 or sheet_folders %}
                             <form method="POST" action="{% url 'programs:program_remove_session_logs' program.pk %}" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to remove all weekly session logs for {{ program.title }}?');">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-af btn-af-sm" style="background: #ffffff; border: 1px solid #f87171; color: #dc2626; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; cursor: pointer;" title="Remove weekly session logs for this program">
@@ -527,20 +625,89 @@
                         </div>
                     </div>
 
-                    <!-- Horizontal Folder-Tab Navigation Bar -->
+                    <!-- Horizontal Folder-Tab Navigation Bar with Embedded Dynamic KPI Data -->
                     <div class="sheet-folder-nav" role="tablist" style="display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; overflow-x: auto; padding-bottom: 2px; align-items: center;">
+                        {% if sheet_folders|length > 1 %}
+                        <!-- Consolidated Overview Tab -->
+                        <button type="button"
+                                class="prog-sheet-tab {% if not selected_folder %}active{% endif %}"
+                                onclick="switchProgSheetFolder('all_overview', this)"
+                                id="prog-tab-all_overview"
+                                data-folder-key="all_overview"
+                                data-folder-name="Consolidated Overview"
+                                data-sessions="{{ total_sessions_count }}"
+                                data-sessions-title="Total Sessions Logged"
+                                data-sessions-sub="Weekly Field & Workshop Sessions across all sheets"
+                                data-exposures="{{ total_exposures_sum }}"
+                                data-exposures-title="Student Exposures"
+                                data-exposures-sub="Total student interactions logged"
+                                data-boys="{{ total_boys_sum }}"
+                                data-girls="{{ total_girls_sum }}"
+                                data-has-gender="{% if total_boys_sum or total_girls_sum %}1{% else %}0{% endif %}"
+                                data-alt-metric-title="Session Demographics"
+                                data-alt-metric-val="{{ total_boys_sum|intcomma }} B / {{ total_girls_sum|intcomma }} G"
+                                data-alt-metric-sub="{% if unsplit_exposures %}Tracked in gender sheets ({{ unsplit_exposures|intcomma }} in unsplit activities){% else %}Consolidated attendance split{% endif %}"
+                                data-alt-metric-pct="50"
+                                data-demographics-sub="{% if unsplit_exposures %}Tracked in gender sheets ({{ unsplit_exposures|intcomma }} in unsplit activities){% else %}In-session attendance split{% endif %}"
+                                data-schools="{{ total_schools_count }}"
+                                data-schools-title="Partner Schools"
+                                data-schools-sub="Across {{ taluks|length }} Taluk{{ taluks|length|pluralize }}"
+                                data-avg-reach="{{ all_avg_reach }}"
+                                data-teachers-cnt="{{ all_teachers_cnt }}"
+                                data-teachers-pct="{% if total_sessions_count %}{% widthratio all_teachers_cnt total_sessions_count 100 %}{% else %}0{% endif %}"
+                                data-topics-cnt="{{ all_topics_count }}"
+                                data-topics-sample="Across active sheets"
+                                data-instructors-cnt="{{ all_instructors_count }}"
+                                data-instructors-sample="Active team facilitators"
+                                data-standards-sample="All Grades"
+                                data-is-profile="0"
+                                style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: {% if not selected_folder %}#ffffff{% else %}#f8fafc{% endif %}; border: 1px solid {% if not selected_folder %}#2563eb{% else %}#cbd5e1{% endif %}; border-bottom: none; border-radius: 8px 8px 0 0; color: {% if not selected_folder %}#1e40af{% else %}#475569{% endif %}; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease-in-out; white-space: nowrap; {% if not selected_folder %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}">
+                            <i data-lucide="layers" style="width: 16px; height: 16px; color: {% if not selected_folder %}#2563eb{% else %}#64748b{% endif %};"></i>
+                            <span>All Sheets Overview</span>
+                            <span class="sheet-count-badge" style="background: {% if not selected_folder %}#dbeafe{% else %}#e2e8f0{% endif %}; color: {% if not selected_folder %}#1d4ed8{% else %}#475569{% endif %}; border-radius: 12px; padding: 2px 8px; font-size: 11.5px; font-weight: 700;">{{ total_sessions_count }}</span>
+                        </button>
+                        {% endif %}
+
                         {% for folder in sheet_folders %}
                         <button type="button"
-                                class="prog-sheet-tab {% if selected_folder %}{% if folder.key == selected_folder %}active{% endif %}{% else %}{% if forloop.first %}active{% endif %}{% endif %}"
+                                class="prog-sheet-tab {% if selected_folder %}{% if folder.key == selected_folder %}active{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}active{% endif %}{% endif %}"
                                 onclick="switchProgSheetFolder('{{ folder.key }}', this)"
                                 id="prog-tab-{{ folder.key }}"
-                                style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: {% if selected_folder %}{% if folder.key == selected_folder %}#ffffff{% else %}#f8fafc{% endif %}{% else %}{% if forloop.first %}#ffffff{% else %}#f8fafc{% endif %}{% endif %}; border: 1px solid {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#cbd5e1{% endif %}{% else %}{% if forloop.first %}#2563eb{% else %}#cbd5e1{% endif %}{% endif %}; border-bottom: none; border-radius: 8px 8px 0 0; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1e40af{% else %}#475569{% endif %}{% else %}{% if forloop.first %}#1e40af{% else %}#475569{% endif %}{% endif %}; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.15s ease-in-out; white-space: nowrap; {% if selected_folder %}{% if folder.key == selected_folder %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% else %}{% if forloop.first %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% endif %}">
-                            <i data-lucide="folder" style="width: 16px; height: 16px; color: {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#64748b{% endif %}{% else %}{% if forloop.first %}#2563eb{% else %}#64748b{% endif %}{% endif %};"></i>
+                                data-folder-key="{{ folder.key }}"
+                                data-folder-name="{{ folder.name }}"
+                                data-sessions="{{ folder.total_count }}"
+                                data-sessions-title="{{ folder.kpi_sessions_title|default:'Sessions Logged' }}"
+                                data-sessions-sub="{{ folder.kpi_sessions_sub|default:'Sheet Logged Entries' }}"
+                                data-exposures="{{ folder.total_exposures }}"
+                                data-exposures-title="{{ folder.kpi_exposures_title|default:'Student Exposures' }}"
+                                data-exposures-sub="{{ folder.kpi_exposures_sub|default:'Student reach in this sheet' }}"
+                                data-boys="{{ folder.boys_present }}"
+                                data-girls="{{ folder.girls_present }}"
+                                data-has-gender="{% if folder.has_gender_data %}1{% else %}0{% endif %}"
+                                data-alt-metric-title="{{ folder.alt_metric_title|default:'Session Demographics' }}"
+                                data-alt-metric-val="{{ folder.alt_metric_val|default:'—' }}"
+                                data-alt-metric-sub="{{ folder.alt_metric_sub|default:folder.kpi_demographics_sub }}"
+                                data-alt-metric-pct="{{ folder.alt_metric_pct|default:'100' }}"
+                                data-demographics-sub="{{ folder.kpi_demographics_sub|default:'Attendance split' }}"
+                                data-schools="{{ folder.schools_count|default:total_schools_count }}"
+                                data-schools-title="{{ folder.kpi_schools_title|default:'Partner Schools' }}"
+                                data-schools-sub="{{ folder.kpi_schools_sub|default:'Delivery centers' }}"
+                                data-avg-reach="{{ folder.avg_reach|default:'0' }}"
+                                data-teachers-cnt="{{ folder.teachers_count|default:'0' }}"
+                                data-teachers-pct="{{ folder.teachers_pct|default:'0' }}"
+                                data-topics-cnt="{{ folder.topics_count|default:'0' }}"
+                                data-topics-sample="{{ folder.topics_sample|default:'General Curriculum' }}"
+                                data-instructors-cnt="{{ folder.instructors_count|default:'0' }}"
+                                data-instructors-sample="{{ folder.instructors_sample|default:'Facilitators' }}"
+                                data-standards-sample="{{ folder.standards_sample|default:'All Standards' }}"
+                                data-is-profile="{% if folder.is_school_profile %}1{% else %}0{% endif %}"
+                                style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: {% if selected_folder %}{% if folder.key == selected_folder %}#ffffff{% else %}#f8fafc{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}#ffffff{% else %}#f8fafc{% endif %}{% endif %}; border: 1px solid {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#cbd5e1{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}#2563eb{% else %}#cbd5e1{% endif %}{% endif %}; border-bottom: none; border-radius: 8px 8px 0 0; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1e40af{% else %}#475569{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}#1e40af{% else %}#475569{% endif %}{% endif %}; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease-in-out; white-space: nowrap; {% if selected_folder %}{% if folder.key == selected_folder %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}border-top: 3px solid #2563eb; margin-bottom: -2px; padding-bottom: 11px; box-shadow: 0 4px 6px -2px rgba(37,99,235,0.08);{% endif %}{% endif %}">
+                            <i data-lucide="folder" style="width: 16px; height: 16px; color: {% if selected_folder %}{% if folder.key == selected_folder %}#2563eb{% else %}#64748b{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}#2563eb{% else %}#64748b{% endif %}{% endif %};"></i>
                             <span>{{ folder.name }}</span>
                             {% if folder.is_custom_folder %}
                             <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; background: #e0e7ff; color: #4338ca; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Folder</span>
                             {% endif %}
-                            <span class="sheet-count-badge" style="background: {% if selected_folder %}{% if folder.key == selected_folder %}#dbeafe{% else %}#e2e8f0{% endif %}{% else %}{% if forloop.first %}#dbeafe{% else %}#e2e8f0{% endif %}{% endif %}; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1d4ed8{% else %}#475569{% endif %}{% else %}{% if forloop.first %}#1d4ed8{% else %}#475569{% endif %}{% endif %}; border-radius: 12px; padding: 2px 8px; font-size: 11.5px; font-weight: 700;">{{ folder.total_count }}</span>
+                            <span class="sheet-count-badge" style="background: {% if selected_folder %}{% if folder.key == selected_folder %}#dbeafe{% else %}#e2e8f0{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}#dbeafe{% else %}#e2e8f0{% endif %}{% endif %}; color: {% if selected_folder %}{% if folder.key == selected_folder %}#1d4ed8{% else %}#475569{% endif %}{% else %}{% if sheet_folders|length == 1 and forloop.first %}#1d4ed8{% else %}#475569{% endif %}{% endif %}; border-radius: 12px; padding: 2px 8px; font-size: 11.5px; font-weight: 700;">{{ folder.total_count }}</span>
                         </button>
                         {% endfor %}
 
@@ -559,11 +726,58 @@
                             <i data-lucide="folder-plus" style="width: 22px; height: 22px;"></i>
                         </div>
                         <div style="font-weight: 700; color: #1e293b; font-size: 15px; margin-bottom: 4px;">No Tracking Folders Yet</div>
-                        <div style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Create your first custom tracking folder to organize sessions and upload Excel data.</div>
+                        <div style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Upload your weekly session log spreadsheet or create a custom folder to organize session tracking.</div>
                         <button type="button" onclick="openAddFolderModal()" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; font-size: 13px; font-weight: 600; border-radius: 6px; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
                             <i data-lucide="folder-plus" style="width: 15px; height: 15px;"></i>
                             <span>+ Add Folder</span>
                         </button>
+                    </div>
+                    {% endif %}
+
+                    {% if sheet_folders|length > 1 %}
+                    <!-- Consolidated Overview Panel -->
+                    <div id="prog-sheet-panel-all_overview" class="prog-sheet-panel" style="{% if selected_folder %}display: none;{% endif %}">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                                        <i data-lucide="layout-grid" style="width: 18px; height: 18px; color: #2563eb;"></i>
+                                        Workbook Sheet Breakdown ({{ sheet_folders|length }} Sheets)
+                                    </h4>
+                                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                                        Consolidated metrics across all activity tabs in this program's tracking dossier. Click any card to drill down.
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+                                {% for f in sheet_folders %}
+                                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); cursor: pointer; transition: all 0.15s ease;"
+                                     onclick="document.getElementById('prog-tab-{{ f.key }}').click()"
+                                     onmouseover="this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'"
+                                     onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='none'">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div style="font-weight: 700; color: #0f172a; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="folder" style="width: 15px; height: 15px; color: #2563eb;"></i>
+                                            {{ f.name }}
+                                        </div>
+                                        <span style="font-size: 11px; font-weight: 700; background: #eff6ff; color: #1d4ed8; padding: 2px 7px; border-radius: 10px;">
+                                            {{ f.total_count }} {% if f.is_school_profile %}Schools{% else %}Sessions{% endif %}
+                                        </span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0;">
+                                        <span>Exposures: <strong style="color: #16a34a;">{{ f.total_exposures|intcomma }}</strong></span>
+                                        <span>
+                                            {% if f.has_gender_data %}
+                                                <strong style="color: #2563eb;">{{ f.boys_present|intcomma }} B</strong> / <strong style="color: #db2777;">{{ f.girls_present|intcomma }} G</strong>
+                                            {% else %}
+                                                <strong style="color: #7c3aed;">{{ f.alt_metric_val }}</strong>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                     {% endif %}
 
@@ -651,16 +865,26 @@
 
                             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Gender Breakdown</span>
+                                    <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">
+                                        {% if folder.has_gender_data %}Gender Breakdown{% else %}{{ folder.alt_metric_title|default:'Sheet Focus' }}{% endif %}
+                                    </span>
                                     <div style="width: 28px; height: 28px; border-radius: 6px; background: #faf5ff; display: flex; align-items: center; justify-content: center; color: #9333ea;">
-                                        <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
+                                        <i data-lucide="{% if folder.has_gender_data %}user-check{% elif folder.teachers_count %}graduation-cap{% else %}activity{% endif %}" style="width: 15px; height: 15px;"></i>
                                     </div>
                                 </div>
                                 <div style="font-size: 19px; font-weight: 800; color: #0f172a;">
-                                    <span style="color: #2563eb;">{{ folder.boys_present|intcomma }} B</span> &bull; <span style="color: #db2777;">{{ folder.girls_present|intcomma }} G</span>
+                                    {% if folder.has_gender_data %}
+                                        <span style="color: #2563eb;">{{ folder.boys_present|intcomma }} B</span> &bull; <span style="color: #db2777;">{{ folder.girls_present|intcomma }} G</span>
+                                    {% else %}
+                                        <span style="color: #7c3aed;">{{ folder.alt_metric_val }}</span>
+                                    {% endif %}
                                 </div>
                                 <span style="font-size: 11.5px; color: #64748b;">
-                                    {% if folder.is_school_profile %}Enrolled boys vs girls{% else %}Boys vs Girls attendance{% endif %}
+                                    {% if folder.has_gender_data %}
+                                        {% if folder.is_school_profile %}Enrolled boys vs girls{% else %}Boys vs Girls attendance{% endif %}
+                                    {% else %}
+                                        {{ folder.alt_metric_sub }}
+                                    {% endif %}
                                 </span>
                             </div>
 
@@ -945,10 +1169,11 @@
                 </div>
             </div>
 
-            <!-- Connected Scholarships -->
-            <div class="detail-card">
+            <!-- Modular Component 1: Connected Scholarships -->
+            {% if program.has_scholarships %}
+            <div class="detail-card" style="border: 1px solid #e2e8f0; border-left: 4px solid #ed1c24; border-radius: 10px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
                         <i data-lucide="award" style="color: #ed1c24;"></i> Connected Scholarships ({{ scholarships.count }})
                     </h3>
                     <a href="{% url 'programs:scholarship_create' %}?program={{ program.pk }}" class="btn-af btn-af-secondary btn-af-sm">
@@ -994,11 +1219,13 @@
                     </table>
                 </div>
             </div>
+            {% endif %}
 
-            <!-- Connected Internships -->
-            <div class="detail-card">
+            <!-- Modular Component 2: Connected Internships -->
+            {% if program.has_internships %}
+            <div class="detail-card" style="border: 1px solid #e2e8f0; border-left: 4px solid #0284c7; border-radius: 10px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
                         <i data-lucide="briefcase" style="color: #0284c7;"></i> Connected Internships ({{ internships.count }})
                     </h3>
                     <a href="{% url 'internships:portal' %}" class="btn-af btn-af-secondary btn-af-sm">
@@ -1041,11 +1268,13 @@
                     </table>
                 </div>
             </div>
+            {% endif %}
 
-            <!-- Connected Mentorship Sessions -->
-            <div class="detail-card">
+            <!-- Modular Component 3: Connected Mentorship Sessions -->
+            {% if program.has_mentorship %}
+            <div class="detail-card" style="border: 1px solid #e2e8f0; border-left: 4px solid #16a34a; border-radius: 10px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: #1e293b;">
                         <i data-lucide="user-check" style="color: #10b981;"></i> Connected Mentorship Sessions ({{ mentorship_sessions.count }})
                     </h3>
                     <a href="{% url 'programs:mentorship_create' %}?program={{ program.pk }}" class="btn-af btn-af-secondary btn-af-sm">
@@ -1101,6 +1330,23 @@
                     </table>
                 </div>
             </div>
+            {% endif %}
+
+            <!-- Modular Components Placeholder Callout when none are attached -->
+            {% if not program.has_scholarships and not program.has_internships and not program.has_mentorship %}
+            <div style="background: #ffffff; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 22px 24px; text-align: center; margin-top: 10px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #eef2ff; display: inline-flex; align-items: center; justify-content: center; color: #4f46e5; margin-bottom: 8px;">
+                    <i data-lucide="layout-grid" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div style="font-weight: 700; color: #0f172a; font-size: 15px; margin-bottom: 4px;">Modular Program Components</div>
+                <div style="font-size: 13px; color: #64748b; margin-bottom: 12px; max-width: 520px; margin-left: auto; margin-right: auto;">
+                    Need to link Connected Scholarships, Corporate Internships, or Mentorship Sessions to <strong>{{ program.title }}</strong>?
+                </div>
+                <a href="{% url 'programs:program_edit' program.pk %}" class="btn-af btn-af-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #4f46e5; border: 1px solid #c7d2fe; background: #eef2ff; padding: 7px 16px; border-radius: 6px; text-decoration: none;">
+                    <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Components in Edit Program
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -1327,6 +1573,149 @@
             }, false);
         }
 
+        function formatSafeNum(val) {
+            if (val === undefined || val === null || val === '') return '0';
+            const n = parseInt(val, 10);
+            return isNaN(n) ? val : n.toLocaleString('en-IN');
+        }
+
+        function updateTopKpiMetrics(btn) {
+            if (!btn || !btn.dataset) return;
+            const ds = btn.dataset;
+
+            const elSessionsVal = document.getElementById('kpi-val-sessions');
+            const elSessionsTitle = document.getElementById('kpi-title-sessions');
+            const elSessionsSub = document.getElementById('kpi-sub-sessions');
+
+            const elExpVal = document.getElementById('kpi-val-exposures');
+            const elExpTitle = document.getElementById('kpi-title-exposures');
+            const elExpSub = document.getElementById('kpi-sub-exposures');
+
+            const elDemoTitle = document.getElementById('kpi-title-demographics');
+            const elDemoGenderBox = document.getElementById('kpi-demo-gender-box');
+            const elDemoAltBox = document.getElementById('kpi-demo-alt-box');
+            const elDemoAltVal = document.getElementById('kpi-val-alt-metric');
+            const elDemoAltBar = document.getElementById('kpi-bar-alt');
+
+            const elBoys = document.getElementById('kpi-val-boys');
+            const elGirls = document.getElementById('kpi-val-girls');
+            const elDemogSub = document.getElementById('kpi-sub-demographics');
+            const elBarBoys = document.getElementById('kpi-bar-boys');
+            const elBarGirls = document.getElementById('kpi-bar-girls');
+            const elDemoIcon = document.getElementById('kpi-icon-demographics');
+
+            const elSchoolsVal = document.getElementById('kpi-val-schools');
+            const elSchoolsTitle = document.getElementById('kpi-title-schools');
+            const elSchoolsSub = document.getElementById('kpi-sub-schools');
+
+            const elActiveChip = document.getElementById('kpi-active-view-chip');
+
+            // Sheet Highlights Strip Elements
+            const elHlSheetName = document.getElementById('hl-sheet-name');
+            const elHlAvg = document.getElementById('hl-val-avg');
+            const elHlTeachers = document.getElementById('hl-val-teachers');
+            const elHlTopics = document.getElementById('hl-val-topics');
+            const elHlInstructors = document.getElementById('hl-val-instructors');
+            const elHlBadgeGender = document.getElementById('hl-badge-gender');
+
+            if (elSessionsVal && ds.sessions !== undefined) elSessionsVal.innerText = formatSafeNum(ds.sessions);
+            if (elSessionsTitle && ds.sessionsTitle) elSessionsTitle.innerText = ds.sessionsTitle;
+            if (elSessionsSub && ds.sessionsSub) elSessionsSub.innerText = ds.sessionsSub;
+
+            if (elExpVal && ds.exposures !== undefined) elExpVal.innerText = formatSafeNum(ds.exposures);
+            if (elExpTitle && ds.exposuresTitle) elExpTitle.innerText = ds.exposuresTitle;
+            if (elExpSub && ds.exposuresSub) elExpSub.innerText = ds.exposuresSub;
+
+            const hasGender = ds.hasGender === '1';
+            const bCount = parseInt(ds.boys || 0, 10);
+            const gCount = parseInt(ds.girls || 0, 10);
+
+            if (hasGender) {
+                if (elDemoGenderBox) elDemoGenderBox.style.display = 'block';
+                if (elDemoAltBox) elDemoAltBox.style.display = 'none';
+                if (elDemoTitle) elDemoTitle.innerText = ds.isProfile === '1' ? 'Enrolled Demographics' : 'Session Demographics';
+                if (elDemoIcon) elDemoIcon.setAttribute('data-lucide', 'pie-chart');
+
+                if (elBoys) elBoys.innerText = formatSafeNum(bCount);
+                if (elGirls) elGirls.innerText = formatSafeNum(gCount);
+                if (elDemogSub && ds.demographicsSub) elDemogSub.innerText = ds.demographicsSub;
+
+                const totDemo = bCount + gCount;
+                if (elBarBoys && elBarGirls) {
+                    if (totDemo > 0) {
+                        const bPct = Math.round((bCount / totDemo) * 100);
+                        const gPct = 100 - bPct;
+                        elBarBoys.style.width = bPct + '%';
+                        elBarGirls.style.width = gPct + '%';
+                        elBarBoys.title = `Boys: ${formatSafeNum(bCount)} (${bPct}%)`;
+                        elBarGirls.title = `Girls: ${formatSafeNum(gCount)} (${gPct}%)`;
+                    } else {
+                        elBarBoys.style.width = '50%';
+                        elBarGirls.style.width = '50%';
+                        elBarBoys.title = 'No demographic split logged';
+                        elBarGirls.title = 'No demographic split logged';
+                    }
+                }
+            } else {
+                // When gender is not in sheet, dynamically show the alternate important metric
+                if (elDemoGenderBox) elDemoGenderBox.style.display = 'none';
+                if (elDemoAltBox) elDemoAltBox.style.display = 'block';
+                if (elDemoTitle && ds.altMetricTitle) elDemoTitle.innerText = ds.altMetricTitle;
+                if (elDemoAltVal && ds.altMetricVal) elDemoAltVal.innerText = ds.altMetricVal;
+                if (elDemoAltBar) {
+                    const altPct = parseInt(ds.altMetricPct || 100, 10);
+                    elDemoAltBar.style.width = (altPct > 0 ? altPct : 100) + '%';
+                }
+                if (elDemogSub && (ds.altMetricSub || ds.demographicsSub)) {
+                    elDemogSub.innerText = ds.altMetricSub || ds.demographicsSub;
+                }
+                if (elDemoIcon) {
+                    const altT = (ds.altMetricTitle || '').toLowerCase();
+                    if (altT.includes('teacher') || altT.includes('faculty')) {
+                        elDemoIcon.setAttribute('data-lucide', 'graduation-cap');
+                    } else if (altT.includes('curriculum') || altT.includes('topic')) {
+                        elDemoIcon.setAttribute('data-lucide', 'book-open');
+                    } else {
+                        elDemoIcon.setAttribute('data-lucide', 'activity');
+                    }
+                }
+            }
+
+            if (elSchoolsVal && ds.schools !== undefined) elSchoolsVal.innerText = formatSafeNum(ds.schools);
+            if (elSchoolsTitle && ds.schoolsTitle) elSchoolsTitle.innerText = ds.schoolsTitle;
+            if (elSchoolsSub && ds.schoolsSub) elSchoolsSub.innerText = ds.schoolsSub;
+
+            if (elActiveChip && ds.folderName) {
+                elActiveChip.innerHTML = `<i data-lucide="layers" style="width: 12px; height: 12px;"></i> Viewing: ${ds.folderName}`;
+            }
+
+            // Update Sheet Context Strip
+            if (elHlSheetName && ds.folderName) elHlSheetName.innerText = ds.folderName;
+            if (elHlAvg) elHlAvg.innerText = `~${formatSafeNum(ds.avgReach || 0)} students/ses`;
+            if (elHlTeachers) elHlTeachers.innerText = `${formatSafeNum(ds.teachersCnt || 0)} sessions (${ds.teachersPct || 0}%)`;
+            if (elHlTopics) {
+                const sample = ds.topicsSample ? ` (${ds.topicsSample})` : '';
+                elHlTopics.innerText = `${formatSafeNum(ds.topicsCnt || 0)} unique${sample}`;
+            }
+            if (elHlInstructors) {
+                const iSample = ds.instructorsSample ? ` (${ds.instructorsSample})` : '';
+                elHlInstructors.innerText = `${formatSafeNum(ds.instructorsCnt || 0)} active${iSample}`;
+            }
+            if (elHlBadgeGender) {
+                if (hasGender) {
+                    elHlBadgeGender.innerText = '✓ Gender Split Logged';
+                    elHlBadgeGender.style.background = '#dbeafe';
+                    elHlBadgeGender.style.color = '#1d4ed8';
+                } else {
+                    elHlBadgeGender.innerText = 'ℹ️ Gender Unsplit (Direct Reach)';
+                    elHlBadgeGender.style.background = '#fef3c7';
+                    elHlBadgeGender.style.color = '#b45309';
+                }
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
         function switchProgSheetFolder(key, btn) {
             document.querySelectorAll('.prog-sheet-tab').forEach(t => {
                 t.classList.remove('active');
@@ -1367,6 +1756,10 @@
             if (panel) {
                 panel.style.display = 'block';
             }
+
+            // Dynamically synchronize the 4 top KPI cards to active sheet content
+            updateTopKpiMetrics(btn);
+
             if (window.lucide) lucide.createIcons();
         }
 
@@ -1394,6 +1787,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             setupDropzone('dropZoneRoster', 'rosterFileInput', handleRosterFileSelect);
             setupDropzone('dropZoneSessionLog', 'sessionLogFileInput', handleSessionLogFileSelect);
+
+            const activeTab = document.querySelector('.prog-sheet-tab.active');
+            if (activeTab) {
+                updateTopKpiMetrics(activeTab);
+            }
+
             if (window.lucide) {
                 lucide.createIcons();
             }

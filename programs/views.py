@@ -539,13 +539,17 @@ def program_detail(request, pk):
 
     prog_ngo = program.ngo or (program.project.ngo if program.project else None)
     q_filter = Q()
-    if prog_ngo:
-        q_filter = Q(ngo=prog_ngo)
-    else:
-        if program.participating_schools.exists():
-            q_filter |= Q(school__in=program.participating_schools.all())
+    if program.participating_schools.exists():
+        q_filter = Q(school__in=program.participating_schools.all())
         if prog_key:
-            q_filter |= Q(programme=prog_key)
+            q_filter |= Q(programme=prog_key, school__isnull=True)
+    elif prog_key:
+        if prog_ngo:
+            q_filter = Q(programme=prog_key, ngo=prog_ngo)
+        else:
+            q_filter = Q(programme=prog_key)
+    elif prog_ngo and not Program.objects.filter(ngo=prog_ngo).exclude(pk=program.pk).exists():
+        q_filter = Q(ngo=prog_ngo)
 
     if q_filter:
         weekly_sessions_qs = WeeklyTrackerSession.objects.filter(q_filter).exclude(session_type__startswith="School Profile").distinct().select_related("school", "ngo")
@@ -781,7 +785,7 @@ def program_detail(request, pk):
         })
 
     # 3. Ensure Teacher Training sheet is present (header in Excel, ready for logs)
-    if (prog_ngo and getattr(prog_ngo, "code", "") == "AGASTYA") or "schoolsession" in grouped:
+    if "schoolsession" in grouped or "teachertrainingprogram" in grouped:
         if "teachertrainingprogram" not in [f["key"] for f in sheet_folders]:
             sheet_folders.append({
                 "key": "teachertrainingprogram",
@@ -813,14 +817,169 @@ def program_detail(request, pk):
     total_boys_sum = sum(f["boys_present"] for f in session_folders)
     total_girls_sum = sum(f["girls_present"] for f in session_folders)
 
+    # Distinct schools and taluks across both roster and sessions
+    all_distinct_schools = set()
+    for sc in schools_list:
+        if sc.get("school_obj") and hasattr(sc["school_obj"], "pk"):
+            all_distinct_schools.add(sc["school_obj"].pk)
+        elif sc.get("name"):
+            all_distinct_schools.add(str(sc["name"]).strip().lower())
+
+    for f in session_folders:
+        for s in f.get("sessions", []):
+            if s.get("school_id"):
+                all_distinct_schools.add(s["school_id"])
+            elif s.get("school_name") and s["school_name"] != "—":
+                all_distinct_schools.add(str(s["school_name"]).strip().lower())
+
+    if all_distinct_schools:
+        total_schools_count = len(all_distinct_schools)
+
+    all_distinct_taluks = set(taluks)
+    for f in session_folders:
+        for s in f.get("sessions", []):
+            if s.get("school_taluk") and s["school_taluk"] not in ["—", ""]:
+                all_distinct_taluks.add(str(s["school_taluk"]).strip())
+    taluks = sorted(list(all_distinct_taluks))
+
+    # Dynamic fallback when only roster / school profile is present
+    if total_sessions_count == 0 and total_students_enrolled > 0:
+        display_exposures = total_students_enrolled
+        display_boys = enrolled_boys
+        display_girls = enrolled_girls
+    else:
+        display_exposures = total_exposures_sum
+        display_boys = total_boys_sum
+        display_girls = total_girls_sum
+
+    # Enrich sheet folders with dynamic display metadata and key sheet metrics
+    all_unique_topics = set()
+    all_unique_instructors = set()
+
+    for f in sheet_folders:
+        if f.get("is_school_profile"):
+            f_taluks = f.get("taluks_count", len(taluks))
+            f["kpi_sessions_title"] = "Enrolled Schools"
+            f["kpi_sessions_sub"] = "Active Partner Schools Profile"
+            f["kpi_exposures_title"] = "Enrolled Strength"
+            f["kpi_exposures_sub"] = "Total enrolled student headcount"
+            f["kpi_demographics_sub"] = "Enrolled Boys vs Girls"
+            f["kpi_schools_title"] = "Partner Schools"
+            f["kpi_schools_sub"] = f"Across {f_taluks} Taluk{'s' if f_taluks != 1 else ''}"
+            f["has_gender_data"] = True
+            f["teachers_count"] = sum(1 for sc in schools_list if sc.get("teacher") or sc.get("hm"))
+            f["teachers_pct"] = round((f["teachers_count"] / len(schools_list)) * 100) if schools_list else 0
+            f["avg_reach"] = round(total_students_enrolled / len(schools_list)) if schools_list else 0
+            f["topics_count"] = 1
+            f["topics_sample"] = "Class Roster Enrollment"
+            f["instructors_count"] = f["teachers_count"]
+            f["instructors_sample"] = "School Headmasters & Teachers"
+            f["standards_sample"] = "Grades 1 to 10"
+            f["alt_metric_title"] = "Enrolled Demographics"
+            f["alt_metric_val"] = f"{enrolled_boys:,} Boys / {enrolled_girls:,} Girls"
+            f["alt_metric_sub"] = "School census enrollment split"
+            f["alt_metric_pct"] = round((enrolled_boys / (enrolled_boys + enrolled_girls)) * 100) if (enrolled_boys + enrolled_girls) else 50
+        else:
+            sess_list = f.get("sessions", [])
+            f_count = len(sess_list)
+            b = f.get("boys_present", 0)
+            g = f.get("girls_present", 0)
+            tot_exp = f.get("total_exposures", 0)
+            has_gender = (b + g) > 0
+            f["has_gender_data"] = has_gender
+
+            # Teachers presence
+            teachers_cnt = sum(1 for s in sess_list if s.get("teacher_present"))
+            teachers_pct = round((teachers_cnt / f_count) * 100) if f_count else 0
+            f["teachers_count"] = teachers_cnt
+            f["teachers_pct"] = teachers_pct
+
+            # Avg reach per session
+            avg_reach = round(tot_exp / f_count) if f_count else 0
+            f["avg_reach"] = avg_reach
+
+            # Topics
+            topics = [s.get("topic", "").strip() for s in sess_list if s.get("topic") and s.get("topic").strip() not in ["—", "", "Curriculum Session", "Field Session"]]
+            unique_topics = list(dict.fromkeys(topics))
+            f["topics_count"] = len(unique_topics)
+            f["topics_sample"] = ", ".join(unique_topics[:3]) + ("..." if len(unique_topics) > 3 else "") if unique_topics else "General Curriculum"
+            all_unique_topics.update(unique_topics)
+
+            # Instructors
+            instructors = [s.get("instructor", "").strip() for s in sess_list if s.get("instructor") and s.get("instructor").strip() not in ["—", "Faculty Facilitator", ""]]
+            unique_instructors = list(dict.fromkeys(instructors))
+            f["instructors_count"] = len(unique_instructors)
+            f["instructors_sample"] = ", ".join(unique_instructors[:3]) + ("..." if len(unique_instructors) > 3 else "") if unique_instructors else "Field Facilitators"
+            all_unique_instructors.update(unique_instructors)
+
+            # Standards
+            standards = [s.get("standard", "").strip() for s in sess_list if s.get("standard") and s.get("standard").strip() not in ["—", "", "All"]]
+            unique_standards = list(dict.fromkeys(standards))
+            f["standards_sample"] = ", ".join(unique_standards[:4]) if unique_standards else "All Standards"
+
+            f["kpi_sessions_title"] = "Sessions Logged"
+            f["kpi_sessions_sub"] = f"{f['name']} Logs"
+            f["kpi_exposures_title"] = "Student Exposures" if "teacher" not in f["key"].lower() else "Trainee Exposures"
+            f["kpi_exposures_sub"] = "Touchpoints in this activity"
+            f["kpi_schools_title"] = "Partner Schools"
+            f["kpi_schools_sub"] = f"Active in {f['name']}"
+
+            # Intelligent Alternate/Demographic metric
+            if has_gender:
+                b_pct = round((b / (b + g)) * 100) if (b + g) else 50
+                g_pct = 100 - b_pct
+                f["kpi_demographics_sub"] = f"{b_pct}% Boys • {g_pct}% Girls split"
+                f["alt_metric_title"] = "Session Demographics"
+                f["alt_metric_val"] = f"{b:,} Boys / {g:,} Girls"
+                f["alt_metric_sub"] = "In-session attendance split"
+                f["alt_metric_pct"] = b_pct
+            elif "teacher" in f["key"].lower() or "ttp" in f["key"].lower():
+                f["kpi_demographics_sub"] = "Educators & teachers trained"
+                f["alt_metric_title"] = "Faculty Participation"
+                f["alt_metric_val"] = f"{tot_exp:,} Educators" if tot_exp else f"{f_count} Workshops"
+                f["alt_metric_sub"] = "Teacher capacity-building workshops"
+                f["alt_metric_pct"] = 100
+            elif teachers_cnt > 0:
+                f["kpi_demographics_sub"] = f"{teachers_pct}% sessions with teacher verified"
+                f["alt_metric_title"] = "Teacher Engagement"
+                f["alt_metric_val"] = f"{teachers_cnt} Sessions ({teachers_pct}%)"
+                f["alt_metric_sub"] = "School teachers actively engaged"
+                f["alt_metric_pct"] = teachers_pct
+            elif len(unique_topics) > 0:
+                f["kpi_demographics_sub"] = f"Across {len(unique_topics)} unique topics (Gender unsplit)"
+                f["alt_metric_title"] = "Curriculum Coverage"
+                f["alt_metric_val"] = f"{len(unique_topics)} Modules"
+                f["alt_metric_sub"] = f"e.g. {unique_topics[0][:26]}"
+                f["alt_metric_pct"] = 100
+            elif avg_reach > 0:
+                f["kpi_demographics_sub"] = "Direct reach without gender split"
+                f["alt_metric_title"] = "Avg Session Reach"
+                f["alt_metric_val"] = f"~{avg_reach} Students / Ses"
+                f["alt_metric_sub"] = "Direct group attendance density"
+                f["alt_metric_pct"] = 100
+            else:
+                f["kpi_demographics_sub"] = "Gender split not tracked in sheet"
+                f["alt_metric_title"] = "Demographic Split"
+                f["alt_metric_val"] = "Direct Reach Only"
+                f["alt_metric_sub"] = "Total exposures tracked directly"
+                f["alt_metric_pct"] = 0
+
+    # Consolidated overview metrics
+    unsplit_sheets = [f for f in session_folders if not f.get("has_gender_data")]
+    unsplit_exposures = sum(f["total_exposures"] for f in unsplit_sheets)
+    all_teachers_cnt = sum(f.get("teachers_count", 0) for f in session_folders)
+    all_avg_reach = round(total_exposures_sum / total_sessions_count) if total_sessions_count else 0
+    all_topics_count = len(all_unique_topics)
+    all_instructors_count = len(all_unique_instructors)
+
     context = {
         "program": program,
         "ev_sessions": ev_sessions,
         "combined_sessions": combined_sessions,
         "total_sessions_count": total_sessions_count,
-        "total_exposures_sum": total_exposures_sum,
-        "total_boys_sum": total_boys_sum,
-        "total_girls_sum": total_girls_sum,
+        "total_exposures_sum": display_exposures,
+        "total_boys_sum": display_boys,
+        "total_girls_sum": display_girls,
         "schools_list": schools_list,
         "total_schools_count": total_schools_count,
         "total_students_enrolled": total_students_enrolled,
@@ -834,6 +993,11 @@ def program_detail(request, pk):
         "roster_data": roster_data,
         "sheet_folders": sheet_folders,
         "selected_folder": request.GET.get("folder", ""),
+        "unsplit_exposures": unsplit_exposures,
+        "all_teachers_cnt": all_teachers_cnt,
+        "all_avg_reach": all_avg_reach,
+        "all_topics_count": all_topics_count,
+        "all_instructors_count": all_instructors_count,
     }
     return render(request, "programs/program_detail.html", context)
 
@@ -893,22 +1057,42 @@ def program_remove_school_roster(request, pk):
         except Exception:
             pass
 
-        cleared_schools = program.participating_schools.count()
-        program.participating_schools.clear()
-
         from trackers.models import WeeklyTrackerSession
+        from .models import TrackingFolder
         prog_key = resolve_tracker_programme(program)
-        deleted_sessions = 0
+        prog_ngo = program.ngo or (program.project.ngo if program.project else None)
+        custom_folders = list(TrackingFolder.objects.filter(program=program))
+        cf_names = [cf.name for cf in custom_folders]
+
+        del_q = Q()
+        cleared_schools = program.participating_schools.count()
+        if cleared_schools > 0:
+            del_q |= Q(school__in=program.participating_schools.all())
+
+        if cf_names:
+            del_q |= Q(session_type__in=cf_names)
+
         if prog_key:
-            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
-                programme=prog_key,
-                academic_year=program.academic_year
-            ).delete()
-        elif program.ngo:
-            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
-                ngo=program.ngo,
-                academic_year=program.academic_year
-            ).delete()
+            del_q |= Q(programme=prog_key)
+
+        deleted_sessions = 0
+        if del_q:
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(del_q).delete()
+        elif prog_ngo and not Program.objects.filter(ngo=prog_ngo).exclude(pk=program.pk).exists():
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(ngo=prog_ngo).delete()
+
+        for cf in custom_folders:
+            if cf.uploaded_file:
+                try:
+                    cf.uploaded_file.delete(save=False)
+                except Exception:
+                    pass
+            cf.delete()
+
+        if program.ev_sessions.exists():
+            program.ev_sessions.all().delete()
+
+        program.participating_schools.clear()
 
         details = []
         if cleared_schools:
@@ -923,30 +1107,70 @@ def program_remove_school_roster(request, pk):
 
 def program_remove_session_logs(request, pk):
     """
-    Removes uploaded weekly session logs specifically for this program.
+    Removes uploaded weekly session logs and sheet tabs specifically for this program.
     """
     program = get_object_or_404(Program, pk=pk)
     if request.method == "POST":
         from trackers.models import WeeklyTrackerSession
-        prog_key = resolve_tracker_programme(program)
-        deleted_sessions = 0
-        if prog_key:
-            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
-                programme=prog_key,
-                academic_year=program.academic_year
-            ).delete()
-        elif program.participating_schools.exists():
-            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
-                school__in=program.participating_schools.all(),
-                academic_year=program.academic_year
-            ).delete()
-        elif program.ngo:
-            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(
-                ngo=program.ngo,
-                academic_year=program.academic_year
-            ).delete()
+        from .models import TrackingFolder
+        from .roster import _get_roster_file_path, _get_roster_cleared_marker_path
 
-        messages.success(request, f"Successfully removed {deleted_sessions:,} weekly session logs for program '{program.title}'.")
+        # 1. Clear roster files and marker so school profile sheet is cleared
+        roster_path = _get_roster_file_path(program.pk)
+        if os.path.exists(roster_path):
+            try:
+                os.remove(roster_path)
+            except Exception:
+                pass
+
+        marker_path = _get_roster_cleared_marker_path(program.pk)
+        try:
+            with open(marker_path, "w", encoding="utf-8") as f:
+                f.write("cleared")
+        except Exception:
+            pass
+
+        # 2. Gather sessions to delete
+        prog_key = resolve_tracker_programme(program)
+        prog_ngo = program.ngo or (program.project.ngo if program.project else None)
+        custom_folders = list(TrackingFolder.objects.filter(program=program))
+        cf_names = [cf.name for cf in custom_folders]
+
+        del_q = Q()
+        schools_count = program.participating_schools.count()
+        if schools_count > 0:
+            del_q |= Q(school__in=program.participating_schools.all())
+
+        if cf_names:
+            del_q |= Q(session_type__in=cf_names)
+
+        if prog_key:
+            del_q |= Q(programme=prog_key)
+
+        deleted_sessions = 0
+        if del_q:
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(del_q).delete()
+        elif prog_ngo and not Program.objects.filter(ngo=prog_ngo).exclude(pk=program.pk).exists():
+            deleted_sessions, _ = WeeklyTrackerSession.objects.filter(ngo=prog_ngo).delete()
+
+        # 3. Delete custom TrackingFolder records and files
+        for cf in custom_folders:
+            if cf.uploaded_file:
+                try:
+                    cf.uploaded_file.delete(save=False)
+                except Exception:
+                    pass
+            cf.delete()
+
+        # 4. Clear EV classroom sessions for this program if any
+        if program.ev_sessions.exists():
+            program.ev_sessions.all().delete()
+
+        # 5. Clear participating schools attached from session logs
+        if schools_count > 0:
+            program.participating_schools.clear()
+
+        messages.success(request, f"Successfully removed {deleted_sessions:,} weekly session logs and cleared sheet folders for program '{program.title}'.")
 
     return redirect(f"{reverse('programs:program_detail', kwargs={'pk': program.pk})}#sessions")
 

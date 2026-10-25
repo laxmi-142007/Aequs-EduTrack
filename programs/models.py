@@ -189,6 +189,12 @@ class Program(models.Model):
     academic_year = models.CharField(max_length=20, default="2026-27")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     is_archived = models.BooleanField(default=False, db_index=True)
+
+    # Modular Optional Components (Enabled via [+] in Edit Program)
+    enable_scholarships = models.BooleanField(default=False, help_text="Enable Connected Scholarships component")
+    enable_internships = models.BooleanField(default=False, help_text="Enable Connected Internships component")
+    enable_mentorship = models.BooleanField(default=False, help_text="Enable Connected Mentorship component")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -204,6 +210,18 @@ class Program(models.Model):
     def full_location(self):
         parts = [self.location_name, self.village_or_town, self.taluk, self.district]
         return ", ".join(p for p in parts if p)
+
+    @property
+    def has_scholarships(self):
+        return self.enable_scholarships or self.scholarships.filter(is_archived=False).exists()
+
+    @property
+    def has_internships(self):
+        return self.enable_internships or self.internships.exists()
+
+    @property
+    def has_mentorship(self):
+        return self.enable_mentorship or self.mentorship_sessions.exists()
 
 
 # ============================================================================
