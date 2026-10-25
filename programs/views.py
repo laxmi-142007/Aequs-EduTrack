@@ -458,6 +458,12 @@ def project_toggle_archive(request, pk):
 
 def program_list(request):
     ensure_default_ngos()
+    if Program.objects.filter(is_archived=False).count() == 0:
+        try:
+            from .seeds import ensure_baseline_programs
+            ensure_baseline_programs()
+        except Exception:
+            pass
     project_filter = request.GET.get("project")
     location_filter = (request.GET.get("location") or request.GET.get("loc") or "").strip()
     taluk_filter = request.GET.get("taluk")

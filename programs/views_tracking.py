@@ -55,11 +55,11 @@ def tracking_dashboard(request):
         "student_excel": {"name": "Student Excel", "alt_name": "Student Excel Program", "code_prefix": "EXC"},
     }
 
-    # Self-healing baseline: auto-load seeds if database has 0 programs
-    if Program.objects.count() == 0:
+    # Self-healing baseline: auto-seed baseline programs if database has 0 active programs
+    if Program.objects.filter(is_archived=False).count() == 0:
         try:
-            from django.core.management import call_command
-            call_command("load_seed_data")
+            from programs.seeds import ensure_baseline_programs
+            ensure_baseline_programs()
         except Exception:
             pass
 
@@ -110,7 +110,10 @@ def tracking_dashboard(request):
     programs_qs = programs_qs.select_related("project", "ngo").prefetch_related("participating_schools", "locations")
 
     if ay != "all":
-        programs_qs = programs_qs.filter(academic_year=ay)
+        year_prefix = ay.split("-")[0] if "-" in ay else ay
+        programs_qs = programs_qs.filter(
+            Q(academic_year=ay) | Q(academic_year__startswith=year_prefix)
+        )
 
     if selected_loc:
         programs_qs = programs_qs.filter(get_program_location_q(selected_loc))
@@ -798,11 +801,18 @@ def trigger_seed_data(request):
     Direct web-accessible endpoint to populate or reload baseline seed data on Render.
     """
     from django.core.management import call_command
+    from programs.seeds import ensure_baseline_programs
     try:
-        call_command("load_seed_data", force=True)
+        p_count = ensure_baseline_programs()
+        # Also run load_seed_data to ensure complete data (schools, sessions, students)
+        try:
+            call_command("load_seed_data", force=True)
+        except Exception as load_err:
+            pass
+
         messages.success(
             request,
-            f"Database successfully seeded! {Program.objects.count()} programs, {Student.objects.count()} students, and {School.objects.count()} schools now available."
+            f"Baseline programs & database successfully seeded! {Program.objects.filter(is_archived=False).count()} active programs, {Student.objects.count()} students, and {School.objects.count()} schools now available."
         )
     except Exception as e:
         messages.error(request, f"Error seeding database: {e}")

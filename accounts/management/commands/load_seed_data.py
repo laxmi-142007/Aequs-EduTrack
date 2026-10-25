@@ -36,6 +36,16 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"Note during admin/group setup: {e}"))
 
+        # 1.5 Ensure baseline programs, projects, locations, and NGOs exist
+        try:
+            from programs.seeds import ensure_baseline_programs
+            seeded_programs_count = ensure_baseline_programs()
+            self.stdout.write(
+                self.style.SUCCESS(f"Ensured {seeded_programs_count} baseline foundation programs & projects exist.")
+            )
+        except Exception as prog_err:
+            self.stdout.write(self.style.WARNING(f"Note during baseline program seeding: {prog_err}"))
+
         # 2. Check if data is already fully populated
         student_count = Student.objects.count()
         school_count = School.objects.count()
@@ -94,13 +104,22 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"Note on loaddata: {e}. Executing robust deserializer fallback..."))
             try:
+                from django.db import connection, transaction
+                # Reset connection in case previous loaddata left PostgreSQL transaction in aborted state
+                if getattr(connection, "connection", None):
+                    try:
+                        connection.close()
+                    except Exception:
+                        pass
+
                 from django.core.serializers import deserialize
                 with open(target_file, "r", encoding="utf-8") as f:
                     objs = list(deserialize("json", f.read(), ignorenonexistent=True))
                 saved_count = 0
                 for item in objs:
                     try:
-                        item.save()
+                        with transaction.atomic():
+                            item.save()
                         saved_count += 1
                     except Exception:
                         pass
