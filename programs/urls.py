@@ -10,6 +10,7 @@ urlpatterns = [
     path("tracking/dashboard/", views_tracking.tracking_dashboard, name="tracking_dashboard"),
     path("tracking/upload-excel/", views_tracking.upload_tracking_excel, name="tracking_upload_excel"),
     path("tracking/sample-template/", views_tracking.download_session_log_template, name="tracking_sample_template"),
+    path("tracking/seed/", views_tracking.trigger_seed_data, name="tracking_seed_data"),
 
     # Custom Tracking Folders (Add folder, Upload Excel, Delete, Download)
     path("tracking/folders/create/", views_tracking.tracking_folder_create, name="tracking_folder_create"),
